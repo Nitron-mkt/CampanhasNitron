@@ -281,7 +281,7 @@
     return "/agenda";
   }
   /* uma campanha e clicavel se alguma tela sabe operar ela */
-  function clicavel(cod){return (OPERAVEIS[cod]||KA[cod]||ROT[cod]||SAL[cod]||COB[cod]||AGE[cod]||RET[cod]||IAP[cod]||PROS[cod]||TPL[cod]||REDES[cod]||COM[cod])?1:0;}
+  function clicavel(cod){return (OPERAVEIS[cod]||KA[cod]||ROT[cod]||SAL[cod]||COB[cod]||AGE[cod]||RET[cod]||IAP[cod]||PROS[cod]||TPL[cod]||REDES[cod]||COM[cod]||COMC[cod])?1:0;}
   function pintarAreas(cont){
     var h="";
     ["comercial","logistica","cobranca"].forEach(function(a){
@@ -296,6 +296,9 @@
   var REDES={promocao_redes:1};
   /* comunicado: campanha sem gatilho, texto escrito na tela */
   var COM={rep_comunicado:1};
+  /* o comunicado ao CLIENTE tem tela propria: sao ~6.000 destinatarios, entao a audiencia se
+     define por filtro (nao por caixinha) e quem enfileira e a funcao, nao o navegador. */
+  var COMC={cliente_comunicado:1};
   var PROS={reativacao_180d:1,reativacao_faixas:1,prospeccao_aquisicao:1};
   var PRIMEIRA="";
   var OPERAVEIS={clube_saldo:1,voucher_empurrar:1,recompra_giro_a_vencer:1,recompra_giro_vencido:1,rep_sem_comprar:1,recompra_cross_sell:1,rep_sugestao_produto:1,recompra_novo_produto:1,clube_a_vencer:1};
@@ -763,6 +766,7 @@
     setTimeout(statusFila,0);document.querySelectorAll(".cc").forEach(function(e){e.classList.remove("sel");});var cc=$("cc-"+cod);if(cc)cc.classList.add("sel");
     $("op").classList.add("show");
     if(COM[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirComunicado(cod);}
+    if(COMC[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirComunicadoCliente(cod);}
     if(REDES[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirRedes(cod);}
     if(TPL[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirTemplates(cod);}
     if(PROS[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirPros(cod);}
@@ -2054,6 +2058,262 @@
     postJSON(SUPA + "/functions/v1/campanhas-enviar", { test: true, canal: "email", assunto: "[TESTE] " + (COMTXT.a || "Comunicado Nitron"), texto: corpo }, function (d) {
       st.textContent = (d && d.ok) ? "✓ teste enviado ao seu e-mail" : ("✗ " + ((d && d.motivo) || (d && d.erro) || "falha"));
       st.style.color = (d && d.ok) ? "#1a7a44" : "#c0392b";
+    });
+  }
+  /* ===== COMUNICADO AOS CLIENTES =====
+     Irmao da tela de comunicado ao representante, com duas diferencas que vem da escala:
+
+     1. NAO HA LISTA COM CAIXINHA POR DESTINATARIO. Sao ~6.000 e-mails: marcar um por um nao e
+        operacao, e uma tela travada. A audiencia se define por FILTRO, e a tela mostra o total, o
+        que cada filtro cortou e uma amostra de 40 nomes para a pessoa reconhecer a base.
+
+     2. QUEM ENFILEIRA E A FUNCAO, NAO ESTA TELA. A tela manda texto + filtros; o
+        `campanhas-comunicado-cliente` resolve a audiencia e enfileira em lotes. Alem de nao montar
+        11 MB no navegador, isso mata o caminho que em 03/09 pos 231 mensagens na fila num clique:
+        o envio carrega o total que a tela mostrou (`total_esperado`) e a funcao RECUSA se a
+        audiencia mudou desde a contagem. Tela velha nao dispara lote novo.
+
+     So e-mail, de proposito: comunicado em massa por Zaptos sao ~8h de disparo a 2 msg/min por
+     instancia, com o numero da Campanhas Nitron restringido pelo WhatsApp desde 27/08.
+     Marcador: [CLIENTE] vira a razao social da loja daquele contato. Sem CNPJ (na mensagem ao
+     cliente seria o documento dele mesmo) e sem o sufixo "(N lojas)", que e interno do rep. */
+  var CCD = { total: 0, clientes: 0, cortes: {}, amostra: [], salvos: [], cfg: null };
+  var CCF = { base: "crm", sem_inad: false, sem_bloq: true, sem_ka: false };
+  /* o texto vive AQUI, nao no DOM: a tela se repinta a cada filtro e ler do textarea apagaria o
+     comunicado no meio da escrita (mesmo motivo do COMTXT da tela do rep). */
+  var CCTXT = { a: "", c: "" }, CCTIT = "", CCID = null, CCBUSY = false;
+  function ccQS() {
+    return "?base=" + encodeURIComponent(CCF.base)
+      + "&sem_inad=" + (CCF.sem_inad ? "1" : "0")
+      + "&sem_bloq=" + (CCF.sem_bloq ? "1" : "0")
+      + "&sem_ka=" + (CCF.sem_ka ? "1" : "0");
+  }
+  function abrirComunicadoCliente() {
+    $("op-nome").textContent = "Comunicado aos clientes";
+    $("op-meta").textContent = "Recado livre da gestão para a base de clientes do CRM · o texto vale exatamente como você escrever · só por e-mail";
+    $("op-kpis").innerHTML = ""; var ai = $("atuInfo"); if (ai) ai.textContent = "";
+    CCTXT = { a: "", c: "" }; CCTIT = ""; CCID = null;
+    CCF = { base: "crm", sem_inad: false, sem_bloq: true, sem_ka: false };
+    $("kaFlow").innerHTML = '<div class="note" style="padding:16px">carregando a base de clientes…</div>';
+    ccCarregar(true);
+  }
+  function ccCarregar(primeira) {
+    getJSON(SUPA + "/functions/v1/campanhas-comunicado-cliente" + ccQS(), function (d) {
+      if (!d || d.erro) {
+        if (primeira) $("kaFlow").innerHTML = '<div class="note" style="padding:16px;color:#c0392b">erro ao carregar: ' + esc((d && d.erro) || "falha") + '</div>';
+        else { var s = $("ccSt"); if (s) { s.textContent = "✗ " + ((d && d.erro) || "falha ao recontar"); s.style.color = "#c0392b"; } }
+        return;
+      }
+      CCD = d;
+      if (primeira) ccRender(); else { ccPintarQuem(); ccPreview(); }
+    });
+  }
+  /* e-mail sai em lote de `email_lote` por minuto (fila-processar roda 1x/min) */
+  function ccTempo() {
+    var lote = Math.max(1, Number((CCD.cfg || {}).email_lote || 25));
+    var min = Math.ceil((CCD.total || 0) / lote);
+    if (min <= 1) return "~1 min";
+    if (min < 60) return "~" + min + " min";
+    var h = Math.floor(min / 60), r = min % 60;
+    return "~" + h + " h" + (r ? (" " + r + " min") : "");
+  }
+  function ccOpcoesSalvas() {
+    var h = '<option value="">— comunicados salvos —</option>';
+    (CCD.salvos || []).forEach(function (s) { h += '<option value="' + s.id + '">' + esc(s.titulo) + '</option>'; });
+    return h;
+  }
+  function ccRender() {
+    var h = '<style>'
+      + '.ccbox{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0;background:#fff}'
+      + '.ccbtn{font:inherit;font-size:12.5px;padding:4px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;color:#6a7f78;cursor:pointer;margin:0 5px 5px 0}'
+      + '.ccbtn:hover{border-color:#0f7d94;color:#0f7d94}.ccbtn.on{background:#1b1e24;border-color:#1b1e24;color:#fff}'
+      + '.ccfoot{display:flex;align-items:center;gap:10px;flex-wrap:wrap}'
+      + '.ccam{max-height:210px;overflow:auto;border:1px solid var(--line);border-radius:8px;background:#fff}'
+      + '.ccam div{padding:5px 10px;border-bottom:1px solid #eef3f0;font-size:12px}'
+      + '.cccut{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:5px}'
+      + '</style>';
+
+    h += '<div class="ccbox"><div class="lab" style="padding:0 0 6px">📚 Biblioteca de comunicados ao cliente</div>'
+      + '<div class="ccfoot"><select id="ccSalvos" class="ei" style="max-width:320px">' + ccOpcoesSalvas() + '</select>'
+      + '<button class="btn out" id="ccCarregarBt">Carregar</button>'
+      + '<button class="btn out" id="ccApagar">🗑 Apagar</button>'
+      + '<span class="note" id="ccBibSt"></span></div></div>';
+
+    h += '<div class="ccbox"><div class="lab" style="padding:0 0 6px">✍️ O comunicado — use <code>[CLIENTE]</code> para o nome da loja</div>'
+      + '<div class="lab">Assunto do e-mail</div>'
+      + '<input class="ei" id="ccAss" style="width:100%" placeholder="ex.: Comunicado Nitron — novidade na linha de organização" value="' + esc(CCTXT.a) + '">'
+      + '<div class="lab">Corpo do e-mail</div>'
+      + '<textarea id="ccCorpo" rows="9" style="width:100%" placeholder="Olá [CLIENTE],&#10;&#10;Escreva aqui o comunicado…">' + esc(CCTXT.c) + '</textarea>'
+      + '<div class="note" id="ccPrev" style="margin-top:6px"></div>'
+      + '<div class="ccfoot" style="margin-top:10px"><input class="ei" id="ccTitulo" placeholder="dar um nome para reusar depois" style="max-width:280px" value="' + esc(CCTIT) + '">'
+      + '<button class="btn out" id="ccSalvar">💾 Salvar na biblioteca</button><span class="note" id="ccSalvoSt"></span></div></div>';
+
+    h += '<div class="ccbox"><div class="lab" style="padding:0 0 6px">👥 Quem recebe</div>'
+      + '<div class="note" style="margin-bottom:6px">Base de contatos de <b>cliente</b> do CRM. Representante <b>nunca</b> entra aqui — campanha de cliente não vai para rep.</div>'
+      + '<div style="margin-bottom:4px"><span class="note">base:</span><br>'
+      + '<button class="ccbtn' + (CCF.base === "crm" ? " on" : "") + '" data-base="crm">Todos os clientes do CRM</button>'
+      + '<button class="ccbtn' + (CCF.base === "carteira" ? " on" : "") + '" data-base="carteira">Só quem tem compra no Sankhya</button>'
+      + '<button class="ccbtn' + (CCF.base === "nitron" ? " on" : "") + '" data-base="nitron">Só marcados como Nitron</button></div>'
+      + '<div class="ccfoot" style="margin-bottom:2px">'
+      + '<label class="ctopt"><input type="checkbox" id="ccSemBloq"' + (CCF.sem_bloq ? " checked" : "") + '><span>tirar bloqueado no Sankhya</span></label>'
+      + '<label class="ctopt"><input type="checkbox" id="ccSemInad"' + (CCF.sem_inad ? " checked" : "") + '><span>tirar inadimplente</span></label>'
+      + '<label class="ctopt"><input type="checkbox" id="ccSemKa"' + (CCF.sem_ka ? " checked" : "") + '><span>tirar Key Account</span></label>'
+      + '</div>'
+      + '<div id="ccQuem"></div></div>';
+
+    h += '<div class="ccbox"><div class="ccfoot"><button class="btn big ok" id="ccFila">📧 Criar fila e enviar</button>'
+      + '<button class="btn out" id="ccTeste">Testar no meu e-mail</button>'
+      + '<span class="note" id="ccNota"></span><span class="fbig" id="ccSt" style="margin-left:auto"></span></div>'
+      + '<div class="note" style="margin-top:6px">A fila, o botão de parar e o de cancelar estão no painel <b>📬 Fila de envios</b>, logo abaixo.</div></div>';
+
+    $("kaFlow").innerHTML = h;
+    ccLigar();
+    ccPintarQuem();
+    ccPreview();
+    if (FILATIMER) clearInterval(FILATIMER);
+    statusFila(); FILATIMER = setInterval(statusFila, 15000);
+  }
+  function ccPintarQuem() {
+    var box = $("ccQuem"); if (!box) return;
+    var c = CCD.cortes || {};
+    var cut = [
+      ["representante", "representantes (regra: nunca entram)"],
+      ["sem_email", "sem e-mail no CRM"],
+      ["email_invalido", "e-mail inválido"],
+      ["fora_da_base", "fora da base escolhida"],
+      ["bloqueado", "bloqueado no Sankhya"],
+      ["inadimplente", "inadimplente"],
+      ["key_account", "Key Account"],
+      ["email_repetido", "e-mail repetido (recebe 1 vez)"]
+    ];
+    var h = '<div class="fbig" style="margin:6px 0 2px"><b style="font-size:20px;color:#12514c">' + Number(CCD.total || 0).toLocaleString("pt-BR") + '</b> e-mail(s) · '
+      + Number(CCD.clientes || 0).toLocaleString("pt-BR") + ' cliente(s) · termina em <b>' + ccTempo() + '</b></div>';
+    if ((CCD.cfg || {}).email_ativo === false) h += '<div class="note" style="color:#c0392b">⛔ a chave de e-mail está desligada — nada sai até religar em ⚙ Configurações.</div>';
+    var partes = [];
+    cut.forEach(function (x) { var n = Number(c[x[0]] || 0); if (n > 0) partes.push('<span class="note">− <b>' + n.toLocaleString("pt-BR") + '</b> ' + x[1] + '</span>'); });
+    if (partes.length) h += '<div class="lab" style="padding:6px 0 0">o que ficou fora</div><div class="cccut">' + partes.join("") + '</div>';
+    if ((CCD.amostra || []).length) {
+      h += '<div class="lab" style="padding:8px 0 4px">amostra (' + (CCD.amostra || []).length + ' dos ' + Number(CCD.total || 0).toLocaleString("pt-BR") + ')</div><div class="ccam">';
+      (CCD.amostra || []).forEach(function (a) {
+        h += '<div><b>' + esc(a.nome) + '</b> <span class="note">· ' + esc(a.email) + '</span></div>';
+      });
+      h += '</div>';
+    }
+    box.innerHTML = h;
+  }
+  function ccPreview() {
+    var p = $("ccPrev"); if (!p) return;
+    if (!CCTXT.c.trim()) { p.textContent = "escreva o corpo acima — a prévia aparece aqui"; return; }
+    var ex = (CCD.amostra || [])[0];
+    var nome = ex ? ex.nome : "CLIENTE";
+    p.innerHTML = '<b>Prévia para ' + esc(nome) + ':</b><br><i>' + esc(fillMk(CCTXT.a || "(sem assunto)", { CLIENTE: nome })) + '</i><br>'
+      + esc(fillMk(CCTXT.c, { CLIENTE: nome })).replace(/\n/g, "<br>");
+  }
+  function ccLigar() {
+    var a = $("ccAss"); if (a) a.addEventListener("input", function () { CCTXT.a = a.value; ccPreview(); });
+    var c = $("ccCorpo"); if (c) c.addEventListener("input", function () { CCTXT.c = c.value; ccPreview(); });
+    var t = $("ccTitulo"); if (t) t.addEventListener("input", function () { CCTIT = t.value; });
+    ["ccSemBloq|sem_bloq", "ccSemInad|sem_inad", "ccSemKa|sem_ka"].forEach(function (par) {
+      var p = par.split("|"), el = $(p[0]);
+      if (el) el.addEventListener("change", function () { CCF[p[1]] = el.checked; ccRecontar(); });
+    });
+    var box = $("kaFlow");
+    if (box) box.addEventListener("click", function (ev) {
+      var b = ev.target && ev.target.getAttribute ? ev.target.getAttribute("data-base") : null;
+      if (!b || b === CCF.base) return;
+      CCF.base = b;
+      var bs = box.querySelectorAll("[data-base]");
+      for (var i = 0; i < bs.length; i++) bs[i].className = "ccbtn" + (bs[i].getAttribute("data-base") === b ? " on" : "");
+      ccRecontar();
+    });
+    var cg = $("ccCarregarBt"); if (cg) cg.addEventListener("click", ccBibCarregar);
+    var ap = $("ccApagar"); if (ap) ap.addEventListener("click", ccBibApagar);
+    var sv = $("ccSalvar"); if (sv) sv.addEventListener("click", ccSalvar);
+    var fl = $("ccFila"); if (fl) fl.addEventListener("click", ccFila);
+    var ts = $("ccTeste"); if (ts) ts.addEventListener("click", ccTeste);
+  }
+  function ccRecontar() {
+    var q = $("ccQuem"); if (q) q.innerHTML = '<div class="note" style="padding:8px 0">recontando…</div>';
+    ccCarregar(false);
+  }
+  function ccBibCarregar() {
+    var sel = $("ccSalvos"), st = $("ccBibSt");
+    if (!sel || !sel.value) { if (st) st.textContent = "escolha um comunicado da lista"; return; }
+    var s = (CCD.salvos || []).filter(function (x) { return String(x.id) === sel.value; })[0]; if (!s) return;
+    CCID = s.id; CCTIT = s.titulo || "";
+    CCTXT = { a: s.assunto || "", c: s.texto_email || "" };
+    ccRender();
+    var q = $("ccSalvos"); if (q) q.value = String(s.id);
+    var st2 = $("ccBibSt");
+    if (st2) st2.innerHTML = "<b style='color:#1a7f4b'>✓ carregado</b> — editar e salvar atualiza este mesmo comunicado";
+  }
+  function ccBibApagar() {
+    var sel = $("ccSalvos"), st = $("ccBibSt");
+    if (!sel || !sel.value) { if (st) st.textContent = "escolha um comunicado da lista"; return; }
+    if (!confirm("Apagar esse comunicado da biblioteca? O que já foi enviado não muda.")) return;
+    if (st) st.textContent = "apagando…";
+    postJSON(SUPA + "/functions/v1/campanhas-comunicado-cliente", { apagar: +sel.value }, function (r) {
+      if (r && r.ok) {
+        CCD.salvos = (CCD.salvos || []).filter(function (x) { return x.id !== r.apagado; });
+        if (CCID === r.apagado) CCID = null;
+        var s2 = $("ccSalvos"); if (s2) s2.innerHTML = ccOpcoesSalvas();
+        var s3 = $("ccBibSt"); if (s3) s3.textContent = "✓ apagado";
+      } else if (st) st.textContent = "✗ " + ((r && r.erro) || "falha");
+    });
+  }
+  function ccSalvar() {
+    var st = $("ccSalvoSt");
+    if (!CCTIT.trim()) { if (st) { st.textContent = "dê um nome antes de salvar"; st.style.color = "#b7791f"; } return; }
+    if (st) { st.textContent = "salvando…"; st.style.color = "#6a7f78"; }
+    var body = { titulo: CCTIT, assunto: CCTXT.a, texto_email: CCTXT.c };
+    if (CCID) body.id = CCID;
+    postJSON(SUPA + "/functions/v1/campanhas-comunicado-cliente", body, function (r) {
+      if (r && r.ok && r.salvo) {
+        CCID = r.salvo.id;
+        CCD.salvos = [r.salvo].concat((CCD.salvos || []).filter(function (x) { return x.id !== r.salvo.id; }));
+        var sel = $("ccSalvos"); if (sel) { sel.innerHTML = ccOpcoesSalvas(); sel.value = String(r.salvo.id); }
+        if (st) st.innerHTML = "<b style='color:#1a7f4b'>✓ salvo</b>";
+      } else if (st) { st.textContent = "✗ " + ((r && r.erro) || "falha"); st.style.color = "#c0392b"; }
+    });
+  }
+  function ccTeste() {
+    var st = $("ccSt");
+    if (!CCTXT.c.trim()) { st.textContent = "escreva o corpo primeiro"; st.style.color = "#b7791f"; return; }
+    var ex = (CCD.amostra || [])[0]; var nome = ex ? ex.nome : "Loja Exemplo";
+    st.textContent = "testando…"; st.style.color = "#6a7f78";
+    postJSON(SUPA + "/functions/v1/campanhas-enviar", {
+      test: true, canal: "email",
+      assunto: "[TESTE] " + fillMk(CCTXT.a || "Comunicado Nitron", { CLIENTE: nome }),
+      texto: fillMk(CCTXT.c, { CLIENTE: nome })
+    }, function (d) {
+      st.textContent = (d && d.ok) ? "✓ teste enviado ao seu e-mail" : ("✗ " + ((d && d.motivo) || (d && d.erro) || "falha"));
+      st.style.color = (d && d.ok) ? "#1a7a44" : "#c0392b";
+    });
+  }
+  function ccFila() {
+    var st = $("ccSt"), btn = $("ccFila");
+    if (CCBUSY) return;
+    if (!CCTXT.a.trim()) { st.textContent = "o e-mail precisa de assunto"; st.style.color = "#b7791f"; return; }
+    if (!CCTXT.c.trim()) { st.textContent = "escreva o corpo do comunicado"; st.style.color = "#b7791f"; return; }
+    if (!CCD.total) { st.textContent = "nenhum destinatário com esses filtros"; st.style.color = "#b7791f"; return; }
+    /* o total vai no confirm E no payload: e o mesmo numero que a pessoa leu na tela, e a funcao
+       recusa o lote se a audiencia tiver mudado desde a contagem. */
+    if (!confirm("Enviar este comunicado por e-mail para " + Number(CCD.total).toLocaleString("pt-BR") + " destinatário(s)?\n\n"
+      + "Assunto: " + (CCTXT.a || "(sem assunto)") + "\n"
+      + "Termina em " + ccTempo() + ".\n\nIsto entra na fila e começa a sair no próximo minuto.")) return;
+    CCBUSY = true; btn.disabled = true; btn.textContent = "enfileirando…";
+    st.textContent = ""; st.style.color = "#6a7f78";
+    postJSON(SUPA + "/functions/v1/campanhas-comunicado-cliente", {
+      acao: "enfileirar", canal: "email",
+      assunto: CCTXT.a, corpo: CCTXT.c,
+      filtros: CCF, total_esperado: CCD.total, confirmar: true
+    }, function (d) {
+      CCBUSY = false; btn.disabled = false; btn.textContent = "📧 Criar fila e enviar";
+      if (d && d.ok) {
+        st.innerHTML = "<b style='color:#1a7f4b'>✓ " + Number(d.enfileirados || 0).toLocaleString("pt-BR") + " na fila</b>";
+        if (FILATIMER) clearInterval(FILATIMER); statusFila(); FILATIMER = setInterval(statusFila, 15000);
+        ccCarregar(false);
+      } else { st.textContent = "✗ " + ((d && d.erro) || "falha"); st.style.color = "#c0392b"; }
     });
   }
   init();

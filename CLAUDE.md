@@ -224,6 +224,56 @@ O que isso cobra de nós (item 10 do regulamento: apuração automática do Sank
 positivação mediana de 16,1% e ZERO dos 45 reps com carteira ≥15 bateria os 50%.** 34 dos 45
 precisariam dobrar. Reportado ao gestor; a régua é decisão dele.
 
+## Comunicado aos clientes (criado em 09/09)
+
+Campanha `cliente_comunicado`, pipe `inteligencia` (ao lado do "IA propõe"), **só e-mail**, público
+`cliente`. É o irmão do `rep_comunicado`: recado livre da gestão, texto escrito na tela, sem gatilho
+e sem IA. Função `campanhas-comunicado-cliente`, tela `abrirComunicadoCliente()` no painel.
+`cadencia = ['avulso']` — o `campanhas-cron` compara cadência com o dia da semana, então 'avulso'
+nunca casa e **nada dispara sozinho** (mesma convenção do `rep_comunicado`).
+
+Três decisões de desenho que vieram do tamanho da audiência e do disparo não autorizado de 03/09:
+
+- **Quem enfileira é a função, não a tela.** O comunicado ao rep são ~98 destinatários e o navegador
+  monta o payload; aqui são ~6.000 e o mesmo desenho geraria um POST de ~11 MB. Pior, foi esse
+  caminho (a tela compondo tudo e mandando de uma vez) que pôs 231 mensagens na fila num clique. A
+  tela manda **texto + filtros**; a audiência é resolvida na função e vai ao `fila-enfileirar` em
+  lotes de 400, que é quem tem a trava de duplicidade.
+- **Duas travas no envio.** `confirmar:true` e `total_esperado` — a função **recusa o lote** se a
+  audiência mudou desde a contagem que a tela mostrou. Tela velha não dispara lote novo. A recusa
+  volta como HTTP 200 com `ok:false` de propósito: o `postJSON` do painel descarta o corpo quando o
+  status não é 2xx, e a tela mostraria "status 409" em vez do motivo.
+- **Sem Zaptos.** A função recusa `canal=whatsapp`. 6.000 mensagens a 2/min por instância são ~8h de
+  disparo, com o número da Campanhas Nitron restringido pelo WhatsApp desde 27/08.
+
+Audiência (medida em 09/09), de `ghl_contato` — um destinatário por **e-mail**, não por loja:
+
+| filtro | destinatários |
+|---|---|
+| todos os clientes do CRM | 6.042 |
+| tirando bloqueado no Sankhya (padrão da tela) | **5.891** · 5.716 clientes |
+| tirando bloqueado + inadimplente | 5.769 |
+
+Cortes do padrão: 153 **representantes** (regra: campanha de cliente não vai para rep), 460 sem
+e-mail, 151 bloqueados, 81 e-mail repetido, 1 inválido. A tela mostra cada corte com o número — não
+só o total, senão a diferença entre "a base tem 6,7 mil" e "vão 5,8 mil" some.
+
+**Sem CNPJ e sem `(N lojas)`** na mensagem: documento é regra da comunicação ao *representante*; ao
+cliente seria o documento dele mesmo. E o sufixo `lj()` é marcador interno das listas ao rep — vazou
+para o cliente em 03/09 ("Ola DIEGO FAZZANI (2 lojas)!"). Aqui **não há consolidação por matriz**:
+cada contato recebe com o nome da própria loja, então o erro de casar nome de uma loja com o contato
+de outra (24 e-mails em 03/09) não existe neste caminho. `nomeLimpo()` tira lixo de cadastro da
+saudação (`": Atacadão…"`, `"004 - AUSTIM…"`) — mexe em 5 dos 5.700 nomes, e só corta código de loja
+quando vem seguido de separador, para "3 IRMAOS" e "24 HORAS" ficarem intactos.
+
+A biblioteca de comunicados agora separa por público: `comunicado.publico` ('rep' é o default, então
+nenhuma linha antiga muda de sentido).
+
+**`/functions/v1/gestor` serve HTML velho por um tempo depois de publicar.** Ele faz `fetch` do
+Storage sem cache-buster e o CDN entrega bytes antigos com ETag novo. O painel de verdade
+(`gestordecampanhas.marketing-da5.workers.dev`) atualiza na hora — confira o md5 por lá, não por
+essa rota, que é só o caminho de download.
+
 ## Pendências esperando decisão do gestor (03/09/2026)
 
 1. **Bonificado e Troca contam como compra no roteiro?** O filtro novo conta **todo** `TIPMOV='P'`,
