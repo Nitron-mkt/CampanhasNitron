@@ -68,6 +68,7 @@ Duas travas que valem a pena conhecer:
 - `aprendizado_ativo=sim` — daí as 180 propostas esperando OK.
 - A Fila de Execução é servida pela própria função, com gate por token em
   `copiloto_config.tarefas_token` (`?k=<token>`). O token **não** está neste repositório.
+- **`lead_ativo=sim` desde 10/09** — a Nina atende os leads do anúncio de 5 em 5 minutos.
 
 ## O lead do anuncio (META -> Zaptos da Nina)
 
@@ -129,8 +130,11 @@ senao sao ~480 rodadas por dia gastando modelo para jogar rascunho no lixo.
 
 (Horários em UTC, como todo cron do projeto.)
 
-**Não há cron do `copiloto-lead` ainda** — ele entra junto com `lead_ativo=sim`, decisão do gestor.
-Sugestão: `*/5 * * * *` com `limite=6`.
+| `copiloto-lead-5min` | `*/5 * * * *` | `copiloto-lead` (jobid 147, criado 10/09 13:08 UTC) |
+
+**Ligado em 10/09 13:08 UTC** (`lead_ativo=sim` + o cron acima), por decisão do gestor. Na primeira
+rodada (13:10) os três leads represados foram respondidos e entregues (`delivered`), cada um pelo
+número da Nina — o `#contact_instance:Nina` aparece na conversa antes do texto.
 
 ## O que este repositório mudou em relação ao que está publicado
 
@@ -176,4 +180,13 @@ entrypoint certo.
    passo, senao a entrada para de chegar.
 6. **Quatro instancias de representante estao pausadas por queda desde 03/09** (Isadora, Juliete,
    Monica, Valeria) e a "Campanhas Nitron" segue restringida. A da Nina esta de pe.
-7. **`copiloto_debug` guarda o payload cru** de toda mensagem recebida, sem expurgo.
+7. **O anúncio promete R$ 5.000 e a Nina diz R$ 2.500.** O texto do próprio anúncio fica gravado
+   no contato (campo `I1sjzcYllikwZzPpQaeT`): *"Atendimento para empresas com CNPJ. Pedidos a partir
+   de R$ 5.000."* O gestor instruiu R$ 2.500 em 10/09, e é isso que está em
+   `copiloto_config.pedido_minimo`. Ainda há um terceiro número na casa: R$ 3.500, o mínimo da
+   Tabela Gestor no regulamento da Campanha Gestor de Carteira. Um UPDATE resolve quando ele decidir
+   qual vale.
+8. **O texto do anúncio já vem no contato e a Nina não lê.** Ela usa a descrição do vídeo que o
+   gestor passou no chat, transcrita à mão na skill `lead`. O contato traz o copy exato que o lead
+   viu, o link do post e o id do anúncio — ler dali é mais fiel e sobrevive a troca de criativo.
+9. **`copiloto_debug` guarda o payload cru** de toda mensagem recebida, sem expurgo.
