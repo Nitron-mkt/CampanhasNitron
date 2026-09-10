@@ -84,3 +84,32 @@ on conflict (chave) do nothing;
 --   select cron.schedule('copiloto-entrega-5min', '1-59/5 * * * *',
 --     replace((select command from cron.job where jobname = 'copiloto-lead-5min'),
 --             'copiloto-lead?limite=10', 'copiloto-entrega?limite=10'));
+
+-- ---------------------------------------------------------------- 5) correcao do gestor (10/09)
+-- Ele conferiu a tarefa no CRM e viu o proprio nome no dono: "nao e para fazer isso, e para mandar
+-- uma mensagem resumo desse lead para o Leonardo via sms/Zaptos". Ser avisado nao e ser dono da
+-- tarefa — quem fecha o lead e o comercial. Entao o dono da area comercial passou a ser a Camyla, e
+-- o Leonardo ficou como 'acompanha' (nomeado no corpo e seguidor do contato) e dono da area
+-- 'gestor', que e quem tem avisar=true.
+update copiloto_responsaveis set papel = 'tmp'       where area = 'comercial' and papel = 'dono';
+update copiloto_responsaveis set papel = 'dono'      where area = 'comercial' and papel = 'acompanha';
+update copiloto_responsaveis set papel = 'acompanha' where area = 'comercial' and papel = 'tmp';
+
+update copiloto_responsaveis
+   set avisar = (nome = 'Leonardo Lucas'), atualizado = now(),
+       observacao = case when nome = 'Leonardo Lucas'
+         then 'NAO e dono de tarefa: recebe o resumo do lead por Zaptos e fica marcado (seguidor + nomeado no corpo).'
+         else 'Dona das tarefas de lead do anuncio no CRM (assignedTo). Numero fixo, sem WhatsApp: nao recebe aviso.' end
+ where area = 'comercial';
+
+-- ---------------------------------------------------------------- 6) o que o Zaptos interno exigiu
+-- Fora do banco, e por isso fica registrado aqui: para o resumo sair pelo ZAPTOS (e nao pelo e-mail
+-- da cadeia), o contato do numero do gestor teve de mudar de dono. O numero de saida e o assignedTo
+-- do contato, e o GHL RECUSA contato duplicado nesta location ("This location does not allow
+-- duplicated contacts") — entao o numero so pode viver no contato que ja existe, e ele era da
+-- Isadora, cuja instancia esta desconectada desde 03/09.
+--   contato WM5WMybpxqmGP7zoqwZt ("TESTE DNITRON") : assignedTo Isadora -> Nina (zEMc7K35JO8eUGghqHMN)
+--   reverter e um campo: assignedTo = WlHZT90d36qnnXFbKzbl
+-- Consequencia: esse contato tem `source` preenchido ("Form 38"), sinal de lead tao bom quanto a tag
+-- ads, e agora a Nina fala com ele. Por isso a copiloto-lead v9 trava numero de casa, lido daqui:
+--   select fone from copiloto_responsaveis

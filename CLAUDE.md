@@ -68,12 +68,27 @@ renomear exigiria migrar linhas e funções sem ganho para quem lê a tela.
   que alguém precisa abrir, e que **não avisa ninguém**. Em 10/09 o gestor abriu o painel do contato
   do lead qualificado e leu "Ainda não há tarefas" — "isso não pode passar de jeito nenhum". Desde
   então o `copiloto-entrega` (cron a cada 5 min) abre a tarefa **no CRM, no contato**, com dono no
-  `assignedTo` e quem acompanha nomeado no corpo (o GHL aceita **um** `assignedTo` por tarefa), e
-  manda o resumo para quem `copiloto_responsaveis` diz que tem de saber — hoje dono **Leonardo
-  Lucas**, acompanha **Camyla Castro**. Quem responde por cada área mora em `copiloto_responsaveis`
-  (`area`, `papel`), não em constante. **`entrega_canal` é cadeia** (`whatsapp,email`): o WhatsApp
-  interno depende de quem é o dono do contato no CRM, e enquanto o número do gestor for contato da
-  Isadora (instância pausada) o aviso cai no e-mail — de propósito, para não se perder calado.
+  `assignedTo`, marca dono e acompanha como **seguidores** do contato, e manda o resumo do lead para
+  quem tem `avisar=true`. Quem responde por cada área mora em `copiloto_responsaveis` (`area`,
+  `papel`), não em constante.
+- **Ser avisado não é ser dono da tarefa.** O gestor corrigiu isso em 10/09, ao ver a tarefa no nome
+  dele: "marcar o Leonardo" era para ele **ficar sabendo** — o resumo do lead por Zaptos — e o
+  fechamento continua sendo do comercial. Hoje: dona da tarefa **Camyla Castro** (`papel='dono'` da
+  área comercial, vira o `assignedTo`), e **Leonardo Lucas** é `acompanha` + dono da área `gestor`,
+  com `avisar=true`. Quem só acompanha aparece nomeado no corpo e como seguidor, nunca no
+  `assignedTo` — uma tarefa do GHL aceita **um** dono.
+- **Aviso interno por Zaptos exigiu trocar o dono de UM contato, e não há como fugir disso.** O
+  número de saída é o `assignedTo` do contato, e o GHL **recusa contato duplicado** nesta location
+  (testado: `"This location does not allow duplicated contacts"`), então o número do gestor só pode
+  viver no contato que já existe. Ele era da **Isadora**, cuja instância está desconectada desde
+  03/09 — nada sairia. O contato `WM5WMybpxqmGP7zoqwZt` ("TESTE DNITRON") passou a ser da **Nina**;
+  reverter é um campo (`assignedTo` = `WlHZT90d36qnnXFbKzbl`). `entrega_canal` segue cadeia
+  (`whatsapp,email`): se o Zaptos recusar, o resumo cai no e-mail em vez de se perder calado.
+- **Número de casa nunca é lead** (`copiloto-lead` v9). O contato do gestor tem `source` preenchido
+  no CRM ("Form 38"), que é sinal de lead tão bom quanto a tag `ads` — e agora o Zaptos da Nina fala
+  com ele. Sem trava, a resposta dele ("ok, obrigado") entraria pela porta da frente e a Nina
+  tentaria qualificar o próprio gestor. Os números vêm de `copiloto_responsaveis.fone`, ao lado da
+  trava que já existia para representante.
 - **Publicar o painel:** `POST host-upload?path=gestor.html` com o **HTML cru no corpo** e o caminho
   na query — não JSON. **Confira o md5 publicado antes de subir:** há outro chat editando o mesmo
   arquivo, e sobrescrever o trabalho dele já aconteceu.

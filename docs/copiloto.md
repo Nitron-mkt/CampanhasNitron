@@ -21,7 +21,7 @@ que `copiloto-*` era "de outras empresas do grupo", e não é: é Nitron (Sankhy
 | `copiloto-vigia` | 9 | sim | Varre as conversas do dia, acha cliente que perguntou e **ficou sem resposta** (ou levou "vou verificar"), manda a pendência para o cérebro resolver e entrega a resposta pronta à assistente. |
 | `copiloto-tarefas` | 4 | não | A **Fila de Execução**: painel HTML + API. O que a Nina tria das conversas vira tarefa por área (financeiro, execução, cadastro, logística, faturamento, TI, comercial, gestor). |
 | `copiloto-aprender` | 4 | sim | Transforma tropeço em regra: falhas viram lição automática; amostra de conversas reais do GHL vira **proposta** de conhecimento e de skill, com gate humano. |
-| `copiloto-lead` | 3 | sim | **O lead do anuncio META.** Pergunta ao GHL quais conversas da instancia da Nina estao sem resposta, qualifica pelo playbook, anota em `copiloto_lead` e passa pro comercial com tarefa aberta. |
+| `copiloto-lead` | 9 | sim | **O lead do anuncio META.** Pergunta ao GHL quais conversas da instancia da Nina estao sem resposta, qualifica pelo playbook, anota em `copiloto_lead` e passa pro comercial com tarefa aberta. |
 | `copiloto-entrega` | 3 | sim | **A tarefa que o humano vê.** Pega toda tarefa recém-gravada pelo copiloto, abre a tarefa correspondente **no CRM, no contato** (dono no `assignedTo`, quem acompanha nomeado no corpo), marca os dois como **seguidores** do contato e manda o resumo para quem `copiloto_responsaveis` diz que tem de saber. Fila com retentativa. |
 | `copiloto-proativo` | 5 | sim | O plano de hoje do representante, montado **aplicando as campanhas ativas do Gestor** na carteira dele. Editar campanha no painel muda o plano sem tocar em código. |
 
@@ -181,9 +181,13 @@ jeito nenhum". Então o encerramento passou a ter duas pontas, e quem as executa
 
 1. **Tarefa no CRM, no contato** (`POST /contacts/{contactId}/tasks`), com `dueDate` em
    `entrega_prazo_h` (4h), o **dono no `assignedTo`** e quem acompanha **nomeado no corpo** — uma
-   tarefa do GHL aceita **um** `assignedTo`, e o pedido foi "marque o Usuário do Leonardo, Camyla,
-   tudo nessa tarefa". Hoje: dono **Leonardo Lucas** (`Yoq6cL8mRr3ICN4EK3st`), acompanha **Camyla
-   Castro** (`CPmJ2iQ1eFHwS15bIxNJ`).
+   tarefa do GHL aceita **um** `assignedTo`. Hoje: dona **Camyla Castro**
+   (`CPmJ2iQ1eFHwS15bIxNJ`), acompanha **Leonardo Lucas** (`Yoq6cL8mRr3ICN4EK3st`).
+
+   **Ser avisado não é ser dono.** A primeira versão pôs o gestor como dono da tarefa e ele
+   corrigiu na hora: "marcar o Leonardo" era para ele **ficar sabendo**, e quem fecha é o comercial.
+   Daí a distinção `papel='dono'` (vira o `assignedTo`) × `papel='acompanha'` (nomeado no corpo e
+   seguidor, nunca dono).
 2. **Dono e acompanha marcados como seguidores do contato** (`POST /contacts/{contactId}/followers`).
    No GHL é assim que se marca alguém: seguidor vê o contato e recebe notificação. A tarefa em si
    só tem lugar para um. Falhar aqui **não** derruba a entrega — é secundário, e reabrir a tarefa
@@ -202,11 +206,22 @@ E o lead não espera criação de tarefa e e-mail dentro do turno da conversa de
 **`entrega_canal` é uma cadeia, não um canal.** Para no primeiro que entrega. O WhatsApp interno
 depende de quem é o dono do contato no CRM — o número de saída do Zaptos é o `assignedTo` do
 contato, e o `campanhas-enviar` **recusa** quando o dono divirja da instância pedida (com razão:
-senão a mensagem sai por outro número, ou por instância pausada, e vira "enviado" sem chegar). O
-número do gestor já é contato da **Isadora**, cuja instância está pausada desde 03/09 — então o
-WhatsApp é recusado e o aviso **cai para o e-mail**. Foi o que aconteceu no primeiro envio real
-(10/09 17:02 UTC, tarefa #72): e-mail entregue com o texto completo. Corrigido o dono no CRM, o
-WhatsApp volta a ser o primeiro da fila sozinho, por UPDATE.
+senão a mensagem sai por outro número, ou por instância pausada, e vira "enviado" sem chegar).
+
+**E não há como contornar isso sem tocar no contato:** o GHL **recusa contato duplicado** nesta
+location — `"This location does not allow duplicated contacts"`, testado ao tentar pôr o número do
+gestor num contato dedicado —, então o número dele só pode viver no contato que já existe. Esse
+contato era da **Isadora**, cuja instância está desconectada desde 03/09 (nada enviado desde então,
+61 linhas paradas na fila): o primeiro envio real, 10/09 17:02 UTC, foi recusado com "o contato é da
+Isadora no CRM" e **caiu para o e-mail** — que é exatamente o que a cadeia existe para fazer.
+Passado o contato `WM5WMybpxqmGP7zoqwZt` para a **Nina**, o envio de 17:26 UTC saiu pelo Zaptos.
+Reverter é um campo: `assignedTo` = `WlHZT90d36qnnXFbKzbl`.
+
+**Consequência disso, e ela é séria:** o Zaptos da Nina passou a falar com um contato que tem
+`source` preenchido no CRM ("Form 38"). Sinal de lead tão bom quanto a tag `ads` — a resposta do
+gestor entraria pela porta da frente e a Nina tentaria qualificar o próprio gestor. Por isso a
+`copiloto-lead` v9 tem a trava de **número de casa** (de `copiloto_responsaveis.fone`), ao lado da
+que já existia para representante.
 
 | chave | valor | para quê |
 |---|---|---|

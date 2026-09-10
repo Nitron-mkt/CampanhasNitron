@@ -1,3 +1,8 @@
+// copiloto-lead (v9) — NUMERO DE CASA nunca e lead. O resumo do encerramento passou a sair pelo
+// Zaptos da Nina para o gestor, e o contato dele no CRM tem `source` preenchido ("Form 38"): sem
+// trava, a resposta dele entraria pela porta da frente e a Nina tentaria qualificar o proprio
+// gestor. Os numeros vem de copiloto_responsaveis.fone, ao lado da trava que ja existia para
+// representante.
 // copiloto-lead (v8) — o seguimento tambem pega a conversa cuja ultima mensagem e do lead mas e
 // ROBO DELE (autoresposta da propria loja). A Natalie caiu nesse vao: o inbound pulava por ruido e
 // o seguimento pulava por "ele respondeu", e ninguem falava com ela.
@@ -252,7 +257,7 @@ async function licoes(sb: any): Promise<string> {
 }
 
 // ---- uma conversa ----------------------------------------------------------------------------
-async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dry: boolean; ativo: boolean; pedidoMin: number; inst: string; nativoOn: boolean; janelaH: number; pb: string; lic: string; reps: Set<string> }) {
+async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dry: boolean; ativo: boolean; pedidoMin: number; inst: string; nativoOn: boolean; janelaH: number; pb: string; lic: string; reps: Set<string>; internos: Set<string> }) {
   const contact_id = cv.contactId || cv.contact_id || null;
   const fone = String(cv.phone || "").trim();
   const nomeCrm = String(cv.fullName || cv.contactName || "").trim();
@@ -283,6 +288,10 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
   if (!texto) return { ...base, decisao: "pular", motivo: "mensagem sem texto (midia)" };
   if (ehRuido(texto)) return { ...base, decisao: "pular", motivo: "ruido (sistema ou autoresposta de terceiro)" };
   if (fone && opts.reps.has(fk8(fone))) return { ...base, decisao: "pular", motivo: "e representante — quem atende e o copiloto-conversa" };
+  // NUMERO DE CASA nunca e lead. O aviso interno do encerramento sai pelo Zaptos da Nina, e o
+  // contato do gestor tem `source` preenchido no CRM ("Form 38") — sem esta linha, a resposta dele
+  // ("ok, obrigado") entraria pela porta da frente e a Nina tentaria qualificar o proprio gestor.
+  if (fone && opts.internos.has(fk8(fone))) return { ...base, decisao: "pular", motivo: "numero interno (copiloto_responsaveis) — aviso da casa, nao lead" };
 
   // O fluxo do GHL marca quem vem do anuncio com a tag "ads" (e a instancia com "nina"). Isso e
   // MUITO mais confiavel do que adivinhar pela frase: o texto que o META pre-enche pode mudar a
@@ -511,9 +520,15 @@ Deno.serve(async (req) => {
     const { data: reps } = await sb.from("snap_rep").select("celular, fone_parc").limit(3000);
     const setReps = new Set<string>();
     (reps || []).forEach((x: any) => { const a = fk8(x.celular); const c = fk8(x.fone_parc); if (a) setReps.add(a); if (c) setReps.add(c); });
+    // os numeros da casa (quem recebe o aviso do encerramento) — nunca sao lead
+    const setInternos = new Set<string>();
+    try {
+      const { data: resp } = await sb.from("copiloto_responsaveis").select("fone");
+      (resp || []).forEach((x: any) => { const a = fk8(x.fone); if (a) setInternos.add(a); });
+    } catch (_e) { /* sem cadastro, so a trava dos reps vale */ }
 
     const pb = await playbook(sb); const lic = await licoes(sb);
-    const opts = { dry, ativo, pedidoMin, inst, nativoOn, janelaH, pb, lic, reps: setReps };
+    const opts = { dry, ativo, pedidoMin, inst, nativoOn, janelaH, pb, lic, reps: setReps, internos: setInternos };
     const feitos: any[] = [];
     if (acao !== "seguir") for (const cv of alvos) { try { feitos.push(await atender(sb, cfg, cv, opts)); } catch (e) { feitos.push({ contato: cv.fullName || cv.phone, decisao: "erro", motivo: String(e).slice(0, 200) }); } }
 
