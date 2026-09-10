@@ -149,6 +149,27 @@ condição que possa ter sido anunciada — ela pergunta o que ele viu antes de 
 `TLRZeTrxxPBsMNRqbdHO`). A Nina não pede de novo, e o código confere antes se esse CNPJ já tem
 cadastro — se tiver, ele não é lead novo, é cliente, e vai direto pro comercial.
 
+## O segundo toque (quem não responde)
+
+Até 10/09 a Nina só falava quando o lead falava: quem não respondia à primeira mensagem morria ali,
+e "aquecer" não existia de fato. Agora, passados `lead_seguir_min` (**180 min**) sem resposta, ela dá
+um toque leve — **de outro ângulo**, no máximo `lead_toques_max` (**2**) vezes, e só em horário
+comercial de São Paulo (`lead_toque_horario`), porque o toque é iniciativa nossa. Quem não responde
+nem assim fica `status='frio'` **sem virar tarefa**: lead que nunca falou não é trabalho para o
+comercial.
+
+O prompt do toque proíbe repetir a pergunta anterior, pressa, escassez e cobrança de resposta; no
+último toque ela deixa a porta aberta e encerra.
+
+**Última chance antes da janela:** no canal oficial, se a janela de 24h da Meta vai fechar dentro de
+`lead_janela_aviso_min` (**90 min**) e o lead nunca foi tocado, o toque sai na hora — depois dela só
+template passa.
+
+**Um lead pode ficar entre as duas passadas, e isso é um bug já corrigido:** se a última mensagem da
+conversa é dele mas é o **robô da loja dele**, a passada de inbound pula por ruído e a de seguimento
+pularia por "ele respondeu". Aconteceu com a Nátalie em 10/09. O seguimento agora reconhece
+autoresposta como não-resposta.
+
 ## Crons
 
 | job | quando | função |

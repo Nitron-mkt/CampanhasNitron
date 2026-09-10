@@ -1,3 +1,14 @@
+// copiloto-lead (v8) — o seguimento tambem pega a conversa cuja ultima mensagem e do lead mas e
+// ROBO DELE (autoresposta da propria loja). A Natalie caiu nesse vao: o inbound pulava por ruido e
+// o seguimento pulava por "ele respondeu", e ninguem falava com ela.
+// copiloto-lead (v7) — SEGUNDO TOQUE. Ate aqui a Nina so falava quando o lead falava: quem nao
+// respondia a primeira mensagem morria ali, e "aquecer" nao existia. Agora, passados
+// lead_seguir_min (180) minutos sem resposta, ela da um toque leve — de outro angulo, no maximo
+// lead_toques_max (2) vezes, so em horario comercial de SP (lead_toque_horario) — e quem nao
+// responde nem assim fica 'frio', sem virar trabalho pro comercial. No canal oficial ha uma
+// ultima chance: se a janela de 24h da Meta vai fechar dentro de lead_janela_aviso_min (90) e o
+// lead nunca foi tocado, o toque sai na hora, porque depois so template passa.
+// ?acao=inbound|seguir|tudo (padrao tudo) separa as duas passadas.
 // copiloto-lead (v6) — filtro de ruido pega tambem a autoresposta no plural ("nao estamos disponiveis", "responderemos assim que possivel", "agradecemos sua mensagem"): a loja do proprio lead tem robo, e a Nina quase respondeu ao dele. Padrao extra passa a vir de copiloto_config.lead_ruido_extra, sem deploy.
 // copiloto-lead (v5) — v4 desfazia o proprio trabalho: o upsert de depois do envio reescrevia o status com o valor lido ANTES das ferramentas rodarem, e um lead descartado (ou passado pro comercial) voltava a "qualificando". O patch de depois do envio nao toca mais em status.
 // copiloto-lead (v4) — a Nina atende o LEAD DE CAMPANHA, qualifica e passa pro comercial fechar.
@@ -349,6 +360,108 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
   return { ...base, decisao: "respondeu", canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + instancia), origem: crm.source || (ehAds ? "anuncio META (tag ads)" : null), ferramentas: usadas, lead_id: up.lead?.id || null, status: up.lead?.status, recebido: texto.slice(0, 200), texto: reply };
 }
 
+// ---- seguimento: o toque em quem nao respondeu ----------------------------------------------
+// Ate a v6 a Nina so falava quando o lead falava: quem nao respondia a primeira mensagem morria
+// ali. Agora ela da um toque leve depois de lead_seguir_min, no maximo lead_toques_max vezes, e
+// quem nao responde nem assim fica 'frio' (sem tarefa: lead que nunca falou nao e trabalho pro
+// comercial).
+// Horario de Sao Paulo, fixo — a PRIMEIRA resposta nao espera horario (o lead acabou de escrever),
+// mas o toque e iniciativa nossa e as 22h e falta de educacao.
+function foraHorarioComercial(): boolean {
+  const brt = new Date(Date.now() - 3 * 3600 * 1000);
+  const dow = brt.getUTCDay(); const h = brt.getUTCHours();
+  if (dow === 0) return true;
+  if (dow === 6) return h < 8 || h >= 13;
+  return h < 8 || h >= 18;
+}
+
+async function seguir(sb: any, cfg: Record<string, string>, o: any) {
+  const feitos: any[] = [];
+  const { data: cands } = await sb.from("copiloto_lead").select("*")
+    .in("status", ["qualificando", "qualificado"])
+    .not("ultima_resposta_em", "is", null)
+    .lt("toques", o.toquesMax)
+    .order("ultima_resposta_em", { ascending: true }).limit(30);
+  let tocados = 0;
+  for (const L of (cands || [])) {
+    if (tocados >= o.limite) break;
+    const base = { contato: L.nome || L.empresa || L.fone, lead_id: L.id };
+    if (!L.contact_id) { feitos.push({ ...base, decisao: "pular", motivo: "lead sem contact_id" }); continue; }
+    const rc = await ghl("GET", `/conversations/search?locationId=${LOC}&contactId=${L.contact_id}&limit=1`);
+    if (!rc.ok) { feitos.push({ ...base, decisao: "erro", motivo: "GHL " + rc.status }); continue; }
+    const cv = (((await rc.json().catch(() => ({})))?.conversations) || [])[0];
+    if (!cv) { feitos.push({ ...base, decisao: "pular", motivo: "conversa nao encontrada" }); continue; }
+    // "ultima mensagem e dele" nao significa que ele respondeu: pode ser o robo da propria loja
+    // dele. A Natalie caiu exatamente nesse vao em 10/09 — o inbound pulava por ruido e o
+    // seguimento pulava por "ele respondeu", e ninguem falava com ela.
+    const ultimaDele = String(cv.lastMessageDirection) === "inbound";
+    const ultimaERuido = ultimaDele && ehRuido(limpa(cv.lastMessageBody));
+    if (ultimaDele && !ultimaERuido) { feitos.push({ ...base, decisao: "pular", motivo: "ele respondeu — o caminho normal cuida" }); continue; }
+    const nativo = String(cv.lastMessageType) === "TYPE_WHATSAPP";
+    const minDesde = (Date.now() - new Date(L.ultima_resposta_em).getTime()) / 60000;
+    // janela de 24h da Meta: medida da ULTIMA mensagem DELE, nao da nossa
+    let restamMin = Infinity;
+    if (nativo && Number(cv.lastInboundWhatsappMessageDate || 0)) restamMin = o.janelaH * 60 - (Date.now() - Number(cv.lastInboundWhatsappMessageDate)) / 60000;
+    if (restamMin <= 0) {
+      if (!o.dry) await sb.from("copiloto_lead").update({ status: "frio", motivo: "nao respondeu e a janela de 24h da Meta fechou", atualizado: new Date().toISOString() }).eq("id", L.id);
+      feitos.push({ ...base, decisao: "esfriou", motivo: "janela de 24h fechada sem resposta dele" }); continue;
+    }
+    // toca quando ja passou a espera, OU quando a janela vai fechar e ele nunca foi tocado
+    const naHora = minDesde >= o.seguirMin;
+    const ultimaChance = nativo && restamMin <= o.avisoMin && Number(L.toques || 0) === 0;
+    if (!naHora && !ultimaChance) { feitos.push({ ...base, decisao: "pular", motivo: "ainda cedo (" + Math.round(minDesde) + "min de " + o.seguirMin + (nativo ? ("; janela fecha em " + Math.round(restamMin) + "min") : "") + ")" }); continue; }
+    if (o.soHorario && foraHorarioComercial()) { feitos.push({ ...base, decisao: "pular", motivo: "fora do horario comercial de SP" }); continue; }
+
+    const rm = await ghl("GET", `/conversations/${cv.id}/messages?limit=25`, "2021-04-15");
+    if (!rm.ok) { feitos.push({ ...base, decisao: "erro", motivo: "GHL " + rm.status + " nas mensagens" }); continue; }
+    const arr = (((await rm.json().catch(() => ({})))?.messages?.messages) || []) as any[];
+    const msgs = arr.slice().reverse().filter((m: any) => String(m?.body || "").trim() && !/^#contact_instance|^\[System\]/i.test(String(m.body)));
+    if (!msgs.length) { feitos.push({ ...base, decisao: "pular", motivo: "sem historico legivel" }); continue; }
+
+    const toqueN = Number(L.toques || 0) + 1;
+    const jaSei = [L.empresa && "loja: " + L.empresa, L.tipo_loja && "tipo: " + L.tipo_loja, (L.cidade || L.uf) && "praca: " + [L.cidade, L.uf].filter(Boolean).join("/"), L.interesse && "interesse: " + L.interesse, L.cnpj && "CNPJ ja informado", L.sabe_minimo && "ja sabe do pedido minimo"].filter(Boolean).join(" | ");
+    const sys = `Voce e a ${prim(cfg.nome_assistente || o.inst || "Nina")}, do time comercial da Nitronplast (Nitron), por WhatsApp. Calorosa e natural, pessoa de verdade da equipe.` + ESTILO
+      + `\n\nHOJE e ${hojeBRT()} (data atual REAL).`
+      + (o.pb ? `\n\nMANUAIS DA CASA (o [LEAD] manda aqui):\n${o.pb}` : "")
+      + `\n\nTOQUE DE SEGUIMENTO (toque ${toqueN} de ${o.toquesMax}): ele NAO respondeu sua ultima mensagem, mandada ha ${Math.round(minDesde / 60)}h. Mande UMA mensagem curta, leve e SEM cobranca.`
+      + `\nNAO repita o que voce ja disse nem reformule a mesma pergunta: troque de angulo. Ofereca algo util (o link do catalogo, uma sugestao pelo tipo de loja dele, dizer que pode mandar so o que interessa) e faca no maximo UMA pergunta facil de responder.`
+      + `\nNUNCA use pressa, escassez, "so hoje" nem cobranca de resposta.`
+      + (toqueN >= o.toquesMax ? `\nESTE E O ULTIMO TOQUE: deixe a porta aberta sem insistir — diga que fica a disposicao quando ele quiser, e encerre com leveza.` : "")
+      + `\n\nQUEM E: lead de campanha, nao representante e sem cadastro de cliente. ${L.origem ? ("Origem registrada no CRM: \"" + L.origem + "\".") : "Origem nao registrada."} Nao invente oferta nem condicao que possa ter sido anunciada.`
+      + `\nPEDIDO MINIMO: R$ ${o.pedidoMin.toLocaleString("pt-BR")}.`
+      + (cfg.catalogo_url ? `\nCATALOGO (link): ${cfg.catalogo_url}` : "")
+      + `\n${jaSei ? "JA APURADO (nao pergunte de novo): " + jaSei : "Nao sei nada sobre a loja dele ainda."}`
+      + o.lic;
+    const messages: any[] = [{ role: "user", content: msgs.map((m: any) => (m.direction === "inbound" ? "CONTATO: " : "VOCE (Nitron): ") + limpa(m.body).slice(0, 400)).join("\n") + "\n\n(Escreva SO o toque de seguimento, sem prefixo.)" }];
+    const ctx: any = { contact_id: L.contact_id, fone: L.fone, instancia: L.instancia, dry: o.dry, source: L.origem };
+    let texto = ""; const usadas: string[] = [];
+    for (let i = 0; i < 4; i++) {
+      const resp = await anthropic(sys, messages, TOOLS);
+      const bl = resp.content || []; messages.push({ role: "assistant", content: bl });
+      const tus = bl.filter((x: any) => x.type === "tool_use");
+      if (resp.stop_reason !== "tool_use" || !tus.length) { texto = bl.filter((x: any) => x.type === "text").map((x: any) => x.text).join("\n").trim(); break; }
+      const rs: any[] = [];
+      for (const tu of tus) { usadas.push(tu.name); const out = await runTool(sb, ctx, tu.name, tu.input); rs.push({ type: "tool_result", tool_use_id: tu.id, content: JSON.stringify(out).slice(0, 4000) }); }
+      messages.push({ role: "user", content: rs });
+    }
+    if (!texto) { feitos.push({ ...base, decisao: "erro", motivo: "o modelo nao devolveu texto" }); continue; }
+    if (o.dry || !o.ativo) { feitos.push({ ...base, decisao: "previa_toque", toque: toqueN, canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + (L.instancia || o.inst)), horas_sem_resposta: Math.round(minDesde / 60), janela_fecha_em_min: restamMin === Infinity ? null : Math.round(restamMin), rascunho: texto }); continue; }
+    const env = nativo ? await enviarNativo(String(L.contact_id), texto) : await enviar(L.contact_id, L.fone || "", texto, L.instancia || o.inst);
+    if (!env?.ok) { feitos.push({ ...base, decisao: "falhou", motivo: env?.motivo || "envio recusado", texto }); continue; }
+    await sb.from("copiloto_lead").update({ toques: toqueN, ultimo_toque_em: new Date().toISOString(), ultima_resposta_em: new Date().toISOString(), atualizado: new Date().toISOString() }).eq("id", L.id);
+    tocados++;
+    feitos.push({ ...base, decisao: "tocou", toque: toqueN, canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + (L.instancia || o.inst)), texto });
+  }
+  // quem estourou o teto de toques e continua calado vira 'frio'
+  let esfriados = 0;
+  if (!o.dry) {
+    const { data: velhos } = await sb.from("copiloto_lead").select("id").eq("status", "qualificando").gte("toques", o.toquesMax).lt("ultima_resposta_em", new Date(Date.now() - o.seguirMin * 60000).toISOString());
+    for (const v of (velhos || [])) { await sb.from("copiloto_lead").update({ status: "frio", motivo: "nao respondeu aos " + o.toquesMax + " toques", atualizado: new Date().toISOString() }).eq("id", v.id); esfriados++; }
+  }
+  const conta = (k: string) => feitos.filter((x) => x.decisao === k).length;
+  return { candidatos: (cands || []).length, tocou: conta("tocou"), previa_toque: conta("previa_toque"), esfriou: conta("esfriou") + esfriados, pulou: conta("pular"), falhou: conta("falhou"), erro: conta("erro"), resultado: feitos };
+}
+
 // ---- rodada ----------------------------------------------------------------------------------
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
@@ -370,6 +483,11 @@ Deno.serve(async (req) => {
     const ateHoras = Math.max(1, parseInt(cfg.lead_ate_horas || "48") || 48);
     const nativoOn = String(cfg.lead_nativo || "sim").toLowerCase() === "sim";
     const janelaH = Math.max(1, parseFloat(cfg.lead_janela_h || "23.5") || 23.5);
+    const seguirMin = Math.max(15, parseInt(cfg.lead_seguir_min || "180") || 180);
+    const toquesMax = Math.max(0, parseInt(cfg.lead_toques_max || "2") || 0);
+    const soHorario = String(cfg.lead_toque_horario || "sim").toLowerCase() === "sim";
+    const avisoMin = Math.max(0, parseInt(cfg.lead_janela_aviso_min || "90") || 0);
+    const acao = String(sp.get("acao") || b.acao || "tudo").toLowerCase();
     RUIDO_EXTRA = null;
     if (String(cfg.lead_ruido_extra || "").trim()) { try { RUIDO_EXTRA = new RegExp(String(cfg.lead_ruido_extra).trim(), "i"); } catch (_e) { RUIDO_EXTRA = null; } }
 
@@ -394,9 +512,18 @@ Deno.serve(async (req) => {
     const setReps = new Set<string>();
     (reps || []).forEach((x: any) => { const a = fk8(x.celular); const c = fk8(x.fone_parc); if (a) setReps.add(a); if (c) setReps.add(c); });
 
-    const opts = { dry, ativo, pedidoMin, inst, nativoOn, janelaH, pb: await playbook(sb), lic: await licoes(sb), reps: setReps };
+    const pb = await playbook(sb); const lic = await licoes(sb);
+    const opts = { dry, ativo, pedidoMin, inst, nativoOn, janelaH, pb, lic, reps: setReps };
     const feitos: any[] = [];
-    for (const cv of alvos) { try { feitos.push(await atender(sb, cfg, cv, opts)); } catch (e) { feitos.push({ contato: cv.fullName || cv.phone, decisao: "erro", motivo: String(e).slice(0, 200) }); } }
+    if (acao !== "seguir") for (const cv of alvos) { try { feitos.push(await atender(sb, cfg, cv, opts)); } catch (e) { feitos.push({ contato: cv.fullName || cv.phone, decisao: "erro", motivo: String(e).slice(0, 200) }); } }
+
+    // segundo toque em quem nao respondeu. Roda DEPOIS do inbound: se ele acabou de responder, a
+    // conversa ja foi atendida acima e o seguimento a pula.
+    let seg: any = null;
+    if (acao !== "inbound" && toquesMax > 0) {
+      try { seg = await seguir(sb, cfg, { dry, ativo, pedidoMin, inst, janelaH, seguirMin, toquesMax, soHorario, avisoMin, pb, lic, limite: Math.max(1, Math.min(limite, 4)) }); }
+      catch (e) { seg = { erro: String(e).slice(0, 200) }; }
+    }
 
     const conta = (k: string) => feitos.filter((x) => x.decisao === k).length;
     return j({
@@ -404,6 +531,7 @@ Deno.serve(async (req) => {
       inbound_sem_resposta: convs.length, da_instancia_na_janela: candidatas.length, analisadas: feitos.length,
       respondeu: conta("respondeu"), previa: conta("previa"), pulou: conta("pular"), falhou: conta("falhou"), janela_fechada: conta("janela_fechada"), erro: conta("erro"),
       resultado: feitos,
+      seguimento: seg,
     });
   } catch (e) { return j({ ok: false, erro: String(e) }, 500); }
 });
