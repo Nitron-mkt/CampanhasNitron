@@ -11,7 +11,7 @@ que `copiloto-*` era "de outras empresas do grupo", e não é: é Nitron (Sankhy
 `ghl_cliente`, `campanhas`). O que é de outra empresa é o `emp-copiloto-responder`
 (Roga Village) — esse continua fora daqui.
 
-## As oito funções
+## As nove funções
 
 | função | v | verify_jwt | o que faz |
 |---|---|---|---|
@@ -22,6 +22,7 @@ que `copiloto-*` era "de outras empresas do grupo", e não é: é Nitron (Sankhy
 | `copiloto-tarefas` | 4 | não | A **Fila de Execução**: painel HTML + API. O que a Nina tria das conversas vira tarefa por área (financeiro, execução, cadastro, logística, faturamento, TI, comercial, gestor). |
 | `copiloto-aprender` | 4 | sim | Transforma tropeço em regra: falhas viram lição automática; amostra de conversas reais do GHL vira **proposta** de conhecimento e de skill, com gate humano. |
 | `copiloto-lead` | 3 | sim | **O lead do anuncio META.** Pergunta ao GHL quais conversas da instancia da Nina estao sem resposta, qualifica pelo playbook, anota em `copiloto_lead` e passa pro comercial com tarefa aberta. |
+| `copiloto-entrega` | 2 | sim | **A tarefa que o humano vê.** Pega toda tarefa recém-gravada pelo copiloto, abre a tarefa correspondente **no CRM, no contato**, com dono no `assignedTo` e quem acompanha nomeado no corpo, e manda o resumo para quem `copiloto_responsaveis` diz que tem de saber. Fila com retentativa. |
 | `copiloto-proativo` | 5 | sim | O plano de hoje do representante, montado **aplicando as campanhas ativas do Gestor** na carteira dele. Editar campanha no painel muda o plano sem tocar em código. |
 
 ### Ferramentas que a Nina tem na mão
@@ -50,7 +51,7 @@ Duas travas que valem a pena conhecer:
 | `copiloto_pendencias` | 193 linhas do vigia (detectada / resolvida / escalar / precisa_info / fechada_humano) |
 | `copiloto_tarefas` | 68 tarefas da Fila de Execução |
 | `copiloto_aprend_proposta` | 180 propostas **pendentes** de aprovação |
-| `copiloto_responsaveis` | as 8 áreas e quem responde por elas |
+| `copiloto_responsaveis` | as 8 áreas × `papel` (`dono` \| `acompanha`) e quem responde por elas — o `dono` vira o `assignedTo` da tarefa no CRM, quem `acompanha` vai nomeado no corpo, e `avisar=true` recebe o resumo |
 | `copiloto_alertas` | 33 alertas (lookup_falhou, esquiva, cliente_desconfiou) |
 | `copiloto_aprendizado`, `copiloto_debug`, `copiloto_treino_estado` | histórico, payload cru e o estado do modo treino |
 
@@ -170,6 +171,54 @@ conversa é dele mas é o **robô da loja dele**, a passada de inbound pula por 
 pularia por "ele respondeu". Aconteceu com a Nátalie em 10/09. O seguimento agora reconhece
 autoresposta como não-resposta.
 
+## Quando a Nina termina: a tarefa que o humano vê
+
+Em 10/09 o gestor abriu o painel do contato do lead que a Nina acabara de qualificar (Kasamais, São
+Luís/MA) e leu **"Ainda não há tarefas"**. A tarefa existia — em `copiloto_tarefas`, a *nossa* fila —
+e **a nossa fila não avisa ninguém**: é uma tabela que alguém precisa abrir. "Isso não pode passar de
+jeito nenhum". Então o encerramento passou a ter duas pontas, e quem as executa é o
+`copiloto-entrega`:
+
+1. **Tarefa no CRM, no contato** (`POST /contacts/{contactId}/tasks`), com `dueDate` em
+   `entrega_prazo_h` (4h), o **dono no `assignedTo`** e quem acompanha **nomeado no corpo** — uma
+   tarefa do GHL aceita **um** `assignedTo`, e o pedido foi "marque o Usuário do Leonardo, Camyla,
+   tudo nessa tarefa". Hoje: dono **Leonardo Lucas** (`Yoq6cL8mRr3ICN4EK3st`), acompanha **Camyla
+   Castro** (`CPmJ2iQ1eFHwS15bIxNJ`).
+2. **O resumo por mensagem** para quem tem `avisar=true` — o texto da tarefa inteiro, do jeito que o
+   gestor pediu ("como se fosse uma tarefa também"): título, responsável, acompanha, loja, CNPJ,
+   praça, o que quer, como compra hoje, se sabe do mínimo, temperatura, o resumo da conversa e o
+   link da conversa no CRM. A mesma pessoa em duas áreas recebe **uma** mensagem.
+
+**Por que fora do `copiloto-lead`:** assim a entrega é uma fila, com retentativa, e independe de qual
+caminho gravou a tarefa (encerramento com `passar_comercial`, janela de 24h que fechou antes da
+primeira resposta, e o que vier). Se o GHL recusar, a tarefa não se perde calada: a rodada seguinte
+tenta de novo até `entrega_tentativas_max` (3) e o motivo fica em `copiloto_tarefas.entrega_erro`.
+E o lead não espera criação de tarefa e e-mail dentro do turno da conversa dele.
+
+**`entrega_canal` é uma cadeia, não um canal.** Para no primeiro que entrega. O WhatsApp interno
+depende de quem é o dono do contato no CRM — o número de saída do Zaptos é o `assignedTo` do
+contato, e o `campanhas-enviar` **recusa** quando o dono divirja da instância pedida (com razão:
+senão a mensagem sai por outro número, ou por instância pausada, e vira "enviado" sem chegar). O
+número do gestor já é contato da **Isadora**, cuja instância está pausada desde 03/09 — então o
+WhatsApp é recusado e o aviso **cai para o e-mail**. Foi o que aconteceu no primeiro envio real
+(10/09 17:02 UTC, tarefa #72): e-mail entregue com o texto completo. Corrigido o dono no CRM, o
+WhatsApp volta a ser o primeiro da fila sozinho, por UPDATE.
+
+| chave | valor | para quê |
+|---|---|---|
+| `entrega_ativa` | `sim` | liga a fila |
+| `entrega_origens` | `nina-lead` | só as tarefas de lead. As `nina-rep` (logística, faturamento) ainda **não têm responsável cadastrado** — entregar sem dono é abrir tarefa que continua invisível |
+| `entrega_canal` | `whatsapp,email` | a cadeia, em ordem |
+| `entrega_prazo_h` | `4` | vencimento da tarefa no CRM |
+| `entrega_janela_h` | `12` | não entrega tarefa velha (a tabela tem meses de histórico) |
+| `entrega_tentativas_max` | `3` | quantas rodadas tentam antes de desistir |
+| `entrega_aviso_gestor` | `sim` | além da área da tarefa, avisa quem responde por `gestor` |
+
+Endpoints: `?dry=1` mostra o que sairia sem abrir nem mandar nada; `?tarefa=<id>` entrega uma tarefa
+específica (mesmo velha ou já tentada) — é o caminho de conserto; `?so_aviso=1` manda o resumo sem
+abrir tarefa no CRM. E `crm_task_id` já preenchido **nunca** abre uma segunda tarefa no mesmo
+contato: duas tarefas iguais é pior que nenhuma.
+
 ## Crons
 
 | job | quando | função |
@@ -181,6 +230,7 @@ autoresposta como não-resposta.
 | `vigia-digest` | `30 21 * * 1-6` | `copiloto-vigia` |
 | `copiloto-aprender-diario` | `0 11 * * *` | `copiloto-aprender` |
 | `copiloto-proativo-diario` | `30 10 * * 1-6` | `copiloto-proativo` |
+| `copiloto-entrega-5min` | `1-59/5 * * * *` | `copiloto-entrega` (jobid 148, criado 10/09 17:05 UTC — um minuto **depois** da `copiloto-lead`, para a tarefa recém-gravada já estar lá) |
 
 (Horários em UTC, como todo cron do projeto.)
 

@@ -50,7 +50,7 @@ renomear exigiria migrar linhas e funções sem ganho para quem lê a tela.
   `#contact_instance:<token>` governa só a entrada. Sem dono, a mensagem não sai.
 - **`SUPABASE_SERVICE_ROLE_KEY` vem com valor `sb_secret_`** que o PostgREST recusa (PGRST303).
   Toda função usa `const srvKey = () => Deno.env.get("SRV_JWT") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";`
-- **O copiloto (Nina) mora aqui desde 10/09** — `supabase/functions/copiloto-*`, sete funções, com
+- **O copiloto (Nina) mora aqui desde 10/09** — `supabase/functions/copiloto-*`, nove funções, com
   `docs/copiloto.md` explicando cada uma, as tabelas `copiloto_*`, os crons e como está regulada.
   Antes disso o código **só existia publicado**: não havia de onde voltar se alguém publicasse por
   cima. Este arquivo dizia que `copiloto-*` era de outra empresa do grupo — **não é, é Nitron**
@@ -64,6 +64,16 @@ renomear exigiria migrar linhas e funções sem ganho para quem lê a tela.
   usam `srvKey()` como todo o resto. Se aparecer outra, tire: a variável SRV_JWT existe e funciona.
   **Nos `copiloto-*` apareceram mais sete** (cinco funções com a chave chumbada, duas com ela como
   fallback do SRV_JWT): retiradas no fonte em 10/09, mas o que está no ar ainda as carrega.
+- **Tarefa que a Nina abre e ninguém vê não conta.** `copiloto_tarefas` é a nossa fila: uma tabela
+  que alguém precisa abrir, e que **não avisa ninguém**. Em 10/09 o gestor abriu o painel do contato
+  do lead qualificado e leu "Ainda não há tarefas" — "isso não pode passar de jeito nenhum". Desde
+  então o `copiloto-entrega` (cron a cada 5 min) abre a tarefa **no CRM, no contato**, com dono no
+  `assignedTo` e quem acompanha nomeado no corpo (o GHL aceita **um** `assignedTo` por tarefa), e
+  manda o resumo para quem `copiloto_responsaveis` diz que tem de saber — hoje dono **Leonardo
+  Lucas**, acompanha **Camyla Castro**. Quem responde por cada área mora em `copiloto_responsaveis`
+  (`area`, `papel`), não em constante. **`entrega_canal` é cadeia** (`whatsapp,email`): o WhatsApp
+  interno depende de quem é o dono do contato no CRM, e enquanto o número do gestor for contato da
+  Isadora (instância pausada) o aviso cai no e-mail — de propósito, para não se perder calado.
 - **Publicar o painel:** `POST host-upload?path=gestor.html` com o **HTML cru no corpo** e o caminho
   na query — não JSON. **Confira o md5 publicado antes de subir:** há outro chat editando o mesmo
   arquivo, e sobrescrever o trabalho dele já aconteceu.
