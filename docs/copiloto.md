@@ -1,6 +1,6 @@
 # Copiloto (Nina) — a IA comercial que atende, vigia e cobra
 
-A Nina é o copiloto comercial da Nitron: sete Edge Functions no mesmo projeto
+A Nina é o copiloto comercial da Nitron: oito Edge Functions no mesmo projeto
 `integracao-crm-sankhya` (`bwbeieumxcuomtrvlqxs`) que atendem representante e cliente no
 Zaptos e no telefone, consultando o **Sankhya ao vivo**.
 
@@ -11,7 +11,7 @@ que `copiloto-*` era "de outras empresas do grupo", e não é: é Nitron (Sankhy
 `ghl_cliente`, `campanhas`). O que é de outra empresa é o `emp-copiloto-responder`
 (Roga Village) — esse continua fora daqui.
 
-## As sete funções
+## As oito funções
 
 | função | v | verify_jwt | o que faz |
 |---|---|---|---|
@@ -21,6 +21,7 @@ que `copiloto-*` era "de outras empresas do grupo", e não é: é Nitron (Sankhy
 | `copiloto-vigia` | 9 | sim | Varre as conversas do dia, acha cliente que perguntou e **ficou sem resposta** (ou levou "vou verificar"), manda a pendência para o cérebro resolver e entrega a resposta pronta à assistente. |
 | `copiloto-tarefas` | 4 | não | A **Fila de Execução**: painel HTML + API. O que a Nina tria das conversas vira tarefa por área (financeiro, execução, cadastro, logística, faturamento, TI, comercial, gestor). |
 | `copiloto-aprender` | 4 | sim | Transforma tropeço em regra: falhas viram lição automática; amostra de conversas reais do GHL vira **proposta** de conhecimento e de skill, com gate humano. |
+| `copiloto-lead` | 3 | sim | **O lead do anuncio META.** Pergunta ao GHL quais conversas da instancia da Nina estao sem resposta, qualifica pelo playbook, anota em `copiloto_lead` e passa pro comercial com tarefa aberta. |
 | `copiloto-proativo` | 5 | sim | O plano de hoje do representante, montado **aplicando as campanhas ativas do Gestor** na carteira dele. Editar campanha no painel muda o plano sem tocar em código. |
 
 ### Ferramentas que a Nina tem na mão
@@ -68,6 +69,52 @@ Duas travas que valem a pena conhecer:
 - A Fila de Execução é servida pela própria função, com gate por token em
   `copiloto_config.tarefas_token` (`?k=<token>`). O token **não** está neste repositório.
 
+## O lead do anuncio (META -> Zaptos da Nina)
+
+Campanha em video no META (o lojista que tenta descansar na praia e a loja chama de volta), com
+clique para o WhatsApp. O clique cai na **instancia da Nina** e o CRM marca o contato com a tag
+`ads`. O objetivo e **qualificar e aquecer**; quem fecha e o comercial.
+
+**Era um vazamento, nao um recurso pela metade:** de 09 a 10/09 chegaram tres leads e **nenhum foi
+respondido**. O primeiro escreveu 00:10 e esperou 12 horas. Motivo: o `copiloto-conversa` exige
+representante ou cadastro; sem os dois ele devolvia `escalonar` e nao respondia nada.
+
+O que faltava — e onde cada peca ficou:
+
+| peca | onde |
+|---|---|
+| a Nina como instancia de envio | `instancia_ghl`, escopo **`lead`** (de proposito: `cliente` a elegeria para as campanhas ao cliente, `rep` a jogaria no rodizio de assistente) |
+| a persona | `assistente_instancia` (sem essa linha ela se apresenta como "o time comercial", sem nome) |
+| onde anotar o lead | `copiloto_lead` (status: qualificando → qualificado → passado \| descartado) |
+| o roteiro de venda | `copiloto_skills` nome `lead` — **editavel por UPDATE, sem deploy** |
+| pedido minimo | `copiloto_config.pedido_minimo` = **2500** |
+| a entrega ao comercial | tarefa em `copiloto_tarefas` area `comercial`, tipo `lead-anuncio`, com o texto montado **em codigo** |
+
+**Como ela acha o lead, sem webhook:** pergunta ao GHL quais conversas tem a ultima mensagem
+*inbound* (`lastMessageDirection=inbound` = ninguem respondeu), filtra pela instancia — que vem no
+rodape da propria mensagem, `Instance Source: Nina` — e so entao busca as mensagens. **Se um humano
+responder primeiro, a conversa sai da lista sozinha.** O historico usado no prompt e o do GHL, nao
+um espelho nosso: ela le tambem o que pessoa de verdade escreveu no meio.
+
+Tres filtros que existem por motivo concreto:
+- **tag `ads` do CRM** decide se e lead, com o regex da primeira frase apenas como rede. O texto que
+  o META pre-enche ("Ola! Posso ter mais informacoes sobre isso?") muda no gerenciador; a tag nao.
+- **ruido**: codigo de confirmacao do Facebook, `[Undecryptable]` e autoresposta de outra empresa.
+  Chegaram mais de 20 dessas em 10 dias — sem o filtro a Nina conversa com robo alheio.
+- **numero de representante** cai fora: quem atende rep e o `copiloto-conversa`.
+
+O que ela **nao** faz, e diz que nao faz: preco de produto (o lead nao tem tabela), prazo, condicao
+de pagamento, desconto, frete, promessa de visita ou data. Catalogo vai como **link**
+(`copiloto_config.catalogo_url`, ja hospedado no Storage), nunca como arquivo de 16 MB.
+
+**Gates:** `lead_ativo` (nasce `nao`), `lead_inst`, `lead_espera_min` (2 — da tempo de um humano
+pegar antes), `lead_ate_horas` (48). `?dry=1` monta a resposta **sem mandar e sem gravar** (as
+ferramentas de escrita viram simulacao na previa).
+
+**Cuidado ao ligar:** com `lead_ativo=nao` a funcao **ainda chama o modelo** e devolve o rascunho —
+e assim de proposito, para conferir texto. Logo o cron so deve existir junto com `lead_ativo=sim`,
+senao sao ~480 rodadas por dia gastando modelo para jogar rascunho no lixo.
+
 ## Crons
 
 | job | quando | função |
@@ -81,6 +128,9 @@ Duas travas que valem a pena conhecer:
 | `copiloto-proativo-diario` | `30 10 * * 1-6` | `copiloto-proativo` |
 
 (Horários em UTC, como todo cron do projeto.)
+
+**Não há cron do `copiloto-lead` ainda** — ele entra junto com `lead_ativo=sim`, decisão do gestor.
+Sugestão: `*/5 * * * *` com `limite=6`.
 
 ## O que este repositório mudou em relação ao que está publicado
 
@@ -120,4 +170,10 @@ entrypoint certo.
 4. **`copiloto-voz` disca a cada 2 minutos** contra a fila que o comentário da v21 dimensiona em ~3.178 clientes
    (reativação + giro vencido + giro a vencer + autoatendimento codvend 67). É a função
    mais caríssima de errar: ela liga de verdade.
-5. **`copiloto_debug` guarda o payload cru** de toda mensagem recebida, sem expurgo.
+5. **O `copiloto-conversa` esta aberto na internet**: `verify_jwt=false` e `COPILOTO_SECRET` nao
+   esta definido (conferido em 10/09 — um POST sem cabecalho nenhum e aceito). Quem descobrir a URL
+   fala com o cerebro da Nina. Definir o secret exige acertar o cabecalho no fluxo do GHL no mesmo
+   passo, senao a entrada para de chegar.
+6. **Quatro instancias de representante estao pausadas por queda desde 03/09** (Isadora, Juliete,
+   Monica, Valeria) e a "Campanhas Nitron" segue restringida. A da Nina esta de pe.
+7. **`copiloto_debug` guarda o payload cru** de toda mensagem recebida, sem expurgo.
