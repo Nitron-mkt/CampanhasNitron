@@ -1,5 +1,18 @@
-// copiloto-lead (v3) — a Nina atende o LEAD DO ANUNCIO (META -> Zaptos da Nina), qualifica e passa
-// pro comercial fechar.
+// copiloto-lead (v4) — a Nina atende o LEAD DE CAMPANHA, qualifica e passa pro comercial fechar.
+//
+// v4: DOIS CANAIS e origem lida do CRM. Os leads da landing "Atacado Nitron PRO" nao chegam pelo
+//     Zaptos: chegam pelo WhatsApp NATIVO do GHL (numero oficial da conta, type 19), sem marcador
+//     de instancia — a v3 os ignorava. Responder pelo Zaptos faria o lead receber mensagem de um
+//     numero estranho e partiria a conversa em duas, entao o envio agora sai pelo MESMO canal em
+//     que ele escreveu. Vem com tres consequencias praticas:
+//       - JANELA DE 24h DA META: no canal nativo, passadas ~24h da mensagem do lead, texto livre e
+//         recusado. A Nina nao gasta a tentativa: abre tarefa p/ o comercial (template ou ligacao).
+//       - ORIGEM: o `source` do contato (escrito pelo formulario da landing) diz de que campanha
+//         ele veio, e vale como sinal de lead tanto quanto a tag "ads". Quando a origem nao e o
+//         anuncio conhecido, o prompt PROIBE a Nina de adivinhar oferta ou valor anunciado.
+//       - CNPJ QUE ELE JA DEU: o formulario grava o CNPJ no contato. A Nina nao pede de novo (a
+//         sugestao automatica do CRM pedia, e o lead ja havia informado), e o codigo confere se
+//         esse CNPJ ja tem cadastro antes de tratar como lead novo.
 //
 // v3: o sinal de que a conversa e de anuncio passou a ser a TAG do CRM ("ads"), com o regex da
 //     primeira frase apenas como rede: o texto que o META pre-enche no clique muda no gerenciador
@@ -69,7 +82,7 @@ function docFmt(d: any): string {
   return x ? x + " (documento fora do padrao)" : "";
 }
 
-const ghl = (m: string, p: string, v = "2021-07-28") => fetch("https://services.leadconnectorhq.com" + p, { method: m, headers: { Authorization: "Bearer " + GHL, Version: v, Accept: "application/json", "Content-Type": "application/json" } });
+const ghl = (m: string, p: string, v = "2021-07-28", body?: any) => fetch("https://services.leadconnectorhq.com" + p, { method: m, headers: { Authorization: "Bearer " + GHL, Version: v, Accept: "application/json", "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined });
 
 async function anthropic(system: string, messages: any[], tools: any[]): Promise<any> {
   const key = Deno.env.get("ANTHROPIC_API_KEY"); if (!key) throw new Error("sem ANTHROPIC_API_KEY");
@@ -83,6 +96,38 @@ async function enviar(contact_id: string | null, fone: string, texto: string, in
   if (contact_id) body.contact_id = contact_id; else body.fone = fone;
   const r = await fetch(SUPA_URL + "/functions/v1/campanhas-enviar", { method: "POST", headers: { Authorization: "Bearer " + srvKey(), "Content-Type": "application/json" }, body: JSON.stringify(body) });
   return await r.json().catch(() => ({ ok: false, motivo: "resposta ilegivel do campanhas-enviar" }));
+}
+
+// Envio pelo WHATSAPP NATIVO do GHL (canal oficial da Meta, numero 11 94793-4107). Nada a ver com
+// o Zaptos: nao existe instancia, nao ha bind de dono, e o remetente e o proprio WABA da conta. O
+// campanhas-enviar nao serve aqui — ele e Zaptos e EXIGE instancia.
+async function enviarNativo(contact_id: string, texto: string) {
+  const r = await ghl("POST", "/conversations/messages", "2021-04-15", { type: "WhatsApp", contactId: contact_id, message: texto });
+  const d = await r.json().catch(() => ({}));
+  return { ok: r.ok, status: r.status, motivo: r.ok ? undefined : (d?.message || JSON.stringify(d).slice(0, 200)), id: d?.messageId };
+}
+
+// O CRM guarda de onde o lead veio (`source`, preenchido pelo formulario da landing) e o CNPJ que
+// ele mesmo digitou (campo CF_CNPJ). Ler isso evita o erro mais caro da qualificacao: pedir de novo
+// um dado que o lead ja deu — foi o que a sugestao automatica do CRM fez com a Natalie.
+const CF_CNPJ = "TLRZeTrxxPBsMNRqbdHO";
+async function contatoCrm(contact_id: string | null): Promise<any> {
+  if (!contact_id) return {};
+  try {
+    const r = await ghl("GET", `/contacts/${contact_id}`);
+    if (!r.ok) return {};
+    const c = (await r.json().catch(() => ({})))?.contact || {};
+    const cf = Array.isArray(c.customFields) ? c.customFields : [];
+    const at = c.attributionSource || c.lastAttributionSource || {};
+    return {
+      source: c.source || null,
+      cnpj: digits((cf.find((x: any) => x.id === CF_CNPJ) || {}).value || ""),
+      email: c.email || null,
+      empresa: c.companyName || c.businessName || null,
+      url: at.url || null, utm: at.utmSource || null, canal_origem: at.sessionSource || null, meio: at.medium || null,
+      dono: c.assignedTo || null,
+    };
+  } catch (_e) { return {}; }
 }
 
 // ---- ferramentas -----------------------------------------------------------------------------
@@ -164,7 +209,7 @@ async function runTool(sb: any, ctx: any, name: string, input: any): Promise<any
         "Resumo da Nina: " + String(input?.resumo || L.resumo || "").slice(0, 700),
         input?.falta ? "Falta: " + String(input.falta).slice(0, 400) : null,
         "",
-        "Origem: lead do anuncio META, atendido pela Nina no Zaptos.",
+        "Origem: " + (ctx.source ? ("campanha \"" + ctx.source + "\"") : "campanha nao registrada no CRM") + ", atendido pela Nina " + (ctx.instancia === "ghl-nativo" ? "no WhatsApp oficial do GHL (numero da conta)" : ("no Zaptos, instancia " + ctx.instancia)) + ".",
         ctx.contact_id ? "Conversa: https://app.gohighlevel.com/v2/location/" + LOC + "/contacts/detail/" + ctx.contact_id : null,
       ].filter((x) => x !== null).join("\n");
       const { data: tf, error: eT } = await sb.from("copiloto_tarefas").insert({ area: "comercial", tipo: "lead-anuncio", acao: ("Fechar lead do anuncio: " + (L.empresa || L.nome || "lead sem nome")).slice(0, 500), detalhe: det.slice(0, 1500), cliente_nome: L.empresa || L.nome || null, contact_id: ctx.contact_id || null, origem: "nina-lead", prioridade: 1 }).select("id").maybeSingle();
@@ -189,7 +234,7 @@ async function licoes(sb: any): Promise<string> {
 }
 
 // ---- uma conversa ----------------------------------------------------------------------------
-async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dry: boolean; ativo: boolean; pedidoMin: number; inst: string; pb: string; lic: string; reps: Set<string> }) {
+async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dry: boolean; ativo: boolean; pedidoMin: number; inst: string; nativoOn: boolean; janelaH: number; pb: string; lic: string; reps: Set<string> }) {
   const contact_id = cv.contactId || cv.contact_id || null;
   const fone = String(cv.phone || "").trim();
   const nomeCrm = String(cv.fullName || cv.contactName || "").trim();
@@ -205,8 +250,16 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
 
   const ultima = msgs[msgs.length - 1];
   if (ultima.direction !== "inbound") return { ...base, decisao: "pular", motivo: "a ultima e nossa — alguem respondeu" };
+  // DOIS CANAIS, e eles nao se misturam:
+  //  - Zaptos: a mensagem traz "Instance Source: <instancia>" no rodape e a resposta sai pelo numero
+  //    daquela instancia, via campanhas-enviar.
+  //  - WhatsApp NATIVO do GHL (type 19 / TYPE_WHATSAPP): sem marcador, numero oficial da conta. A
+  //    resposta TEM de sair por ele — mandar pelo Zaptos faria o lead receber mensagem de um numero
+  //    estranho e partiria a conversa em duas.
+  const nativo = String(ultima.messageType || "") === "TYPE_WHATSAPP" || Number(ultima.type) === 19 || String(cv.lastMessageType) === "TYPE_WHATSAPP";
   const instancia = instDe(ultima.body) || instDe(cv.lastMessageBody) || "";
-  if (norm(instancia) !== norm(opts.inst)) return { ...base, decisao: "pular", motivo: "outra instancia: " + (instancia || "sem marcador") };
+  if (!nativo && norm(instancia) !== norm(opts.inst)) return { ...base, decisao: "pular", motivo: "outra instancia: " + (instancia || "sem marcador") };
+  if (nativo && !opts.nativoOn) return { ...base, decisao: "pular", motivo: "canal nativo desligado (lead_nativo=nao)" };
 
   const texto = limpa(ultima.body);
   if (!texto) return { ...base, decisao: "pular", motivo: "mensagem sem texto (midia)" };
@@ -220,17 +273,42 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
   const tags = (Array.isArray(cv.tags) ? cv.tags : []).map((x: any) => norm(x));
   const ehAds = tags.includes("ads") || tags.includes("lead") || tags.includes("anuncio");
   const { data: leadRow } = await sb.from("copiloto_lead").select("*").or(`contact_id.eq.${contact_id || "__none__"},fone.eq.${d10(fone)}`).order("id", { ascending: false }).limit(1).maybeSingle();
-  if (!leadRow && !ehAds && !ehAbertura(texto)) return { ...base, decisao: "pular", motivo: "sem tag de anuncio e a mensagem nao parece lead: " + texto.slice(0, 60) };
   if (leadRow?.ultima_msg_id && leadRow.ultima_msg_id === ultima.id) return { ...base, decisao: "pular", motivo: "ja respondi esta mensagem (o envio pode estar a caminho)" };
+  // O CRM tambem diz de onde ele veio: `source` e preenchido pelo formulario da landing (ex.
+  // "Atacado Nitron Pro"). Isso e sinal de lead tao bom quanto a tag, e serve para campanha que
+  // ninguem aqui conhece ainda.
+  const crm = await contatoCrm(contact_id);
+  if (!leadRow && !ehAds && !crm.source && !ehAbertura(texto)) return { ...base, decisao: "pular", motivo: "sem tag, sem source no CRM e a mensagem nao parece lead: " + texto.slice(0, 60) };
 
-  const ctx: any = { contact_id, fone: d10(fone), instancia, dry: opts.dry };
+  // JANELA DE 24h DA META (so no canal nativo): passadas 24h da ultima mensagem do lead, texto
+  // livre e RECUSADO — so template aprovado passa. Entao a Nina nao tenta: registra e chama humano,
+  // em vez de gastar a tentativa e deixar o lead sem resposta.
+  const nascida = new Date(ultima.dateAdded || cv.lastInboundWhatsappMessageDate || cv.lastMessageDate || Date.now()).getTime();
+  const idadeH = (Date.now() - nascida) / 3600000;
+  if (nativo && idadeH > opts.janelaH) {
+    if (leadRow?.status === "janela_fechada") return { ...base, decisao: "pular", motivo: "janela de 24h fechada, humano ja avisado" };
+    if (opts.dry) return { ...base, decisao: "janela_fechada", motivo: "passaram " + idadeH.toFixed(1) + "h da mensagem dele: a Meta so aceita template agora (previa, nada gravado)" };
+    const up = await upsertLead(sb, { contact_id, fone: d10(fone), instancia: "ghl-nativo" }, { nome: nomeCrm || null, empresa: crm.empresa || null, cnpj: crm.cnpj || null, status: "janela_fechada", motivo: "janela de 24h da Meta fechada antes da primeira resposta" });
+    const { data: tfj } = await sb.from("copiloto_tarefas").insert({ area: "comercial", tipo: "lead-janela-24h", acao: ("Lead sem resposta e janela de 24h fechada: " + (nomeCrm || fone)).slice(0, 500), detalhe: ["Canal: WhatsApp nativo do GHL", "Contato: " + (nomeCrm || "sem nome"), "WhatsApp: " + fone, docFmt(crm.cnpj) || "Sem documento", crm.source ? "Origem (CRM): " + crm.source : null, crm.url ? "Landing: " + crm.url : null, "Escreveu: \"" + texto.slice(0, 200) + "\"", "", "Passaram " + idadeH.toFixed(1) + "h: texto livre nao passa mais pela Meta. Responder por template aprovado, ou ligar."].filter(Boolean).join("\n").slice(0, 1500), cliente_nome: nomeCrm || null, contact_id, origem: "nina-lead", prioridade: 2 }).select("id").maybeSingle();
+    return { ...base, decisao: "janela_fechada", lead_id: up.lead?.id || null, tarefa: tfj?.id || null, motivo: "passaram " + idadeH.toFixed(1) + "h — tarefa aberta p/ o comercial (template ou ligacao)" };
+  }
+
+  const ctx: any = { contact_id, fone: d10(fone), instancia: nativo ? "ghl-nativo" : instancia, dry: opts.dry, source: crm.source || (ehAds ? "anuncio META" : null) };
+  // Se ele ja informou o CNPJ no formulario, a Nina NAO pede de novo — e o codigo ja confere se
+  // esse CNPJ tem cadastro, para ela nao tratar cliente antigo como lead novo.
+  let cadastro: any = null;
+  if (crm.cnpj && crm.cnpj.length >= 11) { const { data } = await sb.from("ghl_cliente").select("codparc, razao, situacao, dias").ilike("cnpj", "%" + crm.cnpj + "%").limit(1).maybeSingle(); cadastro = data || null; }
+  if (!opts.dry && (crm.cnpj || crm.source)) await upsertLead(sb, ctx, { nome: nomeCrm || null, empresa: crm.empresa || cadastro?.razao || null, cnpj: crm.cnpj || null, codparc: cadastro?.codparc || null, origem: ctx.source });
   const jaSei = leadRow ? [leadRow.nome && "nome: " + leadRow.nome, leadRow.empresa && "loja: " + leadRow.empresa, leadRow.cnpj && "CNPJ ja informado", (leadRow.cidade || leadRow.uf) && "praca: " + [leadRow.cidade, leadRow.uf].filter(Boolean).join("/"), leadRow.tipo_loja && "tipo: " + leadRow.tipo_loja, leadRow.ja_revende && "compra hoje: " + leadRow.ja_revende, leadRow.interesse && "interesse: " + leadRow.interesse, leadRow.sabe_minimo && "JA sabe do pedido minimo", "status: " + leadRow.status].filter(Boolean).join(" | ") : "";
 
   const nome = prim(cfg.nome_assistente || opts.inst || "Nina");
   const sys = `Voce e a ${nome}, do time comercial da Nitronplast (Nitron), por WhatsApp. Calorosa e natural, pessoa de verdade da equipe.` + ESTILO
     + `\n\nHOJE e ${hojeBRT()} (data atual REAL; datas de 2026 sao normais).`
     + (opts.pb ? `\n\nMANUAIS DA CASA (o [LEAD] manda aqui):\n${opts.pb}` : "")
-    + `\n\nQUEM E ESTE CONTATO: um LEAD do anuncio da Nitron no META. NAO e representante e NAO tem cadastro de cliente — sem codparc nao existe tabela de preco, boleto, pedido nem entrega para consultar. Se ele falar como quem ja compra, peca o CNPJ e confira com buscar_cliente.`
+    + `\n\nQUEM E ESTE CONTATO: um LEAD, nao representante. ${ehAds ? "Veio do anuncio da Nitron no META (tag ads no CRM)." : crm.source ? ("Veio da campanha/landing \"" + crm.source + "\" — foi o que o CRM registrou como origem" + (crm.url ? (", pela pagina " + crm.url) : "") + (crm.utm ? (", chegando por " + crm.utm) : "") + ".") : "A origem nao esta registrada no CRM."}`
+    + `\n${ehAds ? "" : "VOCE NAO SABE qual criativo ou promessa ele viu, e NAO PODE adivinhar: nao invente oferta, valor, brinde nem condicao que possa ter sido anunciada. Se ele citar algo que viu, pergunte o que exatamente foi oferecido antes de confirmar qualquer coisa — e diga que confirma com o consultor. Comece perguntando, de leve, que tipo de loja ele tem e o que quer abastecer."}`
+    + (cadastro ? `\nATENCAO: o CNPJ que ele informou JA TEM CADASTRO na Nitron — ${cadastro.razao} (codparc ${cadastro.codparc}, situacao ${cadastro.situacao}). Nao trate como lead novo: reconheca que ele ja e cliente e passe pro comercial com passar_comercial.` : "")
+    + (crm.cnpj && !cadastro ? `\nELE JA INFORMOU O CNPJ no formulario e NAO tem cadastro ainda. NAO peca o CNPJ de novo — isso irrita. Se precisar confirmar, confirme a EMPRESA pelo nome, nao o numero.` : "")
     + `\nPEDIDO MINIMO da Nitron: R$ ${opts.pedidoMin.toLocaleString("pt-BR")}. Diga quando a conversa chegar em volume, mix ou como comprar — nunca na abertura.`
     + (cfg.catalogo_url ? `\nCATALOGO (mande o LINK quando ele quiser ver produtos): ${cfg.catalogo_url}` : "")
     + (cfg.site_url ? `\nSITE: ${cfg.site_url}` : "")
@@ -251,12 +329,12 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
   }
   if (!reply) return { ...base, decisao: "erro", motivo: "o modelo nao devolveu texto", ferramentas: usadas };
 
-  if (opts.dry || !opts.ativo) return { ...base, decisao: "previa", instancia, por_tag: ehAds, ferramentas: usadas, recebido: texto.slice(0, 200), rascunho: reply, motivo: opts.dry ? "previa (dry=1)" : "lead_ativo=nao" };
+  if (opts.dry || !opts.ativo) return { ...base, decisao: "previa", canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + instancia), origem: crm.source || (ehAds ? "anuncio META (tag ads)" : null), cnpj_do_form: crm.cnpj ? docFmt(crm.cnpj) : null, ja_cliente: cadastro ? (cadastro.razao + " / codparc " + cadastro.codparc) : null, horas_desde_a_mensagem: Number(idadeH.toFixed(1)), ferramentas: usadas, recebido: texto.slice(0, 200), rascunho: reply, motivo: opts.dry ? "previa (dry=1)" : "lead_ativo=nao" };
 
-  const env = await enviar(contact_id, fone, reply, opts.inst);
+  const env = nativo ? await enviarNativo(String(contact_id), reply) : await enviar(contact_id, fone, reply, opts.inst);
   const up = await upsertLead(sb, ctx, { nome: leadRow?.nome || null, ultima_msg_id: ultima.id, ultima_resposta_em: new Date().toISOString(), status: leadRow?.status || "qualificando" });
-  if (!env?.ok) return { ...base, decisao: "falhou", instancia, ferramentas: usadas, motivo: env?.motivo || "envio recusado", texto: reply };
-  return { ...base, decisao: "respondeu", instancia, ferramentas: usadas, lead_id: up.lead?.id || null, status: up.lead?.status, recebido: texto.slice(0, 200), texto: reply };
+  if (!env?.ok) return { ...base, decisao: "falhou", canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + instancia), ferramentas: usadas, motivo: env?.motivo || "envio recusado", texto: reply };
+  return { ...base, decisao: "respondeu", canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + instancia), origem: crm.source || (ehAds ? "anuncio META (tag ads)" : null), ferramentas: usadas, lead_id: up.lead?.id || null, status: up.lead?.status, recebido: texto.slice(0, 200), texto: reply };
 }
 
 // ---- rodada ----------------------------------------------------------------------------------
@@ -278,6 +356,8 @@ Deno.serve(async (req) => {
     const pedidoMin = parseInt(digits(cfg.pedido_minimo || "2500")) || 2500;
     const esperaMin = Math.max(0, parseInt(cfg.lead_espera_min || "2") || 0);
     const ateHoras = Math.max(1, parseInt(cfg.lead_ate_horas || "48") || 48);
+    const nativoOn = String(cfg.lead_nativo || "sim").toLowerCase() === "sim";
+    const janelaH = Math.max(1, parseFloat(cfg.lead_janela_h || "23.5") || 23.5);
 
     // as conversas em que a ULTIMA mensagem e do contato: ninguem respondeu ainda
     const r = await ghl("GET", `/conversations/search?locationId=${LOC}&limit=100&sortBy=last_message_date&sort=desc&lastMessageDirection=inbound`);
@@ -290,15 +370,17 @@ Deno.serve(async (req) => {
     // eram todas de outra instancia ou ja respondidas, e o lead do anuncio nunca era olhado.
     // De quebra, so busca as mensagens de quem interessa (uma chamada ao GHL por conversa).
     const daNina = (c: any) => { const i = instDe(c.lastMessageBody); return !!i && norm(i) === norm(inst); };
+    // canal nativo: sem marcador de instancia, o proprio GHL diz o tipo
+    const ehNativo = (c: any) => String(c.lastMessageType) === "TYPE_WHATSAPP";
     const naJanela = (c: any) => { const q = Number(c.lastMessageDate || 0); if (!q) return false; const min = (agora - q) / 60000; return min >= esperaMin && min <= ateHoras * 60; };
-    const candidatas = convs.filter((c: any) => String(c.lastMessageType) !== "TYPE_EMAIL" && daNina(c) && naJanela(c));
+    const candidatas = convs.filter((c: any) => String(c.lastMessageType) !== "TYPE_EMAIL" && (daNina(c) || (nativoOn && ehNativo(c))) && naJanela(c));
     const alvos = candidatas.slice(0, limite);
 
     const { data: reps } = await sb.from("snap_rep").select("celular, fone_parc").limit(3000);
     const setReps = new Set<string>();
     (reps || []).forEach((x: any) => { const a = fk8(x.celular); const c = fk8(x.fone_parc); if (a) setReps.add(a); if (c) setReps.add(c); });
 
-    const opts = { dry, ativo, pedidoMin, inst, pb: await playbook(sb), lic: await licoes(sb), reps: setReps };
+    const opts = { dry, ativo, pedidoMin, inst, nativoOn, janelaH, pb: await playbook(sb), lic: await licoes(sb), reps: setReps };
     const feitos: any[] = [];
     for (const cv of alvos) { try { feitos.push(await atender(sb, cfg, cv, opts)); } catch (e) { feitos.push({ contato: cv.fullName || cv.phone, decisao: "erro", motivo: String(e).slice(0, 200) }); } }
 
@@ -306,7 +388,7 @@ Deno.serve(async (req) => {
     return j({
       ok: true, instancia: inst, lead_ativo: ativo, modo: dry ? "previa" : (ativo ? "atendendo" : "so rascunho (lead_ativo=nao)"),
       inbound_sem_resposta: convs.length, da_instancia_na_janela: candidatas.length, analisadas: feitos.length,
-      respondeu: conta("respondeu"), previa: conta("previa"), pulou: conta("pular"), falhou: conta("falhou"), erro: conta("erro"),
+      respondeu: conta("respondeu"), previa: conta("previa"), pulou: conta("pular"), falhou: conta("falhou"), janela_fechada: conta("janela_fechada"), erro: conta("erro"),
       resultado: feitos,
     });
   } catch (e) { return j({ ok: false, erro: String(e) }, 500); }

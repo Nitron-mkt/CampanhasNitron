@@ -74,7 +74,11 @@ insert into copiloto_config (chave, valor) values
   ('lead_inst',       'Nina'),
   ('pedido_minimo',   '2500'),
   ('lead_espera_min', '2'),
-  ('lead_ate_horas',  '48')
+  ('lead_ate_horas',  '48'),
+  -- canal nativo do GHL (WhatsApp oficial da Meta) e a janela de 24h dela: passadas ~24h da
+  -- mensagem do lead, texto livre e recusado e so template aprovado passa.
+  ('lead_nativo',     'sim'),
+  ('lead_janela_h',   '23.5')
 on conflict (chave) do nothing;
 
 insert into copiloto_skills (nome, conteudo, ativo) values ('lead',
