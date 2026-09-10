@@ -22,7 +22,7 @@ que `copiloto-*` era "de outras empresas do grupo", e não é: é Nitron (Sankhy
 | `copiloto-tarefas` | 4 | não | A **Fila de Execução**: painel HTML + API. O que a Nina tria das conversas vira tarefa por área (financeiro, execução, cadastro, logística, faturamento, TI, comercial, gestor). |
 | `copiloto-aprender` | 4 | sim | Transforma tropeço em regra: falhas viram lição automática; amostra de conversas reais do GHL vira **proposta** de conhecimento e de skill, com gate humano. |
 | `copiloto-lead` | 3 | sim | **O lead do anuncio META.** Pergunta ao GHL quais conversas da instancia da Nina estao sem resposta, qualifica pelo playbook, anota em `copiloto_lead` e passa pro comercial com tarefa aberta. |
-| `copiloto-entrega` | 2 | sim | **A tarefa que o humano vê.** Pega toda tarefa recém-gravada pelo copiloto, abre a tarefa correspondente **no CRM, no contato**, com dono no `assignedTo` e quem acompanha nomeado no corpo, e manda o resumo para quem `copiloto_responsaveis` diz que tem de saber. Fila com retentativa. |
+| `copiloto-entrega` | 3 | sim | **A tarefa que o humano vê.** Pega toda tarefa recém-gravada pelo copiloto, abre a tarefa correspondente **no CRM, no contato** (dono no `assignedTo`, quem acompanha nomeado no corpo), marca os dois como **seguidores** do contato e manda o resumo para quem `copiloto_responsaveis` diz que tem de saber. Fila com retentativa. |
 | `copiloto-proativo` | 5 | sim | O plano de hoje do representante, montado **aplicando as campanhas ativas do Gestor** na carteira dele. Editar campanha no painel muda o plano sem tocar em código. |
 
 ### Ferramentas que a Nina tem na mão
@@ -184,7 +184,11 @@ jeito nenhum". Então o encerramento passou a ter duas pontas, e quem as executa
    tarefa do GHL aceita **um** `assignedTo`, e o pedido foi "marque o Usuário do Leonardo, Camyla,
    tudo nessa tarefa". Hoje: dono **Leonardo Lucas** (`Yoq6cL8mRr3ICN4EK3st`), acompanha **Camyla
    Castro** (`CPmJ2iQ1eFHwS15bIxNJ`).
-2. **O resumo por mensagem** para quem tem `avisar=true` — o texto da tarefa inteiro, do jeito que o
+2. **Dono e acompanha marcados como seguidores do contato** (`POST /contacts/{contactId}/followers`).
+   No GHL é assim que se marca alguém: seguidor vê o contato e recebe notificação. A tarefa em si
+   só tem lugar para um. Falhar aqui **não** derruba a entrega — é secundário, e reabrir a tarefa
+   por causa disso mandaria o aviso duas vezes.
+3. **O resumo por mensagem** para quem tem `avisar=true` — o texto da tarefa inteiro, do jeito que o
    gestor pediu ("como se fosse uma tarefa também"): título, responsável, acompanha, loja, CNPJ,
    praça, o que quer, como compra hoje, se sabe do mínimo, temperatura, o resumo da conversa e o
    link da conversa no CRM. A mesma pessoa em duas áreas recebe **uma** mensagem.

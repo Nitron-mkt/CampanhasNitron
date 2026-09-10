@@ -1,4 +1,4 @@
-// copiloto-entrega (v2) — a tarefa que a Nina abre passa a EXISTIR onde o humano olha.
+// copiloto-entrega (v3) — a tarefa que a Nina abre passa a EXISTIR onde o humano olha.
 //
 // Em 10/09 o gestor abriu o painel do contato do lead que a Nina acabara de qualificar (Kasamais,
 // Sao Luis/MA) e leu "Ainda nao ha tarefas". A tarefa existia — em copiloto_tarefas, a NOSSA fila —
@@ -6,9 +6,10 @@
 // "isso nao pode passar de jeito nenhum". Entao esta funcao pega toda tarefa recem-gravada pelo
 // copiloto e faz as duas coisas que faltavam:
 //   1. abre a tarefa NO CRM, no contato (POST /contacts/{id}/tasks), com dono de verdade no
-//      assignedTo e quem acompanha NOMEADO no corpo — uma tarefa do GHL aceita UM assignedTo, e o
-//      pedido foi "marque o Usuario do Leonardo, Camyla, tudo nessa tarefa";
-//   2. manda o resumo da conversa e os dados do cliente para quem tem de saber.
+//      assignedTo e quem acompanha NOMEADO no corpo — uma tarefa do GHL aceita UM assignedTo;
+//   2. marca dono e acompanha como SEGUIDORES do contato — no GHL e assim que se marca alguem, e
+//      foi o pedido: "marque o Usuario do Leonardo, Camyla, tudo nessa tarefa";
+//   3. manda o resumo da conversa e os dados do cliente para quem tem de saber.
 //
 // POR QUE AQUI E NAO DENTRO DA copiloto-lead: assim a entrega e uma FILA, com retentativa e
 // independente de qual caminho gravou a tarefa (encerramento com passar_comercial, janela de 24h da
@@ -54,6 +55,16 @@ async function tarefaCrm(contact_id: string, titulo: string, corpo: string, dono
   const r = await ghl("POST", `/contacts/${contact_id}/tasks`, "2021-07-28", body);
   const d = await r.json().catch(() => ({}));
   return { ok: r.ok, id: d?.task?.id || null, motivo: r.ok ? undefined : String(d?.message || ("GHL " + r.status)).slice(0, 200) };
+}
+
+// "marque o Usuario do Leonardo, Camyla, tudo nessa tarefa": no GHL, marcar alguem num contato e
+// torna-lo SEGUIDOR. E o que faz os dois verem o contato e receberem notificacao — a tarefa em si
+// so tem lugar para UM (o assignedTo). Idempotente: o GHL devolve followersAdded so de quem faltava.
+async function seguidores(contact_id: string, ids: string[]) {
+  if (!ids.length) return { ok: true, add: [] as string[] };
+  const r = await ghl("POST", `/contacts/${contact_id}/followers`, "2021-07-28", { followers: ids });
+  const d = await r.json().catch(() => ({}));
+  return { ok: r.ok, add: (d?.followersAdded || []) as string[], motivo: r.ok ? undefined : String(d?.message || ("GHL " + r.status)).slice(0, 200) };
 }
 
 // ---- o aviso ----------------------------------------------------------------------------------
@@ -108,8 +119,10 @@ async function entregar(sb: any, cfg: Record<string, string>, t: any, o: { dry: 
     jaVistos.add(k); destinatarios.push(p);
   }
 
+  const marcar = Array.from(new Set(eq.filter((p: any) => p.area === area && p.idcrm).map((p: any) => String(p.idcrm))));
+
   if (o.dry) {
-    return { tarefa: t.id, previa: true, titulo, responsavel: dono?.nome || null, acompanha: acomp, abriria_no_crm: !!(t.contact_id && !o.soAviso && !t.crm_task_id), tarefa_crm_existente: t.crm_task_id || undefined, avisaria: destinatarios.map((p: any) => p.nome), canais, corpo };
+    return { tarefa: t.id, previa: true, titulo, responsavel: dono?.nome || null, acompanha: acomp, abriria_no_crm: !!(t.contact_id && !o.soAviso && !t.crm_task_id), tarefa_crm_existente: t.crm_task_id || undefined, marcaria: marcar, avisaria: destinatarios.map((p: any) => p.nome), canais, corpo };
   }
 
   const rep: any = { tarefa: t.id, titulo, responsavel: dono?.nome || null, acompanha: acomp };
@@ -124,6 +137,13 @@ async function entregar(sb: any, cfg: Record<string, string>, t: any, o: { dry: 
     if (!r.ok) { rep.tarefa_crm_erro = r.motivo; erros.push("CRM: " + r.motivo); }
   } else if (!t.contact_id) {
     rep.tarefa_crm = null; rep.tarefa_crm_erro = "tarefa sem contact_id — nao ha contato onde abrir";
+  }
+
+  // seguidores nao entram na conta do entrega_ok: sao secundarios, e falhar aqui nao pode fazer a
+  // fila reabrir tarefa e remandar aviso na rodada seguinte.
+  if (t.contact_id && marcar.length) {
+    const sg = await seguidores(String(t.contact_id), marcar);
+    rep.marcados = sg.add; if (!sg.ok) rep.marcados_erro = sg.motivo;
   }
 
   const texto = ["Tarefa — " + titulo, "", corpo, t.contact_id ? "" : null].filter((x) => x !== null).join("\n");
