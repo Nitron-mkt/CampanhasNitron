@@ -9,6 +9,8 @@ Código do projeto Supabase `integracao-crm-sankhya` (`bwbeieumxcuomtrvlqxs`).
   o que está planejado e as sugestões. Fala direto com o PostgREST
   (`agenda_catalogo`, `agenda_realizado`, `agenda_espera`, `agenda_campanha`).
 - `supabase/functions/<slug>/index.ts` — Edge Functions.
+- `supabase/functions/copiloto-*/index.ts` — o Copiloto (Nina), a IA comercial que atende
+  representante e cliente no Zaptos e no telefone. Ver `docs/copiloto.md`.
 - `docs/` — documentação e revisões.
 
 As duas páginas ficam no Storage (bucket `app`) e a Edge Function `gestor` escolhe o

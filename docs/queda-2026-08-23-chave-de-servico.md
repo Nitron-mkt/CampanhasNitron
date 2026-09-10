@@ -267,8 +267,12 @@ considera em dia, e isso contradizia a instrução.
 
 ### Ainda pendente
 
+- **O `copiloto-*` não era de outra empresa — é Nitron.** Ficou nesta lista por
+  engano até 10/09, quando o código foi trazido para o repositório
+  (`supabase/functions/copiloto-*`, ver `docs/copiloto.md`) já com o `srvKey()`. O
+  fonte daqui e o que está no ar divergem nessa linha até alguém publicar.
 - **Funções de outras empresas do grupo** com a mesma chave antiga (fora do
-  escopo Nitron, mas quebradas do mesmo jeito): `copiloto-*`, `emp-diag`,
+  escopo Nitron, mas quebradas do mesmo jeito): `emp-diag`,
   `emp-erp-refresh`, `emp-conversas-classificar`, `hyak-contatos-sync`,
   `roga-*`, `constelacao-*`, `produtos-sankhya-sync`, `anuncio-*`, `ml-*`.
   A correção é a mesma linha do `srvKey()`.

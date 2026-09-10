@@ -50,10 +50,20 @@ renomear exigiria migrar linhas e funções sem ganho para quem lê a tela.
   `#contact_instance:<token>` governa só a entrada. Sem dono, a mensagem não sai.
 - **`SUPABASE_SERVICE_ROLE_KEY` vem com valor `sb_secret_`** que o PostgREST recusa (PGRST303).
   Toda função usa `const srvKey = () => Deno.env.get("SRV_JWT") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";`
+- **O copiloto (Nina) mora aqui desde 10/09** — `supabase/functions/copiloto-*`, sete funções, com
+  `docs/copiloto.md` explicando cada uma, as tabelas `copiloto_*`, os crons e como está regulada.
+  Antes disso o código **só existia publicado**: não havia de onde voltar se alguém publicasse por
+  cima. Este arquivo dizia que `copiloto-*` era de outra empresa do grupo — **não é, é Nitron**
+  (Sankhya ao vivo, `snap_rep`, `ghl_cliente`, aplica as campanhas do Gestor). De outra empresa é o
+  `emp-copiloto-responder` (Roga Village), que continua fora do repositório. **O fonte daqui e o
+  publicado divergem** na linha da chave (ver abaixo) até alguém publicar — e publicar mexe em IA
+  que está atendendo, então é decisão do gestor.
 - **Chave de serviço escrita no código: já não há em `campanhas-saldo`, `campanhas-keyaccounts` nem
   `cross-sell-abc`.** As duas carregavam um JWT `service_role` literal como fallback do
   SRV_JWT — chave de administrador do banco, no fonte, válida por anos. Retiradas em 31/08; as duas
   usam `srvKey()` como todo o resto. Se aparecer outra, tire: a variável SRV_JWT existe e funciona.
+  **Nos `copiloto-*` apareceram mais sete** (cinco funções com a chave chumbada, duas com ela como
+  fallback do SRV_JWT): retiradas no fonte em 10/09, mas o que está no ar ainda as carrega.
 - **Publicar o painel:** `POST host-upload?path=gestor.html` com o **HTML cru no corpo** e o caminho
   na query — não JSON. **Confira o md5 publicado antes de subir:** há outro chat editando o mesmo
   arquivo, e sobrescrever o trabalho dele já aconteceu.
