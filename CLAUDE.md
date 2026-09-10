@@ -77,13 +77,30 @@ renomear exigiria migrar linhas e funções sem ganho para quem lê a tela.
   área comercial, vira o `assignedTo`), e **Leonardo Lucas** é `acompanha` + dono da área `gestor`,
   com `avisar=true`. Quem só acompanha aparece nomeado no corpo e como seguidor, nunca no
   `assignedTo` — uma tarefa do GHL aceita **um** dono.
-- **Aviso interno por Zaptos exigiu trocar o dono de UM contato, e não há como fugir disso.** O
-  número de saída é o `assignedTo` do contato, e o GHL **recusa contato duplicado** nesta location
-  (testado: `"This location does not allow duplicated contacts"`), então o número do gestor só pode
-  viver no contato que já existe. Ele era da **Isadora**, cuja instância está desconectada desde
-  03/09 — nada sairia. O contato `WM5WMybpxqmGP7zoqwZt` ("TESTE DNITRON") passou a ser da **Nina**;
-  reverter é um campo (`assignedTo` = `WlHZT90d36qnnXFbKzbl`). `entrega_canal` segue cadeia
-  (`whatsapp,email`): se o Zaptos recusar, o resumo cai no e-mail em vez de se perder calado.
+- **Contato INTERNO cujo Zaptos não sai: troque o dono, de preferência para a Camyla.** Autorizado
+  pelo gestor em 10/09, e vale de agora em diante. O número de saída é o `assignedTo` do contato, e
+  o GHL **recusa contato duplicado** nesta location (testado:
+  `"This location does not allow duplicated contacts"`), então o número só pode viver no contato que
+  já existe — não dá para criar um contato dedicado e escapar do dono errado. Quando esse dono é
+  instância morta, passe o contato para a **Camyla** (`CPmJ2iQ1eFHwS15bIxNJ`, `ativa`, enviando
+  todo dia) ou, em segunda opção, para a **Nina** (`zEMc7K35JO8eUGghqHMN`), e dispare pelo número
+  dela. Já feito: `WM5WMybpxqmGP7zoqwZt` (gestor, era da Isadora) → Nina; `4jsZMX5rdT6EygxtPiN4`
+  (CASSIO, era da Beatriz `ativa=false`) → Camyla. **Isto vale para contato interno — rep e gestor.
+  Não é licença para mexer no dono de contato de CLIENTE**, onde trocar o dono tira o cliente da
+  vista do consultor dele. `entrega_canal` segue cadeia (`whatsapp,email`): se o Zaptos recusar, o
+  resumo cai no e-mail em vez de se perder calado.
+- **Um rep pode ter DOIS contatos no CRM, e o número do Sankhya pode ser o errado.** O CASSIO
+  (codvend 30) tem `TGFVEN.AD_CELULAR` = 98 98853-0899, que **não tem WhatsApp** (o ZaptosWPP
+  escreveu `This number does not have WhatsApp` e o contato levou a tag `non-whatsapp-number`). O
+  que funciona é o 98 98121-4422, que vive noutro contato — o que tem foto de perfil do WhatsApp e
+  histórico de Zaptos entregue. Antes de concluir "o rep não tem WhatsApp", procure o outro contato
+  pelo e-mail dele.
+- **Sem o `campanhas-enviar` não existe checagem de entrega — então faça o bind à mão e confira.**
+  Mandar Zaptos direto pela API do GHL (quando o Supabase está fora) exige repetir o que a função
+  faz: SMS `#contact_instance:<instância>`, esperar o ack `[System]: Contact Instance Updated!`,
+  mandar o texto, e só então conferir na conversa se apareceu
+  `[System]: <instância> - The instance is disconnected.` Sem essas três etapas a mensagem vira
+  "enviado" mentindo — foi o que custou 8 mensagens em 26/08.
 - **Número de casa nunca é lead** (`copiloto-lead` v9). O contato do gestor tem `source` preenchido
   no CRM ("Form 38"), que é sinal de lead tão bom quanto a tag `ads` — e agora o Zaptos da Nina fala
   com ele. Sem trava, a resposta dele ("ok, obrigado") entraria pela porta da frente e a Nina
