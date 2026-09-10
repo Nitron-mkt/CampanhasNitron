@@ -108,6 +108,11 @@ O que ela **nao** faz, e diz que nao faz: preco de produto (o lead nao tem tabel
 de pagamento, desconto, frete, promessa de visita ou data. Catalogo vai como **link**
 (`copiloto_config.catalogo_url`, ja hospedado no Storage), nunca como arquivo de 16 MB.
 
+**Ruído que a operação vai encontrando:** muitos leads são números comerciais com resposta
+automática própria — a loja da Nátalie respondeu à Nina em 10/09 com "não estamos disponíveis…". O
+filtro embutido cobre os formatos conhecidos e `copiloto_config.lead_ruido_extra` aceita um regex
+extra, para o próximo formato entrar por UPDATE, sem deploy.
+
 **Gates:** `lead_ativo` (nasce `nao`), `lead_inst`, `lead_espera_min` (2 — da tempo de um humano
 pegar antes), `lead_ate_horas` (48). `?dry=1` monta a resposta **sem mandar e sem gravar** (as
 ferramentas de escrita viram simulacao na previa).
@@ -115,6 +120,34 @@ ferramentas de escrita viram simulacao na previa).
 **Cuidado ao ligar:** com `lead_ativo=nao` a funcao **ainda chama o modelo** e devolve o rascunho —
 e assim de proposito, para conferir texto. Logo o cron so deve existir junto com `lead_ativo=sim`,
 senao sao ~480 rodadas por dia gastando modelo para jogar rascunho no lixo.
+
+## Dois canais de entrada, e eles não se misturam
+
+Descoberto em 10/09 ao investigar dois leads que ninguém havia respondido:
+
+| canal | como reconhecer | como responder |
+|---|---|---|
+| **Zaptos** (instâncias Nina, Juliete, Isadora…) | a mensagem traz `Instance Source: <instância>` no rodapé; `TYPE_SMS` | `campanhas-enviar` com `instancia` — ele amarra o contato (`#contact_instance:`) e o número de saída é o do dono |
+| **WhatsApp oficial do GHL** (número 11 94793-4107) | `TYPE_WHATSAPP` / `type: 19`, **sem** marcador de instância | `POST /conversations/messages` com `type:"WhatsApp"` — sem instância, sem dono, sai pelo WABA da conta |
+
+**Responder pelo canal errado é pior que não responder:** o lead escreveu para um número e receberia
+resposta de outro, e a conversa se parte em duas. Por isso o `copiloto-lead` decide o canal pela
+própria mensagem.
+
+**A janela de 24 horas da Meta só existe no canal oficial.** Passadas ~24h da última mensagem do
+lead, texto livre é recusado — só template aprovado passa. A Nina não gasta a tentativa: grava
+`status='janela_fechada'` e abre tarefa no comercial (template ou ligação). O limite mora em
+`copiloto_config.lead_janela_h` (**23,5** — meia hora de margem). Os dois leads de 09/09 foram
+respondidos com 19,7h e 20,4h: era a última janela.
+
+**A campanha do lead vem do CRM, não de adivinhação.** `contact.source` é escrito pelo formulário da
+landing (ex. `Atacado Nitron Pro`) e `attributionSource.url` guarda a página e a origem da sessão.
+Quando a origem **não** é o anúncio conhecido, o prompt proíbe a Nina de supor oferta, valor ou
+condição que possa ter sido anunciada — ela pergunta o que ele viu antes de confirmar qualquer coisa.
+
+**O CNPJ que o lead já digitou.** O formulário grava o documento no contato (campo
+`TLRZeTrxxPBsMNRqbdHO`). A Nina não pede de novo, e o código confere antes se esse CNPJ já tem
+cadastro — se tiver, ele não é lead novo, é cliente, e vai direto pro comercial.
 
 ## Crons
 

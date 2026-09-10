@@ -1,3 +1,5 @@
+// copiloto-lead (v6) — filtro de ruido pega tambem a autoresposta no plural ("nao estamos disponiveis", "responderemos assim que possivel", "agradecemos sua mensagem"): a loja do proprio lead tem robo, e a Nina quase respondeu ao dele. Padrao extra passa a vir de copiloto_config.lead_ruido_extra, sem deploy.
+// copiloto-lead (v5) — v4 desfazia o proprio trabalho: o upsert de depois do envio reescrevia o status com o valor lido ANTES das ferramentas rodarem, e um lead descartado (ou passado pro comercial) voltava a "qualificando". O patch de depois do envio nao toca mais em status.
 // copiloto-lead (v4) — a Nina atende o LEAD DE CAMPANHA, qualifica e passa pro comercial fechar.
 //
 // v4: DOIS CANAIS e origem lida do CRM. Os leads da landing "Atacado Nitron PRO" nao chegam pelo
@@ -66,11 +68,16 @@ function limpa(t: any): string { return String(t || "").replace(/Instance Source
 // Ruido que chega na instancia da Nina: codigo de confirmacao do Facebook, mensagem que o WhatsApp
 // nao decifrou e autoresposta de OUTRA empresa. Chegaram mais de 20 em 10 dias — sem este filtro a
 // Nina conversa com robo alheio e gasta o numero dela nisso.
-const RE_RUIDO = /(codigo de confirmacao|undecryptable|descriptografar|ative as listas|agradece seu contato|atendente virtual|horario de atendimento|entraremos em contato|selecione (a|uma|um) (opcao|assunto)|estou indisponivel|nao estou disponivel|retornarei assim que|ouvidoria)/;
+// A lista cresce com a operacao: muitos leads sao numeros comerciais com resposta automatica
+// propria. O da loja da Natalie ("Nao estamos disponiveis... responderemos assim que possivel")
+// escapou da versao no singular em 10/09 e a Nina quase respondeu ao robo dela. Padrao extra em
+// copiloto_config.lead_ruido_extra, para o proximo formato entrar por UPDATE, sem deploy.
+const RE_RUIDO = /(codigo de confirmacao|undecryptable|descriptografar|ative as listas|agradece(mos)? (seu contato|sua mensagem)|atendente virtual|horario de atendimento|entraremos em contato|selecione (a|uma|um) (opcao|assunto)|(estou|estamos) indisponive|nao (estou|estamos) disponive|retornare(i|mos) assim que|respondere(i|mos) assim que|ouvidoria|mensagem automatica)/;
 // Abertura de quem veio do anuncio. O texto que o META pre-enche no clique e "Ola! Posso ter mais
 // informacoes sobre isso?" — e o caso mais comum e o mais generico, por isso esta na lista.
 const RE_ABRE = /(mais informacoe?s sobre isso|posso ter mais informacoe?s|quero saber mais|vim pelo (anuncio|face|insta)|vi (o|um) (anuncio|video|reels|post)|como (faco|fazer) (para|pra) (comprar|revender)|revend|atacado|catalogo|abastecer|sou (lojista|dono)|tenho (uma )?(loja|bazar|mercad)|preciso (de|comprar))/;
-const ehRuido = (t: any) => RE_RUIDO.test(norm(t));
+let RUIDO_EXTRA: RegExp | null = null;
+const ehRuido = (t: any) => RE_RUIDO.test(norm(t)) || (!!RUIDO_EXTRA && RUIDO_EXTRA.test(norm(t)));
 const ehAbertura = (t: any) => !ehRuido(t) && RE_ABRE.test(norm(t));
 
 // documento so aparece formatado em CODIGO. A IA nunca escreve CNPJ — regra do gestor de 28/08: um
@@ -332,7 +339,12 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
   if (opts.dry || !opts.ativo) return { ...base, decisao: "previa", canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + instancia), origem: crm.source || (ehAds ? "anuncio META (tag ads)" : null), cnpj_do_form: crm.cnpj ? docFmt(crm.cnpj) : null, ja_cliente: cadastro ? (cadastro.razao + " / codparc " + cadastro.codparc) : null, horas_desde_a_mensagem: Number(idadeH.toFixed(1)), ferramentas: usadas, recebido: texto.slice(0, 200), rascunho: reply, motivo: opts.dry ? "previa (dry=1)" : "lead_ativo=nao" };
 
   const env = nativo ? await enviarNativo(String(contact_id), reply) : await enviar(contact_id, fone, reply, opts.inst);
-  const up = await upsertLead(sb, ctx, { nome: leadRow?.nome || null, ultima_msg_id: ultima.id, ultima_resposta_em: new Date().toISOString(), status: leadRow?.status || "qualificando" });
+  // NAO escreve status aqui. Quem manda no status sao as ferramentas (descartar_lead,
+  // passar_comercial), e elas rodaram DEPOIS de leadRow ser lido: reescrever com o valor antigo
+  // desfazia o que elas acabaram de gravar — o Fiver Metalurgica virou "descartado" e voltou para
+  // "qualificando" na mesma rodada (10/09). Sem status no patch, o default da tabela cobre o lead
+  // novo em que nenhuma ferramenta rodou.
+  const up = await upsertLead(sb, ctx, { nome: leadRow?.nome || null, ultima_msg_id: ultima.id, ultima_resposta_em: new Date().toISOString() });
   if (!env?.ok) return { ...base, decisao: "falhou", canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + instancia), ferramentas: usadas, motivo: env?.motivo || "envio recusado", texto: reply };
   return { ...base, decisao: "respondeu", canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + instancia), origem: crm.source || (ehAds ? "anuncio META (tag ads)" : null), ferramentas: usadas, lead_id: up.lead?.id || null, status: up.lead?.status, recebido: texto.slice(0, 200), texto: reply };
 }
@@ -358,6 +370,8 @@ Deno.serve(async (req) => {
     const ateHoras = Math.max(1, parseInt(cfg.lead_ate_horas || "48") || 48);
     const nativoOn = String(cfg.lead_nativo || "sim").toLowerCase() === "sim";
     const janelaH = Math.max(1, parseFloat(cfg.lead_janela_h || "23.5") || 23.5);
+    RUIDO_EXTRA = null;
+    if (String(cfg.lead_ruido_extra || "").trim()) { try { RUIDO_EXTRA = new RegExp(String(cfg.lead_ruido_extra).trim(), "i"); } catch (_e) { RUIDO_EXTRA = null; } }
 
     // as conversas em que a ULTIMA mensagem e do contato: ninguem respondeu ainda
     const r = await ghl("GET", `/conversations/search?locationId=${LOC}&limit=100&sortBy=last_message_date&sort=desc&lastMessageDirection=inbound`);
