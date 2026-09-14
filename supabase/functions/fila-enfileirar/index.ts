@@ -1,4 +1,4 @@
-// fila-enfileirar (v18) — TRAVA DE DUPLICIDADE. A funcao inseria as linhas as cegas: nada impedia
+// fila-enfileirar (v19) — TRAVA DE DUPLICIDADE. A funcao inseria as linhas as cegas: nada impedia
 // que o mesmo (campanha, canal, destino) entrasse duas vezes. Em 28/08 o painel mostrou tres linhas
 // do MESMO rep, MESMO numero e MESMA campanha, criadas 08:59, 09:01 e 09:03 — tres cliques em
 // "Criar fila e enviar". Em 25/08 a mesma coisa aconteceu no rep_comunicado e as tres SAIRAM: o
@@ -8,6 +8,7 @@
 //      ultimas ANTI_DUP_HORAS. Mandar de novo em 12h nao e cadencia, e incomodo.
 // A resposta diz quantas foram barradas e por que, para a tela poder mostrar em vez de sumir com a
 // diferenca entre "marquei 30" e "entraram 27".
+// v19: aceita `imagens` — URLs publicas que vao junto com a mensagem (ver comunicado-midia).
 // fila-enfileirar (v17) — POST grava itens na fila_envio. GET devolve contagem + lista recente (p/ o painel da tela).
 // v16: aceita `campos` — campos personalizados do CRM a gravar no contato ANTES do envio. Tem de ser
 // antes: o template do GHL e renderizado no momento em que a mensagem sai, entao campo gravado depois
@@ -114,7 +115,10 @@ Deno.serve(async (req) => {
       fone: it.fone || null, email: it.email || null, nome: it.nome || null, assunto: it.assunto || null,
       corpo: it.corpo || "", template_id: it.template_id || null, merge: it.merge || null, codparc: it.codparc || null,
       // campos do CRM a gravar no contato antes do envio (o template do GHL le do contato)
-      campos: it.campos || null, status: "pendente",
+      campos: it.campos || null,
+      // URLs publicas das imagens que vao junto: <img> no fim do e-mail, attachments no Zaptos
+      imagens: Array.isArray(it.imagens) && it.imagens.length ? it.imagens : null,
+      status: "pendente",
     }));
     for (let i = 0; i < rows.length; i += 500) { const { error } = await sb.from("fila_envio").insert(rows.slice(i, i + 500)); if (error) return j({ erro: detalhar(error) }, 500); }
     return j({

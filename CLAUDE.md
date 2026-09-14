@@ -50,8 +50,11 @@ renomear exigiria migrar linhas e funções sem ganho para quem lê a tela.
   `#contact_instance:<token>` governa só a entrada. Sem dono, a mensagem não sai.
 - **`SUPABASE_SERVICE_ROLE_KEY` vem com valor `sb_secret_`** que o PostgREST recusa (PGRST303).
   Toda função usa `const srvKey = () => Deno.env.get("SRV_JWT") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";`
-- **Chave de serviço escrita no código: já não há em `campanhas-saldo`, `campanhas-keyaccounts` nem
-  `cross-sell-abc`.** As duas carregavam um JWT `service_role` literal como fallback do
+- **Chave de serviço escrita no código: já não há em `campanhas-saldo`, `campanhas-keyaccounts`,
+  `cross-sell-abc` nem `campanhas-artes`** (esta última achada e retirada em 14/09 — o fallback do
+  `srvKey()` era um JWT `service_role` literal, válido até 2101; conferido depois que a função
+  continua listando as 12 artes pelo SRV_JWT). **Nunca varremos as 142 funções publicadas atrás de
+  outras**: o repositório tem 26, então as achadas até aqui foram as que alguém abriu por acaso. As duas carregavam um JWT `service_role` literal como fallback do
   SRV_JWT — chave de administrador do banco, no fonte, válida por anos. Retiradas em 31/08; as duas
   usam `srvKey()` como todo o resto. Se aparecer outra, tire: a variável SRV_JWT existe e funciona.
 - **Publicar o painel:** `POST host-upload?path=gestor.html` com o **HTML cru no corpo** e o caminho
@@ -273,6 +276,35 @@ nenhuma linha antiga muda de sentido).
 Storage sem cache-buster e o CDN entrega bytes antigos com ETag novo. O painel de verdade
 (`gestordecampanhas.marketing-da5.workers.dev`) atualiza na hora — confira o md5 por lá, não por
 essa rota, que é só o caminho de download.
+
+## Imagem no comunicado (criado em 14/09)
+
+As duas telas de comunicado (representante e cliente) sobem imagem. Bucket **público**
+`comunicado-midia` (PNG/JPG/WEBP/GIF, 5 MB, até 8 por comunicado), função `comunicado-midia`,
+widget único `midiaHTML()/midiaLigar()` no painel. Guardadas em `comunicado.imagens` (biblioteca) e
+em `fila_envio.imagens` (a linha que vai sair).
+
+**O upload passa pela função, não do navegador direto para o Storage.** A pendência 2 quer TIRAR a
+escrita da anon key — tela que dependesse dela quebraria no dia em que isso acontecer.
+
+**A imagem só vai no E-MAIL.** Ela vira `<img>` no fim do corpo, montada pelo `fila-processar` no
+momento do envio (`blocoImagens()`), porque o corpo chega ao GHL como HTML cru — o `campanhas-enviar`
+só envolve o texto num `<div>` e troca `\n` por `<br>`, então a tag passa direto.
+
+**No Zaptos NÃO vai, e isso é decisão, não esquecimento.** O GHL aceita `attachments` (array de URLs
+públicas, confirmado na doc), mas quem renderiza é o **ZaptosWPP**, não o GHL — a mesma armadilha do
+`status: sent` que em 26/08 marcou oito mensagens como entregues sem nada chegar. Precisa de um
+envio de teste real para um número nosso antes de ser oferecido. Na tela do rep o widget fica dentro
+da caixa de e-mail, então só aparece quando "mandar também por e-mail" está marcado.
+
+**Por que o `campanhas-enviar` ficou intacto.** Chegou a ser alterado (attachments no `sms()` +
+`blocoImagens` no e-mail) e foi revertido de propósito: são 32 KB e ele carrega a trava de instância,
+a confirmação de troca e a checagem de entrega. Como o deploy de Edge Function aqui exige transcrever
+o arquivo inteiro à mão, o risco de um caractere perdido na função que todo envio atravessa não se
+paga por uma feature de e-mail que funciona sem ela. Quando o Zaptos for testado e aprovado, aí sim.
+
+**A biblioteca de comunicados agora filtra por público** (`campanhas-comunicado` v5). Desde 09/09 a
+tabela é compartilhada, e a tela do rep estava listando também os comunicados escritos para cliente.
 
 ## Pendências esperando decisão do gestor (03/09/2026)
 

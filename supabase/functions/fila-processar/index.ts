@@ -6,6 +6,7 @@
 // outras instancias seguem enviando, e so as linhas da instancia caida esperam. Sai da pausa quem
 // reconectou: fila-acao retomar (canal whatsapp/ambos) limpa, ou um UPDATE na coluna.
 // v21: (revertido) queda desligava a fila de Zaptos inteira.
+// v22: imagens do comunicado entram no corpo do e-mail (blocoImagens). Zaptos ainda nao — ver la.
 // fila-processar (v20) — cron (1/min). Le fila_config: email em lote (email_lote) se email_ativo; WhatsApp 1 por instancia a cada wpp_intervalo_seg se wpp_ativo. Chama campanhas-enviar (passa merge).
 // v20: TETO POR MINUTO, POR INSTANCIA (fila_config.wpp_max_min, padrao 2). A vazao era emergente:
 //      cron de 1x/min + portao de wpp_intervalo_seg + margem 0 na rajada davam 1,9 msg/min no lote de
@@ -51,6 +52,22 @@ const j = (o: unknown, s = 200) => new Response(JSON.stringify(o), { status: s, 
 const PEND = ["pendente", "agendado"];
 const srvKey = () => Deno.env.get("SRV_JWT") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 
+/* Imagens do comunicado no corpo do E-MAIL. Elas entram AQUI, e nao no campanhas-enviar, de
+   proposito: o corpo do e-mail chega ao GHL como HTML cru (o campanhas-enviar so envolve o texto
+   num <div> e troca \n por <br>), entao a tag <img> passa direto. Mexer no campanhas-enviar por
+   causa disso significaria reescrever a funcao que carrega a trava de instancia, a confirmacao de
+   troca e a checagem de entrega — risco desproporcional ao ganho.
+   NAO vale para o Zaptos: la o texto vai como mensagem, e uma tag <img> apareceria literal para o
+   cliente. Imagem no Zaptos precisa de `attachments` no GHL e de um teste real com o ZaptosWPP
+   antes — "aceito pelo GHL" nao e "entregue". */
+function blocoImagens(urls: any): string {
+  const lista = (Array.isArray(urls) ? urls : []).filter((u: any) => /^https?:\/\//i.test(String(u || "")));
+  if (!lista.length) return "";
+  return '<div style="margin-top:16px">' + lista.map((u: string) =>
+    '<div style="margin:10px 0"><img src="' + u + '" alt="" style="max-width:100%;height:auto;display:block;border:0"></div>'
+  ).join("") + '</div>';
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   try {
@@ -94,7 +111,7 @@ Deno.serve(async (req) => {
       if (!texto) { await sb.from("fila_envio").update({ status: "erro", resultado: "sem texto (corpo/mensagem vazios)" }).eq("id", m.id); return { ok: false, caiu: false }; }
       const assunto = m.assunto || ("Nitron — " + (m.nome || "")).trim();
       const body = m.canal === "email"
-        ? { canal: "email", email: m.email, nome: m.nome, assunto, texto, templateId: m.template_id || undefined, merge: m.merge || undefined, codparc: m.codparc || undefined, campos: m.campos || undefined }
+        ? { canal: "email", email: m.email, nome: m.nome, assunto, texto: texto + blocoImagens(m.imagens), templateId: m.template_id || undefined, merge: m.merge || undefined, codparc: m.codparc || undefined, campos: m.campos || undefined }
         // usar_dono nas campanhas de CLIENTE: o WhatsApp sai pelo numero de quem e dono do contato no
         // CRM, entao ali a gente manda pela dona de fato (e o campanhas-enviar acerta o nome no texto).
         // Nas de REPRESENTANTE nao: divergir do organograma e um aviso para a gestao, e a linha fica

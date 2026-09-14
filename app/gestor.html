@@ -1729,7 +1729,7 @@
     getJSON(SUPA + "/functions/v1/campanhas-comunicado", function (d) {
       if (!d || d.erro) { $("kaFlow").innerHTML = '<div class="note" style="padding:16px;color:#c0392b">erro ao carregar: ' + esc((d && d.erro) || "falha") + '</div>'; return; }
       COMD = d; COMSEL = {}; COMCT = {}; COMAB = {}; COMID = null; COMTIT = "";
-      COMTXT = { w: "", a: "", c: "" }; COMEMAIL = false; COMF = { busca: "", inst: "" };
+      COMTXT = { w: "", a: "", c: "" }; COMEMAIL = false; COMF = { busca: "", inst: "" }; MIDIA.rep = [];
       comReps().forEach(function (r) { comMarcar(r, true); });
       comRender();
     });
@@ -1789,7 +1789,8 @@
       + '<label class="ctopt" style="margin-top:8px"><input type="checkbox" id="comEmail"' + (COMEMAIL ? " checked" : "") + '><span>mandar também por e-mail</span></label>'
       + '<div id="comEmailBox" style="display:' + (COMEMAIL ? "" : "none") + '">'
       + '<div class="lab">Assunto</div><input class="ei" id="comAss" style="width:100%" placeholder="Comunicado Nitron" value="' + esc(COMTXT.a) + '">'
-      + '<div class="lab">Corpo do e-mail</div><textarea id="comCorpo" rows="6" style="width:100%">' + esc(COMTXT.c) + '</textarea></div>'
+      + '<div class="lab">Corpo do e-mail</div><textarea id="comCorpo" rows="6" style="width:100%">' + esc(COMTXT.c) + '</textarea>'
+      + midiaHTML("rep") + '</div>'
       + '<div class="cfoot" style="margin-top:10px"><input class="ei" id="comTitulo" placeholder="dar um nome para reusar depois" style="max-width:280px" value="' + esc(COMTIT) + '">'
       + '<button class="btn out" id="comSalvar">💾 Salvar na biblioteca</button><span class="note" id="comSalvoSt"></span></div></div>';
     var dn = comDivN();
@@ -1965,6 +1966,7 @@
     var sv = $("comSalvar"); if (sv) sv.addEventListener("click", comSalvar);
     var fl = $("comFila"); if (fl) fl.addEventListener("click", comFila);
     var ts = $("comTeste"); if (ts) ts.addEventListener("click", comTeste);
+    midiaLigar("rep", comPreview);
   }
   function comPreview() {
     var p = $("comPrev"); if (!p) return;
@@ -1980,6 +1982,7 @@
     var s = (COMD.salvos || []).filter(function (x) { return String(x.id) === sel.value; })[0]; if (!s) return;
     COMID = s.id; COMTIT = s.titulo || "";
     COMTXT = { w: s.texto_wpp || "", a: s.assunto || "", c: s.texto_email || "" };
+    MIDIA.rep = Array.isArray(s.imagens) ? s.imagens.slice(0) : [];
     COMEMAIL = !!(s.assunto || s.texto_email);
     comRender();
     var q = $("comSalvos"); if (q) q.value = String(s.id);
@@ -2004,7 +2007,7 @@
     var st = $("comSalvoSt");
     if (!COMTIT.trim()) { if (st) { st.textContent = "dê um nome antes de salvar"; st.style.color = "#b7791f"; } return; }
     if (st) { st.textContent = "salvando…"; st.style.color = "#6a7f78"; }
-    var body = { titulo: COMTIT, texto_wpp: COMTXT.w, assunto: COMTXT.a, texto_email: COMTXT.c };
+    var body = { titulo: COMTIT, texto_wpp: COMTXT.w, assunto: COMTXT.a, texto_email: COMTXT.c, imagens: MIDIA.rep };
     if (COMID) body.id = COMID;
     postJSON(SUPA + "/functions/v1/campanhas-comunicado", body, function (r) {
       if (r && r.ok && r.salvo) {
@@ -2029,7 +2032,8 @@
       });
       (r.emails || []).forEach(function (e) {
         if (!COMCT[comCk(r.codvend, "em", e.valor)]) return;
-        itens.push({ campanha: "rep_comunicado", publico: "rep", canal: "email", email: e.valor, assunto: fillMk(tA, mk), corpo: fillMk(tC || tW, mk), nome: r.nome, merge: { rep: r.nome } });
+        // imagem so no e-mail: no Zaptos a tag <img> apareceria literal para o representante
+        itens.push({ campanha: "rep_comunicado", publico: "rep", canal: "email", email: e.valor, assunto: fillMk(tA, mk), corpo: fillMk(tC || tW, mk), nome: r.nome, merge: { rep: r.nome }, imagens: MIDIA.rep });
       });
     });
     return { itens: itens, semInst: semInst };
@@ -2092,7 +2096,7 @@
     $("op-nome").textContent = "Comunicado aos clientes";
     $("op-meta").textContent = "Recado livre da gestão para a base de clientes do CRM · o texto vale exatamente como você escrever · só por e-mail";
     $("op-kpis").innerHTML = ""; var ai = $("atuInfo"); if (ai) ai.textContent = "";
-    CCTXT = { a: "", c: "" }; CCTIT = ""; CCID = null;
+    CCTXT = { a: "", c: "" }; CCTIT = ""; CCID = null; MIDIA.cliente = [];
     CCF = { base: "crm", sem_inad: false, sem_bloq: true, sem_ka: false };
     $("kaFlow").innerHTML = '<div class="note" style="padding:16px">carregando a base de clientes…</div>';
     ccCarregar(true);
@@ -2144,6 +2148,7 @@
       + '<input class="ei" id="ccAss" style="width:100%" placeholder="ex.: Comunicado Nitron — novidade na linha de organização" value="' + esc(CCTXT.a) + '">'
       + '<div class="lab">Corpo do e-mail</div>'
       + '<textarea id="ccCorpo" rows="9" style="width:100%" placeholder="Olá [CLIENTE],&#10;&#10;Escreva aqui o comunicado…">' + esc(CCTXT.c) + '</textarea>'
+      + midiaHTML("cliente")
       + '<div class="note" id="ccPrev" style="margin-top:6px"></div>'
       + '<div class="ccfoot" style="margin-top:10px"><input class="ei" id="ccTitulo" placeholder="dar um nome para reusar depois" style="max-width:280px" value="' + esc(CCTIT) + '">'
       + '<button class="btn out" id="ccSalvar">💾 Salvar na biblioteca</button><span class="note" id="ccSalvoSt"></span></div></div>';
@@ -2207,12 +2212,14 @@
     var ex = (CCD.amostra || [])[0];
     var nome = ex ? ex.nome : "CLIENTE";
     p.innerHTML = '<b>Prévia para ' + esc(nome) + ':</b><br><i>' + esc(fillMk(CCTXT.a || "(sem assunto)", { CLIENTE: nome })) + '</i><br>'
-      + esc(fillMk(CCTXT.c, { CLIENTE: nome })).replace(/\n/g, "<br>");
+      + esc(fillMk(CCTXT.c, { CLIENTE: nome })).replace(/\n/g, "<br>")
+      + midiaPreviaHTML("cliente");
   }
   function ccLigar() {
     var a = $("ccAss"); if (a) a.addEventListener("input", function () { CCTXT.a = a.value; ccPreview(); });
     var c = $("ccCorpo"); if (c) c.addEventListener("input", function () { CCTXT.c = c.value; ccPreview(); });
     var t = $("ccTitulo"); if (t) t.addEventListener("input", function () { CCTIT = t.value; });
+    midiaLigar("cliente", ccPreview);
     ["ccSemBloq|sem_bloq", "ccSemInad|sem_inad", "ccSemKa|sem_ka"].forEach(function (par) {
       var p = par.split("|"), el = $(p[0]);
       if (el) el.addEventListener("change", function () { CCF[p[1]] = el.checked; ccRecontar(); });
@@ -2242,6 +2249,7 @@
     var s = (CCD.salvos || []).filter(function (x) { return String(x.id) === sel.value; })[0]; if (!s) return;
     CCID = s.id; CCTIT = s.titulo || "";
     CCTXT = { a: s.assunto || "", c: s.texto_email || "" };
+    MIDIA.cliente = Array.isArray(s.imagens) ? s.imagens.slice(0) : [];
     ccRender();
     var q = $("ccSalvos"); if (q) q.value = String(s.id);
     var st2 = $("ccBibSt");
@@ -2265,7 +2273,7 @@
     var st = $("ccSalvoSt");
     if (!CCTIT.trim()) { if (st) { st.textContent = "dê um nome antes de salvar"; st.style.color = "#b7791f"; } return; }
     if (st) { st.textContent = "salvando…"; st.style.color = "#6a7f78"; }
-    var body = { titulo: CCTIT, assunto: CCTXT.a, texto_email: CCTXT.c };
+    var body = { titulo: CCTIT, assunto: CCTXT.a, texto_email: CCTXT.c, imagens: MIDIA.cliente };
     if (CCID) body.id = CCID;
     postJSON(SUPA + "/functions/v1/campanhas-comunicado-cliente", body, function (r) {
       if (r && r.ok && r.salvo) {
@@ -2306,7 +2314,7 @@
     postJSON(SUPA + "/functions/v1/campanhas-comunicado-cliente", {
       acao: "enfileirar", canal: "email",
       assunto: CCTXT.a, corpo: CCTXT.c,
-      filtros: CCF, total_esperado: CCD.total, confirmar: true
+      filtros: CCF, total_esperado: CCD.total, confirmar: true, imagens: MIDIA.cliente
     }, function (d) {
       CCBUSY = false; btn.disabled = false; btn.textContent = "📧 Criar fila e enviar";
       if (d && d.ok) {
@@ -2315,6 +2323,103 @@
         ccCarregar(false);
       } else { st.textContent = "✗ " + ((d && d.erro) || "falha"); st.style.color = "#c0392b"; }
     });
+  }
+  /* ===== IMAGENS DO COMUNICADO =====
+     Um widget so, usado pelas DUAS telas de comunicado (representante e cliente). O arquivo vai
+     para a funcao `comunicado-midia`, que grava no bucket publico e devolve a URL — o painel nunca
+     escreve no Storage direto, porque a pendencia 2 do CLAUDE.md quer TIRAR a escrita da anon key e
+     uma tela que dependesse dela quebraria no dia em que isso acontecer.
+
+     A imagem entra no CORPO DO E-MAIL, como <img> no fim (quem monta e o fila-processar, no envio).
+     NO ZAPTOS AINDA NAO: la o texto vai como mensagem e uma tag <img> apareceria literal. Imagem no
+     Zaptos exige `attachments` no GHL e um teste real com o ZaptosWPP antes — "aceito pelo GHL" nao
+     e "entregue", e isso ja custou oito mensagens fantasma em 26/08. */
+  var MIDIA = { rep: [], cliente: [] };
+  var MIDIAMAX = 8;
+  function midiaKB(n) { return n >= 1048576 ? ((n / 1048576).toFixed(1) + " MB") : (Math.round(n / 1024) + " KB"); }
+  /* XHR com corpo binario: o postJSON da casa serializa em JSON e o upload precisa dos bytes crus. */
+  function postBIN(u, file, cb) {
+    var x = new XMLHttpRequest();
+    x.open("POST", u + "?nome=" + encodeURIComponent(file.name || "imagem"), true);
+    for (var k in H) { if (k !== "Content-Type") x.setRequestHeader(k, H[k]); }
+    x.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+    x.onreadystatechange = function () {
+      if (x.readyState === 4) {
+        try { cb(x.status >= 200 && x.status < 300 ? JSON.parse(x.responseText) : JSON.parse(x.responseText || "{}")); }
+        catch (e) { cb({ ok: false, erro: "status " + x.status }); }
+      }
+    };
+    x.send(file);
+  }
+  function midiaHTML(ctx) {
+    return '<div class="lab" style="padding:10px 0 4px">🖼 Imagens — vão no fim do <b>e-mail</b></div>'
+      + '<div class="note" style="margin-bottom:6px">PNG, JPG, WEBP ou GIF, até 5 MB cada, no máximo ' + MIDIAMAX + '. '
+      + '<b>No Zaptos ainda não</b>: lá a imagem precisa de anexo no GHL e de um teste real antes — o GHL aceitar não é o cliente receber.</div>'
+      + '<div class="ccfoot"><input type="file" id="mid-f-' + ctx + '" accept="image/png,image/jpeg,image/webp,image/gif" multiple style="max-width:280px">'
+      + '<span class="note" id="mid-st-' + ctx + '"></span></div>'
+      + '<div id="mid-lista-' + ctx + '" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"></div>';
+  }
+  function midiaPintar(ctx) {
+    var box = $("mid-lista-" + ctx); if (!box) return;
+    var urls = MIDIA[ctx] || [];
+    if (!urls.length) { box.innerHTML = '<span class="note">nenhuma imagem</span>'; return; }
+    var h = "";
+    urls.forEach(function (u, i) {
+      h += '<div style="position:relative;border:1px solid var(--line);border-radius:8px;padding:4px;background:#fff">'
+        + '<img src="' + esc(u) + '" style="width:104px;height:104px;object-fit:contain;display:block">'
+        + '<button class="btn out" style="padding:1px 8px;margin-top:4px;width:100%" data-mid-rm="' + ctx + '|' + i + '">✕ tirar</button></div>';
+    });
+    box.innerHTML = h;
+  }
+  function midiaLigar(ctx, aoMudar) {
+    var inp = $("mid-f-" + ctx); if (!inp) return;
+    midiaPintar(ctx);
+    inp.addEventListener("change", function () {
+      var fs = Array.prototype.slice.call(inp.files || []);
+      if (!fs.length) return;
+      var st = $("mid-st-" + ctx);
+      var livre = MIDIAMAX - (MIDIA[ctx] || []).length;
+      if (livre <= 0) { if (st) { st.textContent = "já são " + MIDIAMAX + " imagens — tire uma antes"; st.style.color = "#b7791f"; } inp.value = ""; return; }
+      fs = fs.slice(0, livre);
+      var pend = fs.length, erros = [];
+      if (st) { st.textContent = "enviando " + pend + " imagem(ns)…"; st.style.color = "#6a7f78"; }
+      fs.forEach(function (f) {
+        postBIN(SUPA + "/functions/v1/comunicado-midia", f, function (r) {
+          if (r && r.ok && r.url) MIDIA[ctx].push(r.url);
+          else erros.push((f.name || "arquivo") + ": " + ((r && r.erro) || "falha"));
+          if (--pend === 0) {
+            inp.value = "";
+            midiaPintar(ctx);
+            if (st) {
+              if (erros.length) { st.textContent = "✗ " + erros.join(" · "); st.style.color = "#c0392b"; }
+              else { st.innerHTML = "<b style='color:#1a7f4b'>✓ " + MIDIA[ctx].length + " imagem(ns)</b>"; st.style.color = ""; }
+            }
+            if (aoMudar) aoMudar();
+          }
+        });
+      });
+    });
+    /* o ✕ e delegado: a lista se repinta a cada upload e listener por botao viraria lixo */
+    var lista = $("mid-lista-" + ctx);
+    if (lista) lista.addEventListener("click", function (ev) {
+      var d = ev.target && ev.target.getAttribute ? ev.target.getAttribute("data-mid-rm") : null;
+      if (!d) return;
+      var p = d.split("|"); var c = p[0]; var i = Number(p[1]);
+      if (!MIDIA[c] || isNaN(i)) return;
+      MIDIA[c].splice(i, 1);
+      midiaPintar(c);
+      var st2 = $("mid-st-" + c); if (st2) { st2.textContent = MIDIA[c].length ? (MIDIA[c].length + " imagem(ns)") : "nenhuma imagem"; st2.style.color = ""; }
+      if (aoMudar) aoMudar();
+    });
+  }
+  /* HTML igual ao que o fila-processar monta no envio — a previa da tela e a mensagem precisam
+     mostrar a mesma coisa (o CLAUDE.md tem um item inteiro sobre previa que diverge do envio). */
+  function midiaPreviaHTML(ctx) {
+    var urls = MIDIA[ctx] || [];
+    if (!urls.length) return "";
+    return '<div style="margin-top:12px">' + urls.map(function (u) {
+      return '<div style="margin:8px 0"><img src="' + esc(u) + '" style="max-width:220px;height:auto;display:block;border:1px solid var(--line);border-radius:6px"></div>';
+    }).join("") + '</div>';
   }
   init();
   function loadMotorPainel(){

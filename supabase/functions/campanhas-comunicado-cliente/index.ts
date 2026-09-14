@@ -1,4 +1,4 @@
-// campanhas-comunicado-cliente (v1) — apoio a campanha `cliente_comunicado`: recado livre da gestao
+// campanhas-comunicado-cliente (v3) — apoio a campanha `cliente_comunicado`: recado livre da gestao
 // para a BASE DE CLIENTES do CRM. E o irmao do `campanhas-comunicado` (que fala com a rede de
 // representantes), com tres diferencas que vem do tamanho e do destinatario:
 //
@@ -23,8 +23,10 @@
 //      erro de casar nome de uma loja com o contato de outra.
 //
 // GET  ?base=&sem_inad=&sem_bloq=&sem_ka=&uf=  -> { total, clientes, cortes, amostra, salvos, cfg }
-// POST { titulo, assunto, texto_email, id? }   -> grava/atualiza na biblioteca (publico='cliente')
+// POST { titulo, assunto, texto_email, imagens?, id? } -> grava/atualiza na biblioteca (publico='cliente')
 // POST { apagar:<id> }                         -> remove da biblioteca
+// v3: aceita `imagens` (URLs publicas do comunicado-midia) — guardadas na biblioteca e mandadas
+//     na linha da fila. Quem as vira <img> no fim do corpo e o fila-processar, no envio.
 // POST { acao:"enfileirar", assunto, corpo, filtros, total_esperado, confirmar:true }
 //        -> resolve a audiencia e enfileira. Recusa sem `confirmar`, e recusa se o total de agora
 //           nao for o mesmo que a tela mostrou (`total_esperado`): tela velha nao dispara lote novo.
@@ -171,6 +173,13 @@ Deno.serve(async (req) => {
         //   total_esperado -> se a audiencia mudou desde que a tela contou, o lote NAO sai
         if (b.confirmar !== true) return j({ erro: "falta confirmar:true" }, 400);
 
+        // Imagens vao como URL publica (ver comunicado-midia). Aqui so validamos a forma: quem as
+        // transforma em <img> no fim do corpo e o fila-processar, no momento do envio.
+        const imagens = (Array.isArray(b.imagens) ? b.imagens : [])
+          .map((u: any) => String(u || "").trim())
+          .filter((u: string) => /^https?:\/\//i.test(u))
+          .slice(0, 8);
+
         const f = lerFiltros((k) => (b.filtros || {})[k]);
         const { alvos, cortes, clientes } = await audiencia(sb, f);
         if (!alvos.length) return j({ erro: "nenhum destinatario com os filtros escolhidos", cortes }, 400);
@@ -192,6 +201,7 @@ Deno.serve(async (req) => {
             codparc: a.codparc, nome: a.nome, email: a.email,
             assunto: fill(assunto, a.nome), corpo: fill(corpo, a.nome),
             merge: { cliente: a.nome },
+            imagens: imagens.length ? imagens : undefined,
           }));
           const r = await fetch(`${SUPA}/functions/v1/fila-enfileirar`, {
             method: "POST",
@@ -202,7 +212,7 @@ Deno.serve(async (req) => {
           if (d && d.ok) enfileirados += Number(d.enfileirados || 0);
           else falhas.push(String((d && d.erro) || ("lote " + (i / LOTE_FILA + 1) + " falhou")));
         }
-        return j({ ok: !falhas.length, total: alvos.length, clientes, enfileirados, cortes, falhas: falhas.length ? falhas : undefined });
+        return j({ ok: !falhas.length, total: alvos.length, clientes, enfileirados, imagens: imagens.length || undefined, cortes, falhas: falhas.length ? falhas : undefined });
       }
 
       // gravar na biblioteca
@@ -212,6 +222,7 @@ Deno.serve(async (req) => {
         titulo, publico: "cliente",
         texto_wpp: "", // esta campanha nao usa Zaptos; a coluna existe por causa do irmao do rep
         assunto: String(b.assunto || ""), texto_email: String(b.texto_email || ""),
+        imagens: (Array.isArray(b.imagens) ? b.imagens : []).map((u: any) => String(u || "").trim()).filter((u: string) => /^https?:\/\//i.test(u)).slice(0, 8),
         atualizado: new Date().toISOString(),
       };
       if (b.id) {

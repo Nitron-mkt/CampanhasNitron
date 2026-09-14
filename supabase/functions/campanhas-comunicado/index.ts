@@ -1,9 +1,17 @@
-// campanhas-comunicado (v4) — apoio a campanha rep_comunicado: recado livre da gestao para a rede
+// campanhas-comunicado (v5) — apoio a campanha rep_comunicado: recado livre da gestao para a rede
 // de representantes. NAO tem gatilho de dado e NAO usa IA: o texto e escrito na tela e muda a cada
 // envio, entao aqui so devolvemos a rede com os contatos de cada rep e guardamos os comunicados
 // anteriores para reuso.
 //
 // GET  -> { reps:[...], salvos:[...], cfg:{...}, crm_lido, atualizado }
+//
+// v5: duas coisas.
+//   a) A biblioteca passou a ter PUBLICO (o comunicado ao cliente nasceu em 09/09 e divide a mesma
+//      tabela). Sem filtrar, esta tela listava tambem os comunicados de cliente — texto escrito para
+//      outro destinatario aparecendo na lista de quem fala com a rede. Agora le e grava so 'rep'.
+//   b) Aceita `imagens`: URLs publicas (ver comunicado-midia) guardadas junto do comunicado. Elas
+//      vao SO no e-mail — no Zaptos a tag <img> apareceria literal, e anexo de verdade exige
+//      `attachments` no GHL com teste real no ZaptosWPP antes.
 // POST { titulo, texto_wpp, assunto, texto_email, id? } -> grava/atualiza um comunicado
 // POST { apagar:<id> }                                  -> remove um comunicado
 //
@@ -68,14 +76,18 @@ Deno.serve(async (req) => {
     if (req.method === "POST") {
       const b = await req.json().catch(() => ({}));
       if (b.apagar) {
-        const { error } = await sb.from("comunicado").delete().eq("id", Number(b.apagar)); if (error) throw error;
+        const { error } = await sb.from("comunicado").delete().eq("id", Number(b.apagar)).eq("publico", "rep"); if (error) throw error;
         return j({ ok: true, apagado: Number(b.apagar) });
       }
       const titulo = String(b.titulo || "").trim();
       if (!titulo) return j({ erro: "sem titulo" }, 400);
-      const linha = { titulo, texto_wpp: String(b.texto_wpp || ""), assunto: String(b.assunto || ""), texto_email: String(b.texto_email || ""), atualizado: new Date().toISOString() };
+      const imagens = (Array.isArray(b.imagens) ? b.imagens : [])
+        .map((u: any) => String(u || "").trim())
+        .filter((u: string) => /^https?:\/\//i.test(u))
+        .slice(0, 8);
+      const linha = { titulo, publico: "rep", texto_wpp: String(b.texto_wpp || ""), assunto: String(b.assunto || ""), texto_email: String(b.texto_email || ""), imagens, atualizado: new Date().toISOString() };
       if (b.id) {
-        const { data, error } = await sb.from("comunicado").update(linha).eq("id", Number(b.id)).select().maybeSingle(); if (error) throw error;
+        const { data, error } = await sb.from("comunicado").update(linha).eq("id", Number(b.id)).eq("publico", "rep").select().maybeSingle(); if (error) throw error;
         return j({ ok: true, salvo: data });
       }
       const { data, error } = await sb.from("comunicado").insert(linha).select().maybeSingle(); if (error) throw error;
@@ -145,7 +157,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { data: salvos, error: eS } = await sb.from("comunicado").select("*").order("atualizado", { ascending: false }).limit(50); if (eS) throw eS;
+    const { data: salvos, error: eS } = await sb.from("comunicado").select("*").eq("publico", "rep").order("atualizado", { ascending: false }).limit(50); if (eS) throw eS;
     const { data: cfg } = await sb.from("fila_config").select("wpp_intervalo_seg,email_lote,wpp_ativo,email_ativo").eq("id", 1).maybeSingle();
     const { data: meta } = await sb.from("cache_meta").select("atualizado").eq("chave", "snapshot").maybeSingle();
     return j({ reps, salvos: salvos || [], cfg: cfg || null, crm_lido: !!donos, atualizado: meta?.atualizado || null });
