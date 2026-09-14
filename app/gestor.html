@@ -1789,8 +1789,8 @@
       + '<label class="ctopt" style="margin-top:8px"><input type="checkbox" id="comEmail"' + (COMEMAIL ? " checked" : "") + '><span>mandar também por e-mail</span></label>'
       + '<div id="comEmailBox" style="display:' + (COMEMAIL ? "" : "none") + '">'
       + '<div class="lab">Assunto</div><input class="ei" id="comAss" style="width:100%" placeholder="Comunicado Nitron" value="' + esc(COMTXT.a) + '">'
-      + '<div class="lab">Corpo do e-mail</div><textarea id="comCorpo" rows="6" style="width:100%">' + esc(COMTXT.c) + '</textarea>'
-      + midiaHTML("rep") + '</div>'
+      + '<div class="lab">Corpo do e-mail</div><textarea id="comCorpo" rows="6" style="width:100%">' + esc(COMTXT.c) + '</textarea></div>'
+      + midiaHTML("rep")
       + '<div class="cfoot" style="margin-top:10px"><input class="ei" id="comTitulo" placeholder="dar um nome para reusar depois" style="max-width:280px" value="' + esc(COMTIT) + '">'
       + '<button class="btn out" id="comSalvar">💾 Salvar na biblioteca</button><span class="note" id="comSalvoSt"></span></div></div>';
     var dn = comDivN();
@@ -1974,7 +1974,8 @@
     if (!t.trim()) { p.textContent = "escreva o recado acima — a prévia aparece aqui"; return; }
     var ex = comReps().filter(function (r) { return COMSEL[r.codvend]; })[0] || comReps()[0];
     p.innerHTML = '<b>Prévia para ' + esc(ex ? ex.nome : "um rep") + ':</b><br>'
-      + esc(fillMk(t, { REP: ex ? ex.nome : "REP", ASSISTENTE: (ex && comInst(ex)) || "" })).replace(/\n/g, "<br>");
+      + esc(fillMk(t, { REP: ex ? ex.nome : "REP", ASSISTENTE: (ex && comInst(ex)) || "" })).replace(/\n/g, "<br>")
+      + midiaPreviaHTML("rep");
   }
   function comCarregar() {
     var sel = $("comSalvos"), st = $("comBibSt");
@@ -2028,7 +2029,7 @@
       (r.telefones || []).forEach(function (t) {
         if (!COMCT[comCk(r.codvend, "tel", t.valor)]) return;
         if (!inst) { semInst++; return; }   // sem instancia o Zaptos sairia pelo numero errado
-        itens.push({ campanha: "rep_comunicado", publico: "rep", canal: "whatsapp", fone: t.valor, instancia: inst, corpo: fillMk(tW, mk), nome: r.nome });
+        itens.push({ campanha: "rep_comunicado", publico: "rep", canal: "whatsapp", fone: t.valor, instancia: inst, corpo: fillMk(tW, mk), nome: r.nome, imagens: MIDIA.rep });
       });
       (r.emails || []).forEach(function (e) {
         if (!COMCT[comCk(r.codvend, "em", e.valor)]) return;
@@ -2330,10 +2331,12 @@
      escreve no Storage direto, porque a pendencia 2 do CLAUDE.md quer TIRAR a escrita da anon key e
      uma tela que dependesse dela quebraria no dia em que isso acontecer.
 
-     A imagem entra no CORPO DO E-MAIL, como <img> no fim (quem monta e o fila-processar, no envio).
-     NO ZAPTOS AINDA NAO: la o texto vai como mensagem e uma tag <img> apareceria literal. Imagem no
-     Zaptos exige `attachments` no GHL e um teste real com o ZaptosWPP antes — "aceito pelo GHL" nao
-     e "entregue", e isso ja custou oito mensagens fantasma em 26/08. */
+     Dois caminhos, porque os canais sao diferentes:
+       e-mail  -> <img> no fim do corpo, montado pelo fila-processar no envio
+       Zaptos  -> `attachments` no proprio POST do texto (campanhas-enviar v30): UMA mensagem, a
+                  imagem com o texto de legenda. Nao dobra o consumo do teto de 2/min por instancia.
+     A entrega no Zaptos foi conferida no aparelho em 14/09 antes de a tela oferecer isso — o GHL
+     aceitar nao e o cliente receber, e essa confusao ja custou oito mensagens fantasma em 26/08. */
   var MIDIA = { rep: [], cliente: [] };
   var MIDIAMAX = 8;
   function midiaKB(n) { return n >= 1048576 ? ((n / 1048576).toFixed(1) + " MB") : (Math.round(n / 1024) + " KB"); }
@@ -2352,9 +2355,16 @@
     x.send(file);
   }
   function midiaHTML(ctx) {
-    return '<div class="lab" style="padding:10px 0 4px">🖼 Imagens — vão no fim do <b>e-mail</b></div>'
+    /* A campanha ao CLIENTE e so e-mail (a funcao recusa canal=whatsapp), entao o texto muda:
+       prometer Zaptos ali seria mentir para quem le a tela. */
+    var soEmail = (ctx === "cliente");
+    return '<div class="lab" style="padding:10px 0 4px">🖼 Imagens — vão junto com '
+      + (soEmail ? 'o <b>e-mail</b>' : 'a mensagem, no <b>Zaptos</b> e no <b>e-mail</b>') + '</div>'
       + '<div class="note" style="margin-bottom:6px">PNG, JPG, WEBP ou GIF, até 5 MB cada, no máximo ' + MIDIAMAX + '. '
-      + '<b>No Zaptos ainda não</b>: lá a imagem precisa de anexo no GHL e de um teste real antes — o GHL aceitar não é o cliente receber.</div>'
+      + (soEmail
+          ? 'Esta campanha é só por e-mail.'
+          : 'No Zaptos sai <b>uma mensagem só</b>, a imagem com o texto de legenda — não consome o dobro do limite de 2/min por instância. No e-mail elas entram no fim do corpo.')
+      + '</div>'
       + '<div class="ccfoot"><input type="file" id="mid-f-' + ctx + '" accept="image/png,image/jpeg,image/webp,image/gif" multiple style="max-width:280px">'
       + '<span class="note" id="mid-st-' + ctx + '"></span></div>'
       + '<div id="mid-lista-' + ctx + '" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"></div>';

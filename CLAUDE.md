@@ -287,21 +287,31 @@ em `fila_envio.imagens` (a linha que vai sair).
 **O upload passa pela função, não do navegador direto para o Storage.** A pendência 2 quer TIRAR a
 escrita da anon key — tela que dependesse dela quebraria no dia em que isso acontecer.
 
-**A imagem só vai no E-MAIL.** Ela vira `<img>` no fim do corpo, montada pelo `fila-processar` no
-momento do envio (`blocoImagens()`), porque o corpo chega ao GHL como HTML cru — o `campanhas-enviar`
-só envolve o texto num `<div>` e troca `\n` por `<br>`, então a tag passa direto.
+**Dois caminhos, porque os canais são diferentes:**
 
-**No Zaptos NÃO vai, e isso é decisão, não esquecimento.** O GHL aceita `attachments` (array de URLs
-públicas, confirmado na doc), mas quem renderiza é o **ZaptosWPP**, não o GHL — a mesma armadilha do
-`status: sent` que em 26/08 marcou oito mensagens como entregues sem nada chegar. Precisa de um
-envio de teste real para um número nosso antes de ser oferecido. Na tela do rep o widget fica dentro
-da caixa de e-mail, então só aparece quando "mandar também por e-mail" está marcado.
+| canal | como a imagem vai | quem monta |
+|---|---|---|
+| e-mail | `<img>` no fim do corpo | `fila-processar` (`blocoImagens()`), porque o corpo chega ao GHL como HTML cru |
+| Zaptos | `attachments` no **próprio POST do texto** — uma mensagem só, imagem com legenda | `campanhas-enviar` v30 |
 
-**Por que o `campanhas-enviar` ficou intacto.** Chegou a ser alterado (attachments no `sms()` +
-`blocoImagens` no e-mail) e foi revertido de propósito: são 32 KB e ele carrega a trava de instância,
-a confirmação de troca e a checagem de entrega. Como o deploy de Edge Function aqui exige transcrever
-o arquivo inteiro à mão, o risco de um caractere perdido na função que todo envio atravessa não se
-paga por uma feature de e-mail que funciona sem ela. Quando o Zaptos for testado e aprovado, aí sim.
+O Zaptos numa mensagem só é o ponto: mandar imagem e texto separados dobraria o consumo do teto de
+2/min por instância. O anexo **nunca** vai no bind `#contact_instance:<x>`, que é linha de serviço.
+
+**A entrega no Zaptos foi conferida no aparelho em 14/09, antes de a tela oferecer isso** — envio
+real para 11970399053 pela instância Nina (dona do contato no CRM), GHL 201, troca confirmada em
+2,8s, imagem chegou com o texto. Isso importa porque o GHL aceitar `attachments` não prova que o
+**ZaptosWPP** renderize: é a mesma armadilha do `status: sent` que em 26/08 marcou oito mensagens
+como entregues sem nada chegar. **Nunca ligue anexo novo no Zaptos sem repetir esse teste.**
+
+**A mudança no `campanhas-enviar` foi deliberadamente mínima: cinco linhas.** Ele carrega a trava de
+instância, a confirmação de troca e a checagem de entrega, e o deploy aqui exige transcrever o
+arquivo inteiro à mão. O procedimento que deu certo: conferir o publicado contra o repositório antes
+(idênticos, servindo de rollback), aplicar o mínimo, e testar sem enviar nada — `diag`, `previa`,
+recusa por instância ausente, recusa por instância fora do cadastro e recusa por telefone fixo.
+
+Na tela do rep o widget fica **fora** da caixa de e-mail: a imagem vale para os dois canais, então
+esconder atrás do "mandar também por e-mail" escondia metade da função. Na tela do cliente o texto
+diz "só e-mail", porque aquela campanha recusa `canal=whatsapp`.
 
 **A biblioteca de comunicados agora filtra por público** (`campanhas-comunicado` v5). Desde 09/09 a
 tabela é compartilhada, e a tela do rep estava listando também os comunicados escritos para cliente.

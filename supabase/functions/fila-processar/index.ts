@@ -6,7 +6,8 @@
 // outras instancias seguem enviando, e so as linhas da instancia caida esperam. Sai da pausa quem
 // reconectou: fila-acao retomar (canal whatsapp/ambos) limpa, ou um UPDATE na coluna.
 // v21: (revertido) queda desligava a fila de Zaptos inteira.
-// v22: imagens do comunicado entram no corpo do e-mail (blocoImagens). Zaptos ainda nao — ver la.
+// v23: Zaptos tambem leva imagem — `imagens` segue para o campanhas-enviar, que manda como
+//      `attachments` no POST do texto. No e-mail continua virando <img> no corpo (blocoImagens).
 // fila-processar (v20) — cron (1/min). Le fila_config: email em lote (email_lote) se email_ativo; WhatsApp 1 por instancia a cada wpp_intervalo_seg se wpp_ativo. Chama campanhas-enviar (passa merge).
 // v20: TETO POR MINUTO, POR INSTANCIA (fila_config.wpp_max_min, padrao 2). A vazao era emergente:
 //      cron de 1x/min + portao de wpp_intervalo_seg + margem 0 na rajada davam 1,9 msg/min no lote de
@@ -57,9 +58,10 @@ const srvKey = () => Deno.env.get("SRV_JWT") || Deno.env.get("SUPABASE_SERVICE_R
    num <div> e troca \n por <br>), entao a tag <img> passa direto. Mexer no campanhas-enviar por
    causa disso significaria reescrever a funcao que carrega a trava de instancia, a confirmacao de
    troca e a checagem de entrega — risco desproporcional ao ganho.
-   NAO vale para o Zaptos: la o texto vai como mensagem, e uma tag <img> apareceria literal para o
-   cliente. Imagem no Zaptos precisa de `attachments` no GHL e de um teste real com o ZaptosWPP
-   antes — "aceito pelo GHL" nao e "entregue". */
+   NAO vale para o Zaptos, mas nao porque falte suporte: la a imagem vai como `attachments` no
+   proprio POST do texto (campanhas-enviar v30), uma mensagem so, imagem com legenda. Uma tag <img>
+   no texto apareceria literal para quem recebe — por isso o corpo do Zaptos segue limpo e as URLs
+   viajam pelo campo `imagens`. Entrega conferida no aparelho em 14/09, com o ZaptosWPP. */
 function blocoImagens(urls: any): string {
   const lista = (Array.isArray(urls) ? urls : []).filter((u: any) => /^https?:\/\//i.test(String(u || "")));
   if (!lista.length) return "";
@@ -116,7 +118,7 @@ Deno.serve(async (req) => {
         // CRM, entao ali a gente manda pela dona de fato (e o campanhas-enviar acerta o nome no texto).
         // Nas de REPRESENTANTE nao: divergir do organograma e um aviso para a gestao, e a linha fica
         // com erro dizendo de quem o contato e — melhor do que mandar em nome de quem nao mandou.
-        : { canal: "whatsapp", fone: m.fone, nome: m.nome, instancia: m.instancia, texto, codparc: m.codparc || undefined, campos: m.campos || undefined, usar_dono: m.publico === "cliente", margem_ms: rajada ? 0 : undefined, exigir_confirmacao: rajada ? false : undefined };
+        : { canal: "whatsapp", fone: m.fone, nome: m.nome, instancia: m.instancia, texto, codparc: m.codparc || undefined, campos: m.campos || undefined, usar_dono: m.publico === "cliente", margem_ms: rajada ? 0 : undefined, exigir_confirmacao: rajada ? false : undefined, imagens: m.imagens || undefined };
       let ok = false, resumo = "", caiu = false;
       try {
         const r = await fetch(url + "/functions/v1/campanhas-enviar", { method: "POST", headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" }, body: JSON.stringify(body) });
