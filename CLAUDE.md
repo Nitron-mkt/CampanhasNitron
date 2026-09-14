@@ -127,6 +127,20 @@ renomear exigiria migrar linhas e funções sem ganho para quem lê a tela.
   a ser aquela pessoa), o `campanhas-enviar` recusa a saudação da Nina — e isso é bom: significa que
   um humano já está falando com o lead, e a saudação automática atropelaria a conversa dele. Foi o
   que aconteceu com o Lr Shop em 14/09, já assumido pela Valeria.
+- **Do representante nao vem retorno — do cliente vem** (`copiloto-feedback`, crons
+  `copiloto-feedback-perguntar` e `-ler`). Quando o lead vai para representante, a conversa continua
+  no WhatsApp **pessoal** dele, fora do nosso CRM: não dá para ver se ligou, se marcou, se vendeu.
+  Então 3 dias depois do repasse a Nina pergunta **ao próprio cliente** se o representante falou com
+  ele. A resposta é classificada (`atendido` / `nao_atendido` / `comprou` / `sem_interesse` /
+  `indefinido` / `sem_resposta`) e gravada em `copiloto_lead.feedback_*`.
+- **"Ninguém falou comigo" vira TAREFA, não coluna.** É a descoberta que justifica a rotina inteira,
+  e morreria num campo que ninguém abre. `nao_atendido` e `sem_interesse` abrem tarefa em
+  `copiloto_tarefas` com `origem='nina-lead'` — que é justamente o que a `copiloto-entrega` já varre,
+  então o gestor recebe pelo caminho que já existe, sem código novo.
+- **Feedback só para lead que foi a REPRESENTANTE** (`feedback_tipos='fisica'`). Quando vai para a
+  venda interna, a conversa acontece nas nossas instâncias e dá para ler no CRM: perguntar ali é
+  redundante e incomoda o cliente. Lead do canal nativo também fica fora — passados 3 dias a janela
+  de 24h da Meta já fechou e só template passa.
 - **Publicar o painel:** `POST host-upload?path=gestor.html` com o **HTML cru no corpo** e o caminho
   na query — não JSON. **Confira o md5 publicado antes de subir:** há outro chat editando o mesmo
   arquivo, e sobrescrever o trabalho dele já aconteceu.

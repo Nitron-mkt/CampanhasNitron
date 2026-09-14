@@ -11,7 +11,7 @@ que `copiloto-*` era "de outras empresas do grupo", e não é: é Nitron (Sankhy
 `ghl_cliente`, `campanhas`). O que é de outra empresa é o `emp-copiloto-responder`
 (Roga Village) — esse continua fora daqui.
 
-## As dez funções
+## As onze funções
 
 | função | v | verify_jwt | o que faz |
 |---|---|---|---|
@@ -22,7 +22,8 @@ que `copiloto-*` era "de outras empresas do grupo", e não é: é Nitron (Sankhy
 | `copiloto-tarefas` | 4 | não | A **Fila de Execução**: painel HTML + API. O que a Nina tria das conversas vira tarefa por área (financeiro, execução, cadastro, logística, faturamento, TI, comercial, gestor). |
 | `copiloto-aprender` | 4 | sim | Transforma tropeço em regra: falhas viram lição automática; amostra de conversas reais do GHL vira **proposta** de conhecimento e de skill, com gate humano. |
 | `copiloto-lead` | 9 | sim | **O lead do anuncio META.** Pergunta ao GHL quais conversas da instancia da Nina estao sem resposta, qualifica pelo playbook, anota em `copiloto_lead` e passa pro comercial com tarefa aberta. |
-| `copiloto-repasse` | 2 | sim | **Quem vai falar com o lead.** Saúda o lead ("um representante fala com você ainda hoje"), classifica loja física × e-commerce/marketplace e sorteia o destino: representante da praça ou vendedora interna. Sorteio com memória, no banco (`repasse_candidatos`). |
+| `copiloto-feedback` | 1 | sim | **O retorno que o representante não dá.** 3 dias depois do repasse pergunta ao próprio cliente se o rep falou com ele, classifica a resposta e transforma "ninguém falou comigo" em tarefa. |
+| `copiloto-repasse` | 3 | sim | **Quem vai falar com o lead.** Saúda o lead ("um representante fala com você ainda hoje"), classifica loja física × e-commerce/marketplace e sorteia o destino: representante da praça ou vendedora interna. Sorteio com memória, no banco (`repasse_candidatos`). |
 | `copiloto-entrega` | 3 | sim | **A tarefa que o humano vê.** Pega toda tarefa recém-gravada pelo copiloto, abre a tarefa correspondente **no CRM, no contato** (dono no `assignedTo`, quem acompanha nomeado no corpo), marca os dois como **seguidores** do contato e manda o resumo para quem `copiloto_responsaveis` diz que tem de saber. Fila com retentativa. |
 | `copiloto-proativo` | 5 | sim | O plano de hoje do representante, montado **aplicando as campanhas ativas do Gestor** na carteira dele. Editar campanha no painel muda o plano sem tocar em código. |
 
@@ -303,6 +304,8 @@ saudação automática atropelaria. Foi o caso do Lr Shop, já assumido pela Val
 | `copiloto-aprender-diario` | `0 11 * * *` | `copiloto-aprender` |
 | `copiloto-proativo-diario` | `30 10 * * 1-6` | `copiloto-proativo` |
 | `copiloto-entrega-5min` | `1-59/5 * * * *` | `copiloto-entrega` (jobid 148, criado 10/09 17:05 UTC — um minuto **depois** da `copiloto-lead`, para a tarefa recém-gravada já estar lá) |
+| `copiloto-feedback-perguntar` | `20 13 * * 1-5` | `copiloto-feedback?acao=perguntar` (jobid 152) |
+| `copiloto-feedback-ler` | `5,35 11-22 * * 1-6` | `copiloto-feedback?acao=ler` (jobid 153) |
 | `copiloto-repasse-15min` | `*/15 11-22 * * 1-6` | `copiloto-repasse` (jobid 150, criado 14/09). Lote de 2 de propósito: cada envio espera ~12s pela confirmação de entrega, e lote grande estoura o tempo da função. |
 
 (Horários em UTC, como todo cron do projeto.)
