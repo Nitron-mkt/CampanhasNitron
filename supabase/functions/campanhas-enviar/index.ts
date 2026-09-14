@@ -1,4 +1,4 @@
-// campanhas-enviar (v29) — email com ARTE + {{...}}. Garante contato. WhatsApp via SMS+#contact_instance. Recusa WhatsApp para telefone FIXO (10 digitos). ?diag mostra rate-limit.
+// campanhas-enviar (v30) — email com ARTE + {{...}}. Garante contato. WhatsApp via SMS+#contact_instance. Recusa WhatsApp para telefone FIXO (10 digitos). ?diag mostra rate-limit.
 // v22: TRAVA DE INSTANCIA. Antes, sem instancia ele mandava o texto SEM amarrar — a mensagem saia pela ultima instancia
 //      a que aquele contato ficou preso (de outro assunto, de outro mes), e o cliente recebia algo desconexo.
 //      Agora WhatsApp sem instancia e RECUSADO, e o token e conferido contra o cadastro instancia_ghl (cache de 5 min).
@@ -54,6 +54,15 @@
 //      com "reconectar e reenviar" como acao.
 //      Custa 12s por mensagem. A 2 por minuto isso nao aperta a vazao, e o preco de nao ter era um
 //      lote inteiro marcado como entregue sem ter saido.
+// v30: IMAGEM NO ZAPTOS. `imagens` (URLs publicas) vai como `attachments` no POST do TEXTO — uma
+//      mensagem so, imagem com legenda, sem dobrar o consumo do teto de 2/min por instancia.
+//      O anexo NAO vai no bind (`#contact_instance:<x>`), que e linha de servico.
+//      SO no WhatsApp: o e-mail ja recebe as imagens como <img> montado pelo fila-processar, e
+//      duplicar aqui faria a imagem aparecer duas vezes no corpo.
+//      AVISO que vale para sempre: o GHL aceitar `attachments` nao significa que o ZaptosWPP
+//      entregue a imagem — e a mesma armadilha do `status: sent` da v29. A pos-checagem de queda
+//      continua valendo, mas ela so detecta instancia caida, nao anexo ignorado. Por isso a tela so
+//      oferece imagem no Zaptos depois de um envio de teste conferido no aparelho.
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, content-type, apikey", "Access-Control-Allow-Methods": "POST, OPTIONS" };
 const j = (o: unknown, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -204,8 +213,11 @@ async function arteHtml(templateId: string): Promise<string | null> {
     const html = await h.text(); return html && html.length > 50 ? html : null;
   } catch { return null; }
 }
-async function sms(contactId: string, message: string, toNumber?: string) {
+async function sms(contactId: string, message: string, toNumber?: string, anexos?: string[]) {
   const payload: any = { type: "SMS", contactId, message }; if (toNumber) payload.toNumber = toNumber;
+  // `attachments` = array de URLs publicas (documentado pelo GHL). So entra quando ha anexo: mandar
+  // array vazio muda o payload sem motivo, e payload que muda sem motivo e como bug nasce.
+  if (anexos && anexos.length) payload.attachments = anexos;
   const r = await ghl("POST", "/conversations/messages", payload, "2021-04-15");
   return { status: r.status, body: (await r.text()).slice(0, 400) };
 }
@@ -251,6 +263,9 @@ async function esperarQueda(cid: string, desdeMs: number, janelaMs: number) {
   return { caiu: false };
 }
 async function enviarMsg(contactId: string, canal: string, texto: string, assunto?: string, templateId?: string, instancia?: string, fone?: string, nome?: string, merge?: any, opts?: any) {
+  // so URL http(s): o GHL busca o arquivo de fora, entao caminho relativo ou data: URI nao chegaria
+  const anexos: string[] = (Array.isArray(opts?.imagens) ? opts.imagens : [])
+    .map((u: any) => String(u || "").trim()).filter((u: string) => /^https?:\/\//i.test(u));
   if (canal === "email") {
     let html: string | null = null; let arte_ok = false;
     if (templateId) { const raw = await arteHtml(templateId); if (raw) { html = preencher(raw, nome, texto, merge, opts?.campos); arte_ok = true; } }
@@ -277,7 +292,8 @@ async function enviarMsg(contactId: string, canal: string, texto: string, assunt
   const esperaTotal = troca.confirmado === true ? margem : Math.max(margem, janela - (troca.ms || 0));
   await sleep(esperaTotal);
   const enviadoAs = Date.now();
-  const res = await sms(contactId, texto, to);
+  // o anexo vai SO aqui, no texto — nunca no bind, que e a linha de servico #contact_instance
+  const res = await sms(contactId, texto, to, anexos);
   // 4) o GHL aceitar nao e o cliente receber. Se o ZaptosWPP disser na conversa que a instancia caiu,
   //    esta linha e ERRO — melhor uma linha para reenviar do que um lote marcado como entregue.
   //    A margem de 3s para tras cobre desencontro de relogio entre o isolate e o GHL.
@@ -374,8 +390,8 @@ Deno.serve(async (req) => {
       if (re.test(texto)) { textoUsado = texto.replace(re, instUsada); textoAjustado = true; }
     }
     const mergeUsado = (instUsada !== instancia && b.merge && typeof b.merge === "object") ? { ...b.merge, instancia: instUsada, assistente: instUsada } : b.merge;
-    const res: any = await enviarMsg(contactId, canal, textoUsado, b.assunto, b.templateId, instUsada || undefined, b.fone, b.nome, mergeUsado, { espera_ms: b.espera_ms, margem_ms: b.margem_ms, exigir_confirmacao: b.exigir_confirmacao, campos: b.campos, checar_entrega: b.checar_entrega, checar_ms: b.checar_ms });
+    const res: any = await enviarMsg(contactId, canal, textoUsado, b.assunto, b.templateId, instUsada || undefined, b.fone, b.nome, mergeUsado, { espera_ms: b.espera_ms, margem_ms: b.margem_ms, exigir_confirmacao: b.exigir_confirmacao, campos: b.campos, checar_entrega: b.checar_entrega, checar_ms: b.checar_ms, imagens: b.imagens });
     const ok = res.status >= 200 && res.status < 300;
-    return j({ ok, contactId, via, criado, canal, instancia: instUsada || null, instancia_pedida: instUsada !== instancia ? instancia : undefined, texto_ajustado: textoAjustado || undefined, campos_gravados: camposGravados || undefined, dono_crm: dono, arte: !!b.templateId, arte_ok: res.arte_ok, motivo: ok ? undefined : (res.recusado || ("GHL " + res.status + ": " + res.body)), bind_nao_confirmado: res.recusado ? true : undefined, instancia_caiu: res.instancia_caiu || undefined, resultado: res, teste: !!b.test });
+    return j({ ok, contactId, via, criado, canal, instancia: instUsada || null, instancia_pedida: instUsada !== instancia ? instancia : undefined, texto_ajustado: textoAjustado || undefined, campos_gravados: camposGravados || undefined, dono_crm: dono, arte: !!b.templateId, arte_ok: res.arte_ok, motivo: ok ? undefined : (res.recusado || ("GHL " + res.status + ": " + res.body)), bind_nao_confirmado: res.recusado ? true : undefined, instancia_caiu: res.instancia_caiu || undefined, anexos: (Array.isArray(b.imagens) ? b.imagens.length : 0) || undefined, resultado: res, teste: !!b.test });
   } catch (e) { return j({ ok: false, erro: String(e) }, 500); }
 });
