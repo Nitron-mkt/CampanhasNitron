@@ -106,6 +106,27 @@ renomear exigiria migrar linhas e funções sem ganho para quem lê a tela.
   com ele. Sem trava, a resposta dele ("ok, obrigado") entraria pela porta da frente e a Nina
   tentaria qualificar o próprio gestor. Os números vêm de `copiloto_responsaveis.fone`, ao lado da
   trava que já existia para representante.
+- **O lead qualificado nao espera mais em silencio** (`copiloto-repasse`, cron `*/15 11-22 * * 1-6`).
+  Pedido do gestor em 14/09. Tres movimentos, nessa ordem: **saúda o lead** ("um representante fala
+  com você ainda hoje" — sem isso ele fica olhando uma conversa que morreu), **classifica** loja
+  física × e-commerce/marketplace, e **sorteia quem atende**. Loja física vai para representante da
+  praça; online vai para as **vendedoras internas** (`copiloto_venda_interna`: Mônica e Valeria).
+  Online não tem praça — mandar para o rep da praça é mandar para ninguém.
+- **Sorteio puro empilha; o daqui tem memória.** Na primeira prévia os três leads online caíram
+  todos na mesma pessoa e a outra ficou sem nenhum. Agora embaralha e traz para a frente quem
+  recebeu menos (`copiloto_venda_interna.repasses`, e a contagem de `copiloto_lead.repasse_codvend`
+  para os reps). Continua aleatório — o desempate entre quem tem a mesma carga é que é sorteio.
+  Quem estava no chapéu se confere em SQL: `select * from repasse_candidatos('Bauru','SP','{...}')`.
+- **O rep da praça vem de quem tem cliente NA CIDADE; só se não houver é que abre para a UF.** O
+  retorno traz `escopo='cidade'` ou `escopo='uf'`, e no `escopo='uf'` a mensagem avisa o rep de que
+  ele entrou como representante do estado e pede que devolva se a praça não for dele. Cordeiro/RJ
+  caiu nesse caso: não temos cliente na cidade.
+- **Contato de lead SEM DONO recebe Zaptos normalmente; com dono de outra instância, não.** Os
+  contatos que a Nina atende nascem sem `assignedTo` (quem cria é o inbound do ZaptosWPP) e o
+  `#contact_instance` resolve a saída. Mas quando alguém do time **assume** o contato (o dono passa
+  a ser aquela pessoa), o `campanhas-enviar` recusa a saudação da Nina — e isso é bom: significa que
+  um humano já está falando com o lead, e a saudação automática atropelaria a conversa dele. Foi o
+  que aconteceu com o Lr Shop em 14/09, já assumido pela Valeria.
 - **Publicar o painel:** `POST host-upload?path=gestor.html` com o **HTML cru no corpo** e o caminho
   na query — não JSON. **Confira o md5 publicado antes de subir:** há outro chat editando o mesmo
   arquivo, e sobrescrever o trabalho dele já aconteceu.
