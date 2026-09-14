@@ -1,4 +1,4 @@
-// copiloto-repasse (v2) — o lead qualificado deixa de esperar em silencio.
+// copiloto-repasse (v3) — o lead qualificado deixa de esperar em silencio.
 //
 // Ate aqui a Nina qualificava, abria tarefa no CRM e avisava o gestor — e parava. Quem ia falar com
 // o lead era decidido a mao, e o lead ficava esperando sem saber que estava esperando. O gestor
@@ -44,9 +44,12 @@ function docFmt(d: any): string {
   if (x.length === 11) return x.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4") + " (CPF)";
   return x ? x + " (documento fora do padrao)" : "";
 }
-// telefone do lead como a pessoa do outro lado vai discar
+// telefone do lead como a pessoa do outro lado vai discar.
+// So tira o 55 quando o que sobra e um numero brasileiro plausivel (10 ou 11 digitos): ha numero
+// que COMECA com 55 sem ser DDI, e cortar ali inventa um telefone.
 function foneFmt(f: any): string {
-  const d = digits(f).replace(/^55/, "");
+  let d = digits(f);
+  if (d.length >= 12 && d.startsWith("55")) d = d.slice(2);
   if (d.length === 11) return "(" + d.slice(0, 2) + ") " + d.slice(2, 7) + "-" + d.slice(7);
   if (d.length === 10) return "(" + d.slice(0, 2) + ") " + d.slice(2, 6) + "-" + d.slice(6);
   return String(f || "");
@@ -74,6 +77,20 @@ async function enviarNativo(contact_id: string, texto: string) {
   const d = await r.json().catch(() => ({}));
   return { ok: r.ok, motivo: r.ok ? undefined : String(d?.message || ("GHL " + r.status)).slice(0, 200) };
 }
+// O TELEFONE DO LEAD VEM DO CRM, nao de copiloto_lead.fone. Motivo caro, descoberto em 14/09: a
+// coluna guarda o resultado de d10(), que fica com os 10 ULTIMOS digitos — e isso decapita o celular
+// brasileiro de 11 digitos. O (11) 98240-8982 virou "(19) 8240-8982" na mensagem, e a Monica ligou
+// para um numero que nao existe. O contato do GHL tem o numero inteiro, com DDI.
+async function foneDoCrm(contact_id: string | null): Promise<string> {
+  if (!contact_id) return "";
+  try {
+    const r = await ghl("GET", `/contacts/${contact_id}`);
+    if (!r.ok) return "";
+    const c = (await r.json().catch(() => ({})))?.contact || {};
+    return String(c.phone || "");
+  } catch (_e) { return ""; }
+}
+
 async function notaCrm(contact_id: string, texto: string) {
   try { const r = await ghl("POST", `/contacts/${contact_id}/notes`, "2021-07-28", { body: texto.slice(0, 4000) }); return r.ok; } catch (_e) { return false; }
 }
@@ -212,8 +229,12 @@ async function repassar(sb: any, cfg: Record<string, string>, L: any, o: { dry: 
   if (!remetente) { rep.erro = "nenhuma instancia viva para mandar o aviso"; return rep; }
   rep.instancia = remetente.instancia;
 
-  const textoLead = textoSaudacao(L, tipo);
-  const textoDest = textoDestino(L, tipo, String(destNome).split(/\s+/)[0], escopo, cfg);
+  // numero do lead pelo CRM; se o CRM nao devolver, cai no que esta gravado (pode estar truncado)
+  const foneLead = (await foneDoCrm(L.contact_id)) || L.fone;
+  const Lx = { ...L, fone: foneLead };
+  rep.fone_lead = foneFmt(foneLead);
+  const textoLead = textoSaudacao(Lx, tipo);
+  const textoDest = textoDestino(Lx, tipo, String(destNome).split(/\s+/)[0], escopo, cfg);
 
   if (o.dry) {
     return { ...rep, previa: true, saudacao_pendente: !L.saudacao_em, texto_lead: textoLead, texto_destino: textoDest };
