@@ -11,7 +11,7 @@ que `copiloto-*` era "de outras empresas do grupo", e não é: é Nitron (Sankhy
 `ghl_cliente`, `campanhas`). O que é de outra empresa é o `emp-copiloto-responder`
 (Roga Village) — esse continua fora daqui.
 
-## As nove funções
+## As dez funções
 
 | função | v | verify_jwt | o que faz |
 |---|---|---|---|
@@ -22,6 +22,7 @@ que `copiloto-*` era "de outras empresas do grupo", e não é: é Nitron (Sankhy
 | `copiloto-tarefas` | 4 | não | A **Fila de Execução**: painel HTML + API. O que a Nina tria das conversas vira tarefa por área (financeiro, execução, cadastro, logística, faturamento, TI, comercial, gestor). |
 | `copiloto-aprender` | 4 | sim | Transforma tropeço em regra: falhas viram lição automática; amostra de conversas reais do GHL vira **proposta** de conhecimento e de skill, com gate humano. |
 | `copiloto-lead` | 9 | sim | **O lead do anuncio META.** Pergunta ao GHL quais conversas da instancia da Nina estao sem resposta, qualifica pelo playbook, anota em `copiloto_lead` e passa pro comercial com tarefa aberta. |
+| `copiloto-repasse` | 2 | sim | **Quem vai falar com o lead.** Saúda o lead ("um representante fala com você ainda hoje"), classifica loja física × e-commerce/marketplace e sorteia o destino: representante da praça ou vendedora interna. Sorteio com memória, no banco (`repasse_candidatos`). |
 | `copiloto-entrega` | 3 | sim | **A tarefa que o humano vê.** Pega toda tarefa recém-gravada pelo copiloto, abre a tarefa correspondente **no CRM, no contato** (dono no `assignedTo`, quem acompanha nomeado no corpo), marca os dois como **seguidores** do contato e manda o resumo para quem `copiloto_responsaveis` diz que tem de saber. Fila com retentativa. |
 | `copiloto-proativo` | 5 | sim | O plano de hoje do representante, montado **aplicando as campanhas ativas do Gestor** na carteira dele. Editar campanha no painel muda o plano sem tocar em código. |
 
@@ -238,6 +239,58 @@ específica (mesmo velha ou já tentada) — é o caminho de conserto; `?so_avis
 abrir tarefa no CRM. E `crm_task_id` já preenchido **nunca** abre uma segunda tarefa no mesmo
 contato: duas tarefas iguais é pior que nenhuma.
 
+## Quem vai falar com o lead (o repasse)
+
+Do dia 10 ao 14/09 a Nina qualificou 28 leads sozinha, e todos pararam no mesmo lugar: tarefa aberta
+no CRM, gestor avisado — e **o lead esperando sem saber que estava esperando**. O gestor fechou esse
+buraco em 14/09. O `copiloto-repasse` faz três movimentos, nessa ordem:
+
+**1. Saúda o lead.** "Suas informações já estão com um dos nossos representantes, e o contato sai
+ainda hoje." Texto fixo, montado em código. Sem isso a conversa morre em "um consultor assume daqui"
+e o lead esfria olhando para o vácuo.
+
+**2. Classifica: loja física ou online.** Não é detalhe — **quem vende em marketplace não tem
+praça**, e mandar para o representante da praça é mandar para ninguém. A regra lê tudo o que a Nina
+apurou (`tipo_loja`, `interesse`, `ja_revende`, `resumo`, `empresa`), não só o tipo: a Faby Smart
+Tech está cadastrada como "variedades (eletrônicos/acessórios e brinquedos)" e só o resumo revela
+"atua em marketplaces (ML, Magalu, Shopee) e ecommerce próprio". O padrão está em
+`copiloto_config.repasse_online_re`, então entra termo novo por UPDATE.
+
+**3. Sorteia quem atende.**
+- **Loja física** → representante da praça, pela função `repasse_candidatos(cidade, uf, excluir)`.
+  Ela devolve os candidatos **já embaralhados**, e prioriza quem tem cliente **na cidade**; só quando
+  ninguém tem é que abre para a UF inteira (`escopo='uf'`) — e aí a mensagem avisa o rep de que ele
+  entrou como representante do estado e pede que devolva se a praça não for dele. Cordeiro/RJ caiu
+  nesse caso.
+- **Online** → vendedora interna, de `copiloto_venda_interna` (Mônica e Valeria).
+
+**Sorteio puro empilha.** Na primeira prévia, os três leads online caíram todos na mesma pessoa e a
+outra ficou sem nenhum. Agora embaralha e traz para a frente quem recebeu menos —
+`copiloto_venda_interna.repasses` para as internas, a contagem de `copiloto_lead.repasse_codvend`
+para os reps. Continua aleatório: o desempate entre quem tem a mesma carga é que é sorteio.
+
+**O recado do prazo, que o gestor pediu sutil:** "Se hoje não der para você falar com ele, me avisa
+por aqui — como o cliente já foi avisado de que o contato sai hoje, eu preciso passar para outro
+consultor para não deixar ele no vácuo." Quem é avisado não some do jogo: `repasse_historico` guarda
+todo repasse já feito, e um novo sorteio **exclui quem já recebeu**. A transferência em si ainda é
+manual: não temos como ver se o rep falou com o lead pelo aparelho dele.
+
+**Contato de lead sem dono recebe; com dono de outra instância, não** — e isso é bom. Os contatos que
+a Nina atende nascem sem `assignedTo`. Quando alguém do time **assume** o contato, o
+`campanhas-enviar` recusa a saudação da Nina, o que significa que um humano já está na conversa e a
+saudação automática atropelaria. Foi o caso do Lr Shop, já assumido pela Valeria.
+
+| chave | valor | para quê |
+|---|---|---|
+| `repasse_ativa` | `sim` | liga a rotina |
+| `repasse_saudacao` | `sim` | saúda o lead antes de repassar |
+| `repasse_inst` / `repasse_inst_alt` | `Camyla` / `Nina` | por qual instância sai o aviso interno (a alternativa entra quando o destino é a própria instância) |
+| `repasse_troca_dono` | `sim` | pode passar o contato do destinatário para a instância remetente |
+| `repasse_limite` | `2` | leads por rodada |
+| `repasse_janela_h` | `120` | não repassa lead velho |
+| `repasse_rep_excluir` | `0,67,116,125,137,178,223` | fora do chapéu: venda interna, AUTO ATEND, a agência DENIZE |
+| `repasse_online_re` | regex | o que conta como e-commerce/marketplace |
+
 ## Crons
 
 | job | quando | função |
@@ -250,6 +303,7 @@ contato: duas tarefas iguais é pior que nenhuma.
 | `copiloto-aprender-diario` | `0 11 * * *` | `copiloto-aprender` |
 | `copiloto-proativo-diario` | `30 10 * * 1-6` | `copiloto-proativo` |
 | `copiloto-entrega-5min` | `1-59/5 * * * *` | `copiloto-entrega` (jobid 148, criado 10/09 17:05 UTC — um minuto **depois** da `copiloto-lead`, para a tarefa recém-gravada já estar lá) |
+| `copiloto-repasse-15min` | `*/15 11-22 * * 1-6` | `copiloto-repasse` (jobid 150, criado 14/09). Lote de 2 de propósito: cada envio espera ~12s pela confirmação de entrega, e lote grande estoura o tempo da função. |
 
 (Horários em UTC, como todo cron do projeto.)
 
