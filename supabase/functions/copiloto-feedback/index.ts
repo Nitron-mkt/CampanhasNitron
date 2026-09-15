@@ -1,4 +1,8 @@
-// copiloto-feedback (v1) — o retorno vem do CLIENTE, porque do representante nao vem.
+// copiloto-feedback (v2) — o retorno vem do CLIENTE, porque do representante nao vem.
+//
+// v2: o telefone da tarefa vem do CRM, nao da coluna. copiloto_lead.fone foi gravado decapitado ate
+//     a copiloto-lead v9 e o gestor recebia um numero que nao existe — justamente no aviso de que o
+//     representante nao atendeu, que e quando alguem vai LIGAR para o cliente.
 //
 // Buraco apontado pelo gestor em 14/09: quando o lead vai para representante, a conversa continua no
 // WhatsApp PESSOAL dele, fora do nosso CRM. Nao da para ver se ligou, se marcou, se vendeu. Entao a
@@ -27,6 +31,26 @@ const LOC = "rZ8y7lzqV7fzxsartaX2";
 const MODELO = "claude-sonnet-5";
 
 const digits = (s: any) => String(s || "").replace(/\D/g, "");
+// O telefone da coluna copiloto_lead.fone foi gravado decapitado ate a copiloto-lead v9 (os ultimos
+// 10 digitos de um numero com DDI: "+5511982408982" virava "1982408982"). Os registros antigos
+// foram corrigidos, mas imprimir a coluna crua nunca foi seguro: quem le a tarefa e o gestor, e o
+// numero e para ele ligar. Entao o numero da TAREFA vem do CRM, como na copiloto-repasse.
+const foneNac = (s: any) => { let d = digits(s); if (d.length >= 12 && d.startsWith("55")) d = d.slice(2); return d; };
+function foneFmt(s: any): string {
+  const d = foneNac(s);
+  if (d.length === 11) return "(" + d.slice(0, 2) + ") " + d.slice(2, 7) + "-" + d.slice(7);
+  if (d.length === 10) return "(" + d.slice(0, 2) + ") " + d.slice(2, 6) + "-" + d.slice(6);
+  return String(s || "");
+}
+async function foneDoCrm(contact_id: any): Promise<string> {
+  if (!contact_id) return "";
+  try {
+    const r = await ghl("GET", "/contacts/" + contact_id);
+    if (!r.ok) return "";
+    const d = await r.json().catch(() => ({}));
+    return String(d?.contact?.phone || d?.phone || "");
+  } catch { return ""; }
+}
 const lista = (s: any, pad: string) => String(s ?? pad).split(",").map((x) => x.trim()).filter(Boolean);
 const ghl = (m: string, p: string, v = "2021-07-28", body?: any) => fetch("https://services.leadconnectorhq.com" + p, { method: m, headers: { Authorization: "Bearer " + GHL, Version: v, Accept: "application/json", "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined });
 function limpa(t: any): string { return String(t || "").replace(/Instance Source:.*/is, "").replace(/#contact_instance:\S+/gi, "").replace(/\s+/g, " ").trim(); }
@@ -112,7 +136,7 @@ async function perguntar(sb: any, cfg: Record<string, string>, dry: boolean, umI
 
   const feitos: any[] = [];
   for (const L of (leads || [])) {
-    const base: any = { lead: L.id, contato: L.empresa || L.nome || L.fone, rep: L.repasse_para, toque: Number(L.feedback_tentativas || 0) + 1 };
+    const base: any = { lead: L.id, contato: L.empresa || L.nome || foneFmt(L.fone), rep: L.repasse_para, toque: Number(L.feedback_tentativas || 0) + 1 };
     // ja perguntou e ainda esta dentro do intervalo de reforco: nao insiste
     if (L.feedback_em && (Date.now() - new Date(L.feedback_em).getTime()) < reforcoH * 3600000) {
       feitos.push({ ...base, decisao: "pular", motivo: "perguntado ha menos de " + reforcoH + "h" }); continue;
@@ -149,7 +173,7 @@ async function ler(sb: any, cfg: Record<string, string>, dry: boolean, umId: num
 
   const feitos: any[] = [];
   for (const L of (leads || [])) {
-    const base: any = { lead: L.id, contato: L.empresa || L.nome || L.fone, rep: L.repasse_para };
+    const base: any = { lead: L.id, contato: L.empresa || L.nome || foneFmt(L.fone), rep: L.repasse_para };
     if (!L.contact_id) { feitos.push({ ...base, decisao: "pular", motivo: "lead sem contact_id" }); continue; }
     const rc = await ghl("GET", `/conversations/search?locationId=${LOC}&contactId=${L.contact_id}&limit=1`);
     const cv = (((await rc.json().catch(() => ({})))?.conversations) || [])[0];
@@ -183,7 +207,7 @@ async function ler(sb: any, cfg: Record<string, string>, dry: boolean, umId: num
         L.empresa ? "Loja: " + L.empresa : null,
         docFmt(L.cnpj) || "Sem documento informado",
         (L.cidade || L.uf) ? "Praca: " + [L.cidade, L.uf].filter(Boolean).join("/") : null,
-        "Contato: " + (L.nome ? L.nome + " — " : "") + String(L.fone || ""),
+        "Contato: " + (L.nome ? L.nome + " — " : "") + foneFmt((await foneDoCrm(L.contact_id)) || L.fone),
         "",
         "Repassado em " + new Date(L.repasse_em).toLocaleDateString("pt-BR") + " para " + L.repasse_para + (L.repasse_codvend ? (" (codvend " + L.repasse_codvend + ")") : "") + ".",
         cls.resultado === "nao_atendido"
@@ -196,7 +220,7 @@ async function ler(sb: any, cfg: Record<string, string>, dry: boolean, umId: num
       ].filter((x) => x !== null).join("\n");
       const { data: tf } = await sb.from("copiloto_tarefas").insert({
         area: "comercial", tipo: cls.resultado === "nao_atendido" ? "lead-sem-atendimento" : "lead-perdeu-interesse",
-        acao: (cls.resultado === "nao_atendido" ? "Lead nao foi atendido pelo representante: " : "Lead perdeu o interesse: ") + (L.empresa || L.nome || L.fone),
+        acao: (cls.resultado === "nao_atendido" ? "Lead nao foi atendido pelo representante: " : "Lead perdeu o interesse: ") + (L.empresa || L.nome || foneFmt(L.fone)),
         detalhe: det.slice(0, 1500), cliente_nome: L.empresa || L.nome || null, contact_id: L.contact_id,
         origem: "nina-lead", prioridade: 1,
       }).select("id").maybeSingle();

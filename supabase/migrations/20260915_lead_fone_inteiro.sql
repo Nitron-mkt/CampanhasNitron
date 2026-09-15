@@ -1,0 +1,42 @@
+-- 15/09/2026 — O TELEFONE DO LEAD ERA GRAVADO DECAPITADO.
+--
+-- copiloto-lead ate a v9 gravava copiloto_lead.fone com d10(): os ULTIMOS 10 digitos. O telefone vem
+-- do CRM com DDI, entao "+5511982408982" (13 digitos) virava "1982408982" — o "55" saiu levando
+-- junto o primeiro digito do DDD, e o nono digito do celular tomou o lugar dele:
+--
+--     CRM      +55 (11) 98240-8982   ->  5511982408982
+--     gravado      (19) 8240-8982    ->     1982408982
+--
+-- Quebrava todo celular de 11 digitos (DDD + nono digito), ou seja praticamente todo DDD de 11 a 28.
+-- Numero de 12 digitos (celular antigo, sem o nono) passava ileso — ali os ultimos 10 ja sao o
+-- nacional inteiro. Foi por isso que demorou a aparecer: os leads de DDD alto sairam certos.
+--
+-- O QUE CUSTOU: dos 8 leads repassados, 5 foram entregues ao vendedor com numero inexistente. Dois
+-- deles — (49) 9186-5299 (SC) e (99) 9794-1046 (MA) — sao numeros que EXISTEM, de desconhecidos.
+-- O representante EDSON escreveu em 15/09: "Estou tentando contato desde ontem mas acusa numero
+-- inexistente....teria outro?" — o lead dele (Cordeiro/RJ) ficou dois dias esperando.
+--
+-- CORRIGIDO EM 15/09:
+--   * copiloto-lead v10  — grava foneNac() (tira o 55 so quando sobra numero brasileiro plausivel);
+--                          a busca por lead existente aceita as DUAS formas (nova de 11 digitos e
+--                          antiga de 10), senao o mesmo lead viraria dois registros;
+--                          ?acao=fone_crm regrava a coluna lendo o contato no GHL (?dry=1 mostra).
+--   * copiloto-feedback v2 — o telefone da tarefa que vai ao gestor vem do CRM, nao da coluna.
+--   * copiloto-repasse v3 (14/09) ja lia do CRM (foneDoCrm) — NAO DESFAZER.
+--   * fk8() continua com os ultimos 8 digitos de proposito: ela casa representante e numero interno
+--     independentemente de DDI e do nono digito. Esta correta.
+--
+-- Os 33 registros foram regravados a partir do GHL: 18 mudaram (5 por SQL, 13 pelo ?acao=fone_crm)
+-- e 15 ja estavam certos (numeros antigos, de 10 digitos mesmo). Conferencia:
+--
+--   select length(regexp_replace(fone,'\D','','g')) as digitos, count(*) from copiloto_lead group by 1;
+--   -- 10 -> 15  (numero antigo, sem o nono digito)
+--   -- 11 -> 18
+--
+-- Esta migracao nao altera esquema: o reparo foi de DADO, e fica aqui registrado para nao se
+-- redescobrir o bug. O UPDATE abaixo e o que foi aplicado nos 5 leads ja repassados.
+--
+--   update copiloto_lead set fone = v.novo, atualizado = now()
+--   from (values (16,'11986381504'),(18,'11982408982'),(23,'14991865299'),
+--                (24,'22981467599'),(27,'19997941046')) as v(id,novo)
+--   where copiloto_lead.id = v.id;

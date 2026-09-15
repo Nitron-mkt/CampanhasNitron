@@ -112,6 +112,19 @@ renomear exigiria migrar linhas e funções sem ganho para quem lê a tela.
   física × e-commerce/marketplace, e **sorteia quem atende**. Loja física vai para representante da
   praça; online vai para as **vendedoras internas** (`copiloto_venda_interna`: Mônica e Valeria).
   Online não tem praça — mandar para o rep da praça é mandar para ninguém.
+- **Telefone do lead: grave o número INTEIRO, nunca "os últimos N dígitos".** Até a `copiloto-lead`
+  v9 a coluna `copiloto_lead.fone` guardava `d10()` — os últimos 10 dígitos de um número que vem do
+  CRM com DDI. `+55 (11) 98240-8982` virava `(19) 8240-8982`: o `55` saiu levando junto o primeiro
+  dígito do DDD, e o nono dígito do celular tomou o lugar dele. Quebra **todo** celular de 11 dígitos
+  (DDD 11 a 28); número de 12 dígitos (sem o nono) passa ileso — foi por isso que demorou a aparecer.
+  **5 dos 8 leads repassados foram entregues ao vendedor com número inexistente**, e dois deles
+  — (49) 9186-5299 e (99) 9794-1046 — *existem*, de desconhecidos. O EDSON escreveu em 15/09: "estou
+  tentando contato desde ontem mas acusa número inexistente". Hoje: `foneNac()` (tira o 55 só quando
+  o que sobra é número brasileiro plausível) na `copiloto-lead` v10, telefone da tarefa lido do CRM
+  na `copiloto-feedback` v2, `foneDoCrm()` já na `copiloto-repasse` v3 — **não desfazer nenhum dos
+  três**. `fk8()` continua nos últimos 8 dígitos de propósito: ela casa representante e número
+  interno independentemente de DDI e nono dígito, e está certa. Reparo de dado:
+  `copiloto-lead?acao=fone_crm` (com `&dry=1` para ver antes).
 - **Sorteio puro empilha; o daqui tem memória.** Na primeira prévia os três leads online caíram
   todos na mesma pessoa e a outra ficou sem nenhum. Agora embaralha e traz para a frente quem
   recebeu menos (`copiloto_venda_interna.repasses`, e a contagem de `copiloto_lead.repasse_codvend`

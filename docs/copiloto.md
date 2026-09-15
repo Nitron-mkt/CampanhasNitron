@@ -21,8 +21,8 @@ que `copiloto-*` era "de outras empresas do grupo", e não é: é Nitron (Sankhy
 | `copiloto-vigia` | 9 | sim | Varre as conversas do dia, acha cliente que perguntou e **ficou sem resposta** (ou levou "vou verificar"), manda a pendência para o cérebro resolver e entrega a resposta pronta à assistente. |
 | `copiloto-tarefas` | 4 | não | A **Fila de Execução**: painel HTML + API. O que a Nina tria das conversas vira tarefa por área (financeiro, execução, cadastro, logística, faturamento, TI, comercial, gestor). |
 | `copiloto-aprender` | 4 | sim | Transforma tropeço em regra: falhas viram lição automática; amostra de conversas reais do GHL vira **proposta** de conhecimento e de skill, com gate humano. |
-| `copiloto-lead` | 9 | sim | **O lead do anuncio META.** Pergunta ao GHL quais conversas da instancia da Nina estao sem resposta, qualifica pelo playbook, anota em `copiloto_lead` e passa pro comercial com tarefa aberta. |
-| `copiloto-feedback` | 1 | sim | **O retorno que o representante não dá.** 3 dias depois do repasse pergunta ao próprio cliente se o rep falou com ele, classifica a resposta e transforma "ninguém falou comigo" em tarefa. |
+| `copiloto-lead` | 10 | sim | **O lead do anuncio META.** Pergunta ao GHL quais conversas da instancia da Nina estao sem resposta, qualifica pelo playbook, anota em `copiloto_lead` e passa pro comercial com tarefa aberta. |
+| `copiloto-feedback` | 2 | sim | **O retorno que o representante não dá.** 3 dias depois do repasse pergunta ao próprio cliente se o rep falou com ele, classifica a resposta e transforma "ninguém falou comigo" em tarefa. |
 | `copiloto-repasse` | 3 | sim | **Quem vai falar com o lead.** Saúda o lead ("um representante fala com você ainda hoje"), classifica loja física × e-commerce/marketplace e sorteia o destino: representante da praça ou vendedora interna. Sorteio com memória, no banco (`repasse_candidatos`). |
 | `copiloto-entrega` | 3 | sim | **A tarefa que o humano vê.** Pega toda tarefa recém-gravada pelo copiloto, abre a tarefa correspondente **no CRM, no contato** (dono no `assignedTo`, quem acompanha nomeado no corpo), marca os dois como **seguidores** do contato e manda o resumo para quem `copiloto_responsaveis` diz que tem de saber. Fila com retentativa. |
 | `copiloto-proativo` | 5 | sim | O plano de hoje do representante, montado **aplicando as campanhas ativas do Gestor** na carteira dele. Editar campanha no painel muda o plano sem tocar em código. |
@@ -224,6 +224,44 @@ Reverter é um campo: `assignedTo` = `WlHZT90d36qnnXFbKzbl`.
 gestor entraria pela porta da frente e a Nina tentaria qualificar o próprio gestor. Por isso a
 `copiloto-lead` v9 tem a trava de **número de casa** (de `copiloto_responsaveis.fone`), ao lado da
 que já existia para representante.
+
+## O telefone do lead — grave o número inteiro
+
+Até a v9 a `copiloto-lead` gravava `copiloto_lead.fone` com `d10()`, os **últimos 10 dígitos**. O
+telefone vem do CRM com DDI, então:
+
+```
+CRM      +55 (11) 98240-8982   ->  5511982408982   (13 dígitos)
+gravado      (19) 8240-8982    ->     1982408982   (últimos 10)
+```
+
+O `55` não sai sozinho: leva junto o primeiro dígito do DDD, e o nono dígito do celular ocupa o lugar
+dele. Isso quebra **todo** celular de 11 dígitos — na prática, todo DDD de 11 a 28. Número de 12
+dígitos (celular antigo, sem o nono) passa ileso, porque ali os últimos 10 já são o nacional inteiro;
+foi por isso que os leads de DDD alto saíram certos e o bug demorou a aparecer.
+
+**O que custou:** dos 8 leads repassados, 5 chegaram ao vendedor com número inexistente. Dois deles
+— (49) 9186-5299 (SC) e (99) 9794-1046 (MA) — são números que *existem*, de desconhecidos: o vendedor
+pode ter abordado quem nunca pediu nada. O EDSON respondeu em 15/09: *"Estou tentando contato desde
+ontem mas acusa número inexistente....teria outro?"*.
+
+**Como está hoje:**
+
+| onde | o que faz |
+|---|---|
+| `copiloto-lead` v10 | grava `foneNac()` — tira o `55` só quando o que sobra é número brasileiro plausível. A busca por lead existente aceita as **duas** formas (11 dígitos e os antigos 10), senão o mesmo lead viraria dois registros |
+| `copiloto-feedback` v2 | o telefone da tarefa que vai ao gestor vem do CRM (`foneDoCrm`), não da coluna |
+| `copiloto-repasse` v3 | já lia do CRM desde 14/09 — **não desfazer** |
+| `fk8()` | continua nos últimos 8 dígitos **de propósito**: casa representante e número interno independentemente de DDI e nono dígito. Está correta |
+
+**Reparo de dado:** `copiloto-lead?acao=fone_crm` relê o contato no GHL e regrava a coluna;
+`&dry=1` mostra o que mudaria sem gravar. Em 15/09 corrigiu 18 dos 33 registros (5 já tinham ido por
+SQL); os outros 15 estavam certos por serem números antigos de 10 dígitos. Conferência:
+
+```sql
+select length(regexp_replace(fone,'\D','','g')) as digitos, count(*) from copiloto_lead group by 1;
+```
+
 
 | chave | valor | para quê |
 |---|---|---|

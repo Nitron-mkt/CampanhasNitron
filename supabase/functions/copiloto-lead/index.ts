@@ -1,3 +1,10 @@
+// copiloto-lead (v10) — O TELEFONE DO LEAD ERA GRAVADO DECAPITADO. d10() guardava os ultimos 10
+// digitos de um numero que vem do CRM com DDI, entao "+5511982408982" virava "1982408982": o 55 saiu
+// levando junto o primeiro digito do DDD, e o nono digito do celular tomou o lugar dele. O numero
+// gravado vira de outra praca — as vezes um numero que EXISTE, de um desconhecido. Cinco dos oito
+// leads repassados foram entregues a representante com numero inexistente, e esses leads ficaram
+// esperando. Agora grava o nacional inteiro (foneNac) e a busca aceita as duas formas, para os
+// registros antigos de 10 digitos nao virarem lead duplicado.
 // copiloto-lead (v9) — NUMERO DE CASA nunca e lead. O resumo do encerramento passou a sair pelo
 // Zaptos da Nina para o gestor, e o contato dele no CRM tem `source` preenchido ("Form 38"): sem
 // trava, a resposta dele entraria pela porta da frente e a Nina tentaria qualificar o proprio
@@ -70,7 +77,24 @@ const LOC = "rZ8y7lzqV7fzxsartaX2";
 const MODELO = "claude-sonnet-5";
 
 const digits = (s: any) => String(s || "").replace(/\D/g, "");
+// GRAVAR O NUMERO INTEIRO. Ate a v9 a coluna guardava d10() — os ULTIMOS 10 digitos — e o telefone
+// vem do CRM com DDI: "+5511982408982" (13 digitos) virava "1982408982". Nao e so o 55 que sai: o
+// primeiro digito do DDD sai junto, e o nono digito do celular ocupa o lugar dele. O numero gravado
+// passa a ser de OUTRA praca e, pior, as vezes existe: (49) 9186-5299 (SC) e (99) 9794-1046 (MA)
+// foram entregues a representante como se fossem o lead. Cinco dos oito leads repassados sairam
+// assim, e os leads ficaram esperando uma ligacao que nunca chegou.
+// Quebrava todo celular de 11 digitos (DDD + nono digito), ou seja praticamente todo DDD de 11 a 28.
+// Demorou a aparecer porque numero de 12 digitos (celular antigo, sem o nono) passa ileso: ali os
+// ultimos 10 sao o nacional inteiro. Por isso os leads de DDD alto sairam certos.
+const foneNac = (s: any) => { let d = digits(s); if (d.length >= 12 && d.startsWith("55")) d = d.slice(2); return d; };
+// so para achar registro GRAVADO antes da correcao, que tem 10 digitos. Nao usar para gravar.
 const d10 = (s: any) => digits(s).slice(-10);
+function foneFmt(s: any): string {
+  const d = foneNac(s);
+  if (d.length === 11) return "(" + d.slice(0, 2) + ") " + d.slice(2, 7) + "-" + d.slice(7);
+  if (d.length === 10) return "(" + d.slice(0, 2) + ") " + d.slice(2, 6) + "-" + d.slice(6);
+  return String(s || "");
+}
 const fk8 = (s: any) => { let d = digits(s).replace(/^0+/, "").replace(/^55/, ""); if (d.length > 8) d = d.slice(-8); return d; };
 const norm = (s: any) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
 const prim = (s: any) => (String(s || "").trim().split(/\s+/)[0] || String(s || ""));
@@ -220,7 +244,7 @@ async function runTool(sb: any, ctx: any, name: string, input: any): Promise<any
       const det = [
         L.empresa ? "Loja: " + L.empresa : null,
         L.nome ? "Contato: " + L.nome : null,
-        ctx.fone ? "WhatsApp: " + ctx.fone : null,
+        ctx.fone ? "WhatsApp: " + foneFmt(ctx.fone) : null,
         docFmt(L.cnpj) || "Sem documento informado",
         (L.cidade || L.uf) ? "Praca: " + [L.cidade, L.uf].filter(Boolean).join("/") : null,
         L.tipo_loja ? "Tipo de loja: " + L.tipo_loja : null,
@@ -299,7 +323,10 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
   // chegar sem tag.
   const tags = (Array.isArray(cv.tags) ? cv.tags : []).map((x: any) => norm(x));
   const ehAds = tags.includes("ads") || tags.includes("lead") || tags.includes("anuncio");
-  const { data: leadRow } = await sb.from("copiloto_lead").select("*").or(`contact_id.eq.${contact_id || "__none__"},fone.eq.${d10(fone)}`).order("id", { ascending: false }).limit(1).maybeSingle();
+  // A busca aceita as DUAS formas de proposito: a nova (numero inteiro) e a antiga (10 digitos).
+  // Os registros gravados ate a v9 tem 10 digitos; se a busca so procurasse a forma nova, o mesmo
+  // lead viraria dois registros e a conversa recomecaria do zero para quem ja tinha respondido.
+  const { data: leadRow } = await sb.from("copiloto_lead").select("*").or(`contact_id.eq.${contact_id || "__none__"},fone.eq.${foneNac(fone)},fone.eq.${d10(fone)}`).order("id", { ascending: false }).limit(1).maybeSingle();
   if (leadRow?.ultima_msg_id && leadRow.ultima_msg_id === ultima.id) return { ...base, decisao: "pular", motivo: "ja respondi esta mensagem (o envio pode estar a caminho)" };
   // O CRM tambem diz de onde ele veio: `source` e preenchido pelo formulario da landing (ex.
   // "Atacado Nitron Pro"). Isso e sinal de lead tao bom quanto a tag, e serve para campanha que
@@ -315,12 +342,12 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
   if (nativo && idadeH > opts.janelaH) {
     if (leadRow?.status === "janela_fechada") return { ...base, decisao: "pular", motivo: "janela de 24h fechada, humano ja avisado" };
     if (opts.dry) return { ...base, decisao: "janela_fechada", motivo: "passaram " + idadeH.toFixed(1) + "h da mensagem dele: a Meta so aceita template agora (previa, nada gravado)" };
-    const up = await upsertLead(sb, { contact_id, fone: d10(fone), instancia: "ghl-nativo" }, { nome: nomeCrm || null, empresa: crm.empresa || null, cnpj: crm.cnpj || null, status: "janela_fechada", motivo: "janela de 24h da Meta fechada antes da primeira resposta" });
-    const { data: tfj } = await sb.from("copiloto_tarefas").insert({ area: "comercial", tipo: "lead-janela-24h", acao: ("Lead sem resposta e janela de 24h fechada: " + (nomeCrm || fone)).slice(0, 500), detalhe: ["Canal: WhatsApp nativo do GHL", "Contato: " + (nomeCrm || "sem nome"), "WhatsApp: " + fone, docFmt(crm.cnpj) || "Sem documento", crm.source ? "Origem (CRM): " + crm.source : null, crm.url ? "Landing: " + crm.url : null, "Escreveu: \"" + texto.slice(0, 200) + "\"", "", "Passaram " + idadeH.toFixed(1) + "h: texto livre nao passa mais pela Meta. Responder por template aprovado, ou ligar."].filter(Boolean).join("\n").slice(0, 1500), cliente_nome: nomeCrm || null, contact_id, origem: "nina-lead", prioridade: 2 }).select("id").maybeSingle();
+    const up = await upsertLead(sb, { contact_id, fone: foneNac(fone), instancia: "ghl-nativo" }, { nome: nomeCrm || null, empresa: crm.empresa || null, cnpj: crm.cnpj || null, status: "janela_fechada", motivo: "janela de 24h da Meta fechada antes da primeira resposta" });
+    const { data: tfj } = await sb.from("copiloto_tarefas").insert({ area: "comercial", tipo: "lead-janela-24h", acao: ("Lead sem resposta e janela de 24h fechada: " + (nomeCrm || fone)).slice(0, 500), detalhe: ["Canal: WhatsApp nativo do GHL", "Contato: " + (nomeCrm || "sem nome"), "WhatsApp: " + foneFmt(fone), docFmt(crm.cnpj) || "Sem documento", crm.source ? "Origem (CRM): " + crm.source : null, crm.url ? "Landing: " + crm.url : null, "Escreveu: \"" + texto.slice(0, 200) + "\"", "", "Passaram " + idadeH.toFixed(1) + "h: texto livre nao passa mais pela Meta. Responder por template aprovado, ou ligar."].filter(Boolean).join("\n").slice(0, 1500), cliente_nome: nomeCrm || null, contact_id, origem: "nina-lead", prioridade: 2 }).select("id").maybeSingle();
     return { ...base, decisao: "janela_fechada", lead_id: up.lead?.id || null, tarefa: tfj?.id || null, motivo: "passaram " + idadeH.toFixed(1) + "h — tarefa aberta p/ o comercial (template ou ligacao)" };
   }
 
-  const ctx: any = { contact_id, fone: d10(fone), instancia: nativo ? "ghl-nativo" : instancia, dry: opts.dry, source: crm.source || (ehAds ? "anuncio META" : null) };
+  const ctx: any = { contact_id, fone: foneNac(fone), instancia: nativo ? "ghl-nativo" : instancia, dry: opts.dry, source: crm.source || (ehAds ? "anuncio META" : null) };
   // Se ele ja informou o CNPJ no formulario, a Nina NAO pede de novo — e o codigo ja confere se
   // esse CNPJ tem cadastro, para ela nao tratar cliente antigo como lead novo.
   let cadastro: any = null;
@@ -481,6 +508,27 @@ Deno.serve(async (req) => {
     const b = await req.json().catch(() => ({} as any));
     const dry = sp.get("dry") === "1" || b.dry === true;
     const limite = Math.min(parseInt(sp.get("limite") || b.limite || "6") || 6, 20);
+
+    // ---- REPARO: regrava copiloto_lead.fone com o telefone real do CRM ----
+    // Existe por causa do d10(): ate a v9 a coluna guardou numero decapitado, e nao da para
+    // reconstruir o que foi cortado (o digito perdido e o primeiro do DDD). A unica fonte de verdade
+    // e o contato no GHL. ?acao=fone_crm&dry=1 mostra o que mudaria sem gravar.
+    if (String(sp.get("acao") || b.acao || "").toLowerCase() === "fone_crm") {
+      const { data: leads } = await sb.from("copiloto_lead").select("id, contact_id, nome, empresa, fone").order("id");
+      const mud: any[] = [];
+      for (const L of (leads || [])) {
+        if (!L.contact_id) { mud.push({ id: L.id, situacao: "sem contact_id" }); continue; }
+        const rc = await ghl("GET", "/contacts/" + L.contact_id);
+        if (!rc.ok) { mud.push({ id: L.id, situacao: "GHL " + rc.status }); continue; }
+        const dc = await rc.json().catch(() => ({} as any));
+        const novo = foneNac(dc?.contact?.phone || "");
+        if (!novo) { mud.push({ id: L.id, situacao: "contato sem telefone no CRM" }); continue; }
+        if (novo === digits(L.fone)) { mud.push({ id: L.id, situacao: "ja certo", fone: foneFmt(novo) }); continue; }
+        if (!dry) await sb.from("copiloto_lead").update({ fone: novo }).eq("id", L.id);
+        mud.push({ id: L.id, quem: L.empresa || L.nome, situacao: dry ? "mudaria" : "corrigido", antes: foneFmt(L.fone), depois: foneFmt(novo) });
+      }
+      return j({ ok: true, acao: "fone_crm", dry, total: mud.length, corrigidos: mud.filter((x) => x.situacao === "corrigido" || x.situacao === "mudaria").length, resultado: mud });
+    }
 
     const { data: cfgRows } = await sb.from("copiloto_config").select("*");
     const cfg: Record<string, string> = {}; (cfgRows || []).forEach((r: any) => cfg[r.chave] = r.valor);
