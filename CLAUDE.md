@@ -49,10 +49,18 @@ renomear exigiria migrar linhas e funções sem ganho para quem lê a tela.
    deixa correndo. E **quando uma instância cair, o gestor é avisado no celular**: o `fila-processar`
    v25 manda um Zaptos para `fila_config.alerta_fone` (11970399053) no mesmo momento em que grava a
    pausa, uma vez por queda. Esvaziar a coluna desliga o aviso sem deploy.
-   *Limite conhecido:* o número de saída é o dono do contato no CRM, então o aviso sai pela instância
-   dona do contato do gestor (hoje a **Nina**). Se for justamente ela que cair, o aviso não chega — a
-   resposta da rodada traz `alerta` com o motivo e o log registra. Para cobrir esse caso, o contato
-   dele teria de ser de uma instância de rep; é decisão dele.
+   **O aviso sai por qualquer instância de pé**, na ordem que ele deu em 15/09: Camyla, Nina, depois
+   qualquer outra — nunca a que caiu. Como o número de saída é o dono do contato, avisar por outra
+   exige trocar o `assignedTo`: ele autorizou ("pode usar qualquer instância para me avisar"), e o
+   `campanhas-enviar` v32 faz essa troca sozinho quando o pedido vem com `alerta: true`.
+   **Essa é a ÚNICA exceção à regra de nunca mexer no `assignedTo`**, e é estreita de propósito: a
+   função confere o telefone contra `fila_config.alerta_fone` no momento do envio e ignora o pedido
+   para qualquer outro número. Conferido em 15/09 com envio real — contato era da Nina, aviso pedido
+   pela Camyla, `dono_forcado: true`, GHL 201, mensagem no aparelho.
+10. **Instância caída não é decisão minha.** Dito em 15/09: o aviso chega no celular dele, e **ele**
+    devolve a instrução — trocar de instância, esperar, reatribuir. Até essa instrução chegar, o que
+    vale é o automático: a caída fica pausada, as linhas dela esperam, e todas as outras seguem
+    enviando. Não desviar campanha de instância por conta própria.
 8. **Instância que atende o representante segue o Sankhya.** Hoje (15/09) os disparos ao rep saem
    pela **Juliete** e pela **Camyla** — a Camyla provavelmente usando o usuário da Isadora. Se o rep
    trocar de assistente no Sankhya **e** no CRM, mande pela instância da pessoa que cuida dele

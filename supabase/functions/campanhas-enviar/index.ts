@@ -1,4 +1,4 @@
-// campanhas-enviar (v31) — email com ARTE + {{...}}. Garante contato. WhatsApp via SMS+#contact_instance. Recusa WhatsApp para telefone FIXO (10 digitos). ?diag mostra rate-limit.
+// campanhas-enviar (v32) — email com ARTE + {{...}}. Garante contato. WhatsApp via SMS+#contact_instance. Recusa WhatsApp para telefone FIXO (10 digitos). ?diag mostra rate-limit.
 // v22: TRAVA DE INSTANCIA. Antes, sem instancia ele mandava o texto SEM amarrar — a mensagem saia pela ultima instancia
 //      a que aquele contato ficou preso (de outro assunto, de outro mes), e o cliente recebia algo desconexo.
 //      Agora WhatsApp sem instancia e RECUSADO, e o token e conferido contra o cadastro instancia_ghl (cache de 5 min).
@@ -76,6 +76,14 @@
 //      se pode concluir que ESTA instancia caiu, e agora e o unico que marca a linha como erro.
 //      Nomeando outra, a mensagem segue valida e a funcao devolve `queda_outra` com o nome lido: a
 //      instancia que caiu e a NOMEADA, e e ela que o fila-processar pausa.
+// v32: MODO AVISO (`alerta: true`). O aviso de "a instancia X caiu" precisa sair mesmo quando a
+//      instancia caida e justamente a DONA do contato de quem vai ser avisado — e o numero de saida
+//      e o dono, entao sem isso o aviso morria exatamente no caso que mais importa (a Nina cair).
+//      O gestor autorizou em 15/09: "pode usar qualquer instancia para me avisar". Avisar por outra
+//      exige trocar o assignedTo, e e por isso que a regra de nunca mexer nesse campo ganha aqui uma
+//      excecao — estreita de proposito: so vale para o telefone gravado em fila_config.alerta_fone,
+//      conferido no momento do envio. Qualquer outro numero com `alerta: true` e ignorado e segue a
+//      trava normal de divergencia de dono.
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, content-type, apikey", "Access-Control-Allow-Methods": "POST, OPTIONS" };
 const j = (o: unknown, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -155,6 +163,20 @@ async function donoDoContato(contactId: string): Promise<string | null> {
     return c.porUsuario[uid] || "";
   } catch { return null; }
 }
+// Numero autorizado a ter o dono trocado (o do aviso de queda). Le do banco no momento do envio:
+// se a coluna mudar ou esvaziar, a excecao acompanha sem deploy.
+async function foneDeAlerta(): Promise<string> {
+  try {
+    const base = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, ""); const k = srvKey();
+    if (!base || !k) return "";
+    const r = await fetch(`${base}/rest/v1/fila_config?id=eq.1&select=alerta_fone`, { headers: { apikey: k, Authorization: "Bearer " + k } });
+    if (!r.ok) return "";
+    const rows = await r.json();
+    return Array.isArray(rows) && rows[0] ? String(rows[0].alerta_fone || "") : "";
+  } catch { return ""; }
+}
+// compara telefone por digito, sem o 55: "11970399053" e "+5511970399053" sao o mesmo numero
+const soDigitos = (v: string) => String(v || "").replace(/\D/g, "").replace(/^55/, "");
 const formaOk = (s: string) => /^[\p{L}\p{N} ._-]{2,40}$/u.test(s);
 function foneVariants(fone: string): string[] {
   const d = String(fone || "").replace(/\D/g, ""); const out = new Set<string>();
@@ -400,6 +422,20 @@ Deno.serve(async (req) => {
     if (b.lookup) return j({ ok: !!contactId, contactId, via, criado, instancia: instancia || null, dono_crm: dono, dono_divergente: !!(dono && dono !== instancia) });
     if (!texto && !b.templateId && b.so_campos !== true) return j({ ok: false, motivo: "sem texto nem arte" }, 400);
     if (!contactId) return j({ ok: false, motivo: "nao foi possivel achar/criar contato no CRM", email: b.email, fone: b.fone });
+    // MODO AVISO: ver o cabecalho da v32. A troca de dono acontece so aqui, so no numero de aviso, e
+    // so quando ele ja nao e da instancia que vai mandar — e o unico jeito de o aviso sair por quem
+    // esta de pe. Se a troca falhar, nao inventa: cai na trava normal e a linha diz de quem e o contato.
+    let donoForcado = false;
+    if (b.alerta === true && canal !== "email" && dono !== instancia && instancia) {
+      const alvo = soDigitos(await foneDeAlerta());
+      if (alvo && alvo === soDigitos(b.fone || "")) {
+        const uid = cad?.idDe[instancia];
+        if (uid) {
+          const rr = await ghl("PUT", `/contacts/${contactId}`, { assignedTo: uid });
+          if (rr.ok) { dono = instancia; donoForcado = true; }
+        }
+      }
+    }
     if (dono && dono !== instancia) {
       if (b.usar_dono === true) instUsada = dono;
       else return j({
@@ -424,6 +460,6 @@ Deno.serve(async (req) => {
     const mergeUsado = (instUsada !== instancia && b.merge && typeof b.merge === "object") ? { ...b.merge, instancia: instUsada, assistente: instUsada } : b.merge;
     const res: any = await enviarMsg(contactId, canal, textoUsado, b.assunto, b.templateId, instUsada || undefined, b.fone, b.nome, mergeUsado, { espera_ms: b.espera_ms, margem_ms: b.margem_ms, exigir_confirmacao: b.exigir_confirmacao, campos: b.campos, checar_entrega: b.checar_entrega, checar_ms: b.checar_ms, imagens: b.imagens });
     const ok = res.status >= 200 && res.status < 300;
-    return j({ ok, contactId, via, criado, canal, instancia: instUsada || null, instancia_pedida: instUsada !== instancia ? instancia : undefined, texto_ajustado: textoAjustado || undefined, campos_gravados: camposGravados || undefined, dono_crm: dono, arte: !!b.templateId, arte_ok: res.arte_ok, motivo: ok ? undefined : (res.recusado || ("GHL " + res.status + ": " + res.body)), bind_nao_confirmado: res.recusado ? true : undefined, instancia_caiu: res.instancia_caiu || undefined, queda_outra: res.queda_outra || undefined, anexos: (Array.isArray(b.imagens) ? b.imagens.length : 0) || undefined, resultado: res, teste: !!b.test });
+    return j({ ok, contactId, via, criado, canal, instancia: instUsada || null, instancia_pedida: instUsada !== instancia ? instancia : undefined, texto_ajustado: textoAjustado || undefined, campos_gravados: camposGravados || undefined, dono_crm: dono, arte: !!b.templateId, arte_ok: res.arte_ok, motivo: ok ? undefined : (res.recusado || ("GHL " + res.status + ": " + res.body)), bind_nao_confirmado: res.recusado ? true : undefined, instancia_caiu: res.instancia_caiu || undefined, queda_outra: res.queda_outra || undefined, dono_forcado: donoForcado || undefined, anexos: (Array.isArray(b.imagens) ? b.imagens.length : 0) || undefined, resultado: res, teste: !!b.test });
   } catch (e) { return j({ ok: false, erro: String(e) }, 500); }
 });

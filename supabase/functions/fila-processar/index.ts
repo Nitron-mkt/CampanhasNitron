@@ -1,4 +1,4 @@
-// fila-processar (v25) — QUEDA PAUSA A INSTANCIA, NAO A FILA. A v21 desligava fila_config.wpp_ativo
+// fila-processar (v26) — QUEDA PAUSA A INSTANCIA, NAO A FILA. A v21 desligava fila_config.wpp_ativo
 // na primeira queda. Protegia a campanha de queimar (o problema real da v20: o cron tentava a mesma
 // instancia caida rodada apos rodada, e em 27/08 as tres linhas da Juliete viraram erro uma por
 // rodada), mas pagava caro por isso — parava as outras instancias e transformava a chave geral em
@@ -6,6 +6,14 @@
 // outras instancias seguem enviando, e so as linhas da instancia caida esperam. Sai da pausa quem
 // reconectou: fila-acao retomar (canal whatsapp/ambos) limpa, ou um UPDATE na coluna.
 // v21: (revertido) queda desligava a fila de Zaptos inteira.
+// v26: O AVISO SAI POR QUALQUER INSTANCIA DE PE. A v25 pedia o envio a uma instancia viva, mas o
+//      numero de saida e o DONO do contato no CRM — entao o aviso ainda morria quando a caida era a
+//      dona do contato do gestor, que e exatamente o caso da Nina. Ele resolveu isso em 15/09:
+//      "use o da Camyla ou da Nina para me avisar, principalmente quando cair o da Nina, pode usar
+//      qualquer instancia". Agora a escolha segue essa ordem (Camyla, Nina, depois qualquer outra de
+//      pe) e o pedido vai com `alerta: true`, que autoriza o campanhas-enviar v32 a passar o contato
+//      DO AVISO para quem vai mandar. Nenhum outro contato e tocado: a excecao esta presa ao
+//      telefone de fila_config.alerta_fone, conferido la dentro.
 // v25: QUEDA AVISA O GESTOR NO CELULAR. Pedido dele em 15/09: "nao tem que parar os disparos a nao
 //      ser que veja aquela mensagem sobre a instancia desconectada, e se acontecer, mande para o meu
 //      celular que a instancia caiu". O aviso sai UMA vez por queda, no momento em que a pausa e
@@ -127,10 +135,14 @@ Deno.serve(async (req) => {
     // trava de instancia, mesmo cadastro), mas sem pos-checagem de entrega e sem exigir confirmacao
     // de troca: e uma mensagem de servico, e esperar 12s + 25s por ela atrasaria a rodada inteira.
     const ALERTA_FONE = String(cfg?.alerta_fone || "").trim();
+    // Ordem pedida pelo gestor: Camyla e Nina primeiro; se nenhuma das duas der, qualquer uma de pe.
+    // O que NAO pode e o aviso sair pela propria caida — por isso `caidas` tambem entra no filtro.
+    const PREF_AVISO = ["Camyla", "Nina"];
+    const caidas = new Set<string>();
     async function avisarQueda(nome: string, ondeVi: string) {
       if (!ALERTA_FONE) return { enviado: false, motivo: "fila_config.alerta_fone vazio" };
-      // manda pedindo uma instancia que esta de pe; o numero de saida sera o do dono do contato
-      const viva = [...INST_OK].find((x) => x !== nome && !PAUSADAS.has(x));
+      const vivas = [...INST_OK].filter((x) => x !== nome && !PAUSADAS.has(x) && !caidas.has(x));
+      const viva = PREF_AVISO.find((p) => vivas.includes(p)) || vivas[0];
       if (!viva) return { enviado: false, motivo: "nenhuma instancia de pe para pedir o envio" };
       const texto = "⚠️ Zaptos: a instancia " + nome + " caiu.\n\n"
         + "O ZaptosWPP escreveu na conversa que ela esta desconectada" + (ondeVi ? (" (" + ondeVi + ")") : "") + ".\n"
@@ -139,12 +151,14 @@ Deno.serve(async (req) => {
       try {
         const r = await fetch(url + "/functions/v1/campanhas-enviar", {
           method: "POST", headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
+          // alerta:true = o campanhas-enviar pode passar o contato DO AVISO para a `viva`, se ele
+          // ainda for de outra. Sem isso o aviso sairia pelo numero de quem acabou de cair.
           body: JSON.stringify({ canal: "whatsapp", fone: ALERTA_FONE, nome: "Gestor", instancia: viva, texto,
-            usar_dono: true, exigir_confirmacao: false, margem_ms: 0, checar_entrega: false }),
+            alerta: true, exigir_confirmacao: false, margem_ms: 0, checar_entrega: false }),
         });
         const d = await r.json().catch(() => ({}));
         if (!d.ok) console.error("aviso de queda NAO foi entregue:", nome, d.motivo || d.erro || r.status);
-        return { enviado: !!d.ok, instancia: d.instancia || viva, motivo: d.ok ? undefined : (d.motivo || d.erro || ("status " + r.status)) };
+        return { enviado: !!d.ok, instancia: d.instancia || viva, dono_trocado: d.dono_forcado || undefined, motivo: d.ok ? undefined : (d.motivo || d.erro || ("status " + r.status)) };
       } catch (e) { console.error("aviso de queda falhou:", nome, String(e)); return { enviado: false, motivo: String(e) }; }
     }
     async function enviar(m: any, rajada = false) {
@@ -239,6 +253,7 @@ Deno.serve(async (req) => {
           pausada_em: new Date().toISOString(),
           pausada_motivo: "queda detectada no envio: o ZaptosWPP escreveu na conversa que a propria " + inst + " estava desconectada",
         }).eq("instancia", inst);
+        caidas.add(inst);
         avisos.push({ instancia: inst, ...(await avisarQueda(inst, "na conversa de quem ela mesma estava atendendo")) });
       }
       // A queda de OUTRA instancia nao para o lote que estava correndo, mas para a nomeada: e assim
@@ -250,6 +265,7 @@ Deno.serve(async (req) => {
           pausada_em: new Date().toISOString(),
           pausada_motivo: "queda detectada no envio: o ZaptosWPP nomeou a " + nome + " como desconectada numa conversa de outra instancia",
         }).eq("instancia", nome);
+        caidas.add(nome);
         avisos.push({ instancia: nome, ...(await avisarQueda(nome, "numa conversa que outra instancia estava atendendo")) });
       }
     }
