@@ -39,6 +39,15 @@ renomear exigiria migrar linhas e funções sem ganho para quem lê a tela.
    (`publicoAtivo()`); nenhum representante nasce marcado.
 5. **Teto de 2 mensagens por minuto por instância** (`fila_config.wpp_max_min`).
 6. **Horários da tela são de São Paulo**, fixo, não do navegador (`hl()`).
+7. **A instância só caiu se a mensagem NOMEAR ela.** O único sinal de queda é
+   `[System]: <instância> - The instance is disconnected.` escrita na conversa — e o nome importa:
+   a linha diz *qual* instância caiu, que nem sempre é a que está mandando. Antes de concluir queda,
+   leia o nome. **Nas campanhas da NINA isso é para conferir sempre**: a Nina é o escopo `lead`, e se
+   ela travar não conseguimos continuar. Apareceu o nome dela: reporta ao gestor na hora.
+8. **Instância que atende o representante segue o Sankhya.** Hoje (15/09) os disparos ao rep saem
+   pela **Juliete** e pela **Camyla** — a Camyla provavelmente usando o usuário da Isadora. Se o rep
+   trocar de assistente no Sankhya **e** no CRM, mande pela instância da pessoa que cuida dele
+   **segundo o Sankhya**.
 
 ## Coisas que já custaram caro — não redescubra
 
@@ -46,6 +55,16 @@ renomear exigiria migrar linhas e funções sem ganho para quem lê a tela.
   `[System]: <instância> - The instance is disconnected.` na conversa 2–8s depois. Esse é o
   **único** sinal observável: não há campo no CRM nem status de contato. `campanhas-enviar` espera
   ~12s e checa (`ENTREGA_CHECK_MS`); em 26/08, sem isso, 8 mensagens viraram "enviado" sem chegar.
+- **A linha de queda nomeia a instância caída, e não é sempre a remetente.** Em 03/09 quatro
+  conversas receberam `[System]: **Nina** - The instance is disconnected.` enquanto o envio saía pela
+  Isadora, Juliete, Mônica e Valeria. A detecção só procurava a frase, então condenou as quatro
+  linhas, pausou as quatro instâncias — sadias, e mandando normalmente o tempo todo — e deixou a
+  Nina, a que caíra de verdade, trabalhando. **174 mensagens ficaram presas 12 dias** (rep_sem_comprar
+  73, giro a vencer 43, roteiro 36, clube_saldo 19, giro vencido 3) e o gestor via na tela o contrário
+  do que via nos aparelhos. Canceladas em 15/09 a pedido dele. Corrigido em `campanhas-enviar` v31
+  (lê o nome; `instancia_caiu` só quando é a remetente, senão devolve `queda_outra`) e `fila-processar`
+  v24 (pausa a instância **nomeada**, sem interromper o lote de quem estava mandando). Em 27/08, nas
+  quedas reais, a linha nomeava a própria remetente — é esse o caso que condena a mensagem.
 - **O número de saída é o `assignedTo` do contato.** `fromNumber` **não funciona** (testado 26/08).
   `#contact_instance:<token>` governa só a entrada. Sem dono, a mensagem não sai.
 - **`SUPABASE_SERVICE_ROLE_KEY` vem com valor `sb_secret_`** que o PostgREST recusa (PGRST303).
@@ -184,11 +203,16 @@ renomear exigiria migrar linhas e funções sem ganho para quem lê a tela.
   da anon key legada embutida no HTML.
 - Não regenerar nem apagar chaves; não trocar senhas.
 
-## Estado conhecido (28/08/2026)
+## Estado conhecido (15/09/2026)
 
 - **Zaptos da instância "Campanhas Nitron" está RESTRINGIDO pelo WhatsApp.** Sem previsão. A fila
   segue LIGADA; a restrição está registrada como pausa dessa instância (`instancia_ghl.pausada_em`).
-  As outras seis instâncias trabalham normalmente.
+  É a **única** instância pausada — Isadora, Juliete, Mônica e Valeria foram liberadas em 15/09,
+  depois de se descobrir que a pausa delas era falso positivo (ver a armadilha da linha de queda).
+- **A fila está vazia**: as 174 linhas pendentes foram canceladas em 15/09 a pedido do gestor. Elas
+  estavam paradas desde 03–11/09 pelas pausas erradas, e o texto de cada uma já estava velho.
+- **O contato de teste do gestor (11970399053) é da Nina** no CRM desde 15/09 — estava da "Campanhas
+  Nitron", que é restringida, e por ali o teste não sairia. Trocado com autorização dele.
 - **Clube a vencer / distrato está em STAND BY** (`ativa=false`) desde 28/08, por decisão do gestor.
 - **Reativação 180 dias** só volta quando o gestor mandar; as 43 linhas restantes estão canceladas.
 - 9 das 13 campanhas ativas são só Zaptos; 4 aceitam e-mail. 77 de 79 representantes têm e-mail,

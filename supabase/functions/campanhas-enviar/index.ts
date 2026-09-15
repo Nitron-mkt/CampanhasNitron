@@ -1,4 +1,4 @@
-// campanhas-enviar (v30) — email com ARTE + {{...}}. Garante contato. WhatsApp via SMS+#contact_instance. Recusa WhatsApp para telefone FIXO (10 digitos). ?diag mostra rate-limit.
+// campanhas-enviar (v31) — email com ARTE + {{...}}. Garante contato. WhatsApp via SMS+#contact_instance. Recusa WhatsApp para telefone FIXO (10 digitos). ?diag mostra rate-limit.
 // v22: TRAVA DE INSTANCIA. Antes, sem instancia ele mandava o texto SEM amarrar — a mensagem saia pela ultima instancia
 //      a que aquele contato ficou preso (de outro assunto, de outro mes), e o cliente recebia algo desconexo.
 //      Agora WhatsApp sem instancia e RECUSADO, e o token e conferido contra o cadastro instancia_ghl (cache de 5 min).
@@ -63,6 +63,19 @@
 //      entregue a imagem — e a mesma armadilha do `status: sent` da v29. A pos-checagem de queda
 //      continua valendo, mas ela so detecta instancia caida, nao anexo ignorado. Por isso a tela so
 //      oferece imagem no Zaptos depois de um envio de teste conferido no aparelho.
+// v31: A QUEDA DE INSTANCIA PASSOU A OLHAR O NOME. A linha do ZaptosWPP vem como
+//      "[System]: <instancia> - The instance is disconnected." e o nome e a informacao inteira: ela
+//      diz QUAL instancia caiu, que nem sempre e a que esta mandando. A v29 so procurava a frase.
+//      Em 03/09 quatro conversas receberam essa linha nomeando a NINA enquanto o envio saia pela
+//      Isadora, Juliete, Monica e Valeria — e a funcao condenou as quatro linhas e a fila pausou as
+//      quatro instancias, todas sadias. A Nina, que era a caida de verdade, seguiu trabalhando; 174
+//      mensagens ficaram presas de 03 a 15/09 e o gestor viu as assistentes mandando normalmente
+//      enquanto o painel as dava por fora do ar.
+//      Em 27/08, quando a queda foi real, a linha nomeava a propria instancia remetente ("Juliete"
+//      mandando pela Juliete, "Campanhas Nitron" pela Campanhas Nitron) — esse e o unico caso em que
+//      se pode concluir que ESTA instancia caiu, e agora e o unico que marca a linha como erro.
+//      Nomeando outra, a mensagem segue valida e a funcao devolve `queda_outra` com o nome lido: a
+//      instancia que caiu e a NOMEADA, e e ela que o fila-processar pausa.
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, content-type, apikey", "Access-Control-Allow-Methods": "POST, OPTIONS" };
 const j = (o: unknown, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -224,7 +237,13 @@ async function sms(contactId: string, message: string, toNumber?: string, anexos
 // ---- confirmacao da troca de instancia ----
 const ehAck = (m: any) => /contact\s+instance\s+updated/i.test(String(m?.body || ""));
 // ---- aviso de queda da instancia, escrito pelo ZaptosWPP na propria conversa ----
-const ehQueda = (m: any) => /instance\s+is\s+disconnected|instancia\s+desconectada/i.test(String(m?.body || ""));
+// Le o NOME que a linha traz. A alternativa em portugues saiu junto: "instancia desconectada" e
+// texto NOSSO (o motivo que gravamos em fila_envio.resultado), nunca do app — casar com ele so
+// criava chance de falso positivo, e sem nome nao da para saber de quem se fala.
+const RE_QUEDA = /(?:\[\s*system\s*\]\s*:?\s*)?([^\[\]\n:]{1,60}?)\s*[-\u2013]\s*the\s+instance\s+is\s+disconnected/i;
+const nomeQueda = (m: any): string | null => { const g = RE_QUEDA.exec(String(m?.body || "")); const n = g ? String(g[1] || "").trim() : ""; return n || null; };
+// compara sem acento e sem caixa: o cadastro tem "Monica" com circunflexo e a linha pode vir sem
+const chaveInst = (s: string) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
 async function lerConversa(cid: string): Promise<{ http: number; msgs: any[] }> {
   const r = await ghl("GET", `/conversations/${cid}/messages?limit=20`, null, "2021-04-15");
   if (!r.ok) return { http: r.status, msgs: [] };
@@ -250,17 +269,26 @@ async function esperarTroca(cid: string, bindId: string, janelaMs: number) {
   return { confirmado: false, ms: Date.now() - t0, http, motivo: "o app nao confirmou a troca em " + Math.round(janelaMs / 1000) + "s" };
 }
 // Espera a linha de queda aparecer. Nao ha como perguntar ao app se a instancia esta de pe: o unico
-// sinal observavel e essa mensagem de sistema na conversa, depois da tentativa.
-async function esperarQueda(cid: string, desdeMs: number, janelaMs: number) {
+// sinal observavel e essa mensagem de sistema na conversa, depois da tentativa — e vale so para a
+// instancia que ela NOMEIA. `caiu` significa "a instancia que acabou de mandar caiu"; a linha que
+// nomeia outra vem em `outra`, porque e noticia sobre aquela, nao sobre esta mensagem.
+async function esperarQueda(cid: string, desdeMs: number, janelaMs: number, instancia?: string) {
+  const eu = chaveInst(instancia || "");
   const t0 = Date.now();
+  let outra: any = null;
   while (Date.now() - t0 < janelaMs) {
     await sleep(BIND_POLL_MS);
     const lida = await lerConversa(cid);
     if (lida.http !== 200) continue;
-    const q = lida.msgs.find((m: any) => ehQueda(m) && m?.dateAdded && new Date(m.dateAdded).getTime() >= desdeMs);
-    if (q) return { caiu: true, em: q.dateAdded, texto: String(q.body || "").replace(/\s+/g, " ").slice(0, 160) };
+    for (const m of lida.msgs) {
+      if (!m?.dateAdded || new Date(m.dateAdded).getTime() < desdeMs) continue;
+      const nome = nomeQueda(m); if (!nome) continue;
+      const reg = { em: m.dateAdded, nome, texto: String(m.body || "").replace(/\s+/g, " ").slice(0, 160) };
+      if (eu && chaveInst(nome) === eu) return { caiu: true, ...reg };
+      outra = reg;
+    }
   }
-  return { caiu: false };
+  return { caiu: false, outra: outra || undefined };
 }
 async function enviarMsg(contactId: string, canal: string, texto: string, assunto?: string, templateId?: string, instancia?: string, fone?: string, nome?: string, merge?: any, opts?: any) {
   // so URL http(s): o GHL busca o arquivo de fora, entao caminho relativo ou data: URI nao chegaria
@@ -298,12 +326,16 @@ async function enviarMsg(contactId: string, canal: string, texto: string, assunt
   //    esta linha e ERRO — melhor uma linha para reenviar do que um lote marcado como entregue.
   //    A margem de 3s para tras cobre desencontro de relogio entre o isolate e o GHL.
   if (res.status >= 200 && res.status < 300 && cid && opts?.checar_entrega !== false) {
-    const q = await esperarQueda(cid, enviadoAs - 3000, Number(opts?.checar_ms) > 0 ? Number(opts.checar_ms) : ENTREGA_CHECK_MS);
+    const q = await esperarQueda(cid, enviadoAs - 3000, Number(opts?.checar_ms) > 0 ? Number(opts.checar_ms) : ENTREGA_CHECK_MS, instancia);
     if (q.caiu) {
       return { ...res, status: 0, bind, troca: { ...troca, margem_ms: esperaTotal },
         recusado: "instancia desconectada — o GHL aceitou mas o ZaptosWPP nao entregou: " + q.texto,
         instancia_caiu: true, queda: q };
     }
+    // A linha nomeou OUTRA instancia: esta mensagem continua valida — condenar por ela foi o erro de
+    // 03/09. Mas a nomeada caiu de verdade, e quem cuida da fila precisa saber: e assim que a queda
+    // da Nina (escopo lead, fora das campanhas de rep) aparece para nos.
+    if (q.outra) return { ...res, bind, troca: { ...troca, margem_ms: esperaTotal }, queda_outra: q.outra };
   }
   return { ...res, bind, troca: { ...troca, margem_ms: esperaTotal } };
 }
@@ -392,6 +424,6 @@ Deno.serve(async (req) => {
     const mergeUsado = (instUsada !== instancia && b.merge && typeof b.merge === "object") ? { ...b.merge, instancia: instUsada, assistente: instUsada } : b.merge;
     const res: any = await enviarMsg(contactId, canal, textoUsado, b.assunto, b.templateId, instUsada || undefined, b.fone, b.nome, mergeUsado, { espera_ms: b.espera_ms, margem_ms: b.margem_ms, exigir_confirmacao: b.exigir_confirmacao, campos: b.campos, checar_entrega: b.checar_entrega, checar_ms: b.checar_ms, imagens: b.imagens });
     const ok = res.status >= 200 && res.status < 300;
-    return j({ ok, contactId, via, criado, canal, instancia: instUsada || null, instancia_pedida: instUsada !== instancia ? instancia : undefined, texto_ajustado: textoAjustado || undefined, campos_gravados: camposGravados || undefined, dono_crm: dono, arte: !!b.templateId, arte_ok: res.arte_ok, motivo: ok ? undefined : (res.recusado || ("GHL " + res.status + ": " + res.body)), bind_nao_confirmado: res.recusado ? true : undefined, instancia_caiu: res.instancia_caiu || undefined, anexos: (Array.isArray(b.imagens) ? b.imagens.length : 0) || undefined, resultado: res, teste: !!b.test });
+    return j({ ok, contactId, via, criado, canal, instancia: instUsada || null, instancia_pedida: instUsada !== instancia ? instancia : undefined, texto_ajustado: textoAjustado || undefined, campos_gravados: camposGravados || undefined, dono_crm: dono, arte: !!b.templateId, arte_ok: res.arte_ok, motivo: ok ? undefined : (res.recusado || ("GHL " + res.status + ": " + res.body)), bind_nao_confirmado: res.recusado ? true : undefined, instancia_caiu: res.instancia_caiu || undefined, queda_outra: res.queda_outra || undefined, anexos: (Array.isArray(b.imagens) ? b.imagens.length : 0) || undefined, resultado: res, teste: !!b.test });
   } catch (e) { return j({ ok: false, erro: String(e) }, 500); }
 });
