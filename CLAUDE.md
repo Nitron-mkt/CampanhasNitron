@@ -125,6 +125,33 @@ renomear exigiria migrar linhas e funções sem ganho para quem lê a tela.
   três**. `fk8()` continua nos últimos 8 dígitos de propósito: ela casa representante e número
   interno independentemente de DDI e nono dígito, e está certa. Reparo de dado:
   `copiloto-lead?acao=fone_crm` (com `&dry=1` para ver antes).
+- **Reativação virou campanha de E-MAIL ao cliente** (`campanhas-reativacao`, campanha
+  `reativacao_email_cliente`, cron `reativacao-email-3min`). Pedido do gestor em 15/09: "tentei
+  primeiro pelo WhatsApp, mas não deu muito certo". Audiência na view `reativacao_email_apto`, não na
+  função — mesma razão do `roteiro_cliente_apto`. Travas dela: **um e-mail recebe uma vez só** mesmo
+  atendendo várias lojas do grupo, **e-mail de representante nunca entra** (a lição do
+  `rep_contato_extra`), título vencido fica fora (reativar quem nos deve é conversa de cobrança), e
+  só quem já comprou alguma vez.
+- **Contexto de quem parou há mais de um ano NÃO EXISTE.** `contato_enriquecido` calcula
+  `compra_linhas`, `ticket_medio` e faturamento em janela de **12 meses**: de 4.814 inativos com
+  e-mail, só os **495 da faixa 180–364d** têm o que ele comprava (489 deles). Nos outros 4.319 a
+  única coisa que sabemos é a data da última nota. Por isso a campanha é disparada **por faixa** e a
+  IA está proibida de preencher esse buraco — mandar "senti falta das suas compras de organização"
+  para quem parou há três anos é invenção. Alargar exige puxar 24–36 meses do Sankhya.
+- **O lote da reativação (12) é limite de INFRAESTRUTURA.** Cada e-mail custa uma chamada ao modelo
+  (~6s) e a edge function corta em 150s de ociosidade. Com 40 por rodada ela morria no meio e **não
+  enfileirava nada** — o trabalho das 40 chamadas ia junto.
+- **A agenda não precisa de código para mostrar campanha nova.** O painel lê `agenda_realizado`, que
+  é um `group by` de `fila_envio` por (dia de São Paulo, campanha): basta enfileirar com o `campanha`
+  certo e o dia aparece com total/enviado/erro/pendente ao vivo. A linha de `agenda_campanha` é o
+  outro lado (objetivo, alvo, status) — e o `status` **tem de ser** `planejado`, `em_andamento`,
+  `concluido` ou `cancelado` (`agenda_status_chk`). "rodando" não entra, e o erro do upsert vinha
+  sendo engolido: a campanha disparava e o dia ficava sem dono.
+- **A Nina é 24h, mas só fala das 6h às 22h de São Paulo.** Pedido do gestor em 15/09. O toque de
+  iniciativa dela já tinha trava própria (`foraHorarioComercial()`, 8–18 seg–sex e 8–13 sáb); o
+  limite externo entrou no **cron** (`copiloto-lead-5min` → `*/5 0,9-23 * * *`), não no código, para
+  valer nas duas passadas sem publicar função que está atendendo. Se o lead responder dentro dessa
+  janela ela continua a conversa normalmente.
 - **Sorteio puro empilha; o daqui tem memória.** Na primeira prévia os três leads online caíram
   todos na mesma pessoa e a outra ficou sem nenhum. Agora embaralha e traz para a frente quem
   recebeu menos (`copiloto_venda_interna.repasses`, e a contagem de `copiloto_lead.repasse_codvend`
