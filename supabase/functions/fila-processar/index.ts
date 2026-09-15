@@ -1,4 +1,4 @@
-// fila-processar (v24) — QUEDA PAUSA A INSTANCIA, NAO A FILA. A v21 desligava fila_config.wpp_ativo
+// fila-processar (v25) — QUEDA PAUSA A INSTANCIA, NAO A FILA. A v21 desligava fila_config.wpp_ativo
 // na primeira queda. Protegia a campanha de queimar (o problema real da v20: o cron tentava a mesma
 // instancia caida rodada apos rodada, e em 27/08 as tres linhas da Juliete viraram erro uma por
 // rodada), mas pagava caro por isso — parava as outras instancias e transformava a chave geral em
@@ -6,6 +6,14 @@
 // outras instancias seguem enviando, e so as linhas da instancia caida esperam. Sai da pausa quem
 // reconectou: fila-acao retomar (canal whatsapp/ambos) limpa, ou um UPDATE na coluna.
 // v21: (revertido) queda desligava a fila de Zaptos inteira.
+// v25: QUEDA AVISA O GESTOR NO CELULAR. Pedido dele em 15/09: "nao tem que parar os disparos a nao
+//      ser que veja aquela mensagem sobre a instancia desconectada, e se acontecer, mande para o meu
+//      celular que a instancia caiu". O aviso sai UMA vez por queda, no momento em que a pausa e
+//      gravada — nao a cada rodada, senao uma instancia fora do ar por um dia viraria centenas de
+//      mensagens. O numero mora em fila_config.alerta_fone (vazio desliga), nao em constante.
+//      LIMITE CONHECIDO: o numero de saida e o dono do contato no CRM, entao o aviso sai pela
+//      instancia que for dona do contato do gestor. Se for justamente a que caiu, o aviso nao chega —
+//      por isso a resposta da rodada traz `alerta` com o que aconteceu, e o console registra a falha.
 // v24: PAUSA A INSTANCIA QUE A MENSAGEM NOMEIA, NAO A QUE MANDOU. A linha do ZaptosWPP diz QUAL
 //      instancia caiu, e o campanhas-enviar v31 passou a ler esse nome: `instancia_caiu` so vem
 //      quando a nomeada e a remetente, e `queda_outra` traz o nome quando e outra. Ate a v23 a
@@ -115,6 +123,30 @@ Deno.serve(async (req) => {
       await sb.from("fila_envio").update({ status: "pendente" }).eq("status", "enviando").lt("enviado_em", limite);
       await sb.from("fila_envio").update({ status: "pendente" }).eq("status", "enviando").is("enviado_em", null);
     }
+    // Aviso de queda no celular do gestor. Vai pelo campanhas-enviar como qualquer Zaptos (mesma
+    // trava de instancia, mesmo cadastro), mas sem pos-checagem de entrega e sem exigir confirmacao
+    // de troca: e uma mensagem de servico, e esperar 12s + 25s por ela atrasaria a rodada inteira.
+    const ALERTA_FONE = String(cfg?.alerta_fone || "").trim();
+    async function avisarQueda(nome: string, ondeVi: string) {
+      if (!ALERTA_FONE) return { enviado: false, motivo: "fila_config.alerta_fone vazio" };
+      // manda pedindo uma instancia que esta de pe; o numero de saida sera o do dono do contato
+      const viva = [...INST_OK].find((x) => x !== nome && !PAUSADAS.has(x));
+      if (!viva) return { enviado: false, motivo: "nenhuma instancia de pe para pedir o envio" };
+      const texto = "⚠️ Zaptos: a instancia " + nome + " caiu.\n\n"
+        + "O ZaptosWPP escreveu na conversa que ela esta desconectada" + (ondeVi ? (" (" + ondeVi + ")") : "") + ".\n"
+        + "Ela foi pausada agora: as mensagens dela ficam esperando, as outras instancias seguem enviando.\n\n"
+        + "Quando reconectar, e so retomar no painel.";
+      try {
+        const r = await fetch(url + "/functions/v1/campanhas-enviar", {
+          method: "POST", headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json" },
+          body: JSON.stringify({ canal: "whatsapp", fone: ALERTA_FONE, nome: "Gestor", instancia: viva, texto,
+            usar_dono: true, exigir_confirmacao: false, margem_ms: 0, checar_entrega: false }),
+        });
+        const d = await r.json().catch(() => ({}));
+        if (!d.ok) console.error("aviso de queda NAO foi entregue:", nome, d.motivo || d.erro || r.status);
+        return { enviado: !!d.ok, instancia: d.instancia || viva, motivo: d.ok ? undefined : (d.motivo || d.erro || ("status " + r.status)) };
+      } catch (e) { console.error("aviso de queda falhou:", nome, String(e)); return { enviado: false, motivo: String(e) }; }
+    }
     async function enviar(m: any, rajada = false) {
       const texto = m.corpo || m.mensagem || "";
       if (!texto) { await sb.from("fila_envio").update({ status: "erro", resultado: "sem texto (corpo/mensagem vazios)" }).eq("id", m.id); return { ok: false, caiu: false }; }
@@ -150,7 +182,7 @@ Deno.serve(async (req) => {
         await enviar(m); emails++;
       }
     }
-    let whatsapp = 0; let bloqueados = 0; let estourou = 0; let pausadas = 0; const caiuInst: string[] = []; const caiuNomeada: string[] = [];
+    let whatsapp = 0; let bloqueados = 0; let estourou = 0; let pausadas = 0; const caiuInst: string[] = []; const caiuNomeada: string[] = []; const avisos: any[] = [];
     if (WPP_ATIVO) {
       const { data: wRows, error } = await sb.from("fila_envio").select("*").in("status", PEND).eq("canal", "whatsapp").order("id");
       if (error) throw error;
@@ -207,6 +239,7 @@ Deno.serve(async (req) => {
           pausada_em: new Date().toISOString(),
           pausada_motivo: "queda detectada no envio: o ZaptosWPP escreveu na conversa que a propria " + inst + " estava desconectada",
         }).eq("instancia", inst);
+        avisos.push({ instancia: inst, ...(await avisarQueda(inst, "na conversa de quem ela mesma estava atendendo")) });
       }
       // A queda de OUTRA instancia nao para o lote que estava correndo, mas para a nomeada: e assim
       // que a queda da Nina (escopo lead, que nao aparece nas campanhas de rep) chega ate nos.
@@ -217,9 +250,10 @@ Deno.serve(async (req) => {
           pausada_em: new Date().toISOString(),
           pausada_motivo: "queda detectada no envio: o ZaptosWPP nomeou a " + nome + " como desconectada numa conversa de outra instancia",
         }).eq("instancia", nome);
+        avisos.push({ instancia: nome, ...(await avisarQueda(nome, "numa conversa que outra instancia estava atendendo")) });
       }
     }
-    return j({ ok: true, emails, whatsapp, bloqueados_por_instancia: bloqueados, instancias_ativas: INST_OK.size, instancias_no_teto: estourou, instancias_pausadas: pausadas || undefined, instancias_caidas: caiuInst.length ? [...new Set(caiuInst)] : undefined, pausadas_agora: (caiuInst.length || caiuNomeada.length) ? [...new Set([...caiuInst, ...caiuNomeada])] : undefined, caiu_nomeada: caiuNomeada.length ? [...new Set(caiuNomeada)] : undefined, cfg: { wpp_seg: WPP_INTERVALO_MS / 1000, email_lote: EMAIL_LOTE, wpp_ativo: WPP_ATIVO, email_ativo: EMAIL_ATIVO, burst: BURST, burst_seg: [BURST_MIN_MS / 1000, BURST_MAX_MS / 1000], max_min: MAX_MIN } });
+    return j({ ok: true, emails, whatsapp, bloqueados_por_instancia: bloqueados, instancias_ativas: INST_OK.size, instancias_no_teto: estourou, instancias_pausadas: pausadas || undefined, instancias_caidas: caiuInst.length ? [...new Set(caiuInst)] : undefined, pausadas_agora: (caiuInst.length || caiuNomeada.length) ? [...new Set([...caiuInst, ...caiuNomeada])] : undefined, caiu_nomeada: caiuNomeada.length ? [...new Set(caiuNomeada)] : undefined, alerta: avisos.length ? avisos : undefined, cfg: { wpp_seg: WPP_INTERVALO_MS / 1000, email_lote: EMAIL_LOTE, wpp_ativo: WPP_ATIVO, email_ativo: EMAIL_ATIVO, burst: BURST, burst_seg: [BURST_MIN_MS / 1000, BURST_MAX_MS / 1000], max_min: MAX_MIN } });
   } catch (e: any) {
     const msg = [e?.message, e?.details, e?.hint, e?.code].filter(Boolean).join(" · ") || String(e);
     console.error("fila-processar falhou:", msg);

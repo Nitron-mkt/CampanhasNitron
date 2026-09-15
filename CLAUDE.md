@@ -44,6 +44,15 @@ renomear exigiria migrar linhas e funções sem ganho para quem lê a tela.
    a linha diz *qual* instância caiu, que nem sempre é a que está mandando. Antes de concluir queda,
    leia o nome. **Nas campanhas da NINA isso é para conferir sempre**: a Nina é o escopo `lead`, e se
    ela travar não conseguimos continuar. Apareceu o nome dela: reporta ao gestor na hora.
+9. **Disparo não para por mais nada.** Dito em 15/09: "não tem que parar os disparos a não ser que
+   veja aquela mensagem sobre a instância desconectada". Achou qualquer outro problema — reporta e
+   deixa correndo. E **quando uma instância cair, o gestor é avisado no celular**: o `fila-processar`
+   v25 manda um Zaptos para `fila_config.alerta_fone` (11970399053) no mesmo momento em que grava a
+   pausa, uma vez por queda. Esvaziar a coluna desliga o aviso sem deploy.
+   *Limite conhecido:* o número de saída é o dono do contato no CRM, então o aviso sai pela instância
+   dona do contato do gestor (hoje a **Nina**). Se for justamente ela que cair, o aviso não chega — a
+   resposta da rodada traz `alerta` com o motivo e o log registra. Para cobrir esse caso, o contato
+   dele teria de ser de uma instância de rep; é decisão dele.
 8. **Instância que atende o representante segue o Sankhya.** Hoje (15/09) os disparos ao rep saem
    pela **Juliete** e pela **Camyla** — a Camyla provavelmente usando o usuário da Isadora. Se o rep
    trocar de assistente no Sankhya **e** no CRM, mande pela instância da pessoa que cuida dele
@@ -358,3 +367,10 @@ tabela é compartilhada, e a tela do rep estava listando também os comunicados 
    deixar.
 9. **DENIZE (codvend 116)**: entregar lista de clientes sem compra em vez de rota. Combinado que
    fica como está até o gestor pedir.
+10. **`rep_instancia` resolve divergência pelo CRM, e a regra 8 diz Sankhya.** São 11 reps onde ERP e
+    CRM discordam: 5 vão para a Camyla (ERP diz Juliete/Isadora), 5 para a Juliete (ERP diz Isadora)
+    e 1 para a Nina (ERP diz Juliete). Trocar a fonte para o ERP **tira a Camyla inteira do roteamento**
+    — os 5 reps dela só existem pelo CRM — e o gestor disse em 15/09 para continuar mandando por
+    Juliete e Camyla. As duas coisas não cabem juntas: ou a Camyla é exceção reconhecida (ela usa o
+    usuário da Isadora), ou a divergência se resolve pelo Sankhya e ela sai. **Não mexer até ele
+    decidir.**
