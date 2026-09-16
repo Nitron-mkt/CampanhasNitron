@@ -40,6 +40,60 @@ renomear exigiria migrar linhas e funções sem ganho para quem lê a tela.
 5. **Teto de 2 mensagens por minuto por instância** (`fila_config.wpp_max_min`).
 6. **Horários da tela são de São Paulo**, fixo, não do navegador (`hl()`).
 
+## NADA FALA SOZINHO — ordem do gestor em 16/09
+
+Ele encontrou a Nina respondendo a um representante por cima da assistente e dando uma informação
+errada de logística (detalhe abaixo, em "A Nina atropelou o atendimento"). A ordem que veio disso:
+
+> "com os outros representantes nunca ficar respondendo sozinho sem necessidade, apenas quando
+> mandarmos novamente por aqui (…) a partir de hoje não é para falar mais sozinho (…) Outras coisas
+> a partir de agora ficam sob comando para você fazer."
+
+**O que continua permitido falar sozinho, porque foi combinado antes:**
+
+| rotina | o que faz | por que continua |
+|---|---|---|
+| `copiloto-lead` + `copiloto-repasse` | lead do anúncio META: a Nina qualifica e repassa | "as campanhas que vem do meta diretamente para a Nina cuidar é para fazer como foi combinado e **não deve parar**" |
+| `copiloto-feedback` | pergunta ao cliente, 3 dias depois do repasse | parte do mesmo combinado (14/09) |
+| `campanhas-reativacao` | e-mail de reativação | "campanhas de emails você pode ir continuando" |
+| campanhas do painel Gestor | o que ele dispara na tela | são dele |
+| `nina_outreach` (4 crons, 24h) | 2ª máquina de reativação, fora da fila | ele viu os números e decidiu **deixar rodando** em 16/09 |
+
+**O que foi DESARMADO em 16/09, e só volta por ordem dele:**
+
+| desligado | o que fazia |
+|---|---|
+| `copiloto_config.piloto_apenas = 'sim'` | a Nina volta a responder **só ao MILTON** (`copiloto_piloto`). Estava em `nao`, e com isso ela respondia a qualquer número que casasse com um rep do `snap_rep` — 477 mensagens de 79 números num dia |
+| cron `voz-discador` (jobid 92) | discador de voz: 189 ligações feitas, fila prevista de ~3.178 clientes, cadência "ligar de novo até vender" |
+| cron `copiloto-proativo-diario` (106) | plano do dia por Zaptos para **todo** representante, 7h30 |
+| crons `vigia-detectar/resolver/avisar/digest` (93–96) | varredura de conversa travada, com aviso por Zaptos |
+
+As chaves `proativo_ativo=nao` e `vigia_avisar=nao` já calavam as duas últimas; o cron foi desligado
+**além** da chave, de propósito: uma linha de configuração não pode ser a única coisa entre o
+silêncio e 84 representantes recebendo mensagem.
+
+**Outros projetos não se tocam.** `roga`, `teak` e `constelacao` têm schema e funções próprias
+(`emp-*`, `constelacao-*`) — a ordem acima é de Nitron e não vale para eles.
+
+## A Nina atropelou o atendimento (16/09) — as quatro regras que permitiram
+
+Às 11:44 ela respondeu ao representante Roberto Gravinez *"Sim, pode retirar amanhã. O pedido da AMD
+Hospitalar (…) já está faturado e não precisa de agendamento pra retirada."* O rep confirmou com o
+cliente; a entrega era **sexta**. Um humano teve de desmentir três horas depois.
+
+1. **`piloto_apenas='nao'`** tirava a trava de quem ela atende (corrigido).
+2. **`modo=ia`**, que o workflow do GHL passa na chamada, **inverte o horário**: a linha 246 do
+   `copiloto-conversa` faz ela pular só FORA do expediente — ou seja, ela fala justamente quando as
+   assistentes estão atendendo. Sem a flag, a linha seguinte faria o contrário ("assistente primeiro").
+3. **Não existe trava de humano na conversa.** O código olha piloto e horário, e mais nada: não vê
+   que a @Camyla foi marcada 6 minutos antes, nem que a conversa tem dono.
+4. **Nada proíbe AUTORIZAR.** A ferramenta `entrega_cliente` devolve o campo `NECESSITA_AGEND` e
+   avisa "você REFLETE o status" — mas é conselho, não trava. Ela virou um campo de cadastro em
+   permissão ("pode retirar amanhã") e inventou a data. Falta a mesma regra dura que já existe para
+   CNPJ e preço: **status ela reflete; compromisso vira tarefa**.
+
+Os itens 2, 3 e 4 continuam **em aberto** no código.
+
 ## Coisas que já custaram caro — não redescubra
 
 - **"Aceito pelo GHL" ≠ "entregue".** O GHL responde `status: sent` e o ZaptosWPP escreve
