@@ -53,6 +53,12 @@ renomear exigiria migrar linhas e funções sem ganho para quem lê a tela.
    qualquer outra — nunca a que caiu. Como o número de saída é o dono do contato, avisar por outra
    exige trocar o `assignedTo`: ele autorizou ("pode usar qualquer instância para me avisar"), e o
    `campanhas-enviar` v32 faz essa troca sozinho quando o pedido vem com `alerta: true`.
+   **A troca de dono é o ÚLTIMO recurso, não o primeiro** (`campanhas-enviar` v33): se o dono atual
+   for uma instância viva, o aviso sai por ele e o contato não é tocado. A v32 trocava sempre, e em
+   15/09 um teste do aviso deixou o contato do gestor com a Camyla — como o aviso de lead sai pela
+   **Nina** (`copiloto_config.lead_inst`), a trava de dono passou a recusar todo aviso de lead por
+   Zaptos e ele só recebia por e-mail. Levou dois dias para aparecer. O estado da instância é lido
+   **na hora**, sem o cache de 5 min, senão a caída ainda pareceria viva.
    **Essa é a ÚNICA exceção à regra de nunca mexer no `assignedTo`**, e é estreita de propósito: a
    função confere o telefone contra `fila_config.alerta_fone` no momento do envio e ignora o pedido
    para qualquer outro número. Conferido em 15/09 com envio real — contato era da Nina, aviso pedido
@@ -84,6 +90,9 @@ renomear exigiria migrar linhas e funções sem ganho para quem lê a tela.
   quedas reais, a linha nomeava a própria remetente — é esse o caso que condena a mensagem.
 - **O número de saída é o `assignedTo` do contato.** `fromNumber` **não funciona** (testado 26/08).
   `#contact_instance:<token>` governa só a entrada. Sem dono, a mensagem não sai.
+  **Corolário que custou dois dias:** trocar o dono de um contato muda, em silêncio, todo aviso que
+  saía por outra instância para ele. Quem troca dono tem de perguntar antes "que outra coisa manda
+  mensagem para esse contato?" — no do gestor a resposta era: os avisos de lead, pela Nina.
 - **`SUPABASE_SERVICE_ROLE_KEY` vem com valor `sb_secret_`** que o PostgREST recusa (PGRST303).
   Toda função usa `const srvKey = () => Deno.env.get("SRV_JWT") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";`
 - **Chave de serviço escrita no código: já não há em `campanhas-saldo`, `campanhas-keyaccounts`,
@@ -228,8 +237,10 @@ renomear exigiria migrar linhas e funções sem ganho para quem lê a tela.
   depois de se descobrir que a pausa delas era falso positivo (ver a armadilha da linha de queda).
 - **A fila está vazia**: as 174 linhas pendentes foram canceladas em 15/09 a pedido do gestor. Elas
   estavam paradas desde 03–11/09 pelas pausas erradas, e o texto de cada uma já estava velho.
-- **O contato de teste do gestor (11970399053) é da Nina** no CRM desde 15/09 — estava da "Campanhas
-  Nitron", que é restringida, e por ali o teste não sairia. Trocado com autorização dele.
+- **O contato do gestor (11970399053) é da NINA no CRM, e tem de continuar sendo.** É por ela que
+  saem os avisos de lead novo (`copiloto_config.lead_inst = Nina`). Ficou com a Camyla de 15 a 17/09
+  por um teste do aviso de queda, e nesses dois dias os avisos de lead só chegaram por e-mail.
+  Devolvido à Nina em 17/09; a v33 do `campanhas-enviar` impede que isso se repita.
 - **Clube a vencer / distrato está em STAND BY** (`ativa=false`) desde 28/08, por decisão do gestor.
 - **Reativação 180 dias** só volta quando o gestor mandar; as 43 linhas restantes estão canceladas.
 - 9 das 13 campanhas ativas são só Zaptos; 4 aceitam e-mail. 77 de 79 representantes têm e-mail,

@@ -1,4 +1,4 @@
-// campanhas-enviar (v32) — email com ARTE + {{...}}. Garante contato. WhatsApp via SMS+#contact_instance. Recusa WhatsApp para telefone FIXO (10 digitos). ?diag mostra rate-limit.
+// campanhas-enviar (v33) — email com ARTE + {{...}}. Garante contato. WhatsApp via SMS+#contact_instance. Recusa WhatsApp para telefone FIXO (10 digitos). ?diag mostra rate-limit.
 // v22: TRAVA DE INSTANCIA. Antes, sem instancia ele mandava o texto SEM amarrar — a mensagem saia pela ultima instancia
 //      a que aquele contato ficou preso (de outro assunto, de outro mes), e o cliente recebia algo desconexo.
 //      Agora WhatsApp sem instancia e RECUSADO, e o token e conferido contra o cadastro instancia_ghl (cache de 5 min).
@@ -84,6 +84,16 @@
 //      excecao — estreita de proposito: so vale para o telefone gravado em fila_config.alerta_fone,
 //      conferido no momento do envio. Qualquer outro numero com `alerta: true` e ignorado e segue a
 //      trava normal de divergencia de dono.
+// v33: O MODO AVISO SO TROCA O DONO QUANDO PRECISA. A v32 trocava sempre que o dono era diferente
+//      da instancia pedida — e isso custou caro em 15-17/09: um teste do aviso deixou o contato do
+//      gestor com a Camyla, e como o aviso de lead novo sai pela NINA (copiloto_config.lead_inst),
+//      a trava de dono passou a recusar todo aviso de lead por Zaptos. Ele so recebia por e-mail e
+//      levou dois dias para perceber que tinha parado de chegar no celular.
+//      Agora, no modo aviso: se o dono atual for uma instancia VIVA (ativa e nao pausada), a
+//      mensagem sai por ELE e o contato nao e tocado. So troca quando o dono nao consegue mandar —
+//      que e justamente o caso da instancia que acabou de cair. E a consulta ao estado da instancia
+//      e FEITA NA HORA, sem passar pelo cache de 5 min: a fila pausa a caida e avisa em seguida, e
+//      com cache quente a caida ainda pareceria viva e o aviso sairia pelo numero que morreu.
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, content-type, apikey", "Access-Control-Allow-Methods": "POST, OPTIONS" };
 const j = (o: unknown, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -174,6 +184,19 @@ async function foneDeAlerta(): Promise<string> {
     const rows = await r.json();
     return Array.isArray(rows) && rows[0] ? String(rows[0].alerta_fone || "") : "";
   } catch { return ""; }
+}
+// Estado da instancia AGORA, sem cache. O cadastro() guarda 5 min, e no aviso de queda esses 5 min
+// sao exatamente a janela em que a instancia caida ainda parece viva.
+async function instanciaViva(nome: string): Promise<boolean> {
+  try {
+    const base = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, ""); const k = srvKey();
+    if (!base || !k || !nome) return false;
+    const r = await fetch(`${base}/rest/v1/instancia_ghl?instancia=eq.${encodeURIComponent(nome)}&select=ativa,pausada_em`, { headers: { apikey: k, Authorization: "Bearer " + k } });
+    if (!r.ok) return false;
+    const rows = await r.json();
+    const x = Array.isArray(rows) && rows[0] ? rows[0] : null;
+    return !!x && x.ativa === true && !x.pausada_em;
+  } catch { return false; }
 }
 // compara telefone por digito, sem o 55: "11970399053" e "+5511970399053" sao o mesmo numero
 const soDigitos = (v: string) => String(v || "").replace(/\D/g, "").replace(/^55/, "");
@@ -422,22 +445,28 @@ Deno.serve(async (req) => {
     if (b.lookup) return j({ ok: !!contactId, contactId, via, criado, instancia: instancia || null, dono_crm: dono, dono_divergente: !!(dono && dono !== instancia) });
     if (!texto && !b.templateId && b.so_campos !== true) return j({ ok: false, motivo: "sem texto nem arte" }, 400);
     if (!contactId) return j({ ok: false, motivo: "nao foi possivel achar/criar contato no CRM", email: b.email, fone: b.fone });
-    // MODO AVISO: ver o cabecalho da v32. A troca de dono acontece so aqui, so no numero de aviso, e
-    // so quando ele ja nao e da instancia que vai mandar — e o unico jeito de o aviso sair por quem
-    // esta de pe. Se a troca falhar, nao inventa: cai na trava normal e a linha diz de quem e o contato.
-    let donoForcado = false;
+    // MODO AVISO (cabecalhos v32 e v33): so o telefone de fila_config.alerta_fone entra aqui, e a
+    // troca de dono e o ultimo recurso — primeiro tenta mandar pelo proprio dono, se ele estiver de
+    // pe. Se a troca falhar, nao inventa: cai na trava normal e a linha diz de quem e o contato.
+    let donoForcado = false; let alertaPeloDono = false;
     if (b.alerta === true && canal !== "email" && dono !== instancia && instancia) {
       const alvo = soDigitos(await foneDeAlerta());
       if (alvo && alvo === soDigitos(b.fone || "")) {
-        const uid = cad?.idDe[instancia];
-        if (uid) {
-          const rr = await ghl("PUT", `/contacts/${contactId}`, { assignedTo: uid });
-          if (rr.ok) { dono = instancia; donoForcado = true; }
+        // O dono atual ainda consegue mandar? Entao manda por ele e NAO mexe no contato. Trocar
+        // aqui por habito foi o erro da v32: deixou o contato do gestor com outra instancia e
+        // derrubou, sem barulho, os avisos de lead que saem pela dona de origem.
+        if (dono && await instanciaViva(dono)) alertaPeloDono = true;
+        else {
+          const uid = cad?.idDe[instancia];
+          if (uid) {
+            const rr = await ghl("PUT", `/contacts/${contactId}`, { assignedTo: uid });
+            if (rr.ok) { dono = instancia; donoForcado = true; }
+          }
         }
       }
     }
     if (dono && dono !== instancia) {
-      if (b.usar_dono === true) instUsada = dono;
+      if (b.usar_dono === true || alertaPeloDono) instUsada = dono;
       else return j({
         ok: false, contactId, via, criado, canal, instancia, dono_crm: dono, dono_divergente: true,
         motivo: "o contato e da " + dono + " no CRM, entao o WhatsApp sairia pelo numero dela e nao pelo da " + instancia + " — texto nao enviado. Ajuste o proprietario no CRM ou mande pela " + dono + ".",
@@ -460,6 +489,6 @@ Deno.serve(async (req) => {
     const mergeUsado = (instUsada !== instancia && b.merge && typeof b.merge === "object") ? { ...b.merge, instancia: instUsada, assistente: instUsada } : b.merge;
     const res: any = await enviarMsg(contactId, canal, textoUsado, b.assunto, b.templateId, instUsada || undefined, b.fone, b.nome, mergeUsado, { espera_ms: b.espera_ms, margem_ms: b.margem_ms, exigir_confirmacao: b.exigir_confirmacao, campos: b.campos, checar_entrega: b.checar_entrega, checar_ms: b.checar_ms, imagens: b.imagens });
     const ok = res.status >= 200 && res.status < 300;
-    return j({ ok, contactId, via, criado, canal, instancia: instUsada || null, instancia_pedida: instUsada !== instancia ? instancia : undefined, texto_ajustado: textoAjustado || undefined, campos_gravados: camposGravados || undefined, dono_crm: dono, arte: !!b.templateId, arte_ok: res.arte_ok, motivo: ok ? undefined : (res.recusado || ("GHL " + res.status + ": " + res.body)), bind_nao_confirmado: res.recusado ? true : undefined, instancia_caiu: res.instancia_caiu || undefined, queda_outra: res.queda_outra || undefined, dono_forcado: donoForcado || undefined, anexos: (Array.isArray(b.imagens) ? b.imagens.length : 0) || undefined, resultado: res, teste: !!b.test });
+    return j({ ok, contactId, via, criado, canal, instancia: instUsada || null, instancia_pedida: instUsada !== instancia ? instancia : undefined, texto_ajustado: textoAjustado || undefined, campos_gravados: camposGravados || undefined, dono_crm: dono, arte: !!b.templateId, arte_ok: res.arte_ok, motivo: ok ? undefined : (res.recusado || ("GHL " + res.status + ": " + res.body)), bind_nao_confirmado: res.recusado ? true : undefined, instancia_caiu: res.instancia_caiu || undefined, queda_outra: res.queda_outra || undefined, dono_forcado: donoForcado || undefined, alerta_pelo_dono: alertaPeloDono || undefined, anexos: (Array.isArray(b.imagens) ? b.imagens.length : 0) || undefined, resultado: res, teste: !!b.test });
   } catch (e) { return j({ ok: false, erro: String(e) }, 500); }
 });
