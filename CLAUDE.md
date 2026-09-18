@@ -177,6 +177,25 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   (`repasse_forcar_inst=sim`). Como o número de saída **é** o `assignedTo`, honrar isso significa
   trocar o dono do contato — e por isso vale só para contato **interno** (representante e time),
   nunca para contato de cliente.
+- **Sem representante possível, o lead vai para a VENDA INTERNA** (`copiloto-repasse` v5, 18/09).
+  Ordem do gestor. Vale quando a Nina não apurou cidade/UF, quando não há representante elegível na
+  praça ou quando o escolhido não tem telefone utilizável no Sankhya: cai para Mônica/Valeria pelo
+  mesmo sorteio com memória (alterna quem recebeu menos), com `escopo='venda interna (sem
+  representante)'`, e a mensagem à vendedora **diz por que** caiu nela. Antes disso, esses três casos
+  faziam a função **voltar sem gravar nada**: o lead ficava `passado` para sempre, o motivo morria na
+  resposta HTTP que ninguém lê, e o gestor recebia a tarefa sem nunca saber que ninguém fora
+  escolhido. Foi o que prendeu o **Comercial Leonel** (3 dias) e a **Distak/GO** (8 dias). Se nem a
+  venda interna resolver, o motivo vai para `repasse_erro` e o gestor e a Camyla recebem "Lead
+  qualificado SEM DESTINO".
+- **Uma mensagem por lead, e ela diz quem está cuidando** (`copiloto-entrega` v4, 18/09). A tarefa
+  nasce na **qualificação**, quando ninguém foi escolhido ainda — era ela que chegava primeiro, sem
+  destino ("não sei quem está cuidando deles"). Agora, enquanto o lead espera repasse, a tarefa é
+  aberta no CRM normalmente mas o Zaptos não sai: quem avisa é o **espelho do repasse**, que traz
+  loja, CNPJ, telefone, resumo, o nome de quem recebeu e o número da tarefa. Chave:
+  `entrega_aviso_so_com_destino`.
+- **Lead que esperou não recebe um "oi" como se nada tivesse acontecido.** `diasEspera() >= 2` põe
+  "Desculpa a demora em te dar retorno" na saudação — os dois leads presos voltaram depois de 3 e 8
+  dias, e fingir que era normal seria pior que o atraso.
 - **Todo repasse é espelhado para o gestor (11970399053) e para a Camyla** — `avisar=true` em
   `copiloto_responsaveis`, deduplicado por telefone. Ordem do gestor em 18/09: "ISSO SEMPRE DEVE
   ACONTECER". Vale para o repasse e para a transferência por falta de atendimento. Antes, o repasse

@@ -1,4 +1,11 @@
-// copiloto-repasse (v4) — o lead qualificado deixa de esperar em silencio.
+// copiloto-repasse (v5) — o lead qualificado deixa de esperar em silencio.
+//
+// v5 (ordem do gestor, 18/09): SEM REPRESENTANTE POSSIVEL, O LEAD VAI PARA A VENDA INTERNA,
+// alternando Monica e Valeria. Antes, "lead sem UF", "nenhum representante elegivel" ou
+// "representante sem telefone" faziam a funcao voltar SEM GRAVAR NADA: o lead ficava 'passado' para
+// sempre, o motivo morria na resposta HTTP que ninguem le, e o gestor recebia a tarefa sem nunca
+// saber que ninguem tinha sido escolhido. Dois leads ficaram assim, 3 e 8 dias. Agora: cai na venda
+// interna; se nem isso der, o motivo e GRAVADO em repasse_erro e o gestor e a Camyla sao avisados.
 //
 // v4 (ordem do gestor, 18/09), quatro regras que nasceram de um caso real:
 //   * JANELA DA VENDA INTERNA: seg-qui 8h-18h, sex 8h-17h, sem fim de semana. Em 17/09 o lead da
@@ -165,10 +172,47 @@ async function prepararDestino(contact_id: string, remetente: Inst, insts: Inst[
   return { ok: true, dono: remetente.instancia, trocou: true, dono_antes: donoInst?.instancia || (dono ? dono : "sem dono") };
 }
 
+// Quando nem a venda interna resolve, o lead nao pode ficar parado em silencio: o gestor e a Camyla
+// sao avisados por Zaptos, com o telefone e o CNPJ, para alguem assumir a mao.
+async function alertarFalha(sb: any, cfg: Record<string, string>, L: any, motivo: string, insts: Inst[]) {
+  const nomeInst = String(cfg.repasse_inst || "Nina");
+  const remetente = insts.find((i) => norm(i.instancia) === norm(nomeInst) && i.viva) || insts.find((i) => i.viva) || null;
+  const praca = [L.cidade, L.uf].filter(Boolean).join("/");
+  const txt = [
+    "Lead qualificado SEM DESTINO — precisa de alguem",
+    "",
+    (L.empresa ? "Loja: " + L.empresa : "Contato sem loja informada"),
+    docFmt(L.cnpj) || "Sem documento informado",
+    praca ? "Praca: " + praca : "Sem cidade/UF apurada",
+    "Contato: " + (L.nome ? L.nome + " — " : "") + foneFmt(L.fone),
+    "",
+    "Por que travou: " + motivo,
+    L.tarefa_id ? "Tarefa interna #" + L.tarefa_id : null,
+    L.contact_id ? "Conversa: https://app.gohighlevel.com/v2/location/" + LOC + "/contacts/detail/" + L.contact_id : null,
+  ].filter((x) => x !== null).join("\n");
+  const out: any[] = [];
+  try {
+    const { data: resp } = await sb.from("copiloto_responsaveis").select("nome, fone, avisar").eq("avisar", true);
+    const vistos = new Set<string>();
+    for (const r0 of (resp || [])) {
+      const f = digits(r0.fone);
+      if (!f || vistos.has(d10(f))) continue;
+      vistos.add(d10(f));
+      const e2: any = await enviarZaptos(null, f, txt, remetente?.instancia || nomeInst);
+      out.push({ quem: r0.nome, ok: !!e2?.ok, motivo: e2?.ok ? undefined : String(e2?.motivo || "").slice(0, 160) });
+    }
+  } catch (e) { out.push({ erro: String(e).slice(0, 160) }); }
+  return out;
+}
+
 // ---- os textos, todos montados aqui ------------------------------------------------------------
+// Lead que esperou nao pode receber um "oi" como se nada tivesse acontecido: quando o repasse
+// demorou (o que ate 18/09 acontecia calado, por falta de destino), a saudacao reconhece a demora.
+function diasEspera(L: any): number { const t = new Date(L.criado || 0).getTime(); return t ? Math.floor((Date.now() - t) / 86400000) : 0; }
 function textoSaudacao(L: any, tipo: string, agora: boolean): string {
   const quem = tipo === "online" ? "uma das nossas consultoras de venda" : "um dos nossos representantes";
   const nome = String(L.nome || "").trim().split(/\s+/)[0] || "";
+  const demora = diasEspera(L) >= 2 ? "Desculpa a demora em te dar retorno. " : "";
   // A segunda metade muda com a hora, de proposito. Prometer "hoje" as 18h46 foi o erro de 17/09.
   const prazo = agora
     ? "e o contato com voce sai ainda hoje por aqui mesmo, pelo WhatsApp."
@@ -178,14 +222,14 @@ function textoSaudacao(L: any, tipo: string, agora: boolean): string {
   return [
     (nome ? "Oi, " + nome + "! " : "Oi! ") + "Aqui e a Nina, da Nitron.",
     "",
-    "Passando so para te dar um retorno: suas informacoes ja estao com " + quem + ", " + prazo,
+    demora + "Suas informacoes ja estao com " + quem + ", " + prazo,
     "",
     "Se precisar de qualquer coisa antes disso, e so me chamar.",
   ].join("\n");
 }
 // O espelho do repasse para quem tem avisar=true (o gestor e a Camyla). Curto de proposito: quem le
 // ja tem o CRM para o detalhe, o que falta e SABER que aconteceu, e para quem foi.
-function textoEspelho(L: any, tipo: string, destino: string, escopo: string, foneLead: string): string {
+function textoEspelho(L: any, tipo: string, destino: string, escopo: string, foneLead: string, semRep: string): string {
   const praca = [L.cidade, L.uf].filter(Boolean).join("/");
   return [
     "Lead repassado agora — " + (tipo === "online" ? "VENDA INTERNA" : "REPRESENTANTE"),
@@ -198,15 +242,19 @@ function textoEspelho(L: any, tipo: string, destino: string, escopo: string, fon
     L.temperatura ? "Temperatura: " + L.temperatura : null,
     "",
     "Foi para: " + destino + (escopo ? (" (" + escopo + ")") : ""),
+    semRep ? "Caiu na venda interna porque " + semRep + "." : null,
+    L.tarefa_id ? "Tarefa interna #" + L.tarefa_id : null,
     L.resumo ? "\nResumo: " + L.resumo : null,
   ].filter((x) => x !== null).join("\n");
 }
 
-function textoDestino(L: any, tipo: string, destino: string, escopo: string, cfg: Record<string, string>, hoje: boolean): string {
+function textoDestino(L: any, tipo: string, destino: string, escopo: string, cfg: Record<string, string>, hoje: boolean, semRep: string): string {
   const min = parseInt(digits(cfg.pedido_minimo || "2500")) || 2500;
   const praca = [L.cidade, L.uf].filter(Boolean).join("/");
   const cab = tipo === "online"
-    ? destino + ", chegou um lead do anuncio da Nitron que vende ONLINE (sem loja de rua), entao e da venda interna."
+    ? (semRep
+      ? destino + ", chegou um lead qualificado pela Nina" + (praca ? (" em " + praca) : "") + " e o atendimento e seu: " + semRep + ", entao ele fica com a venda interna."
+      : destino + ", chegou um lead do anuncio da Nitron que vende ONLINE (sem loja de rua), entao e da venda interna.")
     : destino + ", chegou um lead do anuncio da Nitron" + (praca ? (" na sua praca (" + praca + ")") : "") + ", e ja foi qualificado aqui.";
   const linhas = [
     cab,
@@ -252,55 +300,91 @@ async function repassar(sb: any, cfg: Record<string, string>, L: any, o: { dry: 
   let re: RegExp | null = null;
   try { re = new RegExp(String(cfg.repasse_online_re || "e-?commerce|marketplace"), "i"); } catch (_e) { re = /e-?commerce|marketplace/i; }
   const bagagem = norm([L.tipo_loja, L.interesse, L.ja_revende, L.resumo, L.empresa].filter(Boolean).join(" | "));
-  const tipo = re.test(bagagem) ? "online" : "fisica";
-  rep.tipo = tipo;
+  let tipo = re.test(bagagem) ? "online" : "fisica";
+  rep.tipo_apurado = tipo;
   const forcarInst = String(cfg.repasse_forcar_inst || "sim") === "sim";
 
-  // ---- 1b) a venda interna tem expediente; o representante nao ---------------------------------
-  // Fora da janela o repasse ESPERA. O lead nao fica no escuro: recebe a saudacao dizendo que a
-  // resposta vem no proximo dia util. Segurar aqui e melhor do que mandar para alguem que so vai
-  // ler amanha depois de ja termos prometido "hoje" ao lojista.
-  const janela = tipo === "online" ? janelaInterna(cfg) : { aberto: true as boolean, motivo: undefined as string | undefined };
-  rep.janela_interna = tipo === "online" ? (janela.aberto ? "aberta" : ("fechada — " + janela.motivo)) : "nao se aplica (representante)";
-  const prometerHoje = tipo === "online" ? janela.aberto : horaPlausivelHoje();
+  // Falha de repasse deixou de ser silenciosa (18/09). Antes, "lead sem UF" ou "nenhum representante
+  // elegivel" faziam a funcao voltar sem gravar nada: o lead ficava 'passado' para sempre, o motivo
+  // morria na resposta HTTP que ninguem le, e o gestor recebia a tarefa sem nunca saber que ninguem
+  // tinha sido escolhido. Aconteceu com dois leads (3 e 8 dias parados).
+  const falhar = async (msg: string) => {
+    rep.erro = msg;
+    if (o.dry) return rep;
+    const agora0 = new Date().toISOString();
+    const tent = Number(L.repasse_tentativas || 0) + 1;
+    hist.push({ em: agora0, acao: "falha", motivo: msg.slice(0, 200), ok: false });
+    await sb.from("copiloto_lead").update({ repasse_erro: msg.slice(0, 300), repasse_tentativas: tent, repasse_historico: hist, atualizado: agora0 }).eq("id", L.id);
+    if (tent >= Math.max(1, parseInt(cfg.repasse_alerta_tentativas || "2") || 2)) rep.alerta = await alertarFalha(sb, cfg, L, msg, o.insts);
+    return rep;
+  };
 
   // ---- 2) quem atende -------------------------------------------------------------------------
-  let destNome = "", destFone = "", destContato: string | null = null, destCodvend: number | null = null, escopo = "", destInstPropria = "";
-  if (tipo === "online") {
+  let destNome = "", destFone = "", destContato: string | null = null, destCodvend: number | null = null, escopo = "", destInstPropria = "", semRep = "";
+  // Sorteio COM MEMORIA: embaralha e depois traz para a frente quem recebeu menos. Sorteio puro,
+  // sem isso, empilha — na primeira previa os tres leads online cairam na mesma pessoa e a outra
+  // ficou sem nenhum. Continua aleatorio: o desempate entre quem tem a mesma carga e que e sorteio.
+  const escolherInterna = async (motivo: string): Promise<string> => {
     const { data: vs } = await sb.from("copiloto_venda_interna").select("*").eq("ativo", true);
     const jaForam = new Set(hist.map((h: any) => String(h.para || "")));
     const pool = (vs || []).filter((v: any) => !jaForam.has(String(v.nome)));
     const cand = (pool.length ? pool : (vs || []));
-    if (!cand.length) { rep.erro = "nenhuma vendedora interna ativa em copiloto_venda_interna"; return rep; }
-    // Sorteio COM MEMORIA: embaralha e depois traz para a frente quem recebeu menos. Sorteio puro,
-    // sem isso, empilha — na primeira previa os tres leads online cairam na mesma pessoa e a outra
-    // ficou sem nenhum. Continua aleatorio: o desempate entre quem tem a mesma carga e que e sorteio.
+    if (!cand.length) return "nenhuma vendedora interna ativa em copiloto_venda_interna";
     cand.sort(() => Math.random() - 0.5);
     cand.sort((a: any, b: any) => Number(a.repasses || 0) - Number(b.repasses || 0));
     const v = cand[0];
     destNome = v.nome; destFone = v.fone; destContato = v.contact_id || null; destCodvend = v.codvend || null; destInstPropria = v.instancia || "";
-    escopo = "venda interna";
+    escopo = motivo ? "venda interna (sem representante)" : "venda interna";
+    semRep = motivo; tipo = "online";
+    return "";
+  };
+
+  if (tipo === "online") {
+    const e = await escolherInterna("");
+    if (e) return await falhar(e);
   } else {
-    if (!L.uf) { rep.erro = "lead sem UF — nao da para achar o representante da praca"; return rep; }
-    const { data: cands, error } = await sb.rpc("repasse_candidatos", { p_cidade: L.cidade || "", p_uf: L.uf, p_excluir: lista(cfg.repasse_rep_excluir, "0,67,116").map((x) => parseInt(x)).filter((n) => !isNaN(n)) });
-    if (error) { rep.erro = "sorteio falhou: " + error.message; return rep; }
-    const jaForam = new Set(hist.map((h: any) => Number(h.codvend)).filter(Boolean));
-    const pool = (cands || []).filter((c: any) => !jaForam.has(Number(c.codvend)));
-    const lista0 = (pool.length ? pool : (cands || []));
-    // mesma ideia do lado do representante: o RPC ja devolve embaralhado, e aqui quem recebeu menos
-    // lead deste funil vem primeiro. Sem isso o mesmo nome pode levar a praca inteira por azar.
-    const { data: cargas } = await sb.from("copiloto_lead").select("repasse_codvend").not("repasse_codvend", "is", null);
-    const carga: Record<string, number> = {};
-    (cargas || []).forEach((x: any) => { const k = String(x.repasse_codvend); carga[k] = (carga[k] || 0) + 1; });
-    lista0.sort((a: any, b: any) => (carga[String(a.codvend)] || 0) - (carga[String(b.codvend)] || 0));
-    const c = lista0[0];
-    if (!c) { rep.erro = "nenhum representante elegivel em " + [L.cidade, L.uf].filter(Boolean).join("/"); return rep; }
-    destCodvend = Number(c.codvend); destNome = String(c.rep); escopo = String(c.escopo);
-    rep.candidatos = (cands || []).length;
-    const { data: s } = await sb.from("snap_rep").select("celular, fone_parc, email").eq("codvend", destCodvend).maybeSingle();
-    destFone = digits(s?.celular).length >= 10 ? String(s?.celular) : String(s?.fone_parc || "");
-    if (digits(destFone).length < 10) { rep.erro = "representante " + destNome + " (codvend " + destCodvend + ") sem telefone utilizavel em snap_rep"; return rep; }
+    // Ordem do gestor em 18/09: quando NAO DA para achar representante, o lead vai para a venda
+    // interna, alternando Monica e Valeria — nao fica parado esperando alguem perceber.
+    let falha = "";
+    if (!L.uf) falha = "a Nina nao apurou cidade/UF com o lead";
+    else {
+      const { data: cands, error } = await sb.rpc("repasse_candidatos", { p_cidade: L.cidade || "", p_uf: L.uf, p_excluir: lista(cfg.repasse_rep_excluir, "0,67,116").map((x) => parseInt(x)).filter((n) => !isNaN(n)) });
+      if (error) falha = "o sorteio de representante falhou: " + error.message;
+      else {
+        const jaForam = new Set(hist.map((h: any) => Number(h.codvend)).filter(Boolean));
+        const pool = (cands || []).filter((c: any) => !jaForam.has(Number(c.codvend)));
+        const lista0 = (pool.length ? pool : (cands || []));
+        // o RPC ja devolve embaralhado, e aqui quem recebeu menos lead deste funil vem primeiro.
+        const { data: cargas } = await sb.from("copiloto_lead").select("repasse_codvend").not("repasse_codvend", "is", null);
+        const carga: Record<string, number> = {};
+        (cargas || []).forEach((x: any) => { const k = String(x.repasse_codvend); carga[k] = (carga[k] || 0) + 1; });
+        lista0.sort((a: any, b: any) => (carga[String(a.codvend)] || 0) - (carga[String(b.codvend)] || 0));
+        const c = lista0[0];
+        rep.candidatos = (cands || []).length;
+        if (!c) falha = "nao ha representante elegivel em " + [L.cidade, L.uf].filter(Boolean).join("/");
+        else {
+          const { data: s } = await sb.from("snap_rep").select("celular, fone_parc, email").eq("codvend", Number(c.codvend)).maybeSingle();
+          const f = digits(s?.celular).length >= 10 ? String(s?.celular) : String(s?.fone_parc || "");
+          if (digits(f).length < 10) falha = "o representante " + String(c.rep) + " (codvend " + c.codvend + ") nao tem telefone utilizavel no Sankhya";
+          else { destCodvend = Number(c.codvend); destNome = String(c.rep); escopo = String(c.escopo); destFone = f; }
+        }
+      }
+    }
+    if (falha) {
+      rep.sem_representante = falha;
+      const e = await escolherInterna(falha);
+      if (e) return await falhar(falha + "; e " + e);
+    }
   }
+
+  // ---- 2b) a venda interna tem expediente; o representante nao ---------------------------------
+  // Fora da janela o repasse ESPERA. O lead nao fica no escuro: recebe a saudacao dizendo que a
+  // resposta vem no proximo dia util. Segurar aqui e melhor do que mandar para alguem que so vai
+  // ler amanha depois de ja termos prometido "hoje" ao lojista.
+  const janela = tipo === "online" ? janelaInterna(cfg) : { aberto: true as boolean, motivo: undefined as string | undefined };
+  rep.tipo = tipo;
+  rep.janela_interna = tipo === "online" ? (janela.aberto ? "aberta" : ("fechada — " + janela.motivo)) : "nao se aplica (representante)";
+  const prometerHoje = tipo === "online" ? janela.aberto : horaPlausivelHoje();
   rep.destino = destNome; rep.codvend = destCodvend; rep.escopo = escopo; rep.fone_destino = foneFmt(destFone);
 
   // ---- 3) por qual instancia sai ---------------------------------------------------------------
@@ -309,7 +393,7 @@ async function repassar(sb: any, cfg: Record<string, string>, L: any, o: { dry: 
   const alt = String(cfg.repasse_inst_alt || "Camyla");
   const escolhida = (norm(nomeInst) === norm(destInstPropria) ? alt : nomeInst);
   const remetente = o.insts.find((i) => norm(i.instancia) === norm(escolhida) && i.viva) || o.insts.find((i) => i.viva && norm(i.instancia) !== norm(destInstPropria));
-  if (!remetente) { rep.erro = "nenhuma instancia viva para mandar o aviso"; return rep; }
+  if (!remetente) return await falhar("nenhuma instancia viva para mandar o aviso");
   rep.instancia = remetente.instancia;
 
   // numero do lead pelo CRM; se o CRM nao devolver, cai no que esta gravado (pode estar truncado)
@@ -317,7 +401,7 @@ async function repassar(sb: any, cfg: Record<string, string>, L: any, o: { dry: 
   const Lx = { ...L, fone: foneLead };
   rep.fone_lead = foneFmt(foneLead);
   const textoLead = textoSaudacao(Lx, tipo, prometerHoje);
-  const textoDest = textoDestino(Lx, tipo, String(destNome).split(/\s+/)[0], escopo, cfg, prometerHoje);
+  const textoDest = textoDestino(Lx, tipo, String(destNome).split(/\s+/)[0], escopo, cfg, prometerHoje, semRep);
 
   if (o.dry) {
     return { ...rep, previa: true, saudacao_pendente: !L.saudacao_em, adiaria: !janela.aberto, texto_lead: textoLead, texto_destino: janela.aberto ? textoDest : "(o repasse esperaria a janela abrir)" };
@@ -387,7 +471,7 @@ async function repassar(sb: any, cfg: Record<string, string>, L: any, o: { dry: 
   // Sai pela mesma instancia do aviso (a Nina), e uma falha aqui NAO derruba o repasse: o lead ja
   // foi entregue, e o espelho e informacao, nao a entrega.
   if (env?.ok) {
-    const espelho = textoEspelho(Lx, tipo, destNome + (destCodvend ? (" (codvend " + destCodvend + ")") : ""), escopo, foneLead);
+    const espelho = textoEspelho(Lx, tipo, destNome + (destCodvend ? (" (codvend " + destCodvend + ")") : ""), escopo, foneLead, semRep);
     const avisados: any[] = [];
     try {
       const { data: resp } = await sb.from("copiloto_responsaveis").select("nome, fone, avisar").eq("avisar", true);
@@ -406,6 +490,7 @@ async function repassar(sb: any, cfg: Record<string, string>, L: any, o: { dry: 
   if (env?.ok && L.contact_id) {
     await notaCrm(String(L.contact_id), "Lead repassado por " + (tipo === "online" ? "VENDA INTERNA" : "REPRESENTANTE DA PRACA") +
       ": " + destNome + (destCodvend ? (" (codvend " + destCodvend + ")") : "") + ", avisado por Zaptos pela instancia " + instEnvio + "." +
+      (semRep ? "\nCaiu na venda interna porque " + semRep + "." : "") +
       "\nSorteio: " + escopo + ". O lead foi saudado e sabe que " + (prometerHoje ? "o contato sai hoje." : "sera atendido no proximo dia util."));
   }
   return rep;

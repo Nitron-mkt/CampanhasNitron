@@ -1,4 +1,4 @@
-// copiloto-entrega (v3) — a tarefa que a Nina abre passa a EXISTIR onde o humano olha.
+// copiloto-entrega (v4) — a tarefa que a Nina abre passa a EXISTIR onde o humano olha.
 //
 // Em 10/09 o gestor abriu o painel do contato do lead que a Nina acabara de qualificar (Kasamais,
 // Sao Luis/MA) e leu "Ainda nao ha tarefas". A tarefa existia — em copiloto_tarefas, a NOSSA fila —
@@ -10,6 +10,8 @@
 //   2. marca dono e acompanha como SEGUIDORES do contato — no GHL e assim que se marca alguem, e
 //      foi o pedido: "marque o Usuario do Leonardo, Camyla, tudo nessa tarefa";
 //   3. manda o resumo da conversa e os dados do cliente para quem tem de saber.
+//
+// v4 (18/09): o aviso de lead que ainda NAO TEM DESTINO deixa de sair daqui. Ver esperandoRepasse().
 //
 // POR QUE AQUI E NAO DENTRO DA copiloto-lead: assim a entrega e uma FILA, com retentativa e
 // independente de qual caminho gravou a tarefa (encerramento com passar_comercial, janela de 24h da
@@ -99,6 +101,20 @@ async function avisar(pessoas: any[], assunto: string, texto: string, inst: stri
   return out;
 }
 
+// Ordem do gestor em 18/09: UMA mensagem por lead, e ela tem de dizer quem esta cuidando. A tarefa
+// nasce na QUALIFICACAO, quando ninguem foi escolhido ainda — e era isso que chegava primeiro, sem
+// destino ("nao sei quem esta cuidando deles"). Entao, enquanto o lead ainda espera repasse, a
+// tarefa e aberta no CRM normalmente, mas o Zaptos nao sai: quem avisa e o espelho da
+// copiloto-repasse, que ja traz loja, CNPJ, telefone, resumo E o nome de quem recebeu.
+async function esperandoRepasse(sb: any, t: any): Promise<boolean> {
+  if (!t.contact_id || String(t.origem || "") !== "nina-lead") return false;
+  try {
+    const { data } = await sb.from("copiloto_lead").select("id, status, repasse_em")
+      .eq("contact_id", t.contact_id).order("id", { ascending: false }).limit(1).maybeSingle();
+    return !!data && !data.repasse_em && String(data.status || "") === "passado";
+  } catch (_e) { return false; }
+}
+
 // ---- uma tarefa -------------------------------------------------------------------------------
 async function entregar(sb: any, cfg: Record<string, string>, t: any, o: { dry: boolean; soAviso: boolean }) {
   const area = String(t.area || "comercial");
@@ -120,12 +136,16 @@ async function entregar(sb: any, cfg: Record<string, string>, t: any, o: { dry: 
   }
 
   const marcar = Array.from(new Set(eq.filter((p: any) => p.area === area && p.idcrm).map((p: any) => String(p.idcrm))));
+  // lead ainda sem destino: a tarefa vai para o CRM, o aviso espera o espelho do repasse
+  const segurarAviso = String(cfg.entrega_aviso_so_com_destino || "sim") === "sim" && await esperandoRepasse(sb, t);
+  if (segurarAviso) { destinatarios.length = 0; }
 
   if (o.dry) {
-    return { tarefa: t.id, previa: true, titulo, responsavel: dono?.nome || null, acompanha: acomp, abriria_no_crm: !!(t.contact_id && !o.soAviso && !t.crm_task_id), tarefa_crm_existente: t.crm_task_id || undefined, marcaria: marcar, avisaria: destinatarios.map((p: any) => p.nome), canais, corpo };
+    return { tarefa: t.id, previa: true, titulo, responsavel: dono?.nome || null, acompanha: acomp, aviso_segurado: segurarAviso || undefined, abriria_no_crm: !!(t.contact_id && !o.soAviso && !t.crm_task_id), tarefa_crm_existente: t.crm_task_id || undefined, marcaria: marcar, avisaria: destinatarios.map((p: any) => p.nome), canais, corpo };
   }
 
   const rep: any = { tarefa: t.id, titulo, responsavel: dono?.nome || null, acompanha: acomp };
+  if (segurarAviso) rep.aviso_segurado = "lead ainda sem destino — quem avisa e o espelho do repasse";
   const erros: string[] = [];
 
   // crm_task_id preenchido = a tarefa do CRM ja existe (a rodada anterior abriu, ou alguem abriu a
