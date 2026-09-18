@@ -202,6 +202,35 @@ duplicado.** A branch padrão é `claude/supabase-access-8190et`.
 **Uma sessão de cada vez editando `app/gestor.html`.** Duas já sobrescreveram trabalho uma da outra.
 Ao abrir sessão nova, encerre as antigas.
 
+## Constelação das Frutas (ex-Hyak) — o outro inquilino do mesmo banco
+
+O projeto que o Ricardo chamava de **Hyak WhatsApp** existe, está rodando e mora no
+**mesmo projeto Supabase**, em schema próprio: **`constelacao`**. Nasceu como gaveta
+`hyak` em 19/08 e foi renomeada 79 minutos depois (migrações `hyak_gaveta_estrutura` e
+`renomear_hyak_para_constelacao`) — por isso não se acha nada procurando por "Hyak".
+É prospecção fria multilíngue vendendo limão Taiti a atacadistas europeus.
+
+O que qualquer sessão precisa saber antes de encostar:
+
+- **É outro inquilino, não outra campanha.** RLS ligado, `anon`/`authenticated` revogados,
+  não lê nem escreve no `public`. Mexer na Máquina de Vendas da Nitron não afeta a
+  Constelação, e vice-versa. As 13 funções `constelacao-*` são dela; as `campanhas-*`,
+  `pipe-*`, `nina-*` e `motor-*` são da Nitron.
+- **O canal de WhatsApp dela NÃO é o Zaptos — é o Evolution**, acoplado ao GHL pelo canal
+  de SMS (a mensagem sai com `type: "SMS"`). Os dois provider ids convivem em
+  `constelacao.config`. Não confunda com o vocabulário da Nitron, onde o canal é Zaptos.
+- **A fila de WhatsApp dela está pausada desde 14/09** (`fila_config#2.pausado=true` +
+  `config.pausa_manual='sim'`), com 566 pendentes. É trava proposital: o cron
+  `constelacao-watchdog` só despausa quando `pausa_manual` não for `sim`. Religar é
+  decisão, e exige a instância do Evolution conectada antes.
+- **`hyak-contatos-sync` é entulho**: função ativa apontando para o schema `hyak`, que não
+  existe mais. Nenhum cron a chama.
+- **As funções da Constelação não estão versionadas** neste repositório — vivem só no
+  Supabase. É a pendência nº 2 da lista dela.
+
+Documentação completa em [`docs/constelacao-ue/`](docs/constelacao-ue/README.md), com a
+foto do estado em 18/09/2026 como ponto de partida.
+
 ## Campanha Gestor de Carteira (arquivada em 03/09)
 
 Regulamento rev5 + apresentação final em `docs/campanha-gestor-de-carteira/` (originais, texto

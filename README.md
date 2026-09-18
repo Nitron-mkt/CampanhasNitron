@@ -10,6 +10,8 @@ Código do projeto Supabase `integracao-crm-sankhya` (`bwbeieumxcuomtrvlqxs`).
   (`agenda_catalogo`, `agenda_realizado`, `agenda_espera`, `agenda_campanha`).
 - `supabase/functions/<slug>/index.ts` — Edge Functions.
 - `docs/` — documentação e revisões.
+- `docs/constelacao-ue/` — a Constelação das Frutas (ex-Hyak): prospecção na Europa, no
+  schema `constelacao` do mesmo projeto Supabase.
 
 As duas páginas ficam no Storage (bucket `app`) e a Edge Function `gestor` escolhe o
 arquivo pelo caminho: `/gestor` entrega o `gestor.html`, `/gestor/agenda` entrega o
