@@ -166,6 +166,21 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   física × e-commerce/marketplace, e **sorteia quem atende**. Loja física vai para representante da
   praça; online vai para as **vendedoras internas** (`copiloto_venda_interna`: Mônica e Valeria).
   Online não tem praça — mandar para o rep da praça é mandar para ninguém.
+- **A venda interna tem expediente; o representante não** (`copiloto-repasse` v4, 18/09). Seg–qui 8h
+  às 18h, sex 8h às 17h, sem fim de semana, com margem de `interna_margem_min` (45 min) antes de
+  fechar — tudo em `copiloto_config` (`interna_ini`, `interna_fim`, `interna_fim_sex`). Perto do fim
+  do expediente a Nina **não promete hoje**: diz ao lead que um atendente fala com ele no próximo dia
+  útil, e o repasse à vendedora espera a janela abrir. O erro que originou a regra foi meu: em 17/09,
+  às 18h46, a Nina disse ao A M COMERCIO que o contato sairia "ainda hoje". Ao representante pode ir
+  a qualquer hora — ele é que decide quando trabalha.
+- **O aviso de lead sai pela instância da NINA, mesmo que o contato tenha outro dono no CRM**
+  (`repasse_forcar_inst=sim`). Como o número de saída **é** o `assignedTo`, honrar isso significa
+  trocar o dono do contato — e por isso vale só para contato **interno** (representante e time),
+  nunca para contato de cliente.
+- **Todo repasse é espelhado para o gestor (11970399053) e para a Camyla** — `avisar=true` em
+  `copiloto_responsaveis`, deduplicado por telefone. Ordem do gestor em 18/09: "ISSO SEMPRE DEVE
+  ACONTECER". Vale para o repasse e para a transferência por falta de atendimento. Antes, o repasse
+  só existia no CRM e numa tabela, e ninguém abria.
 - **Telefone do lead: grave o número INTEIRO, nunca "os últimos N dígitos".** Até a `copiloto-lead`
   v9 a coluna `copiloto_lead.fone` guardava `d10()` — os últimos 10 dígitos de um número que vem do
   CRM com DDI. `+55 (11) 98240-8982` virava `(19) 8240-8982`: o `55` saiu levando junto o primeiro
@@ -224,13 +239,30 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
 - **Do representante nao vem retorno — do cliente vem** (`copiloto-feedback`, crons
   `copiloto-feedback-perguntar` e `-ler`). Quando o lead vai para representante, a conversa continua
   no WhatsApp **pessoal** dele, fora do nosso CRM: não dá para ver se ligou, se marcou, se vendeu.
-  Então 3 dias depois do repasse a Nina pergunta **ao próprio cliente** se o representante falou com
-  ele. A resposta é classificada (`atendido` / `nao_atendido` / `comprou` / `sem_interesse` /
-  `indefinido` / `sem_resposta`) e gravada em `copiloto_lead.feedback_*`.
-- **"Ninguém falou comigo" vira TAREFA, não coluna.** É a descoberta que justifica a rotina inteira,
-  e morreria num campo que ninguém abre. `nao_atendido` e `sem_interesse` abrem tarefa em
-  `copiloto_tarefas` com `origem='nina-lead'` — que é justamente o que a `copiloto-entrega` já varre,
-  então o gestor recebe pelo caminho que já existe, sem código novo.
+  Então a Nina pergunta **ao próprio cliente** se o representante falou com ele. A resposta é
+  classificada (`atendido` / `nao_atendido` / `comprou` / `sem_interesse` / `indefinido` /
+  `sem_resposta`) e gravada em `copiloto_lead.feedback_*`.
+- **A pergunta é no FIM do segundo dia — a hora faz parte do pedido.** Ordem do gestor em 18/09:
+  `feedback_dias=2`, e o envio só sai entre `feedback_hora_ini` (16h) e `feedback_hora_fim` (21h) de
+  São Paulo, com o cron `copiloto-feedback-perguntar` em `20,50 20 * * 1-5` (17h20 e 17h50 SP).
+  Perguntar às 10h do segundo dia é perguntar antes de o dia ter acontecido: o representante ainda
+  tem a tarde inteira para ligar.
+- **"Ninguém falou comigo" vira TAREFA, não coluna** — e, desde 18/09, vira **transferência**. A
+  tarefa em `copiloto_tarefas` (`origem='nina-lead'`, varrida pela `copiloto-entrega`) continua sendo
+  o registro para o gestor, mas ela não conserta nada sozinha. Com `nao_atendido` a
+  `copiloto-feedback` v4: avisa o representante de que, por não ter atendido, o lead sai dele (e
+  abre a porta — "se você falou e o cliente não lembrou, me avisa que eu seguro"); sorteia a
+  vendedora interna com menos repasses; manda o lead a ela; avisa o cliente de quem vai falar com
+  ele; e **espelha tudo para quem tem `avisar=true`** (o gestor e a Camyla). A pergunta ao cliente
+  **diz** isso antes: quem lê precisa saber que responder "não" resolve alguma coisa.
+- **O expediente da venda interna vale na transferência como vale no repasse.** O aviso ao
+  representante sai na hora, sempre — ele pode receber a qualquer hora. A vendedora só recebe dentro
+  da janela (`interna_*`: seg–qui até 18h, sex até 17h, sem fim de semana); fora dela a
+  transferência fica **pendente** em `copiloto_lead.repasse_historico` (`acao='transferencia'`) e sai
+  na próxima rodada do `?acao=transferir`, que o cron `-ler` já dispara a cada 30 min.
+- **A Nina não escreve "há dois dias" na mão.** O tempo decorrido é calculado de `repasse_em`
+  (`haDias()`): o lead 23 estava com o representante havia quatro dias quando a transferência saiu.
+  Número errado na boca da Nina é a mesma doença de 16/09, em escala menor.
 - **Feedback só para lead que foi a REPRESENTANTE** (`feedback_tipos='fisica'`). Quando vai para a
   venda interna, a conversa acontece nas nossas instâncias e dá para ler no CRM: perguntar ali é
   redundante e incomoda o cliente. Lead do canal nativo também fica fora — passados 3 dias a janela

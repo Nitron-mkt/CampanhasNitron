@@ -1,4 +1,18 @@
-// copiloto-repasse (v3) — o lead qualificado deixa de esperar em silencio.
+// copiloto-repasse (v4) — o lead qualificado deixa de esperar em silencio.
+//
+// v4 (ordem do gestor, 18/09), quatro regras que nasceram de um caso real:
+//   * JANELA DA VENDA INTERNA: seg-qui 8h-18h, sex 8h-17h, sem fim de semana. Em 17/09 o lead da
+//     A M COMERCIO foi repassado a Valeria as 18h46 com a mensagem "ele esta esperando esse contato
+//     hoje" — o expediente ja tinha acabado. O cliente passou a noite e o dia seguinte esperando um
+//     contato prometido para "hoje". Fora da janela a Nina AVISA o lead que a resposta vem no
+//     proximo dia util e SEGURA o repasse ate abrir. Para REPRESENTANTE nao ha janela: pode a
+//     qualquer hora, porque ele atende do celular dele.
+//   * O AVISO SAI PELA NINA, sempre (repasse_forcar_inst). O numero de saida e o dono do contato,
+//     entao "mandar pela Nina" exige que o contato do destinatario seja da Nina: a funcao TROCA o
+//     dono. Vale para contato INTERNO — representante e time —, nunca para contato de cliente.
+//   * TODO REPASSE E ESPELHADO para quem tem avisar=true em copiloto_responsaveis (hoje o gestor e
+//     a Camyla): resumo do lead e para quem foi. Antes isso so existia no CRM, onde ninguem olhava.
+//   * A promessa acompanha a realidade: "ainda hoje" so quando da tempo de ser hoje.
 //
 // Ate aqui a Nina qualificava, abria tarefa no CRM e avisava o gestor — e parava. Quem ia falar com
 // o lead era decidido a mao, e o lead ficava esperando sem saber que estava esperando. O gestor
@@ -55,6 +69,35 @@ function foneFmt(f: any): string {
   return String(f || "");
 }
 
+// ---- a janela da VENDA INTERNA -----------------------------------------------------------------
+// Horario de Sao Paulo, fixo — nao do servidor. A margem existe para nao prometer "hoje" faltando
+// vinte minutos para fechar: quem le a promessa e o lojista, e ele conta as horas.
+function agoraSP(): Date { return new Date(Date.now() - 3 * 3600 * 1000); }
+function janelaInterna(cfg: Record<string, string>): { aberto: boolean; motivo?: string; fim?: number } {
+  const ini = Math.max(0, parseInt(cfg.interna_ini || "8") || 8);
+  const fimSeg = Math.max(1, parseInt(cfg.interna_fim || "18") || 18);
+  const fimSex = Math.max(1, parseInt(cfg.interna_fim_sex || "17") || 17);
+  const margem = Math.max(0, parseInt(cfg.interna_margem_min || "45") || 0);
+  const d = agoraSP(); const dow = d.getUTCDay();
+  if (dow === 0 || dow === 6) return { aberto: false, motivo: "fim de semana" };
+  const fim = dow === 5 ? fimSex : fimSeg;
+  const min = d.getUTCHours() * 60 + d.getUTCMinutes();
+  if (min < ini * 60) return { aberto: false, motivo: "antes das " + ini + "h", fim };
+  if (min >= fim * 60) return { aberto: false, motivo: "depois das " + fim + "h", fim };
+  if (min >= fim * 60 - margem) return { aberto: false, motivo: "faltam menos de " + margem + "min para as " + fim + "h", fim };
+  return { aberto: true, fim };
+}
+// Como dizer ao lojista QUANDO ele sera atendido, sem inventar hora.
+function proximoDiaUtilTxt(): string {
+  const d = agoraSP(); const dow = d.getUTCDay();
+  if (dow === 6) return "na segunda-feira de manha";
+  if (dow === 0) return "amanha de manha";
+  if (dow === 5 && d.getUTCHours() >= 17) return "na segunda-feira de manha";
+  return "amanha de manha";
+}
+// Para o representante nao ha janela de expediente, mas tambem nao se promete "hoje" de madrugada.
+function horaPlausivelHoje(): boolean { const h = agoraSP().getUTCHours(); return h >= 8 && h < 20; }
+
 async function enviarZaptos(contact_id: string | null, fone: string, texto: string, instancia: string) {
   const body: any = { canal: "whatsapp", texto, instancia };
   if (contact_id) body.contact_id = contact_id; else body.fone = fone;
@@ -103,34 +146,63 @@ async function instancias(sb: any): Promise<Inst[]> {
 }
 // Devolve o contato pronto para receber: com dono que seja a instancia remetente. Troca o dono
 // quando ele e instancia morta — autorizado pelo gestor para contato INTERNO (rep e time).
-async function prepararDestino(contact_id: string, remetente: Inst, insts: Inst[], trocar: boolean) {
+async function prepararDestino(contact_id: string, remetente: Inst, insts: Inst[], trocar: boolean, forcar: boolean) {
   const r = await ghl("GET", `/contacts/${contact_id}`);
   if (!r.ok) return { ok: false, motivo: "GHL " + r.status + " ao ler o contato" };
   const c = (await r.json().catch(() => ({})))?.contact || {};
   const dono = String(c.assignedTo || "");
   const donoInst = insts.find((i) => i.usuario_ghl_id === dono) || null;
   if (donoInst && donoInst.instancia === remetente.instancia) return { ok: true, dono: donoInst.instancia, trocou: false };
-  if (donoInst && donoInst.viva) return { ok: true, dono: donoInst.instancia, trocou: false, usar_dono: true };
-  if (!trocar) return { ok: false, motivo: "dono do contato e " + (donoInst?.instancia || (dono ? "usuario fora do cadastro" : "ninguem")) + " e a troca esta desligada" };
+  // FORCAR (ordem do gestor, 18/09): o aviso de lead sai pela Nina, "mesmo que o representante ou a
+  // vendedora esteja com outro proprietario no CRM". Como o numero de saida E o dono do contato, a
+  // unica forma de honrar isso e trocar o dono — e nao ha meio-termo: ou o contato e da Nina, ou a
+  // mensagem sai pelo numero de outra pessoa. So vale para contato INTERNO (representante e time);
+  // em contato de CLIENTE trocar o dono tira o cliente da vista do consultor dele.
+  if (donoInst && donoInst.viva && !forcar) return { ok: true, dono: donoInst.instancia, trocou: false, usar_dono: true };
+  if (!trocar && !forcar) return { ok: false, motivo: "dono do contato e " + (donoInst?.instancia || (dono ? "usuario fora do cadastro" : "ninguem")) + " e a troca esta desligada" };
   const u = await ghl("PUT", `/contacts/${contact_id}`, "2021-07-28", { assignedTo: remetente.usuario_ghl_id });
   if (!u.ok) return { ok: false, motivo: "nao consegui trocar o dono (GHL " + u.status + ")" };
   return { ok: true, dono: remetente.instancia, trocou: true, dono_antes: donoInst?.instancia || (dono ? dono : "sem dono") };
 }
 
 // ---- os textos, todos montados aqui ------------------------------------------------------------
-function textoSaudacao(L: any, tipo: string): string {
+function textoSaudacao(L: any, tipo: string, agora: boolean): string {
   const quem = tipo === "online" ? "uma das nossas consultoras de venda" : "um dos nossos representantes";
   const nome = String(L.nome || "").trim().split(/\s+/)[0] || "";
+  // A segunda metade muda com a hora, de proposito. Prometer "hoje" as 18h46 foi o erro de 17/09.
+  const prazo = agora
+    ? "e o contato com voce sai ainda hoje por aqui mesmo, pelo WhatsApp."
+    : (tipo === "online"
+      ? "e um dos nossos atendentes fala com voce " + proximoDiaUtilTxt() + ", assim que estiver disponivel — nosso atendimento interno e de segunda a sexta, em horario comercial."
+      : "e o contato com voce sai o mais breve possivel, por aqui mesmo, pelo WhatsApp.");
   return [
     (nome ? "Oi, " + nome + "! " : "Oi! ") + "Aqui e a Nina, da Nitron.",
     "",
-    "Passando so para te dar um retorno: suas informacoes ja estao com " + quem + ", e o contato com voce sai ainda hoje por aqui mesmo, pelo WhatsApp.",
+    "Passando so para te dar um retorno: suas informacoes ja estao com " + quem + ", " + prazo,
     "",
     "Se precisar de qualquer coisa antes disso, e so me chamar.",
   ].join("\n");
 }
+// O espelho do repasse para quem tem avisar=true (o gestor e a Camyla). Curto de proposito: quem le
+// ja tem o CRM para o detalhe, o que falta e SABER que aconteceu, e para quem foi.
+function textoEspelho(L: any, tipo: string, destino: string, escopo: string, foneLead: string): string {
+  const praca = [L.cidade, L.uf].filter(Boolean).join("/");
+  return [
+    "Lead repassado agora — " + (tipo === "online" ? "VENDA INTERNA" : "REPRESENTANTE"),
+    "",
+    (L.empresa ? "Loja: " + L.empresa : "Contato sem loja informada"),
+    docFmt(L.cnpj) || "Sem documento informado",
+    praca ? "Praca: " + praca : null,
+    "Contato: " + (L.nome ? L.nome + " — " : "") + foneFmt(foneLead),
+    L.interesse ? "Quer abastecer: " + L.interesse : null,
+    L.temperatura ? "Temperatura: " + L.temperatura : null,
+    "",
+    "Foi para: " + destino + (escopo ? (" (" + escopo + ")") : ""),
+    L.resumo ? "\nResumo: " + L.resumo : null,
+  ].filter((x) => x !== null).join("\n");
+}
 
-function textoDestino(L: any, tipo: string, destino: string, escopo: string, cfg: Record<string, string>): string {
+function textoDestino(L: any, tipo: string, destino: string, escopo: string, cfg: Record<string, string>, hoje: boolean): string {
   const min = parseInt(digits(cfg.pedido_minimo || "2500")) || 2500;
   const praca = [L.cidade, L.uf].filter(Boolean).join("/");
   const cab = tipo === "online"
@@ -151,10 +223,10 @@ function textoDestino(L: any, tipo: string, destino: string, escopo: string, cfg
     "",
     L.resumo ? "Resumo da conversa: " + L.resumo : null,
     "",
-    "O que a Nina NAO falou, e e com voce: preco, prazo de entrega, condicao de pagamento, desconto e frete. Ela so disse que alguem da Nitron fala com ele hoje.",
+    "O que a Nina NAO falou, e e com voce: preco, prazo de entrega, condicao de pagamento, desconto e frete. Ela so disse que alguem da Nitron fala com ele" + (hoje ? " hoje." : " o mais breve possivel."),
     "",
     "Como seguir:",
-    "1. Fale com ele por WhatsApp — ele esta esperando esse contato hoje.",
+    "1. Fale com ele por WhatsApp — ele esta esperando esse contato" + (hoje ? " hoje." : "."),
     "2. Se apresente como " + (tipo === "online" ? "a consultora da Nitron que vai atende-lo" : "o representante da Nitron da regiao") + ".",
     "3. Confirme a loja e o CNPJ, e peca a inscricao estadual: ja adianta o cadastro.",
     "4. Antes de mandar tabela, entenda o que ele vende hoje e o tamanho da operacao. A primeira compra e curadoria, nao catalogo inteiro.",
@@ -162,7 +234,9 @@ function textoDestino(L: any, tipo: string, destino: string, escopo: string, cfg
     "6. Travou cadastro, credito ou disponibilidade? Me chama que resolvemos daqui.",
     "",
     // o recado do prazo, pedido pelo gestor: sutil, sem ameaca
-    "Se hoje nao der para voce falar com ele, me avisa por aqui — como o cliente ja foi avisado de que o contato sai hoje, eu preciso passar para outro consultor para nao deixar ele no vacuo.",
+    (hoje
+      ? "Se hoje nao der para voce falar com ele, me avisa por aqui — como o cliente ja foi avisado de que o contato sai hoje, eu preciso passar para outro consultor para nao deixar ele no vacuo."
+      : "Se nao der para voce falar com ele em breve, me avisa por aqui — o cliente ja foi avisado de que alguem da Nitron fala com ele, e eu preciso passar para outro consultor para nao deixar ele no vacuo."),
     escopo === "uf" ? "\n(Obs.: nao temos cliente nessa cidade ainda, entao voce entrou como representante do estado. Se essa praca nao for sua, me diz que eu passo para quem atende.)" : null,
   ].filter((x) => x !== null);
   return linhas.join("\n");
@@ -180,6 +254,15 @@ async function repassar(sb: any, cfg: Record<string, string>, L: any, o: { dry: 
   const bagagem = norm([L.tipo_loja, L.interesse, L.ja_revende, L.resumo, L.empresa].filter(Boolean).join(" | "));
   const tipo = re.test(bagagem) ? "online" : "fisica";
   rep.tipo = tipo;
+  const forcarInst = String(cfg.repasse_forcar_inst || "sim") === "sim";
+
+  // ---- 1b) a venda interna tem expediente; o representante nao ---------------------------------
+  // Fora da janela o repasse ESPERA. O lead nao fica no escuro: recebe a saudacao dizendo que a
+  // resposta vem no proximo dia util. Segurar aqui e melhor do que mandar para alguem que so vai
+  // ler amanha depois de ja termos prometido "hoje" ao lojista.
+  const janela = tipo === "online" ? janelaInterna(cfg) : { aberto: true as boolean, motivo: undefined as string | undefined };
+  rep.janela_interna = tipo === "online" ? (janela.aberto ? "aberta" : ("fechada — " + janela.motivo)) : "nao se aplica (representante)";
+  const prometerHoje = tipo === "online" ? janela.aberto : horaPlausivelHoje();
 
   // ---- 2) quem atende -------------------------------------------------------------------------
   let destNome = "", destFone = "", destContato: string | null = null, destCodvend: number | null = null, escopo = "", destInstPropria = "";
@@ -222,8 +305,8 @@ async function repassar(sb: any, cfg: Record<string, string>, L: any, o: { dry: 
 
   // ---- 3) por qual instancia sai ---------------------------------------------------------------
   // Nunca pela instancia do proprio destinatario: numero nao conversa consigo mesmo.
-  const nomeInst = String(cfg.repasse_inst || "Camyla");
-  const alt = String(cfg.repasse_inst_alt || "Nina");
+  const nomeInst = String(cfg.repasse_inst || "Nina");
+  const alt = String(cfg.repasse_inst_alt || "Camyla");
   const escolhida = (norm(nomeInst) === norm(destInstPropria) ? alt : nomeInst);
   const remetente = o.insts.find((i) => norm(i.instancia) === norm(escolhida) && i.viva) || o.insts.find((i) => i.viva && norm(i.instancia) !== norm(destInstPropria));
   if (!remetente) { rep.erro = "nenhuma instancia viva para mandar o aviso"; return rep; }
@@ -233,14 +316,16 @@ async function repassar(sb: any, cfg: Record<string, string>, L: any, o: { dry: 
   const foneLead = (await foneDoCrm(L.contact_id)) || L.fone;
   const Lx = { ...L, fone: foneLead };
   rep.fone_lead = foneFmt(foneLead);
-  const textoLead = textoSaudacao(Lx, tipo);
-  const textoDest = textoDestino(Lx, tipo, String(destNome).split(/\s+/)[0], escopo, cfg);
+  const textoLead = textoSaudacao(Lx, tipo, prometerHoje);
+  const textoDest = textoDestino(Lx, tipo, String(destNome).split(/\s+/)[0], escopo, cfg, prometerHoje);
 
   if (o.dry) {
-    return { ...rep, previa: true, saudacao_pendente: !L.saudacao_em, texto_lead: textoLead, texto_destino: textoDest };
+    return { ...rep, previa: true, saudacao_pendente: !L.saudacao_em, adiaria: !janela.aberto, texto_lead: textoLead, texto_destino: janela.aberto ? textoDest : "(o repasse esperaria a janela abrir)" };
   }
 
   // ---- 4) saudacao ao lead ---------------------------------------------------------------------
+  // Sai mesmo quando o repasse vai esperar: o lead precisa saber que foi visto, e QUANDO sera
+  // atendido. Ficar calado ate amanha e o que a rotina inteira existe para evitar.
   if (!L.saudacao_em && String(cfg.repasse_saudacao || "sim") === "sim") {
     const nativo = String(L.instancia || "") === "ghl-nativo";
     const env: any = nativo
@@ -249,6 +334,15 @@ async function repassar(sb: any, cfg: Record<string, string>, L: any, o: { dry: 
     rep.saudacao = { ok: !!env?.ok, motivo: env?.ok ? undefined : String(env?.motivo || "").slice(0, 200) };
     if (env?.ok) await sb.from("copiloto_lead").update({ saudacao_em: new Date().toISOString(), atualizado: new Date().toISOString() }).eq("id", L.id);
   } else rep.saudacao = { ok: true, ja_feita: true };
+
+  // ---- 4b) fora da janela da venda interna: para aqui, sem gastar tentativa --------------------
+  // Nao grava repasse_em nem incrementa repasse_tentativas: o lead continua pendente e a proxima
+  // rodada dentro do expediente faz o repasse de verdade.
+  if (!janela.aberto) {
+    rep.adiado = true;
+    rep.motivo = "venda interna fora do expediente (" + janela.motivo + ") — o lead foi avisado e o repasse sai quando abrir";
+    return rep;
+  }
 
   // ---- 5) o contato do destinatario precisa de dono vivo ---------------------------------------
   let alvoContato = destContato;
@@ -259,7 +353,7 @@ async function repassar(sb: any, cfg: Record<string, string>, L: any, o: { dry: 
     rep.contato_destino = alvoContato || null;
   }
   if (alvoContato) {
-    const prep = await prepararDestino(alvoContato, remetente, o.insts, String(cfg.repasse_troca_dono || "sim") === "sim");
+    const prep = await prepararDestino(alvoContato, remetente, o.insts, String(cfg.repasse_troca_dono || "sim") === "sim", forcarInst);
     if (!prep.ok) { rep.erro = prep.motivo; }
     else { rep.dono = prep.dono; if (prep.trocou) rep.dono_trocado_de = prep.dono_antes; if ((prep as any).usar_dono) { usarDono = true; rep.instancia = prep.dono; } }
   }
@@ -287,10 +381,32 @@ async function repassar(sb: any, cfg: Record<string, string>, L: any, o: { dry: 
     } catch (_e) { /* contador, nao bloqueia */ }
   }
 
+  // ---- 7b) ESPELHO: o gestor e a Camyla sabem de todo repasse, sempre ------------------------
+  // Ordem do gestor em 18/09: "mande a informacao para mim (...) e para a Camyla tambem (...) ISSO
+  // SEMPRE DEVE ACONTECER". Antes o repasse so existia no CRM e na tabela — e ninguem abria.
+  // Sai pela mesma instancia do aviso (a Nina), e uma falha aqui NAO derruba o repasse: o lead ja
+  // foi entregue, e o espelho e informacao, nao a entrega.
+  if (env?.ok) {
+    const espelho = textoEspelho(Lx, tipo, destNome + (destCodvend ? (" (codvend " + destCodvend + ")") : ""), escopo, foneLead);
+    const avisados: any[] = [];
+    try {
+      const { data: resp } = await sb.from("copiloto_responsaveis").select("nome, fone, avisar").eq("avisar", true);
+      const vistos = new Set<string>();
+      for (const r0 of (resp || [])) {
+        const f = digits(r0.fone);
+        if (!f || vistos.has(d10(f))) continue;   // o gestor aparece em duas areas; avisar uma vez
+        vistos.add(d10(f));
+        const e2: any = await enviarZaptos(null, f, espelho, instEnvio);
+        avisados.push({ quem: r0.nome, ok: !!e2?.ok, motivo: e2?.ok ? undefined : String(e2?.motivo || "").slice(0, 160) });
+      }
+    } catch (e) { avisados.push({ erro: String(e).slice(0, 160) }); }
+    rep.espelho = avisados;
+  }
+
   if (env?.ok && L.contact_id) {
     await notaCrm(String(L.contact_id), "Lead repassado por " + (tipo === "online" ? "VENDA INTERNA" : "REPRESENTANTE DA PRACA") +
       ": " + destNome + (destCodvend ? (" (codvend " + destCodvend + ")") : "") + ", avisado por Zaptos pela instancia " + instEnvio + "." +
-      "\nSorteio: " + escopo + ". O lead foi saudado e sabe que o contato sai hoje.");
+      "\nSorteio: " + escopo + ". O lead foi saudado e sabe que " + (prometerHoje ? "o contato sai hoje." : "sera atendido no proximo dia util."));
   }
   return rep;
 }
