@@ -193,6 +193,13 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   aberta no CRM normalmente mas o Zaptos não sai: quem avisa é o **espelho do repasse**, que traz
   loja, CNPJ, telefone, resumo, o nome de quem recebeu e o número da tarefa. Chave:
   `entrega_aviso_so_com_destino`.
+- **`copiloto-repasse?lead=<id>` NÃO TEM TRAVA: ele repassa de novo um lead já repassado.** O modo
+  manual existe para destravar lead, e por isso ignora `repasse_em`. Em 18/09 eu disparei uma segunda
+  chamada para o lead 2 achando que a primeira tinha morrido no timeout — ela estava viva, e a
+  segunda sorteou **outro** representante e sobrescreveu `repasse_para`. Ninguém recebeu mensagem
+  duplicada só porque o segundo sorteado tinha telefone fixo e o envio foi recusado. O registro foi
+  corrigido à mão (GOIANDY, codvend 13). **Antes de chamar `?lead=`, confira `repasse_ok`** — e a
+  chamada demora ~90s (GHL + checagem de entrega de 12s por mensagem), então esperar não é travar.
 - **Lead que esperou não recebe um "oi" como se nada tivesse acontecido.** `diasEspera() >= 2` põe
   "Desculpa a demora em te dar retorno" na saudação — os dois leads presos voltaram depois de 3 e 8
   dias, e fingir que era normal seria pior que o atraso.
