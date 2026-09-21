@@ -177,6 +177,13 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   (`repasse_forcar_inst=sim`). Como o número de saída **é** o `assignedTo`, honrar isso significa
   trocar o dono do contato — e por isso vale só para contato **interno** (representante e time),
   nunca para contato de cliente.
+- **`#switch:<instância>` manda por outra instância SEM trocar o dono do contato.** Ensinado pelo
+  gestor em 21/09. É o irmão do `#contact_instance:<instância>` (que governa a entrada): manda-se o
+  `#switch:Nina` como mensagem e a próxima sai pelo número da Nina, mesmo que o contato seja de
+  outra pessoa no CRM. Hoje o `copiloto-repasse` resolve isso **trocando o `assignedTo`**
+  (`repasse_forcar_inst`), o que funciona mas mexe no cadastro; o `#switch` seria mais limpo.
+  **Ainda não está no código** — usar exige testar o ack do ZaptosWPP como se faz com o
+  `#contact_instance`, e trocar isso mexe em função que está atendendo.
 - **Sem representante possível, o lead vai para a VENDA INTERNA** (`copiloto-repasse` v5, 18/09).
   Ordem do gestor. Vale quando a Nina não apurou cidade/UF, quando não há representante elegível na
   praça ou quando o escolhido não tem telefone utilizável no Sankhya: cai para Mônica/Valeria pelo
