@@ -184,6 +184,19 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   (`repasse_forcar_inst`), o que funciona mas mexe no cadastro; o `#switch` seria mais limpo.
   **Ainda não está no código** — usar exige testar o ack do ZaptosWPP como se faz com o
   `#contact_instance`, e trocar isso mexe em função que está atendendo.
+- **O nome do lead vem da PESSOA, não do perfil do WhatsApp** (`copiloto-lead` v11, 22/09). Ordem do
+  gestor: a Nina pergunta **nome e sobrenome**, de leve e uma vez, cedo na conversa. O que vem do
+  perfil é apelido, emoji ("🙂", "😜"), versículo ("Deus E Fiel") ou o nome da loja — 55 dos 157 leads
+  com nome estavam assim, 16 deles **já repassados**, e o consultor recebia sem saber com quem ia
+  falar. Só vira `nome_confirmado=true` o que a pessoa escreveu e passa por `nomePlausivel()` (duas
+  palavras, sem número, sem emoji); nesse momento o **contato do CRM é atualizado**
+  (`PUT /contacts/{id}` com `firstName`/`lastName`, testado em 22/09). Enquanto não confirmado, a
+  tarefa ao comercial marca "(nome do perfil do WhatsApp — não confirmado com ele)". A regra também
+  está em `copiloto_licoes` (id 204), que entra no prompt sem deploy.
+- **O nome confirmado não pode ser sobrescrito pelo do perfil.** Duas linhas regravavam `nome` a cada
+  rodada (o upsert do CRM e o patch de depois do envio) — era o mesmo vão que fazia o `status` voltar
+  atrás na v4. Hoje o upsert do CRM só grava nome quando `nome_confirmado` é falso, e o patch de
+  depois do envio não toca mais no nome.
 - **Sem representante possível, o lead vai para a VENDA INTERNA** (`copiloto-repasse` v5, 18/09).
   Ordem do gestor. Vale quando a Nina não apurou cidade/UF, quando não há representante elegível na
   praça ou quando o escolhido não tem telefone utilizável no Sankhya: cai para Mônica/Valeria pelo

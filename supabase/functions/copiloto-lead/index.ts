@@ -1,3 +1,11 @@
+// copiloto-lead (v11) — NOME E SOBRENOME, confirmados com a pessoa, e gravados NO CRM. Ordem do
+// gestor em 22/09: o nome que a Nina usava vinha do perfil do WhatsApp — apelido, emoji ("🙂",
+// "😜"), versiculo ("Deus E Fiel") ou o nome da loja. O consultor recebia o lead sem saber com quem
+// ia falar. Agora ela pergunta o nome completo uma vez, cedo, e so grava como confirmado o que a
+// PESSOA escreveu (nomePlausivel: duas palavras, sem numero, sem emoji). Com o nome confirmado, o
+// contato do CRM e atualizado (firstName/lastName) — nao adianta a Nina saber e o CRM continuar
+// mostrando o apelido para quem for atender. E o nome confirmado nao e mais sobrescrito pelo do
+// perfil na rodada seguinte: era o mesmo vao que fazia o status voltar atras na v4.
 // copiloto-lead (v10) — O TELEFONE DO LEAD ERA GRAVADO DECAPITADO. d10() guardava os ultimos 10
 // digitos de um numero que vem do CRM com DDI, entao "+5511982408982" virava "1982408982": o 55 saiu
 // levando junto o primeiro digito do DDD, e o nono digito do celular tomou o lugar dele. O numero
@@ -184,11 +192,35 @@ const TOOLS = [
   { name: "buscar_cliente", description: "Confere se a loja JA tem cadastro na Nitron, por CNPJ (14 digitos) ou por nome/razao. Use assim que tiver o CNPJ.", input_schema: { type: "object", properties: { termo: { type: "string", description: "CNPJ (so digitos) ou nome da loja" } }, required: ["termo"] } },
   { name: "consultar_conhecimento", description: "Base de conhecimento da casa (produto, mercado, playbook). Use quando ele perguntar algo que voce nao sabe de cabeca.", input_schema: { type: "object", properties: { termo: { type: "string" } }, required: ["termo"] } },
   { name: "produtos", description: "Produtos por categoria/nome/ramo: devolve nome e LINK da foto. SEM preco.", input_schema: { type: "object", properties: { termo: { type: "string" } }, required: ["termo"] } },
-  { name: "salvar_lead", description: "Anota/atualiza o que voce JA apurou deste lead. Chame assim que descobrir um dado novo. Mande so o que ele disse — nao preencha por deducao.", input_schema: { type: "object", properties: { nome: { type: "string" }, empresa: { type: "string", description: "nome da loja / razao social" }, cnpj: { type: "string" }, cidade: { type: "string" }, uf: { type: "string" }, tipo_loja: { type: "string", description: "bazar, utilidades, variedades, presentes, supermercado, magazine, material de construcao..." }, ja_revende: { type: "string", description: "de quem ele compra hoje, ou que nao compra direto de fabrica" }, interesse: { type: "string", description: "linha/produto que ele quer abastecer" }, sabe_minimo: { type: "boolean", description: "true depois de VOCE dizer o pedido minimo nesta conversa" }, temperatura: { type: "string", enum: ["frio", "morno", "quente"] }, resumo: { type: "string", description: "2 a 3 frases do caso, para o comercial ler" } }, required: [] } },
-  { name: "passar_comercial", description: "Fecha a qualificacao e passa pro comercial fechar a venda. Use quando ja souber a loja, a praca (cidade/UF) e o que ele quer, e ele ja souber do pedido minimo. Abre a tarefa na fila de execucao e devolve o protocolo.", input_schema: { type: "object", properties: { resumo: { type: "string", description: "o caso em 2 a 4 frases: quem e, o que quer, em que pe esta" }, falta: { type: "string", description: "o que o comercial ainda precisa levantar ou combinar" }, temperatura: { type: "string", enum: ["frio", "morno", "quente"] } }, required: ["resumo"] } },
+  { name: "salvar_lead", description: "Anota/atualiza o que voce JA apurou deste lead. Chame assim que descobrir um dado novo. Mande so o que ele disse — nao preencha por deducao.", input_schema: { type: "object", properties: { nome: { type: "string", description: "nome da pessoa COMO ELA MESMA ESCREVEU nesta conversa, com sobrenome. NUNCA o nome do perfil do WhatsApp (apelido, emoji, frase, nome da loja)." }, nome_confirmado: { type: "boolean", description: "true SOMENTE quando a propria pessoa disse o nome nesta conversa. Falso/ausente se voce pegou do perfil ou deduziu." }, empresa: { type: "string", description: "nome da loja / razao social" }, cnpj: { type: "string" }, cidade: { type: "string" }, uf: { type: "string" }, tipo_loja: { type: "string", description: "bazar, utilidades, variedades, presentes, supermercado, magazine, material de construcao..." }, ja_revende: { type: "string", description: "de quem ele compra hoje, ou que nao compra direto de fabrica" }, interesse: { type: "string", description: "linha/produto que ele quer abastecer" }, sabe_minimo: { type: "boolean", description: "true depois de VOCE dizer o pedido minimo nesta conversa" }, temperatura: { type: "string", enum: ["frio", "morno", "quente"] }, resumo: { type: "string", description: "2 a 3 frases do caso, para o comercial ler" } }, required: [] } },
+  { name: "passar_comercial", description: "Fecha a qualificacao e passa pro comercial fechar a venda. Use quando ja souber o NOME COMPLETO da pessoa (confirmado por ela), a loja, a praca (cidade/UF) e o que ele quer, e ele ja souber do pedido minimo. Abre a tarefa na fila de execucao e devolve o protocolo.", input_schema: { type: "object", properties: { resumo: { type: "string", description: "o caso em 2 a 4 frases: quem e, o que quer, em que pe esta" }, falta: { type: "string", description: "o que o comercial ainda precisa levantar ou combinar" }, temperatura: { type: "string", enum: ["frio", "morno", "quente"] } }, required: ["resumo"] } },
   { name: "descartar_lead", description: "Use quando NAO e revenda: consumidor final querendo uma peca, curriculo, fornecedor oferecendo servico, engano de numero. Marca como descartado e NAO abre tarefa pro comercial.", input_schema: { type: "object", properties: { motivo: { type: "string" } }, required: ["motivo"] } },
 ];
 const CAMPOS = ["nome", "empresa", "cnpj", "cidade", "uf", "tipo_loja", "ja_revende", "interesse", "resumo", "temperatura"];
+// nome do perfil do WhatsApp nao e nome de gente: emoji, frase ("Deus E Fiel"), nome da loja,
+// um primeiro nome solto. So vale como nome confirmado o que a PESSOA escreveu, com sobrenome.
+const EMOJI_RE = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{1F000}-\u{1F02F}]/u;
+function nomePlausivel(n: any): boolean {
+  const t = String(n || "").replace(EMOJI_RE, " ").replace(/\s+/g, " ").trim();
+  if (t.length < 5 || /\d/.test(t)) return false;
+  const ps = t.split(" ").filter((x) => x.length > 1);
+  return ps.length >= 2;
+}
+function partesNome(n: string): { first: string; last: string } {
+  const ps = String(n).replace(EMOJI_RE, " ").replace(/\s+/g, " ").trim().split(" ");
+  return { first: ps[0] || "", last: ps.slice(1).join(" ") };
+}
+// O gestor pediu em 22/09: com o nome confirmado, o CONTATO DO CRM passa a ter o nome de
+// verdade — nao adianta a Nina saber e o CRM continuar mostrando "🙂" para quem for atender.
+async function nomeNoCrm(contact_id: string, nome: string) {
+  const { first, last } = partesNome(nome);
+  if (!first || !last) return { ok: false, motivo: "nome sem sobrenome — nao grava no CRM" };
+  try {
+    const r = await ghl("PUT", `/contacts/${contact_id}`, "2021-07-28", { firstName: first, lastName: last, name: first + " " + last });
+    if (!r.ok) return { ok: false, motivo: "GHL " + r.status };
+    return { ok: true, nome: first + " " + last };
+  } catch (e) { return { ok: false, motivo: String(e).slice(0, 120) }; }
+}
 
 async function upsertLead(sb: any, ctx: any, patch: any): Promise<{ lead?: any; erro?: string }> {
   const col = ctx.contact_id ? "contact_id" : "fone"; const val = ctx.contact_id || ctx.fone;
@@ -234,7 +266,20 @@ async function runTool(sb: any, ctx: any, name: string, input: any): Promise<any
       if (patch.cnpj) patch.cnpj = digits(patch.cnpj).slice(0, 14);
       if (patch.uf) patch.uf = String(patch.uf).toUpperCase().slice(0, 2);
       if (input?.sabe_minimo === true) patch.sabe_minimo = true;
-      if (name === "salvar_lead") { const r = await upsertLead(sb, ctx, patch); return r.erro ? { erro: r.erro } : { ok: true, anotado: true, lead: { empresa: r.lead?.empresa, praca: [r.lead?.cidade, r.lead?.uf].filter(Boolean).join("/"), interesse: r.lead?.interesse, status: r.lead?.status } }; }
+      // nome so vira "confirmado" quando a pessoa disse E tem sobrenome. Sem isso ele continua
+      // sendo o apelido do WhatsApp, e o CRM nao e tocado.
+      let crmNome: any = null;
+      if (patch.nome && input?.nome_confirmado === true && nomePlausivel(patch.nome)) {
+        patch.nome_confirmado = true;
+        if (ctx.contact_id) {
+          crmNome = await nomeNoCrm(String(ctx.contact_id), patch.nome);
+          if (crmNome?.ok) patch.nome_crm_em = new Date().toISOString();
+        }
+      } else if (patch.nome && !nomePlausivel(patch.nome)) {
+        // nao apaga o que ja existe, mas nao promove apelido a nome
+        patch.nome_confirmado = false;
+      }
+      if (name === "salvar_lead") { const r = await upsertLead(sb, ctx, patch); return r.erro ? { erro: r.erro } : { ok: true, anotado: true, nome_no_crm: crmNome || undefined, lead: { nome: r.lead?.nome, nome_confirmado: !!r.lead?.nome_confirmado, empresa: r.lead?.empresa, praca: [r.lead?.cidade, r.lead?.uf].filter(Boolean).join("/"), interesse: r.lead?.interesse, status: r.lead?.status } }; }
       if (name === "descartar_lead") { const r = await upsertLead(sb, ctx, { ...patch, status: "descartado", motivo: String(input?.motivo || "").slice(0, 300) }); return r.erro ? { erro: r.erro } : { ok: true, descartado: true, aviso: "marcado como descartado. Encerre com gentileza, sem insistir." }; }
       // passar_comercial: o texto da tarefa e montado AQUI, a partir da linha do lead. A IA escreve
       // o resumo em volta; documento e telefone entram em codigo.
@@ -243,7 +288,7 @@ async function runTool(sb: any, ctx: any, name: string, input: any): Promise<any
       const L = up.lead || {};
       const det = [
         L.empresa ? "Loja: " + L.empresa : null,
-        L.nome ? "Contato: " + L.nome : null,
+        L.nome ? ("Contato: " + L.nome + (L.nome_confirmado ? "" : " (nome do perfil do WhatsApp — nao confirmado com ele)")) : null,
         ctx.fone ? "WhatsApp: " + foneFmt(ctx.fone) : null,
         docFmt(L.cnpj) || "Sem documento informado",
         (L.cidade || L.uf) ? "Praca: " + [L.cidade, L.uf].filter(Boolean).join("/") : null,
@@ -352,8 +397,10 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
   // esse CNPJ tem cadastro, para ela nao tratar cliente antigo como lead novo.
   let cadastro: any = null;
   if (crm.cnpj && crm.cnpj.length >= 11) { const { data } = await sb.from("ghl_cliente").select("codparc, razao, situacao, dias").ilike("cnpj", "%" + crm.cnpj + "%").limit(1).maybeSingle(); cadastro = data || null; }
-  if (!opts.dry && (crm.cnpj || crm.source)) await upsertLead(sb, ctx, { nome: nomeCrm || null, empresa: crm.empresa || cadastro?.razao || null, cnpj: crm.cnpj || null, codparc: cadastro?.codparc || null, origem: ctx.source });
-  const jaSei = leadRow ? [leadRow.nome && "nome: " + leadRow.nome, leadRow.empresa && "loja: " + leadRow.empresa, leadRow.cnpj && "CNPJ ja informado", (leadRow.cidade || leadRow.uf) && "praca: " + [leadRow.cidade, leadRow.uf].filter(Boolean).join("/"), leadRow.tipo_loja && "tipo: " + leadRow.tipo_loja, leadRow.ja_revende && "compra hoje: " + leadRow.ja_revende, leadRow.interesse && "interesse: " + leadRow.interesse, leadRow.sabe_minimo && "JA sabe do pedido minimo", "status: " + leadRow.status].filter(Boolean).join(" | ") : "";
+  // nome do CRM entra so como provisorio: se a Nina JA confirmou o nome com a pessoa, esta linha
+  // nao pode reescrever com o apelido do perfil (era o mesmo vao que fazia o status voltar na v4).
+  if (!opts.dry && (crm.cnpj || crm.source)) await upsertLead(sb, ctx, { nome: (leadRow?.nome_confirmado ? null : (nomeCrm || null)), empresa: crm.empresa || cadastro?.razao || null, cnpj: crm.cnpj || null, codparc: cadastro?.codparc || null, origem: ctx.source });
+  const jaSei = leadRow ? [(leadRow.nome && leadRow.nome_confirmado) && "nome: " + leadRow.nome, leadRow.empresa && "loja: " + leadRow.empresa, leadRow.cnpj && "CNPJ ja informado", (leadRow.cidade || leadRow.uf) && "praca: " + [leadRow.cidade, leadRow.uf].filter(Boolean).join("/"), leadRow.tipo_loja && "tipo: " + leadRow.tipo_loja, leadRow.ja_revende && "compra hoje: " + leadRow.ja_revende, leadRow.interesse && "interesse: " + leadRow.interesse, leadRow.sabe_minimo && "JA sabe do pedido minimo", "status: " + leadRow.status].filter(Boolean).join(" | ") : "";
 
   const nome = prim(cfg.nome_assistente || opts.inst || "Nina");
   const sys = `Voce e a ${nome}, do time comercial da Nitronplast (Nitron), por WhatsApp. Calorosa e natural, pessoa de verdade da equipe.` + ESTILO
@@ -367,7 +414,9 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
     + (cfg.catalogo_url ? `\nCATALOGO (mande o LINK quando ele quiser ver produtos): ${cfg.catalogo_url}` : "")
     + (cfg.site_url ? `\nSITE: ${cfg.site_url}` : "")
     + `\n${jaSei ? "JA APURADO (nao pergunte de novo): " + jaSei : "AINDA NAO SEI NADA sobre ele — comece pelo tipo de loja e o que ele precisa abastecer."}`
-    + (nomeCrm ? `\nNome dele no CRM: ${nomeCrm} (pode ser apelido do WhatsApp — confirme antes de usar em cheio).` : "")
+    + (leadRow?.nome_confirmado
+      ? `\nNOME JA CONFIRMADO por ele: ${leadRow.nome}. Use esse e NAO pergunte de novo.`
+      : `\nNOME — regra do gestor (22/09): ${nomeCrm ? `no CRM esta "${nomeCrm}", e isso vem do perfil do WhatsApp: pode ser apelido, emoji, versiculo ou o nome da loja. NAO trate como o nome dele.` : "voce ainda nao sabe o nome dele."} Pergunte o nome COMPLETO (nome e sobrenome), de leve e UMA vez, cedo na conversa — algo como "antes de a gente seguir, com quem eu falo? seu nome completo" — e nunca deduza nem complete sobrenome por conta propria. Quando ele responder, chame salvar_lead com nome (nome e sobrenome, como ele escreveu) e nome_confirmado=true. Sem isso o consultor recebe o lead sem saber com quem vai falar.`)
     + opts.lic;
 
   const messages: any[] = [{ role: "user", content: msgs.map((m: any) => (m.direction === "inbound" ? "CONTATO: " : "VOCE (Nitron): ") + limpa(m.body).slice(0, 500)).join("\n") + "\n\n(Responda so a proxima mensagem sua, sem prefixo.)" }];
@@ -389,9 +438,9 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
   // NAO escreve status aqui. Quem manda no status sao as ferramentas (descartar_lead,
   // passar_comercial), e elas rodaram DEPOIS de leadRow ser lido: reescrever com o valor antigo
   // desfazia o que elas acabaram de gravar — o Fiver Metalurgica virou "descartado" e voltou para
-  // "qualificando" na mesma rodada (10/09). Sem status no patch, o default da tabela cobre o lead
-  // novo em que nenhuma ferramenta rodou.
-  const up = await upsertLead(sb, ctx, { nome: leadRow?.nome || null, ultima_msg_id: ultima.id, ultima_resposta_em: new Date().toISOString() });
+  // "qualificando" na mesma rodada (10/09). Pelo mesmo motivo nao escreve mais o NOME: a ferramenta
+  // pode ter acabado de gravar o nome confirmado, e o valor antigo o apagaria.
+  const up = await upsertLead(sb, ctx, { ultima_msg_id: ultima.id, ultima_resposta_em: new Date().toISOString() });
   if (!env?.ok) return { ...base, decisao: "falhou", canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + instancia), ferramentas: usadas, motivo: env?.motivo || "envio recusado", texto: reply };
   return { ...base, decisao: "respondeu", canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + instancia), origem: crm.source || (ehAds ? "anuncio META (tag ads)" : null), ferramentas: usadas, lead_id: up.lead?.id || null, status: up.lead?.status, recebido: texto.slice(0, 200), texto: reply };
 }
@@ -467,6 +516,7 @@ async function seguir(sb: any, cfg: Record<string, string>, o: any) {
       + `\nPEDIDO MINIMO: R$ ${o.pedidoMin.toLocaleString("pt-BR")}.`
       + (cfg.catalogo_url ? `\nCATALOGO (link): ${cfg.catalogo_url}` : "")
       + `\n${jaSei ? "JA APURADO (nao pergunte de novo): " + jaSei : "Nao sei nada sobre a loja dele ainda."}`
+      + (L.nome_confirmado ? `\nNOME JA CONFIRMADO por ele: ${L.nome}. Use esse.` : `\nVoce ainda NAO confirmou o nome dele (o que aparece e o do perfil do WhatsApp). Se couber no toque, pergunte o nome completo de leve — e chame salvar_lead com nome e nome_confirmado=true quando ele responder.`)
       + o.lic;
     const messages: any[] = [{ role: "user", content: msgs.map((m: any) => (m.direction === "inbound" ? "CONTATO: " : "VOCE (Nitron): ") + limpa(m.body).slice(0, 400)).join("\n") + "\n\n(Escreva SO o toque de seguimento, sem prefixo.)" }];
     const ctx: any = { contact_id: L.contact_id, fone: L.fone, instancia: L.instancia, dry: o.dry, source: L.origem };
