@@ -1356,6 +1356,7 @@
     if(x.length===11)return x.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,"$1.$2.$3-$4")+" (CPF)";
     return x?x+" (documento fora do padrão)":"";}
   function abrirPix(cod){var rep=(cod==="cobranca_pix_rep");
+    PIXSEL={};PIXMSG={};PIXTIPO=(rep?"rep":"cliente");
     $("op-nome").textContent=rep?"PIX antecipado — avisar representante":"PIX antecipado — cobrar cliente";
     $("op-meta").textContent=rep
       ? "Título PIX – Antecipado em aberto no Sankhya · agrupado por representante · mensagem sai pela assistente dele (Sankhya)"
@@ -1379,13 +1380,16 @@
       if(semA)h+='<div class="note" style="color:#b7791f;margin-bottom:8px">⚠ '+semA+' sem assistente no cadastro — não dá para enviar até resolver o representante.</div>';
       if(paus)h+='<div class="note" style="color:#b7791f;margin-bottom:8px">⚠ '+paus+' com a assistente pausada — a linha ficaria esperando na fila.</div>';
       if(divg)h+='<div class="note" style="margin-bottom:8px">ℹ️ '+divg+' com assistente diferente entre Sankhya e CRM. Aqui vale o <b>Sankhya</b>, como você pediu.</div>';
-      if(!d.length){h+='<div class="note" style="padding:12px">Nenhum PIX antecipado em aberto agora.</div>';$("kaFlow").innerHTML=h;return;}
+      h='<div id="pix-relogio"></div>'+h;
+      var jan=Number((d.length&&d[0].janela_dias)||7);
+      if(!d.length){h+='<div class="note" style="padding:12px">Nenhum PIX antecipado dentro da janela agora.</div><div id="pix-fora"></div>';$("kaFlow").innerHTML=h;pixRelogio(cod);pixFora("cobranca_pix",jan);return;}
+      h+=pixBarra(rep?"vai para o representante":"vai para o cliente");
       if(rep){
         var ordem=[];for(var r in reps)ordem.push(r);
         ordem.sort(function(a,b){return reps[b].length-reps[a].length;});
         ordem.forEach(function(rn,i){var lst=reps[rn],v=0;lst.forEach(function(x){v+=Number(x.valor||0);});
           var inst=lst[0].instancia||"";
-          h+='<div class="kaCard"><div class="kaHead"><b>'+esc(rn)+'</b><span class="kaTag">'+lst.length+' cliente'+(lst.length>1?'s':'')+'</span>'
+          h+='<div class="kaCard"><div class="kaHead"><input type="checkbox" id="pixchk-'+i+'" onchange="pixToggle('+i+',this.checked)" style="margin-right:6px"><b>'+esc(rn)+'</b><span class="kaTag">'+lst.length+' cliente'+(lst.length>1?'s':'')+'</span>'
             +(inst?'<span class="note">📲 '+esc(inst)+'</span>':'<span class="note" style="color:#c0392b">sem assistente</span>')
             +'<span class="kaTicket">'+brl(v)+'</span></div>';
           lst.forEach(function(x){
@@ -1399,7 +1403,7 @@
           PIXMSG[i]={lista:lst,rep:rn,instancia:inst,camp:"cobranca_pix_rep",tipo:"pix"};});
       } else {
         d.forEach(function(x,i){var inst=x.instancia||"";
-          h+='<div class="kaCard"><div class="kaHead"><b>'+esc(x.cliente||"")+'</b>'
+          h+='<div class="kaCard"><div class="kaHead"><input type="checkbox" id="pixchk-'+i+'" onchange="pixToggle('+i+',this.checked)" style="margin-right:6px"><b>'+esc(x.cliente||"")+'</b>'
             +'<span class="kaTag">'+x.dias_aberto+'d em aberto</span>'
             +'<span class="kaTag">faltam '+x.dias_restantes+'d da condição</span>'
             +(x.qrcode?'':'<span class="kaTag" style="background:#fdecea;color:#c0392b">sem código PIX</span>')
@@ -1408,7 +1412,8 @@
           h+='<div class="dbtns" style="margin-top:8px"><button class="btn'+(inst?'':' out')+'" onclick="pixMsg('+i+',\'cliente\')"'+(inst?'':' disabled')+'>🏢 Cobrar cliente</button><span class="note" id="pix-st-'+i+'"></span></div><div id="pix-'+i+'"></div></div>';
           PIXMSG[i]={lista:[x],rep:x.rep,instancia:inst,camp:"cobranca_pix_cliente",tipo:"pix"};});
       }
-      $("kaFlow").innerHTML=h;});}
+      h+='<div id="pix-fora"></div>';
+      $("kaFlow").innerHTML=h;pixRelogio(cod);pixPintarBarra();pixFora("cobranca_pix",jan);});}
   /* O texto e montado AQUI, em codigo — sem IA. Regra de 28/08: a IA nunca escreve documento, e um
      digito trocado manda o representante para outra empresa. Ao REPRESENTANTE o CNPJ vai em linha
      propria; ao CLIENTE nao vai, porque ali seria o documento dele mesmo. */
@@ -1452,9 +1457,155 @@
       else itens.push({campanha:camp,publico:m.publico,canal:"whatsapp",fone:c.valor,instancia:m.instancia,corpo:texto,nome:m.nome,codparc:m.lista[0].codparc});});
     if(!itens.length){ag.textContent="marque ao menos 1 contato";return;}
     postJSON(SUPA+"/functions/v1/fila-enfileirar",{itens:itens},function(r){ag.innerHTML=r.ok?("<b style='color:#1a7f4b'>✓ "+r.enfileirados+" na fila</b>"):("✗ "+((r&&r.erro)||"falha"));});}
+  /* ===== SELECAO EM LOTE + MODELO DA MENSAGEM (25/09) =====
+     O gestor pediu o mesmo mecanismo das outras campanhas: ver a mensagem que vai sair, marcar quem
+     recebe e mandar de uma vez. A mensagem nao pode ser UM texto fixo — cada cliente tem valor,
+     dias e codigo PIX proprios — entao aqui e um MODELO com marcadores, como o BULKTPL ja faz no
+     resto do painel. O texto final de cada destinatario e montado em codigo na hora do envio, e a
+     previa mostra o do primeiro marcado, ja renderizado: previa que usa outro caminho mente. */
+  var PIXSEL={}, PIXTIPO="";
+  var PIXTPL={
+    cliente:"Olá! Aqui é da Nitron.\n\nVocê tem [VALOR] em aberto com uma condição especial, e ela vale [PRAZO].\n\nSegue o código PIX para copiar e colar:\n\n[PIX]\n\nCaso já tenha pago, é só desconsiderar esta mensagem.",
+    rep:"Oi, [NOME]! Passando uma pendência da sua carteira:\n\n[LISTA]\nO PIX antecipado é o que libera o pedido — enquanto ele não entra, a mercadoria não sai.\nConsegue falar com eles e me dizer como fica? Se precisar da 2ª via, me chama que eu mando.",
+    recusa:"Oi, [NOME]! [ABERTURA]\n\n[LISTA]\nO pedido não segue enquanto isso não for resolvido. Consegue falar com o cliente e me dizer como fica? Se precisar de ajuda para destravar, me chama."
+  };
+  function pixTplAtual(){var t=$("pix-tpl");return t?t.value:(PIXTPL[PIXTIPO]||"");}
+  /* Monta o texto de UM destinatario a partir do modelo. A lista e o documento entram aqui, em
+     codigo — a regra de 28/08 (a IA nunca escreve CNPJ) vale igual quando quem escreve e a tela. */
+  function pixMontar(m,tpl){
+    var t=String(tpl||"");
+    if(PIXTIPO==="cliente"){
+      var x=m.lista[0],dr=Number(x.dias_restantes||0);
+      var prazo=dr>1?("nos próximos "+dr+" dias"):(dr===1?"até amanhã":"hoje");
+      return t.replace(/\[NOME\]/g,String(x.cliente||""))
+              .replace(/\[VALOR\]/g,brl(x.valor))
+              .replace(/\[DIAS\]/g,String(x.dias_aberto))
+              .replace(/\[PRAZO\]/g,prazo)
+              .replace(/\[PIX\]/g,String(x.qrcode||"(código não disponível — peça a 2ª via com a gente)"));
+    }
+    var lista="";
+    m.lista.forEach(function(x){
+      if(PIXTIPO==="recusa"){
+        lista+="• Pedido "+x.nunota+" — "+String(x.cliente||"")+"\n  "+pixDoc(x.cnpj)+"\n  "+brl(x.vlrnota)
+             +" · recusado "+(x.dias===0?"hoje":("há "+x.dias+"d"))+"\n  Motivo: "+String(x.motivo||"(sem motivo registrado)")+"\n\n";
+      } else {
+        lista+="• "+String(x.cliente||"")+"\n  "+pixDoc(x.cnpj)+"\n  PIX antecipado de "+brl(x.valor)
+             +" em aberto há "+x.dias_aberto+" dias (faltam "+x.dias_restantes+"d da condição)\n\n";
+      }
+    });
+    var ab=(m.lista.length>1?"Alguns pedidos seus foram recusados na liberação:":"Um pedido seu foi recusado na liberação:");
+    return t.replace(/\[NOME\]/g,String(m.rep||"").split(/\s+/)[0])
+            .replace(/\[ABERTURA\]/g,ab)
+            .replace(/\[LISTA\]/g,lista);
+  }
+  function pixSelN(){var n=0;for(var k in PIXSEL)if(PIXSEL[k])n++;return n;}
+  function pixToggle(i,on){PIXSEL[i]=!!on;pixPintarBarra();}
+  function pixTodos(on){for(var i=0;i<9999;i++){var c=$("pixchk-"+i);if(!c)break;c.checked=on;PIXSEL[i]=on;}pixPintarBarra();}
+  function pixPintarBarra(){var n=pixSelN(),e=$("pix-sel-n");if(e)e.textContent=n+(n===1?" marcado":" marcados");
+    var b=$("pix-lote");if(b)b.disabled=!n;pixPrevia();}
+  function pixPrevia(){var box=$("pix-prev");if(!box)return;
+    var alvo=null;for(var k in PIXSEL){if(PIXSEL[k]){alvo=PIXMSG[k];break;}}
+    var q=$("pix-prev-quem");
+    if(!alvo){box.innerHTML='<span class="note">marque alguém para ver a mensagem</span>';if(q)q.textContent="";return;}
+    if(q)q.textContent=(PIXTIPO==="cliente"?String(alvo.lista[0].cliente||""):String(alvo.rep||""))+" (primeiro marcado)";
+    box.textContent=pixMontar(alvo,pixTplAtual());}
+  function pixBarra(rot){
+    return '<div style="border:1px solid var(--line);border-radius:10px;padding:10px;margin:0 0 12px;background:#f7faf9">'
+      +'<div class="ccfoot" style="margin-bottom:6px"><b>Enviar em lote</b>'
+      +'<button class="btn out" onclick="pixTodos(true)">marcar todos</button>'
+      +'<button class="btn out" onclick="pixTodos(false)">limpar</button>'
+      +'<span class="note" id="pix-sel-n">0 marcados</span></div>'
+      +'<div class="lab">Modelo da mensagem — '+rot+'</div>'
+      +'<textarea id="pix-tpl" rows="7" oninput="pixPrevia()">'+esc(PIXTPL[PIXTIPO]||"")+'</textarea>'
+      +'<div class="lab" style="margin-top:6px">Como vai sair — <span id="pix-prev-quem" class="note"></span></div>'
+      +'<div id="pix-prev" class="note" style="white-space:pre-wrap;border:1px solid var(--line);border-radius:8px;padding:8px;background:#fff;min-height:40px"></div>'
+      +'<div class="dbtns" style="margin-top:8px"><button class="btn big ok" id="pix-lote" disabled onclick="pixEnviarLote()">📅 Criar fila e enviar aos marcados</button>'
+      +'<span class="note" id="pix-lote-st"></span></div></div>';
+  }
+  /* Envia para todos os marcados. Busca os contatos de cada um pelo campanhas-cobranca (mesma fonte
+     de contato das outras telas de cobranca) e enfileira tudo numa chamada so — a trava de
+     duplicidade do fila-enfileirar e por pedido, entao um POST unico ja protege o lote inteiro. */
+  function pixEnviarLote(){
+    var st=$("pix-lote-st"),tpl=pixTplAtual(),alvos=[];
+    for(var k in PIXSEL)if(PIXSEL[k]&&PIXMSG[k])alvos.push(PIXMSG[k]);
+    if(!alvos.length)return;
+    var pub=(PIXTIPO==="cliente"?"cliente":"rep"),camp=alvos[0].camp,itens=[],pend=alvos.length,falhas=[];
+    st.textContent="buscando contatos de "+alvos.length+"…";
+    alvos.forEach(function(m){
+      getJSON(SUPA+"/functions/v1/campanhas-cobranca?msg="+m.lista[0].codparc+"&publico="+pub,function(d){
+        var cts=(d&&d.contatos)||[],texto=pixMontar(m,tpl),nome=(pub==="rep"?m.rep:m.lista[0].cliente);
+        if(!cts.length)falhas.push(nome+": sem contato");
+        cts.forEach(function(c){
+          if(c.canal==="email")itens.push({campanha:camp,publico:pub,canal:"email",email:c.valor,assunto:(PIXTIPO==="recusa"?"Nitron — pedido recusado na liberação":"Nitron — PIX antecipado em aberto"),corpo:texto,nome:nome,codparc:m.lista[0].codparc});
+          else itens.push({campanha:camp,publico:pub,canal:"whatsapp",fone:c.valor,instancia:m.instancia,corpo:texto,nome:nome,codparc:m.lista[0].codparc});
+        });
+        if(--pend===0){
+          if(!itens.length){st.innerHTML="✗ nenhum contato encontrado"+(falhas.length?(" — "+esc(falhas.join(" · "))):"");return;}
+          st.textContent="enfileirando "+itens.length+"…";
+          postJSON(SUPA+"/functions/v1/fila-enfileirar",{itens:itens},function(r){
+            st.innerHTML=r.ok?("<b style='color:#1a7f4b'>✓ "+r.enfileirados+" na fila</b>"+(falhas.length?(" · "+esc(falhas.join(" · "))):""))
+                            :("✗ "+((r&&r.erro)||"falha"));});
+        }
+      });
+    });
+  }
+  /* O relogio: diz se o disparo e automatico ou nao, lendo a propria campanha. Enquanto a cadencia
+     for 'avulso' o campanhas-cron nunca casa com o dia da semana e nada sai sozinho — a tela tem de
+     dizer isso com todas as letras, senao alguem assume que ja esta rodando. */
+  function pixRelogio(cod){
+    getJSON(SUPA+"/rest/v1/campanhas?codigo=eq."+cod+"&select=cadencia,filtros_padrao",function(d){
+      var box=$("pix-relogio");if(!box||!d||!d.length)return;
+      var c=d[0],cad=c.cadencia||[],f=c.filtros_padrao||{};
+      var manual=(cad.length===0||(cad.length===1&&cad[0]==="avulso"));
+      if(manual){
+        var quando="";
+        if(f.pix_turnos&&f.pix_turnos.length)quando=" Quando ligar: "+f.pix_turnos.join(" e ")+", alternando por dia ("+(f.pix_manha_hora||9)+"h e "+(f.pix_tarde_hora||15)+"h).";
+        box.innerHTML='<div class="note" style="border:1px solid #f0d9a8;background:#fffaf0;border-radius:8px;padding:8px 10px;margin-bottom:10px">'
+          +'⏱ <b>Disparo automático: DESLIGADO.</b> Hoje só sai clicando no botão.'+esc(quando)+'</div>';
+      } else {
+        box.innerHTML='<div class="note" style="border:1px solid #bfe3d0;background:#f2fbf6;border-radius:8px;padding:8px 10px;margin-bottom:10px">'
+          +'⏱ <b>Disparo automático LIGADO</b> — cadência: '+esc(cad.join(", "))+'. Sai sozinho, sem clique.</div>';
+      }
+    });
+  }
+  /* "Cade a Valeria e a Monica?" — elas estao ligadas (a view aceita venda interna), so nao tem
+     nada DENTRO da janela. Em vez de sumirem da tela, esta secao le o snapshot inteiro e mostra,
+     nome por nome, o que cada uma tem e por que nao entrou. Ela nao tem caixa de marcar de
+     proposito: o que esta fora da janela nao e para enviar. */
+  function pixFora(tab,janela){
+    var box=$("pix-fora");if(!box)return;
+    var recusa=(tab==="recusa_pedido");
+    var cd=recusa?"dias":"dias_aberto", cv=recusa?"vlrnota":"valor";
+    getJSON(SUPA+"/rest/v1/"+tab+"?select=*&order="+cd+".asc",function(d){
+      if(!d||d.erro||!d.length)return;
+      getJSON(SUPA+"/rest/v1/copiloto_venda_interna?select=codvend,nome,instancia,ativo",function(vi){
+        var VIN={};(Array.isArray(vi)?vi:[]).forEach(function(v){if(v.ativo!==false)VIN[v.codvend]=v.nome||v.instancia||("codvend "+v.codvend);});
+        var fora=[],vt=0;
+        d.forEach(function(x){if(Number(x[cd])>janela){fora.push(x);vt+=Number(x[cv]||0);}});
+        var linhas=[];
+        for(var cvd in VIN){(function(c){
+          var tudo=d.filter(function(x){return String(x.codvend)===String(c);});
+          var dentro=tudo.filter(function(x){return Number(x[cd])<=janela;});
+          var det=tudo.length?(tudo.length+(recusa?" pedido":" título")+(tudo.length>1?"s":"")+" no Sankhya, "+(dentro.length?(dentro.length+" na janela"):"nenhum na janela — o mais recente tem "+tudo[0][cd]+"d")):"nada em aberto no Sankhya";
+          linhas.push("<b>"+esc(VIN[c])+"</b> — "+esc(det));
+        })(cvd);}
+        var h='<div class="kaCard" style="margin-top:16px;background:#fbfbfb">'
+          +'<div class="kaHead"><b>Fora da janela de '+janela+' dias</b><span class="kaTag">'+fora.length+'</span>'
+          +'<span class="note">não entram no envio — a condição especial já passou</span>'
+          +(fora.length?'<span class="kaTicket">'+brl(vt)+'</span>':'')+'</div>';
+        if(linhas.length)h+='<div class="note" style="margin-top:6px">🏪 <b>Venda interna</b> (vendem direto, igual representante — já entram na tela quando tiverem algo na janela): '+linhas.join(' · ')+'</div>';
+        if(!fora.length)h+='<div class="note" style="margin-top:6px">Nada fora da janela.</div>';
+        fora.slice(0,40).forEach(function(x){
+          h+='<div class="note" style="margin-top:4px">'+esc(x.cliente||"")+' · '+brl(x[cv])+' · <b>'+x[cd]+'d</b>'
+            +' · rep '+esc(x.rep||"(sem rep)")+(VIN[x.codvend]?' <i>(venda interna)</i>':'')
+            +(recusa?(' · '+esc(String(x.motivo||"").slice(0,80))):'')+'</div>';});
+        if(fora.length>40)h+='<div class="note" style="margin-top:4px">… e mais '+(fora.length-40)+'.</div>';
+        h+='</div>';box.innerHTML=h;});});
+  }
   /* Motivo de Recusa do Pedido (25/09). Fonte: recusa_pedido_apto, que le a LIBERACAO do Sankhya
      (TSILIB REPROVADO='S'), nao a tabela de cancelamento — aquela esta morta desde 2021. */
   function abrirRecusa(cod){
+    PIXSEL={};PIXMSG={};PIXTIPO="recusa";
     $("op-nome").textContent="Pedido recusado — avisar representante";
     $("op-meta").textContent="Pedido reprovado na liberação do Sankhya · agrupado por representante · com o motivo que o liberador escreveu";
     $("op-kpis").innerHTML="";var ai=$("atuInfo");if(ai)ai.textContent="";
@@ -1471,12 +1622,15 @@
       var h='<div class="hint">🚫 Pedidos <b>reprovados na liberação</b> do Sankhya nos últimos 7 dias, com o motivo escrito por quem reprovou. Um bloco por representante — inclui a <b>venda interna</b> (Valeria e Mônica). A mensagem sai pela <b>assistente do Sankhya</b>. <b>Nada dispara sozinho</b>: o envio é o botão.</div>';
       if(semA)h+='<div class="note" style="color:#b7791f;margin-bottom:8px">⚠ '+semA+' sem assistente no cadastro.</div>';
       if(paus)h+='<div class="note" style="color:#b7791f;margin-bottom:8px">⚠ '+paus+' com a assistente pausada.</div>';
-      if(!d.length){h+='<div class="note" style="padding:12px">Nenhum pedido recusado nos últimos 7 dias.</div>';$("kaFlow").innerHTML=h;return;}
+      h='<div id="pix-relogio"></div>'+h;
+      var jan=Number((d.length&&d[0].janela_dias)||7);
+      if(!d.length){h+='<div class="note" style="padding:12px">Nenhum pedido recusado dentro da janela.</div><div id="pix-fora"></div>';$("kaFlow").innerHTML=h;pixRelogio(cod);pixFora("recusa_pedido",jan);return;}
+      h+=pixBarra("vai para o representante");
       var ordem=[];for(var r in reps)ordem.push(r);
       ordem.sort(function(a,b){return reps[b].length-reps[a].length;});
       ordem.forEach(function(rn,i){var lst=reps[rn],v=0;lst.forEach(function(x){v+=Number(x.vlrnota||0);});
         var inst=lst[0].instancia||"";
-        h+='<div class="kaCard"><div class="kaHead"><b>'+esc(rn)+'</b><span class="kaTag">'+lst.length+' pedido'+(lst.length>1?'s':'')+'</span>'
+        h+='<div class="kaCard"><div class="kaHead"><input type="checkbox" id="pixchk-'+i+'" onchange="pixToggle('+i+',this.checked)" style="margin-right:6px"><b>'+esc(rn)+'</b><span class="kaTag">'+lst.length+' pedido'+(lst.length>1?'s':'')+'</span>'
           +(lst[0].venda_interna?'<span class="kaTag">venda interna</span>':'')
           +(inst?'<span class="note">📲 '+esc(inst)+'</span>':'<span class="note" style="color:#c0392b">sem assistente</span>')
           +'<span class="kaTicket">'+brl(v)+'</span></div>';
@@ -1487,7 +1641,8 @@
             +'<br>🚫 <b>'+esc(x.motivo||"(sem motivo registrado)")+'</b></div>';});
         h+='<div class="dbtns" style="margin-top:8px"><button class="btn'+(inst?'':' out')+'" onclick="pixMsg('+i+',\'rep\')"'+(inst?'':' disabled')+'>👔 Avisar '+esc(rn)+'</button><span class="note" id="pix-st-'+i+'"></span></div><div id="pix-'+i+'"></div></div>';
         PIXMSG[i]={lista:lst,rep:rn,instancia:inst,camp:"cobranca_recusa_rep",tipo:"recusa"};});
-      $("kaFlow").innerHTML=h;});}
+      h+='<div id="pix-fora"></div>';
+      $("kaFlow").innerHTML=h;pixRelogio(cod);pixPintarBarra();pixFora("recusa_pedido",jan);});}
   function abrirCobranca(cod){var jur=(cod==="cobranca_juridico");
     $("op-nome").textContent=jur?"Jurídico — vencidos +180 dias":"Cobrança — títulos vencidos";
     $("op-meta").textContent=jur?"Alerta interno · encaminhar ao jurídico/financeiro · sem empurrão comercial ao cliente":"Duplicata vencida ≤180d · empurra cliente (2ª via) e rep (não faturar) · não expõe outros títulos";

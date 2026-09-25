@@ -452,6 +452,38 @@ recente era das 10h37 do próprio dia — é dado vivo, não histórico.
 `cobranca-recusa-refresh-1h` aos :12). Eles **só leem o Sankhya e gravam o snapshot** — não
 enfileiram e não enviam nada. O disparo continua sendo o botão.
 
+## Seleção em lote, modelo da mensagem e o relógio (25/09)
+
+Os três quadros de cobrança ganharam o mesmo mecanismo das outras campanhas, pedido pelo gestor:
+caixa com a mensagem, seleção de quem recebe, botão de envio habilitado pela seleção.
+
+- **A caixa é um MODELO, não um texto fixo** (`PIXTPL` + `pixMontar()`), porque cada destinatário tem
+  valor, dias e código PIX próprios. Marcadores: `[NOME]`, `[VALOR]`, `[DIAS]`, `[PRAZO]`, `[PIX]`,
+  `[LISTA]`, `[ABERTURA]`. É a mesma convenção do `BULKTPL` do resto do painel.
+- **A lista e o documento entram em código**, dentro do `pixMontar()` — a regra de 28/08 (a IA nunca
+  escreve CNPJ) vale igual quando quem escreve é a tela. Ao representante o CNPJ vai em linha
+  própria; ao cliente não vai.
+- **A prévia usa o MESMO caminho do envio.** `pixPrevia()` chama `pixMontar()` com o modelo que está
+  na caixa, e nomeia de quem é ("como vai sair — FULANO (primeiro marcado)"). Prévia que monta por
+  outro caminho mente — foi o que aconteceu em 31/08 com o CNPJ no `bulletEx()`.
+- **`pixEnviarLote()` enfileira tudo num POST só** ao `fila-enfileirar`, que é quem tem a trava de
+  duplicidade. Busca os contatos de cada alvo pelo `campanhas-cobranca` (mesma fonte das outras telas
+  de cobrança) e reporta quem ficou sem contato em vez de engolir.
+- **O relógio (`pixRelogio()`) lê a própria campanha**, não uma constante: enquanto `cadencia` for
+  `['avulso']` ele escreve em amarelo "⏱ Disparo automático: DESLIGADO. Hoje só sai clicando no
+  botão", e mostra qual cadência está guardada esperando (`pix_turnos`, manhã 9h / tarde 15h). No dia
+  em que a cadência mudar, a mesma caixa fica verde sozinha — sem deploy e sem alguém lembrar de
+  editar a tela.
+- **"Fora da janela" (`pixFora()`) existe por causa da Valeria e da Mônica.** O gestor não as via na
+  tela e concluiu que estavam de fora; elas estão ligadas (a view aceita `copiloto_venda_interna`),
+  só não têm nada dentro dos 7 dias. Em vez de sumirem, a seção lê o snapshot inteiro
+  (`cobranca_pix` / `recusa_pedido`) e diz, nome por nome, o que cada venda interna tem e por que não
+  entrou. Medido em 25/09: **Mônica sem nada em aberto; Valeria com 1 PIX de 101 dias (fora) e 1
+  pedido recusado dentro da janela — esse aparece normalmente no quadro de recusa.** A seção **não**
+  tem caixa de marcar de propósito: o que está fora da janela não é para enviar.
+- Números do dia: PIX **2 na janela / R$ 11.467,70** (de 9 e R$ 30.420,50 no snapshot); recusa
+  **30 na janela / R$ 501.184,67** (de 33 e R$ 568.556,87).
+
 ## Pendências esperando decisão do gestor (03/09/2026)
 
 1. **Bonificado e Troca contam como compra no roteiro?** O filtro novo conta **todo** `TIPMOV='P'`,
