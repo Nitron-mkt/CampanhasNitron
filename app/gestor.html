@@ -1372,7 +1372,7 @@
       $("op-kpis").innerHTML='<div class="kpi"><div class="n">'+d.length+'</div><div class="l">PIX em aberto</div></div>'
         +'<div class="kpi s"><div class="n">'+brl(tot)+'</div><div class="l">em aberto</div></div>'
         +'<div class="kpi"><div class="n">'+nreps+'</div><div class="l">representantes</div></div>';
-      var h='<div class="hint">🔔 Título <b>PIX – Antecipado</b> (CODTIPTIT 57) em aberto no Sankhya, de cliente que tem <b>representante</b> (TIPVEND=R). '
+      var h='<div class="hint">🔔 Título <b>PIX – Antecipado</b> (CODTIPTIT 57) aberto há <b>até 7 dias</b>, de cliente de <b>representante</b> ou de <b>venda interna</b> (Valeria e Mônica). Passou de 7 dias, sai do quadro. '
         +(rep?'Um bloco por representante, com cada cliente dele, o documento, os dias em aberto e o vencido total. A mensagem sai pela <b>assistente do Sankhya</b>.'
              :'Um card por cliente, com os dias em aberto correndo. A mensagem sai pela <b>assistente do representante desse cliente</b> — o exemplo que você deu: EDSON → JULIETE.')
         +' <b>Nada dispara sozinho</b>: as duas campanhas estão como avulsas, o envio é o botão.</div>';
@@ -1392,7 +1392,7 @@
             h+='<div class="note" style="margin-top:6px"><b>'+esc(x.cliente||"")+'</b>'
               +'<br>'+esc(pixDoc(x.cnpj))
               +'<br>PIX de '+brl(x.valor)+' · <b>'+x.dias_aberto+' dias em aberto</b>'
-              +(x.dias_venc>0?(' · vencido há '+x.dias_venc+'d'):' · ainda no prazo')
+              +' · faltam '+x.dias_restantes+'d da condição especial'
               +(Number(x.venc_total)>0?(' · vencido total do cliente: '+brl(x.venc_total)+' em '+x.venc_titulos+' título(s)'):'')
               +'</div>';});
           h+='<div class="dbtns" style="margin-top:8px"><button class="btn'+(inst?'':' out')+'" onclick="pixMsg('+i+',\'rep\')"'+(inst?'':' disabled')+'>👔 Avisar '+esc(rn)+'</button><span class="note" id="pix-st-'+i+'"></span></div><div id="pix-'+i+'"></div></div>';
@@ -1401,7 +1401,8 @@
         d.forEach(function(x,i){var inst=x.instancia||"";
           h+='<div class="kaCard"><div class="kaHead"><b>'+esc(x.cliente||"")+'</b>'
             +'<span class="kaTag">'+x.dias_aberto+'d em aberto</span>'
-            +(x.dias_venc>0?'<span class="kaTag">vencido '+x.dias_venc+'d</span>':'')
+            +'<span class="kaTag">faltam '+x.dias_restantes+'d da condição</span>'
+            +(x.qrcode?'':'<span class="kaTag" style="background:#fdecea;color:#c0392b">sem código PIX</span>')
             +'<span class="note">rep '+esc(x.rep||"")+(inst?' · 📲 '+esc(inst):' · sem assistente')+'</span>'
             +'<span class="kaTicket">'+brl(x.valor)+'</span></div>';
           h+='<div class="dbtns" style="margin-top:8px"><button class="btn'+(inst?'':' out')+'" onclick="pixMsg('+i+',\'cliente\')"'+(inst?'':' disabled')+'>🏢 Cobrar cliente</button><span class="note" id="pix-st-'+i+'"></span></div><div id="pix-'+i+'"></div></div>';
@@ -1419,10 +1420,12 @@
         t+="\n";});
       t+="O PIX antecipado é o que libera o pedido — enquanto ele não entra, a mercadoria não sai.\nConsegue falar com eles e me dizer como fica? Se precisar da 2ª via, me chama que eu mando.";
       return t;}
-    var x=l[0];
-    return "Olá! Aqui é da Nitron.\n\nSeu PIX antecipado de "+brl(x.valor)+" está em aberto há "+x.dias_aberto+" dias"
-      +(x.dias_venc>0?(", com vencimento em "+(x.dtvenc?x.dtvenc.split("-").reverse().join("/"):"")):"")
-      +".\n\nÉ esse pagamento que libera a separação do seu pedido. Quer que eu mande a chave de novo para regularizar hoje?\n\nSe já pagou, me manda o comprovante que eu dou baixa por aqui.";}
+    var x=l[0], dr=Number(x.dias_restantes||0);
+    var prazo = dr>1 ? ("nos próximos "+dr+" dias") : (dr===1 ? "até amanhã" : "hoje");
+    var t="Olá! Aqui é da Nitron.\n\nVocê tem "+brl(x.valor)+" em aberto com uma condição especial, e ela vale "+prazo+".";
+    t+="\n\nSegue o código PIX para copiar e colar:\n\n"+(x.qrcode||"(código não disponível — peça a 2ª via com a gente)");
+    t+="\n\nCaso já tenha pago, é só desconsiderar esta mensagem.";
+    return t;}
   function pixMsg(i,publico){var m=PIXMSG[i];if(!m)return;var st=$("pix-st-"+i);st.textContent="buscando contatos…";
     var cod=m.lista[0].codparc;
     getJSON(SUPA+"/functions/v1/campanhas-cobranca?msg="+cod+"&publico="+publico,function(d){st.textContent="";

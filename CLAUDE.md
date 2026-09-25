@@ -392,6 +392,26 @@ com o exemplo dele em 25/09: "o REPRESENTANTE É O EDSON, A ASSISTENTE DELE É A
 EDSON (93) tem `instancia_erp = Juliete` e `instancia_crm = Camyla` — ou seja, ele quer o ERP. Isso
 **resolve na prática a pendência 10 para esta campanha**; nas outras a regra segue como estava.
 
+**Janela de 7 dias (25/09).** Só entra PIX aberto há **até 7 dias**, contados da geração (`DTNEG`).
+Passou de 7, sai dos dois quadros — a condição especial acabou e cobrar vira ruído. O número mora em
+`campanhas.filtros_padrao->>'pix_janela_dias'`, não em constante. **O corte é grande: de 5 aptos
+para 2.** Ficam de fora AMILTON (36 dias), MUNDO BABY (24) e BEST BAG (16) — e são justamente os
+valores altos, R$ 18,8 mil. Vale revisar se a régua é essa mesma.
+
+**Valeria e Mônica entram como quem vende** (25/09). No Sankhya elas são `TIPVEND='V'`, então o
+filtro de representante as excluía. Para elas a assistente é **ela mesma**: a view cai em
+`copiloto_venda_interna.instancia`. Hoje nenhuma das duas tem PIX aberto na janela.
+
+**O código PIX vem do Sankhya.** `AD_HYAKRECEBIMENTOSPIX.QRCODE`, chaveado pelo **mesmo NUFIN** do
+título; quando há mais de uma geração para o mesmo título fica a mais recente com código. Dos 9
+títulos abertos, 5 têm código — os que não têm são os antigos, e esses já não passam da janela.
+A mensagem ao cliente leva o copia-e-cola e **os dias que faltam da condição**, não os dias corridos.
+
+**Cadência manhã/tarde** (`filtros_padrao` do `cobranca_pix_cliente`): `pix_turnos = [tarde, manha]`,
+começando pela **tarde**, com `pix_manha_hora=9` e `pix_tarde_hora=15`. É alternância estrita — o
+exemplo que o gestor deu repetia a tarde dois dias seguidos, e isso foi tratado como lapso da fala.
+Ainda **não há cron**: os parâmetros estão gravados esperando o "pode ligar".
+
 **Nada dispara sozinho:** as duas nasceram com `cadencia = ['avulso']`, que o `campanhas-cron` nunca
 casa com dia da semana. Ligar é trocar a cadência, sem deploy — e só quando ele mandar.
 
