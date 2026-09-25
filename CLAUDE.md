@@ -423,6 +423,35 @@ Audiência medida em 25/09: **9 títulos PIX abertos / R$ 30.420,50**, dos quais
 clientes de representante inteira é de 15.454 títulos e R$ 35,5 mi, com 1.587 vencidos (R$ 3,66 mi):
 o PIX antecipado é um recorte pequeno e de alto sinal, não o volume da cobrança.
 
+## Motivo de recusa do pedido (criado em 25/09)
+
+Terceiro quadro do pipe `cobranca_auto`: **`cobranca_recusa_rep`** — avisa o representante dos
+pedidos dele reprovados na liberação, com o motivo que o liberador escreveu.
+
+**Onde a recusa vive, e onde NÃO vive.** O caminho óbvio é `AD_MOTIVOCANCELAPEDIDO` (16 motivos,
+apontada por `TGFCAB_EXC.AD_NUCANC`) — e ele está **morto**: 40 pedidos no total, todos de 2020/2021,
+e em `TGFCAB_EXC` o motivo vem nulo em **649 de 649** exclusões dos últimos 90 dias. A recusa viva é
+a da **liberação**: `TSILIB` com `REPROVADO='S'` e `TABELA='TGFCAB'`, onde `OBSLIB` (observação de
+quem reprovou) é o motivo e vem preenchido em 100% dos casos.
+
+**Um pedido tem VÁRIAS linhas de liberação reprovadas** (eventos/sequências da mesma nota). O
+snapshot consolida por `NUNOTA` e fica com a reprovação mais recente — sem isso o mesmo pedido
+aparece duas vezes na tela e duas vezes na mensagem.
+
+**O vendedor prefere o do PEDIDO** (`TGFCAB.CODVEND`) e cai no do parceiro quando vier zerado —
+mesma armadilha do PIX antecipado.
+
+Caminho: `cobranca-recusa-refresh` (guarda 30 dias) → `recusa_pedido` → view **`recusa_pedido_apto`**
+(janela de 7 dias em `filtros_padrao->>'recusa_janela_dias'`, representante **ou** venda interna).
+
+Medido em 25/09: **30 pedidos no quadro, R$ 501.184,67**, 9 vendedores, 1 de venda interna (Valeria),
+nenhum sem assistente. O motivo mais comum é variação de "EM ATRASO COM NITRON". A recusa mais
+recente era das 10h37 do próprio dia — é dado vivo, não histórico.
+
+**Os dois refresh têm cron de hora em hora** (`cobranca-pix-refresh-1h` aos :07,
+`cobranca-recusa-refresh-1h` aos :12). Eles **só leem o Sankhya e gravam o snapshot** — não
+enfileiram e não enviam nada. O disparo continua sendo o botão.
+
 ## Pendências esperando decisão do gestor (03/09/2026)
 
 1. **Bonificado e Troca contam como compra no roteiro?** O filtro novo conta **todo** `TIPMOV='P'`,

@@ -310,7 +310,7 @@
   function saldoEP(rep){var base=(CUR==="prep_liberar")?"campanhas-prep":("campanhas-saldo?modo="+SALMODO);return SUPA+"/functions/v1/"+base+(rep!=null?((base.indexOf("?")>=0?"&":"?")+"rep="+rep):"");}
   var COB={cobranca_duplicata_cliente:1,cobranca_aviso_rep:1,cobranca_juridico:1}, COBMSG={};
   /* Cobranca automatica do PIX antecipado (25/09): dois quadros irmaos, um por publico. */
-  var PIX={cobranca_pix_rep:1,cobranca_pix_cliente:1}, PIXMSG={}, PIXLIN=[];
+  var PIX={cobranca_pix_rep:1,cobranca_pix_cliente:1,cobranca_recusa_rep:1}, PIXMSG={}, PIXLIN=[];
   var RET={prep_retorno:1};
   var IAP={ia_propoe:1};
   var TPL={templates_whatsapp:1};
@@ -775,7 +775,7 @@
     if(IAP[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirIA(cod);}
     if(KA[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirKA(cod);}
     if(RET[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirRetorno(cod);}
-    if(PIX[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirPix(cod);}
+    if(PIX[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return (cod==="cobranca_recusa_rep"?abrirRecusa(cod):abrirPix(cod));}
     if(COB[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirCobranca(cod);}
     if(AGE[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirAgendar(cod);}
     if(ROT[cod]){$("opFlow").style.display="none";$("kaFlow").style.display="none";$("roteiroFlow").style.display="";return abrirRoteiro(cod);}
@@ -1396,7 +1396,7 @@
               +(Number(x.venc_total)>0?(' · vencido total do cliente: '+brl(x.venc_total)+' em '+x.venc_titulos+' título(s)'):'')
               +'</div>';});
           h+='<div class="dbtns" style="margin-top:8px"><button class="btn'+(inst?'':' out')+'" onclick="pixMsg('+i+',\'rep\')"'+(inst?'':' disabled')+'>👔 Avisar '+esc(rn)+'</button><span class="note" id="pix-st-'+i+'"></span></div><div id="pix-'+i+'"></div></div>';
-          PIXMSG[i]={lista:lst,rep:rn,instancia:inst};});
+          PIXMSG[i]={lista:lst,rep:rn,instancia:inst,camp:"cobranca_pix_rep",tipo:"pix"};});
       } else {
         d.forEach(function(x,i){var inst=x.instancia||"";
           h+='<div class="kaCard"><div class="kaHead"><b>'+esc(x.cliente||"")+'</b>'
@@ -1406,13 +1406,18 @@
             +'<span class="note">rep '+esc(x.rep||"")+(inst?' · 📲 '+esc(inst):' · sem assistente')+'</span>'
             +'<span class="kaTicket">'+brl(x.valor)+'</span></div>';
           h+='<div class="dbtns" style="margin-top:8px"><button class="btn'+(inst?'':' out')+'" onclick="pixMsg('+i+',\'cliente\')"'+(inst?'':' disabled')+'>🏢 Cobrar cliente</button><span class="note" id="pix-st-'+i+'"></span></div><div id="pix-'+i+'"></div></div>';
-          PIXMSG[i]={lista:[x],rep:x.rep,instancia:inst};});
+          PIXMSG[i]={lista:[x],rep:x.rep,instancia:inst,camp:"cobranca_pix_cliente",tipo:"pix"};});
       }
       $("kaFlow").innerHTML=h;});}
   /* O texto e montado AQUI, em codigo — sem IA. Regra de 28/08: a IA nunca escreve documento, e um
      digito trocado manda o representante para outra empresa. Ao REPRESENTANTE o CNPJ vai em linha
      propria; ao CLIENTE nao vai, porque ali seria o documento dele mesmo. */
   function pixTexto(m,publico){var l=m.lista;
+    if(m.tipo==="recusa"){
+      var tr="Oi, "+String(m.rep||"").split(/\s+/)[0]+"! "+(l.length>1?("Alguns pedidos seus foram recusados na liberação:"):("Um pedido seu foi recusado na liberação:"))+"\n\n";
+      l.forEach(function(x){tr+="• Pedido "+x.nunota+" — "+String(x.cliente||"")+"\n  "+pixDoc(x.cnpj)+"\n  "+brl(x.vlrnota)+" · recusado "+(x.dias===0?"hoje":("há "+x.dias+"d"))+"\n  Motivo: "+String(x.motivo||"(sem motivo registrado)")+"\n\n";});
+      tr+="O pedido não segue enquanto isso não for resolvido. Consegue falar com o cliente e me dizer como fica? Se precisar de ajuda para destravar, me chama.";
+      return tr;}
     if(publico==="rep"){
       var t="Oi, "+String(m.rep||"").split(/\s+/)[0]+"! Passando uma pendência da sua carteira:\n\n";
       l.forEach(function(x){t+="• "+String(x.cliente||"")+"\n  "+pixDoc(x.cnpj)+"\n  PIX antecipado de "+brl(x.valor)+" em aberto há "+x.dias_aberto+" dias"+(x.dias_venc>0?(", vencido há "+x.dias_venc+"d"):"")+"\n";
@@ -1441,12 +1446,48 @@
       if(cts.length)h+='<div class="dbtns" style="margin-top:6px"><button class="btn big ok" onclick="pixAgendar('+i+')">📅 Criar fila e enviar</button><span class="note" id="pix-ag-'+i+'"></span></div>';
       h+='</div>';box.innerHTML=h;});}
   function pixAgendar(i){var m=PIXMSG[i];if(!m)return;var ag=$("pix-ag-"+i);ag.textContent="agendando…";
-    var texto=$("pixt-"+i).value,itens=[],camp=(m.publico==="rep"?"cobranca_pix_rep":"cobranca_pix_cliente");
+    var texto=$("pixt-"+i).value,itens=[],camp=(m.camp||(m.publico==="rep"?"cobranca_pix_rep":"cobranca_pix_cliente"));
     document.querySelectorAll(".pixc-"+i+":checked").forEach(function(cb){var c=m.contatos[+cb.getAttribute("data-j")];if(!c)return;
-      if(c.canal==="email")itens.push({campanha:camp,publico:m.publico,canal:"email",email:c.valor,assunto:"Nitron — PIX antecipado em aberto",corpo:texto,nome:m.nome,codparc:m.lista[0].codparc});
+      if(c.canal==="email")itens.push({campanha:camp,publico:m.publico,canal:"email",email:c.valor,assunto:(m.tipo==="recusa"?"Nitron — pedido recusado na liberação":"Nitron — PIX antecipado em aberto"),corpo:texto,nome:m.nome,codparc:m.lista[0].codparc});
       else itens.push({campanha:camp,publico:m.publico,canal:"whatsapp",fone:c.valor,instancia:m.instancia,corpo:texto,nome:m.nome,codparc:m.lista[0].codparc});});
     if(!itens.length){ag.textContent="marque ao menos 1 contato";return;}
     postJSON(SUPA+"/functions/v1/fila-enfileirar",{itens:itens},function(r){ag.innerHTML=r.ok?("<b style='color:#1a7f4b'>✓ "+r.enfileirados+" na fila</b>"):("✗ "+((r&&r.erro)||"falha"));});}
+  /* Motivo de Recusa do Pedido (25/09). Fonte: recusa_pedido_apto, que le a LIBERACAO do Sankhya
+     (TSILIB REPROVADO='S'), nao a tabela de cancelamento — aquela esta morta desde 2021. */
+  function abrirRecusa(cod){
+    $("op-nome").textContent="Pedido recusado — avisar representante";
+    $("op-meta").textContent="Pedido reprovado na liberação do Sankhya · agrupado por representante · com o motivo que o liberador escreveu";
+    $("op-kpis").innerHTML="";var ai=$("atuInfo");if(ai)ai.textContent="";
+    $("kaFlow").innerHTML='<div class="note" style="padding:16px">lendo as recusas…</div>';
+    getJSON(SUPA+"/rest/v1/recusa_pedido_apto?select=*&order=dhlib.desc",function(d){
+      if(!d||d.erro||(!d.length&&!Array.isArray(d))){$("kaFlow").innerHTML='<div class="note" style="padding:16px;color:#c0392b">erro ao ler recusa_pedido_apto</div>';return;}
+      var tot=0,reps={},semA=0,paus=0;
+      d.forEach(function(x){tot+=Number(x.vlrnota||0);if(!x.instancia)semA++;if(x.instancia_pausada)paus++;
+        (reps[x.rep||"(sem rep)"]=reps[x.rep||"(sem rep)"]||[]).push(x);});
+      var nreps=0;for(var k in reps)nreps++;
+      $("op-kpis").innerHTML='<div class="kpi"><div class="n">'+d.length+'</div><div class="l">pedidos recusados</div></div>'
+        +'<div class="kpi s"><div class="n">'+brl(tot)+'</div><div class="l">parado</div></div>'
+        +'<div class="kpi"><div class="n">'+nreps+'</div><div class="l">representantes</div></div>';
+      var h='<div class="hint">🚫 Pedidos <b>reprovados na liberação</b> do Sankhya nos últimos 7 dias, com o motivo escrito por quem reprovou. Um bloco por representante — inclui a <b>venda interna</b> (Valeria e Mônica). A mensagem sai pela <b>assistente do Sankhya</b>. <b>Nada dispara sozinho</b>: o envio é o botão.</div>';
+      if(semA)h+='<div class="note" style="color:#b7791f;margin-bottom:8px">⚠ '+semA+' sem assistente no cadastro.</div>';
+      if(paus)h+='<div class="note" style="color:#b7791f;margin-bottom:8px">⚠ '+paus+' com a assistente pausada.</div>';
+      if(!d.length){h+='<div class="note" style="padding:12px">Nenhum pedido recusado nos últimos 7 dias.</div>';$("kaFlow").innerHTML=h;return;}
+      var ordem=[];for(var r in reps)ordem.push(r);
+      ordem.sort(function(a,b){return reps[b].length-reps[a].length;});
+      ordem.forEach(function(rn,i){var lst=reps[rn],v=0;lst.forEach(function(x){v+=Number(x.vlrnota||0);});
+        var inst=lst[0].instancia||"";
+        h+='<div class="kaCard"><div class="kaHead"><b>'+esc(rn)+'</b><span class="kaTag">'+lst.length+' pedido'+(lst.length>1?'s':'')+'</span>'
+          +(lst[0].venda_interna?'<span class="kaTag">venda interna</span>':'')
+          +(inst?'<span class="note">📲 '+esc(inst)+'</span>':'<span class="note" style="color:#c0392b">sem assistente</span>')
+          +'<span class="kaTicket">'+brl(v)+'</span></div>';
+        lst.forEach(function(x){
+          h+='<div class="note" style="margin-top:6px"><b>Pedido '+x.nunota+'</b> · '+esc(x.cliente||"")
+            +'<br>'+esc(pixDoc(x.cnpj))
+            +'<br>'+brl(x.vlrnota)+' · recusado '+(x.dias===0?'hoje':('há '+x.dias+'d'))+(x.liberador?(' por '+esc(x.liberador)):'')
+            +'<br>🚫 <b>'+esc(x.motivo||"(sem motivo registrado)")+'</b></div>';});
+        h+='<div class="dbtns" style="margin-top:8px"><button class="btn'+(inst?'':' out')+'" onclick="pixMsg('+i+',\'rep\')"'+(inst?'':' disabled')+'>👔 Avisar '+esc(rn)+'</button><span class="note" id="pix-st-'+i+'"></span></div><div id="pix-'+i+'"></div></div>';
+        PIXMSG[i]={lista:lst,rep:rn,instancia:inst,camp:"cobranca_recusa_rep",tipo:"recusa"};});
+      $("kaFlow").innerHTML=h;});}
   function abrirCobranca(cod){var jur=(cod==="cobranca_juridico");
     $("op-nome").textContent=jur?"Jurídico — vencidos +180 dias":"Cobrança — títulos vencidos";
     $("op-meta").textContent=jur?"Alerta interno · encaminhar ao jurídico/financeiro · sem empurrão comercial ao cliente":"Duplicata vencida ≤180d · empurra cliente (2ª via) e rep (não faturar) · não expõe outros títulos";
