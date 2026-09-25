@@ -368,6 +368,41 @@ diz "só e-mail", porque aquela campanha recusa `canal=whatsapp`.
 **A biblioteca de comunicados agora filtra por público** (`campanhas-comunicado` v5). Desde 09/09 a
 tabela é compartilhada, e a tela do rep estava listando também os comunicados escritos para cliente.
 
+## Cobrança automática do PIX antecipado (criada em 25/09)
+
+Pipe **`cobranca_auto`** — "🔔 Cobrança automática", **na área COMERCIAL**, não na /cobrança do
+financeiro: o gestor pediu explicitamente que ficasse no comercial. Dois quadros irmãos:
+`cobranca_pix_rep` (avisar representante) e `cobranca_pix_cliente` (cobrar cliente).
+
+**O título é o `CODTIPTIT = 57`, "PIX – Antecipado"** do Sankhya. Em aberto = `TGFFIN.DHBAIXA` nula,
+`RECDESP=1`, `PROVISAO='N'`. Caminho: `cobranca-pix-refresh` (lê o Sankhya) → tabela `cobranca_pix`
+→ view **`cobranca_pix_apto`**, que é a fonte única da tela E do disparo.
+
+Duas descobertas da consulta que definiram o desenho:
+
+- **O vendedor vem do PARCEIRO, não do título.** `TGFFIN.CODVEND` veio **0 em 6 dos 9** títulos
+  abertos — e justamente nos maiores (R$ 12.235, R$ 5.733, R$ 3.640). Quem sabe de quem é o cliente
+  é `TGFPAR.CODVEND`. Usar o do título deixaria a maior parte da cobrança sem representante.
+- **`TGFVEN.TIPVEND` separa representante de loja.** `R` é representante de rua (tem assistente,
+  entra); `V` é venda de balcão (ROBERTA LOJA, VALERIA) — sem assistente e com valores de R$ 24,
+  R$ 22, R$ 0,01. A view filtra `TIPVEND='R'`, e por isso **9 títulos viram 5**.
+
+**A assistente sai do SANKHYA (`rep_instancia.instancia_erp`), não do CRM.** O gestor definiu isso
+com o exemplo dele em 25/09: "o REPRESENTANTE É O EDSON, A ASSISTENTE DELE É A JULIETE". No cadastro,
+EDSON (93) tem `instancia_erp = Juliete` e `instancia_crm = Camyla` — ou seja, ele quer o ERP. Isso
+**resolve na prática a pendência 10 para esta campanha**; nas outras a regra segue como estava.
+
+**Nada dispara sozinho:** as duas nasceram com `cadencia = ['avulso']`, que o `campanhas-cron` nunca
+casa com dia da semana. Ligar é trocar a cadência, sem deploy — e só quando ele mandar.
+
+O texto é montado **em código**, no painel (`pixTexto()`), sem IA: ao representante o CNPJ vai em
+linha própria (regra de 28/08); ao cliente **não** vai, porque ali seria o documento dele mesmo.
+
+Audiência medida em 25/09: **9 títulos PIX abertos / R$ 30.420,50**, dos quais **5 de representante
+(R$ 30.286,03)** — ARNESTO, DENIZE, INACIO e MARCIO (2). Para comparação, a carteira aberta de
+clientes de representante inteira é de 15.454 títulos e R$ 35,5 mi, com 1.587 vencidos (R$ 3,66 mi):
+o PIX antecipado é um recorte pequeno e de alto sinal, não o volume da cobrança.
+
 ## Pendências esperando decisão do gestor (03/09/2026)
 
 1. **Bonificado e Troca contam como compra no roteiro?** O filtro novo conta **todo** `TIPMOV='P'`,

@@ -250,12 +250,12 @@
   var brl=function(v){return "R$ "+Math.round(v).toLocaleString("pt-BR");};
   var $=function(id){return document.getElementById(id);};
   var esc=function(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");};
-  var PIPES={clube:["💳","Clube"],saldo:["⚠️","Saldo / Ruptura"],recompra:["🔁","Recompra"],reativacao:["⏱️","Reativação"],representantes:["🤝","Representantes"],cobranca:["💰","Cobrança"],preparacao:["📦","Logística — Pedidos"],key_accounts:["👑","Key Accounts"],redes:["🏬","Promoção de Redes"],aquisicao:["🎯","Prospecção — novos"],inteligencia:["🧠","Inteligência"]};
+  var PIPES={clube:["💳","Clube"],saldo:["⚠️","Saldo / Ruptura"],recompra:["🔁","Recompra"],reativacao:["⏱️","Reativação"],representantes:["🤝","Representantes"],cobranca:["💰","Cobrança"],preparacao:["📦","Logística — Pedidos"],key_accounts:["👑","Key Accounts"],redes:["🏬","Promoção de Redes"],aquisicao:["🎯","Prospecção — novos"],inteligencia:["🧠","Inteligência"],cobranca_auto:["🔔","Cobrança automática"]};
   /* ===== ÁREAS — este mesmo arquivo serve /gestor, /logistica e /cobranca.
      A área sai do caminho da URL, então nao existe copia do painel pra manter. ===== */
   var AREAS={
     comercial:{nome:"Comercial",rota:"/gestor",
-      pipes:["clube","recompra","reativacao","representantes","key_accounts","redes","aquisicao","inteligencia"]},
+      pipes:["clube","recompra","reativacao","representantes","key_accounts","cobranca_auto","redes","aquisicao","inteligencia"]},
     logistica:{nome:"Logística",rota:"/logistica",
       pipes:["saldo","preparacao"]},
     cobranca:{nome:"Cobrança",rota:"/cobranca",
@@ -281,7 +281,7 @@
     return "/agenda";
   }
   /* uma campanha e clicavel se alguma tela sabe operar ela */
-  function clicavel(cod){return (OPERAVEIS[cod]||KA[cod]||ROT[cod]||SAL[cod]||COB[cod]||AGE[cod]||RET[cod]||IAP[cod]||PROS[cod]||TPL[cod]||REDES[cod]||COM[cod]||COMC[cod])?1:0;}
+  function clicavel(cod){return (OPERAVEIS[cod]||KA[cod]||ROT[cod]||SAL[cod]||COB[cod]||AGE[cod]||RET[cod]||IAP[cod]||PROS[cod]||TPL[cod]||REDES[cod]||COM[cod]||COMC[cod]||PIX[cod])?1:0;}
   function pintarAreas(cont){
     var h="";
     ["comercial","logistica","cobranca"].forEach(function(a){
@@ -309,6 +309,8 @@
   var SAL={saldo_liberar:1,saldo_parcial:1,saldo_sem_estoque:1,saldo_pequeno_consolidar:1,prep_liberar:1}, SALMSG={}, SALMODO="liberar";
   function saldoEP(rep){var base=(CUR==="prep_liberar")?"campanhas-prep":("campanhas-saldo?modo="+SALMODO);return SUPA+"/functions/v1/"+base+(rep!=null?((base.indexOf("?")>=0?"&":"?")+"rep="+rep):"");}
   var COB={cobranca_duplicata_cliente:1,cobranca_aviso_rep:1,cobranca_juridico:1}, COBMSG={};
+  /* Cobranca automatica do PIX antecipado (25/09): dois quadros irmaos, um por publico. */
+  var PIX={cobranca_pix_rep:1,cobranca_pix_cliente:1}, PIXMSG={}, PIXLIN=[];
   var RET={prep_retorno:1};
   var IAP={ia_propoe:1};
   var TPL={templates_whatsapp:1};
@@ -773,6 +775,7 @@
     if(IAP[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirIA(cod);}
     if(KA[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirKA(cod);}
     if(RET[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirRetorno(cod);}
+    if(PIX[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirPix(cod);}
     if(COB[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirCobranca(cod);}
     if(AGE[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirAgendar(cod);}
     if(ROT[cod]){$("opFlow").style.display="none";$("kaFlow").style.display="none";$("roteiroFlow").style.display="";return abrirRoteiro(cod);}
@@ -1335,6 +1338,110 @@
       h+='</div>';box.innerHTML=h;});}
   function agendarSaldo(cod){var m=SALMSG[cod];if(!m)return;var ag=$("sal-ag-"+cod);ag.textContent="agendando…";var texto=$("salt-"+cod).value;var itens=[];
     document.querySelectorAll(".salc-"+cod+":checked").forEach(function(cb){var c=m.contatos[+cb.getAttribute("data-j")];if(!c)return;if(c.canal==="email"){itens.push({campanha:CUR,publico:"rep",canal:"email",email:c.valor,assunto:"Saldos — Nitron logística",corpo:texto,nome:m.rep});}else{itens.push({campanha:CUR,publico:"rep",canal:"whatsapp",fone:c.valor,instancia:m.instancia,corpo:texto,nome:m.rep});}});
+    if(!itens.length){ag.textContent="marque ao menos 1 contato";return;}
+    postJSON(SUPA+"/functions/v1/fila-enfileirar",{itens:itens},function(r){ag.innerHTML=r.ok?("<b style='color:#1a7f4b'>✓ "+r.enfileirados+" na fila</b>"):("✗ "+((r&&r.erro)||"falha"));});}
+  /* ===== COBRANCA AUTOMATICA — PIX ANTECIPADO (25/09) =====
+     Dois quadros irmaos lendo a MESMA fonte, a view cobranca_pix_apto: o do representante agrupa
+     por rep, o do cliente lista contato a contato com os dias correndo. Fonte unica de proposito —
+     tela e disparo contando audiencias diferentes e o erro que o CLAUDE.md ja registrou duas vezes.
+
+     A instancia que vai mandar sai do SANKHYA (rep_instancia.instancia_erp), nao do CRM. Foi o que
+     o gestor pediu com o exemplo dele: EDSON -> JULIETE. O CRM, nesse caso, diz Camyla.
+
+     NADA DISPARA SOZINHO: as duas campanhas nasceram com cadencia ['avulso'], que o campanhas-cron
+     nunca casa com dia da semana. O envio e o botao. */
+  function pixFone(v){return String(v||"").replace(/\D/g,"");}
+  function pixDoc(d){var x=pixFone(d);
+    if(x.length===14)return x.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,"$1.$2.$3/$4-$5")+" (CNPJ)";
+    if(x.length===11)return x.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,"$1.$2.$3-$4")+" (CPF)";
+    return x?x+" (documento fora do padrão)":"";}
+  function abrirPix(cod){var rep=(cod==="cobranca_pix_rep");
+    $("op-nome").textContent=rep?"PIX antecipado — avisar representante":"PIX antecipado — cobrar cliente";
+    $("op-meta").textContent=rep
+      ? "Título PIX – Antecipado em aberto no Sankhya · agrupado por representante · mensagem sai pela assistente dele (Sankhya)"
+      : "Mesmo título, um card por cliente · conta os dias em aberto · mensagem sai pela assistente do representante do cliente";
+    $("op-kpis").innerHTML="";var ai=$("atuInfo");if(ai)ai.textContent="";
+    $("kaFlow").innerHTML='<div class="note" style="padding:16px">lendo o Sankhya…</div>';
+    getJSON(SUPA+"/rest/v1/cobranca_pix_apto?select=*&order=dias_aberto.desc",function(d){
+      if(!d||d.erro||!d.length&&!Array.isArray(d)){$("kaFlow").innerHTML='<div class="note" style="padding:16px;color:#c0392b">erro ao ler cobranca_pix_apto</div>';return;}
+      PIXLIN=d;
+      var tot=0,semA=0,paus=0,divg=0,reps={};
+      d.forEach(function(x){tot+=Number(x.valor||0);if(!x.instancia)semA++;if(x.instancia_pausada)paus++;if(x.instancia_divergente)divg++;
+        (reps[x.rep||"(sem rep)"]=reps[x.rep||"(sem rep)"]||[]).push(x);});
+      var nreps=0;for(var k in reps)nreps++;
+      $("op-kpis").innerHTML='<div class="kpi"><div class="n">'+d.length+'</div><div class="l">PIX em aberto</div></div>'
+        +'<div class="kpi s"><div class="n">'+brl(tot)+'</div><div class="l">em aberto</div></div>'
+        +'<div class="kpi"><div class="n">'+nreps+'</div><div class="l">representantes</div></div>';
+      var h='<div class="hint">🔔 Título <b>PIX – Antecipado</b> (CODTIPTIT 57) em aberto no Sankhya, de cliente que tem <b>representante</b> (TIPVEND=R). '
+        +(rep?'Um bloco por representante, com cada cliente dele, o documento, os dias em aberto e o vencido total. A mensagem sai pela <b>assistente do Sankhya</b>.'
+             :'Um card por cliente, com os dias em aberto correndo. A mensagem sai pela <b>assistente do representante desse cliente</b> — o exemplo que você deu: EDSON → JULIETE.')
+        +' <b>Nada dispara sozinho</b>: as duas campanhas estão como avulsas, o envio é o botão.</div>';
+      if(semA)h+='<div class="note" style="color:#b7791f;margin-bottom:8px">⚠ '+semA+' sem assistente no cadastro — não dá para enviar até resolver o representante.</div>';
+      if(paus)h+='<div class="note" style="color:#b7791f;margin-bottom:8px">⚠ '+paus+' com a assistente pausada — a linha ficaria esperando na fila.</div>';
+      if(divg)h+='<div class="note" style="margin-bottom:8px">ℹ️ '+divg+' com assistente diferente entre Sankhya e CRM. Aqui vale o <b>Sankhya</b>, como você pediu.</div>';
+      if(!d.length){h+='<div class="note" style="padding:12px">Nenhum PIX antecipado em aberto agora.</div>';$("kaFlow").innerHTML=h;return;}
+      if(rep){
+        var ordem=[];for(var r in reps)ordem.push(r);
+        ordem.sort(function(a,b){return reps[b].length-reps[a].length;});
+        ordem.forEach(function(rn,i){var lst=reps[rn],v=0;lst.forEach(function(x){v+=Number(x.valor||0);});
+          var inst=lst[0].instancia||"";
+          h+='<div class="kaCard"><div class="kaHead"><b>'+esc(rn)+'</b><span class="kaTag">'+lst.length+' cliente'+(lst.length>1?'s':'')+'</span>'
+            +(inst?'<span class="note">📲 '+esc(inst)+'</span>':'<span class="note" style="color:#c0392b">sem assistente</span>')
+            +'<span class="kaTicket">'+brl(v)+'</span></div>';
+          lst.forEach(function(x){
+            h+='<div class="note" style="margin-top:6px"><b>'+esc(x.cliente||"")+'</b>'
+              +'<br>'+esc(pixDoc(x.cnpj))
+              +'<br>PIX de '+brl(x.valor)+' · <b>'+x.dias_aberto+' dias em aberto</b>'
+              +(x.dias_venc>0?(' · vencido há '+x.dias_venc+'d'):' · ainda no prazo')
+              +(Number(x.venc_total)>0?(' · vencido total do cliente: '+brl(x.venc_total)+' em '+x.venc_titulos+' título(s)'):'')
+              +'</div>';});
+          h+='<div class="dbtns" style="margin-top:8px"><button class="btn'+(inst?'':' out')+'" onclick="pixMsg('+i+',\'rep\')"'+(inst?'':' disabled')+'>👔 Avisar '+esc(rn)+'</button><span class="note" id="pix-st-'+i+'"></span></div><div id="pix-'+i+'"></div></div>';
+          PIXMSG[i]={lista:lst,rep:rn,instancia:inst};});
+      } else {
+        d.forEach(function(x,i){var inst=x.instancia||"";
+          h+='<div class="kaCard"><div class="kaHead"><b>'+esc(x.cliente||"")+'</b>'
+            +'<span class="kaTag">'+x.dias_aberto+'d em aberto</span>'
+            +(x.dias_venc>0?'<span class="kaTag">vencido '+x.dias_venc+'d</span>':'')
+            +'<span class="note">rep '+esc(x.rep||"")+(inst?' · 📲 '+esc(inst):' · sem assistente')+'</span>'
+            +'<span class="kaTicket">'+brl(x.valor)+'</span></div>';
+          h+='<div class="dbtns" style="margin-top:8px"><button class="btn'+(inst?'':' out')+'" onclick="pixMsg('+i+',\'cliente\')"'+(inst?'':' disabled')+'>🏢 Cobrar cliente</button><span class="note" id="pix-st-'+i+'"></span></div><div id="pix-'+i+'"></div></div>';
+          PIXMSG[i]={lista:[x],rep:x.rep,instancia:inst};});
+      }
+      $("kaFlow").innerHTML=h;});}
+  /* O texto e montado AQUI, em codigo — sem IA. Regra de 28/08: a IA nunca escreve documento, e um
+     digito trocado manda o representante para outra empresa. Ao REPRESENTANTE o CNPJ vai em linha
+     propria; ao CLIENTE nao vai, porque ali seria o documento dele mesmo. */
+  function pixTexto(m,publico){var l=m.lista;
+    if(publico==="rep"){
+      var t="Oi, "+String(m.rep||"").split(/\s+/)[0]+"! Passando uma pendência da sua carteira:\n\n";
+      l.forEach(function(x){t+="• "+String(x.cliente||"")+"\n  "+pixDoc(x.cnpj)+"\n  PIX antecipado de "+brl(x.valor)+" em aberto há "+x.dias_aberto+" dias"+(x.dias_venc>0?(", vencido há "+x.dias_venc+"d"):"")+"\n";
+        if(Number(x.venc_total)>0&&Number(x.venc_total)!==Number(x.valor))t+="  (esse cliente tem "+brl(x.venc_total)+" vencido no total)\n";
+        t+="\n";});
+      t+="O PIX antecipado é o que libera o pedido — enquanto ele não entra, a mercadoria não sai.\nConsegue falar com eles e me dizer como fica? Se precisar da 2ª via, me chama que eu mando.";
+      return t;}
+    var x=l[0];
+    return "Olá! Aqui é da Nitron.\n\nSeu PIX antecipado de "+brl(x.valor)+" está em aberto há "+x.dias_aberto+" dias"
+      +(x.dias_venc>0?(", com vencimento em "+(x.dtvenc?x.dtvenc.split("-").reverse().join("/"):"")):"")
+      +".\n\nÉ esse pagamento que libera a separação do seu pedido. Quer que eu mande a chave de novo para regularizar hoje?\n\nSe já pagou, me manda o comprovante que eu dou baixa por aqui.";}
+  function pixMsg(i,publico){var m=PIXMSG[i];if(!m)return;var st=$("pix-st-"+i);st.textContent="buscando contatos…";
+    var cod=m.lista[0].codparc;
+    getJSON(SUPA+"/functions/v1/campanhas-cobranca?msg="+cod+"&publico="+publico,function(d){st.textContent="";
+      if(d.erro){st.textContent="✗ "+d.erro;return;}
+      m.publico=publico;m.contatos=d.contatos||[];m.nome=(publico==="rep"?m.rep:m.lista[0].cliente);
+      /* a instancia vem do NOSSO snapshot (Sankhya), nao a que o campanhas-cobranca devolveu (CRM) */
+      var cts=m.contatos,box=$("pix-"+i);
+      var h='<div style="border:1px solid var(--line);border-radius:8px;padding:10px;margin-top:6px;background:#f7faf9">';
+      h+='<div class="note" style="margin-bottom:5px"><b>Enviar ao '+(publico==="rep"?"Representante":"Cliente")+'</b> · 📲 '+esc(m.instancia)+' <i>(assistente pelo Sankhya)</i>'+(cts.length?' · marque os contatos:':'')+'</div>';
+      if(cts.length){cts.forEach(function(c,jj){h+='<label class="ctopt"><input type="checkbox" class="pixc-'+i+'" data-j="'+jj+'" checked><span class="cf">'+(c.canal==="whatsapp"?foneIco(c.valor):"✉")+' '+esc(c.funcao||"")+'</span><span>'+esc(c.valor)+'</span></label>';});}
+      else h+='<div class="note" style="color:#b7791f">'+esc(d.aviso||"sem contato cadastrado")+'.</div>';
+      h+='<textarea id="pixt-'+i+'" rows="9" style="width:100%" oninput="edGuardar(\'pix\','+i+',\'mensagem\',this)">'+esc(pixTexto(m,publico))+'</textarea>'+edTag("pix",i);
+      if(cts.length)h+='<div class="dbtns" style="margin-top:6px"><button class="btn big ok" onclick="pixAgendar('+i+')">📅 Criar fila e enviar</button><span class="note" id="pix-ag-'+i+'"></span></div>';
+      h+='</div>';box.innerHTML=h;});}
+  function pixAgendar(i){var m=PIXMSG[i];if(!m)return;var ag=$("pix-ag-"+i);ag.textContent="agendando…";
+    var texto=$("pixt-"+i).value,itens=[],camp=(m.publico==="rep"?"cobranca_pix_rep":"cobranca_pix_cliente");
+    document.querySelectorAll(".pixc-"+i+":checked").forEach(function(cb){var c=m.contatos[+cb.getAttribute("data-j")];if(!c)return;
+      if(c.canal==="email")itens.push({campanha:camp,publico:m.publico,canal:"email",email:c.valor,assunto:"Nitron — PIX antecipado em aberto",corpo:texto,nome:m.nome,codparc:m.lista[0].codparc});
+      else itens.push({campanha:camp,publico:m.publico,canal:"whatsapp",fone:c.valor,instancia:m.instancia,corpo:texto,nome:m.nome,codparc:m.lista[0].codparc});});
     if(!itens.length){ag.textContent="marque ao menos 1 contato";return;}
     postJSON(SUPA+"/functions/v1/fila-enfileirar",{itens:itens},function(r){ag.innerHTML=r.ok?("<b style='color:#1a7f4b'>✓ "+r.enfileirados+" na fila</b>"):("✗ "+((r&&r.erro)||"falha"));});}
   function abrirCobranca(cod){var jur=(cod==="cobranca_juridico");
