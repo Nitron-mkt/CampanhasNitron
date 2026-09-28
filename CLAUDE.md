@@ -484,6 +484,40 @@ caixa com a mensagem, seleção de quem recebe, botão de envio habilitado pela 
 - Números do dia: PIX **2 na janela / R$ 11.467,70** (de 9 e R$ 30.420,50 no snapshot); recusa
   **30 na janela / R$ 501.184,67** (de 33 e R$ 568.556,87).
 
+## Botão "Atualizar do Sankhya" nos quadros de cobrança (28/09)
+
+Pedido do gestor: antes de disparar no manual, reler o Sankhya. **O que muda de um dia para o outro
+é justamente o que vai dentro da mensagem** — os dias em aberto (que viram "faltam Nd da condição") e
+o código PIX. Disparar em cima do snapshot da última passada do cron manda o número de ontem, e o
+título pode já ter sido pago.
+
+- O botão fica **no topo do quadro de baixo**, antes dos cards, com um segundo atalho dentro da caixa
+  de envio (`🔄 Atualizar antes de enviar`), ao lado do botão de disparo. Os dois chamam a mesma
+  função.
+- **Chama o MESMO refresh que o cron chama** (`cobranca-pix-refresh` / `cobranca-recusa-refresh`) —
+  não existe caminho paralelo que pudesse divergir. Elas **só leem** o Sankhya e gravam o snapshot:
+  não enfileiram e não enviam nada. Leva ~4s.
+- Depois de atualizar, **o quadro é reaberto**, senão a tela continuaria mostrando o retrato velho
+  embaixo de um "atualizado".
+- A linha do lado do botão diz **quando o Sankhya foi lido** ("há 12 min"), em laranja se passou de
+  75 min — o cron é de hora em hora, então mais que isso significa que alguma passada não rodou.
+- **`cobranca-pix-refresh` v3 e `cobranca-recusa-refresh` v2:** erro passa a voltar como **HTTP 200
+  com `ok:false`**. O `postJSON` do painel descarta o corpo quando o status não é 2xx, então um 500
+  aparecia na tela como "status 500" e escondia o motivo — justo num botão cuja razão de existir é
+  ele saber se deu certo antes de disparar. Mesma convenção do `campanhas-comunicado-cliente`.
+  Na v3 também foi corrigido o `valor_no_quadro`, que somava `s + 0` e dava sempre 0.
+- **As duas funções não estavam no repositório** (só publicadas). Entraram agora em
+  `supabase/functions/`.
+
+**`instancia_erp` em branco não é divergência, é buraco — e apareceu custando caro.** Na leitura de
+28/09 o quadro de recusa veio com **14 pedidos sem assistente**, de 3 representantes: INACIO
+(9 pedidos, R$ 181.667,53), CARLINHOS (3, R$ 21.464,36) e MILTON (2, R$ 7.068,63). Os três têm
+`rep_instancia.instancia_erp = NULL` e `instancia_crm = Nina`. A view lê só o ERP (regra 8: o Sankhya
+manda), então eles ficam sem caminho de saída — não é o caso da pendência 10, onde ERP e CRM
+discordam; aqui o ERP simplesmente não foi preenchido. Duas saídas: preencher o cadastro no Sankhya,
+ou a view cair no CRM **quando o ERP estiver vazio** (sem mexer no caso de divergência). **Decisão do
+gestor — não mexer até ele dizer.**
+
 ## Pendências esperando decisão do gestor (03/09/2026)
 
 1. **Bonificado e Troca contam como compra no roteiro?** O filtro novo conta **todo** `TIPMOV='P'`,

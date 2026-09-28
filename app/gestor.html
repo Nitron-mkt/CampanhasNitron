@@ -1356,7 +1356,7 @@
     if(x.length===11)return x.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,"$1.$2.$3-$4")+" (CPF)";
     return x?x+" (documento fora do padrão)":"";}
   function abrirPix(cod){var rep=(cod==="cobranca_pix_rep");
-    PIXSEL={};PIXMSG={};PIXTIPO=(rep?"rep":"cliente");
+    PIXSEL={};PIXMSG={};PIXTIPO=(rep?"rep":"cliente");PIXCOD=cod;PIXTAB="cobranca_pix";
     $("op-nome").textContent=rep?"PIX antecipado — avisar representante":"PIX antecipado — cobrar cliente";
     $("op-meta").textContent=rep
       ? "Título PIX – Antecipado em aberto no Sankhya · agrupado por representante · mensagem sai pela assistente dele (Sankhya)"
@@ -1380,9 +1380,9 @@
       if(semA)h+='<div class="note" style="color:#b7791f;margin-bottom:8px">⚠ '+semA+' sem assistente no cadastro — não dá para enviar até resolver o representante.</div>';
       if(paus)h+='<div class="note" style="color:#b7791f;margin-bottom:8px">⚠ '+paus+' com a assistente pausada — a linha ficaria esperando na fila.</div>';
       if(divg)h+='<div class="note" style="margin-bottom:8px">ℹ️ '+divg+' com assistente diferente entre Sankhya e CRM. Aqui vale o <b>Sankhya</b>, como você pediu.</div>';
-      h='<div id="pix-relogio"></div>'+h;
+      h='<div id="pix-relogio"></div>'+pixAtuHTML()+h;
       var jan=Number((d.length&&d[0].janela_dias)||7);
-      if(!d.length){h+='<div class="note" style="padding:12px">Nenhum PIX antecipado dentro da janela agora.</div><div id="pix-fora"></div>';$("kaFlow").innerHTML=h;pixRelogio(cod);pixFora("cobranca_pix",jan);return;}
+      if(!d.length){h+='<div class="note" style="padding:12px">Nenhum PIX antecipado dentro da janela agora.</div><div id="pix-fora"></div>';$("kaFlow").innerHTML=h;pixRelogio(cod);pixAtuCarimbo();pixFora("cobranca_pix",jan);return;}
       h+=pixBarra(rep?"vai para o representante":"vai para o cliente");
       if(rep){
         var ordem=[];for(var r in reps)ordem.push(r);
@@ -1413,7 +1413,7 @@
           PIXMSG[i]={lista:[x],rep:x.rep,instancia:inst,camp:"cobranca_pix_cliente",tipo:"pix"};});
       }
       h+='<div id="pix-fora"></div>';
-      $("kaFlow").innerHTML=h;pixRelogio(cod);pixPintarBarra();pixFora("cobranca_pix",jan);});}
+      $("kaFlow").innerHTML=h;pixRelogio(cod);pixAtuCarimbo();pixPintarBarra();pixFora("cobranca_pix",jan);});}
   /* O texto e montado AQUI, em codigo — sem IA. Regra de 28/08: a IA nunca escreve documento, e um
      digito trocado manda o representante para outra empresa. Ao REPRESENTANTE o CNPJ vai em linha
      propria; ao CLIENTE nao vai, porque ali seria o documento dele mesmo. */
@@ -1463,7 +1463,7 @@
      dias e codigo PIX proprios — entao aqui e um MODELO com marcadores, como o BULKTPL ja faz no
      resto do painel. O texto final de cada destinatario e montado em codigo na hora do envio, e a
      previa mostra o do primeiro marcado, ja renderizado: previa que usa outro caminho mente. */
-  var PIXSEL={}, PIXTIPO="";
+  var PIXSEL={}, PIXTIPO="", PIXCOD="", PIXTAB="", PIXATU="";
   var PIXTPL={
     cliente:"Olá! Aqui é da Nitron.\n\nVocê tem [VALOR] em aberto com uma condição especial, e ela vale [PRAZO].\n\nSegue o código PIX para copiar e colar:\n\n[PIX]\n\nCaso já tenha pago, é só desconsiderar esta mensagem.",
     rep:"Oi, [NOME]! Passando uma pendência da sua carteira:\n\n[LISTA]\nO PIX antecipado é o que libera o pedido — enquanto ele não entra, a mercadoria não sai.\nConsegue falar com eles e me dizer como fica? Se precisar da 2ª via, me chama que eu mando.",
@@ -1520,6 +1520,7 @@
       +'<div class="lab" style="margin-top:6px">Como vai sair — <span id="pix-prev-quem" class="note"></span></div>'
       +'<div id="pix-prev" class="note" style="white-space:pre-wrap;border:1px solid var(--line);border-radius:8px;padding:8px;background:#fff;min-height:40px"></div>'
       +'<div class="dbtns" style="margin-top:8px"><button class="btn big ok" id="pix-lote" disabled onclick="pixEnviarLote()">📅 Criar fila e enviar aos marcados</button>'
+      +'<button class="btn out" onclick="pixAtualizar()" title="relê o Sankhya e redesenha o quadro">🔄 Atualizar antes de enviar</button>'
       +'<span class="note" id="pix-lote-st"></span></div></div>';
   }
   /* Envia para todos os marcados. Busca os contatos de cada um pelo campanhas-cobranca (mesma fonte
@@ -1547,6 +1548,58 @@
                             :("✗ "+((r&&r.erro)||"falha"));});
         }
       });
+    });
+  }
+  /* ===== ATUALIZAR DO SANKHYA (28/09) =====
+     Pedido do gestor: antes de disparar no manual, reler o Sankhya. O que muda de um dia para o
+     outro e justamente o que vai dentro da mensagem — os DIAS em aberto (que viram "faltam Nd da
+     condicao") e o CODIGO PIX. Disparar em cima do snapshot da ultima passada do cron manda o
+     numero de ontem, e o titulo pode ja ter sido pago.
+     O botao chama o MESMO refresh que o cron chama — nao ha caminho paralelo — e depois reabre o
+     quadro, para a tela nao continuar mostrando o retrato velho por baixo de um "atualizado".
+     O refresh SO LE o Sankhya e grava o snapshot: nao enfileira e nao envia nada. */
+  function pixHaQuanto(iso){
+    if(!iso)return "";
+    var m=Math.round((Date.now()-new Date(iso).getTime())/60000);
+    if(m<1)return "agora";
+    if(m<60)return "há "+m+" min";
+    var hh=Math.floor(m/60);
+    if(hh<24)return "há "+hh+"h"+((m%60)?(" "+(m%60)+"min"):"");
+    return "há "+Math.floor(hh/24)+"d";
+  }
+  function pixAtuHTML(){
+    return '<div id="pix-atu" class="dbtns" style="margin:0 0 10px;align-items:center;flex-wrap:wrap">'
+      +'<button class="btn" id="pix-atu-btn" onclick="pixAtualizar()">🔄 Atualizar do Sankhya</button>'
+      +'<span class="note" id="pix-atu-st">…</span></div>';
+  }
+  function pixAtuCarimbo(){
+    var e=$("pix-atu-st");if(!e)return;
+    if(PIXATU){e.innerHTML=PIXATU;PIXATU="";return;}
+    getJSON(SUPA+"/rest/v1/"+PIXTAB+"?select=atualizado&order=atualizado.desc&limit=1",function(d){
+      var b=$("pix-atu-st");if(!b)return;
+      var iso=(d&&d.length&&d[0].atualizado)||"";
+      var min=iso?Math.round((Date.now()-new Date(iso).getTime())/60000):99999;
+      var velho=(min>75); /* o cron rele de hora em hora; passou disso, algo nao rodou */
+      b.innerHTML=(iso?('Sankhya lido <b'+(velho?' style="color:#b7791f"':'')+'>'+esc(pixHaQuanto(iso))+'</b>')
+                      :'<b style="color:#c0392b">snapshot vazio</b>')
+        +' · relê sozinho de hora em hora · <b>clique antes de disparar</b>, para os dias e o código PIX serem os de agora.';
+    });
+  }
+  function pixAtualizar(){
+    var b=$("pix-atu-btn"),st=$("pix-atu-st");
+    if(b){b.disabled=true;b.textContent="🔄 lendo o Sankhya…";}
+    if(st)st.textContent="leva uns 5 segundos — não feche a tela.";
+    var fn=(PIXTAB==="recusa_pedido")?"cobranca-recusa-refresh":"cobranca-pix-refresh";
+    var cod=PIXCOD,tab=PIXTAB;
+    postJSON(SUPA+"/functions/v1/"+fn,{},function(r){
+      if(!r||r.ok!==true){
+        if(b){b.disabled=false;b.textContent="🔄 Atualizar do Sankhya";}
+        if(st)st.innerHTML='<b style="color:#c0392b">✗ não consegui ler o Sankhya</b> — '+esc((r&&r.erro)||"falha")+'. O quadro continua com os dados anteriores.';
+        return;}
+      PIXATU=(tab==="recusa_pedido")
+        ? ('<b style="color:#1a7f4b">✓ Sankhya lido agora</b> · '+r.recusados_30d+' recusas em 30d · <b>'+r.no_quadro+'</b> no quadro ('+brl(r.valor_no_quadro)+')'+(r.sem_assistente?(' · '+r.sem_assistente+' sem assistente'):''))
+        : ('<b style="color:#1a7f4b">✓ Sankhya lido agora</b> · '+r.titulos_abertos+' PIX abertos · <b>'+r.no_quadro+'</b> no quadro ('+brl(r.valor_no_quadro)+') · '+r.fora_da_janela_7d+' fora da janela'+(r.sem_qrcode?(' · '+r.sem_qrcode+' sem código PIX'):''));
+      if(tab==="recusa_pedido")abrirRecusa(cod);else abrirPix(cod);
     });
   }
   /* O relogio: diz se o disparo e automatico ou nao, lendo a propria campanha. Enquanto a cadencia
@@ -1605,7 +1658,7 @@
   /* Motivo de Recusa do Pedido (25/09). Fonte: recusa_pedido_apto, que le a LIBERACAO do Sankhya
      (TSILIB REPROVADO='S'), nao a tabela de cancelamento — aquela esta morta desde 2021. */
   function abrirRecusa(cod){
-    PIXSEL={};PIXMSG={};PIXTIPO="recusa";
+    PIXSEL={};PIXMSG={};PIXTIPO="recusa";PIXCOD=cod;PIXTAB="recusa_pedido";
     $("op-nome").textContent="Pedido recusado — avisar representante";
     $("op-meta").textContent="Pedido reprovado na liberação do Sankhya · agrupado por representante · com o motivo que o liberador escreveu";
     $("op-kpis").innerHTML="";var ai=$("atuInfo");if(ai)ai.textContent="";
@@ -1622,9 +1675,9 @@
       var h='<div class="hint">🚫 Pedidos <b>reprovados na liberação</b> do Sankhya nos últimos 7 dias, com o motivo escrito por quem reprovou. Um bloco por representante — inclui a <b>venda interna</b> (Valeria e Mônica). A mensagem sai pela <b>assistente do Sankhya</b>. <b>Nada dispara sozinho</b>: o envio é o botão.</div>';
       if(semA)h+='<div class="note" style="color:#b7791f;margin-bottom:8px">⚠ '+semA+' sem assistente no cadastro.</div>';
       if(paus)h+='<div class="note" style="color:#b7791f;margin-bottom:8px">⚠ '+paus+' com a assistente pausada.</div>';
-      h='<div id="pix-relogio"></div>'+h;
+      h='<div id="pix-relogio"></div>'+pixAtuHTML()+h;
       var jan=Number((d.length&&d[0].janela_dias)||7);
-      if(!d.length){h+='<div class="note" style="padding:12px">Nenhum pedido recusado dentro da janela.</div><div id="pix-fora"></div>';$("kaFlow").innerHTML=h;pixRelogio(cod);pixFora("recusa_pedido",jan);return;}
+      if(!d.length){h+='<div class="note" style="padding:12px">Nenhum pedido recusado dentro da janela.</div><div id="pix-fora"></div>';$("kaFlow").innerHTML=h;pixRelogio(cod);pixAtuCarimbo();pixFora("recusa_pedido",jan);return;}
       h+=pixBarra("vai para o representante");
       var ordem=[];for(var r in reps)ordem.push(r);
       ordem.sort(function(a,b){return reps[b].length-reps[a].length;});
@@ -1642,7 +1695,7 @@
         h+='<div class="dbtns" style="margin-top:8px"><button class="btn'+(inst?'':' out')+'" onclick="pixMsg('+i+',\'rep\')"'+(inst?'':' disabled')+'>👔 Avisar '+esc(rn)+'</button><span class="note" id="pix-st-'+i+'"></span></div><div id="pix-'+i+'"></div></div>';
         PIXMSG[i]={lista:lst,rep:rn,instancia:inst,camp:"cobranca_recusa_rep",tipo:"recusa"};});
       h+='<div id="pix-fora"></div>';
-      $("kaFlow").innerHTML=h;pixRelogio(cod);pixPintarBarra();pixFora("recusa_pedido",jan);});}
+      $("kaFlow").innerHTML=h;pixRelogio(cod);pixAtuCarimbo();pixPintarBarra();pixFora("recusa_pedido",jan);});}
   function abrirCobranca(cod){var jur=(cod==="cobranca_juridico");
     $("op-nome").textContent=jur?"Jurídico — vencidos +180 dias":"Cobrança — títulos vencidos";
     $("op-meta").textContent=jur?"Alerta interno · encaminhar ao jurídico/financeiro · sem empurrão comercial ao cliente":"Duplicata vencida ≤180d · empurra cliente (2ª via) e rep (não faturar) · não expõe outros títulos";
