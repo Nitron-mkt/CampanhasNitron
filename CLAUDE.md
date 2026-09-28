@@ -559,6 +559,45 @@ dele) e o **`codparc` da loja** ao cliente. O envio em lote faz **uma** chamada 
 assistente no Sankhya (o e-mail continua indo) e telefone fixo. Visto ao vivo em 28/09 — CARLINHOS
 sem `instancia_erp`, e a VALERIA com `11 00000000` no `snap_rep`.
 
+## Quem do CLIENTE recebe a cobrança (28/09)
+
+Pergunta do gestor: *"você está mandando para o cliente ou para o contato do financeiro dele no
+Sankhya?"*. A resposta honesta era **nenhum dos dois de propósito** — ia para **todos** os contatos
+cadastrados, sem distinguir função, inclusive **Expedição e Fiscal**.
+
+**O caminho, do título ao aparelho:**
+
+1. `cobranca_pix_apto` dá o **codparc da loja do título** (sem consolidar por matriz — o título é de
+   uma loja só).
+2. `cobranca-contatos?publico=cliente&codparc=…` lê **`snap_contato`** (Sankhya, com a coluna
+   `funcao`) e **`ghl_contato`** (CRM).
+3. A tela lista os contatos; o gestor marca.
+4. Sai pela instância da **assistente do representante daquele cliente**, pelo Sankhya.
+
+**A função do contato passou a mandar** (`cobranca-contatos` v2):
+`FINANCEIRO` → `PRINCIPAL` → `COMPRAS` → contato do CRM. **Expedição e Fiscal saem da cobrança** e
+voltam em `ignorados`, para sumirem do envio **sem sumir da vista** de quem opera. Só o primeiro de
+cada canal nasce marcado (`preferido`); os outros ficam a um clique. **No envio em lote vai só o
+preferido** — 1 Zaptos e 1 e-mail por cliente: cobrar o financeiro, o principal e o de compras ao
+mesmo tempo é assédio, não insistência.
+
+A ordenação acontece **antes** da deduplicação, então o mesmo número cadastrado em duas funções fica
+com a melhor (cliente 15: o telefone da Expedição é o mesmo do Financeiro, e aparece como Financeiro).
+
+**Por que é preferência e não exigência.** Na base de 28/09: **1.740** clientes têm `PRINCIPAL`,
+**546** `COMPRAS`, só **87** têm `FINANCEIRO`, 45 `EXPEDICAO` e 37 `FISCAL`. E entre os **619**
+clientes com título vencido, apenas **6** têm financeiro cadastrado. Exigir financeiro apagaria a
+campanha. **Nenhum dos 9 clientes com PIX antecipado tem financeiro** — 2 têm Principal, 4 só o
+contato do CRM e 4 não têm contato nenhum.
+
+**A mesma regra vale para a tela da duplicata vencida** (`campanhas-cobranca`), que continua sem esse
+filtro — hoje sem consequência (0 dos 619 têm Expedição/Fiscal), mas é a mesma dívida.
+
+**Ao REPRESENTANTE nada muda, e está certo assim.** Ele não tem "contato de cobrança": vai para o
+telefone e o e-mail dele mesmo, de `snap_rep` (`celular`, `fone_parc`, `email`, `email_crm`) — os
+mesmos números que todas as outras campanhas ao rep já usam. Confirmado pelo gestor em 28/09: "é mais
+para avisá-los mesmo".
+
 ## Disparo de teste do quadro de recusa (28/09) — o que ele mostrou
 
 O gestor disparou o quadro de pedido recusado às 13h42: 8 linhas, 3 representantes.

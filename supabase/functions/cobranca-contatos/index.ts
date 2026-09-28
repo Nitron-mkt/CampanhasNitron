@@ -1,4 +1,4 @@
-// cobranca-contatos (v1) — so os CONTATOS de um representante ou de um cliente. Sem IA, sem
+// cobranca-contatos (v2) — so os CONTATOS de um representante ou de um cliente. Sem IA, sem
 // audiencia, sem consolidacao por matriz.
 //
 // POR QUE ELA EXISTE. Os quadros do PIX antecipado e do pedido recusado pediam os contatos ao
@@ -19,11 +19,28 @@
 //
 // Aceita varios de uma vez (?codvends=51,19 ou ?codparcs=100,200) para o envio em lote da tela
 // fazer UMA chamada em vez de N.
+//
+// v2 (28/09) — QUEM DO CLIENTE RECEBE A COBRANCA. Pergunta do gestor: "voce esta mandando para o
+// cliente ou para o contato do financeiro dele no Sankhya?". A v1 mandava para TODOS os contatos
+// cadastrados, sem distinguir funcao — inclusive Expedicao e Fiscal, que nao tem nada com cobranca.
+// Agora a funcao do contato no Sankhya manda:
+//   FINANCEIRO (1) > PRINCIPAL (2) > COMPRAS (3) > contato do CRM (4)
+// e EXPEDICAO/FISCAL saem da cobranca (voltam em `ignorados`, para sumirem da tela mas nao do
+// conhecimento de quem opera). O primeiro de cada canal vem com `preferido: true` — e so esse nasce
+// marcado na tela; os outros ficam a um clique.
+// NUMEROS DA BASE (28/09): 1.740 clientes tem PRINCIPAL, 546 COMPRAS, so **87** tem FINANCEIRO,
+// 45 EXPEDICAO e 37 FISCAL. Entre os 619 clientes com titulo vencido, apenas **6** tem financeiro.
+// Por isso o financeiro e PREFERENCIA, nao exigencia: exigir financeiro apagaria a campanha.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, content-type, apikey", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };
 const j = (o: unknown, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
 const srvKey = () => Deno.env.get("SRV_JWT") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const digits = (s: any) => String(s || "").replace(/\D/g, "");
+// "Expedicao" e "EXPEDIÇÃO" sao a mesma funcao; o cadastro tem as duas grafias.
+const chaveFuncao = (f: any) => String(f || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
+const RANK: Record<string, number> = { FINANCEIRO: 1, PRINCIPAL: 2, COMPRAS: 3, CRM: 4 };
+const FORA_DA_COBRANCA = new Set(["EXPEDICAO", "FISCAL"]);
+const rankDe = (f: any) => RANK[chaveFuncao(f)] || 5;
 
 // Copia literal do campanhas-cobranca: mesma deduplicacao (o mesmo numero com e sem +55 e um so).
 function pushCanal(out: any[], seen: any, canal: string, valor: any, funcao: string, origem: string) {
@@ -66,38 +83,63 @@ Deno.serve(async (req) => {
           pushCanal(out, seen, "email", r.email, "Rep", "Sankhya");
           pushCanal(out, seen, "email", r.email_crm, "Rep", "CRM");
         }
+        // Mesmo contrato do lado do cliente: o primeiro de cada canal nasce marcado na tela.
+        const jaPref: any = {};
+        out.forEach((x: any) => { x.preferido = !jaPref[x.canal]; if (!jaPref[x.canal]) jaPref[x.canal] = 1; });
         itens[String(c)] = {
           nome: r?.rep || null,
           contatos: out,
+          ignorados: [],
           aviso: !r ? "representante fora do snapshot do Sankhya" : (out.length ? null : "representante sem telefone nem e-mail no cadastro"),
         };
       });
     } else {
       const cods = nums(p, "codparc", "codparcs");
       if (!cods.length) return j({ ok: false, erro: "informe codparc" });
+      const todas = p.get("incluir_todas") === "1"; // sem filtro de funcao, para outros usos
       const [sc, gc] = await Promise.all([
         sb.from("snap_contato").select("codparc,funcao,nome,fone,email").in("codparc", cods),
         sb.from("ghl_contato").select("codparc,nome,fone,email").in("codparc", cods),
       ]);
       if (sc.error) throw sc.error;
       if (gc.error) throw gc.error;
-      const porParc: Record<string, { out: any[]; seen: any; nome: string | null }> = {};
-      cods.forEach((c) => { porParc[String(c)] = { out: [], seen: {}, nome: null }; });
+      type Cand = { canal: string; valor: any; funcao: string; origem: string; rank: number };
+      const cand: Record<string, Cand[]> = {};
+      const ign: Record<string, any[]> = {};
+      const nomes: Record<string, string | null> = {};
+      cods.forEach((c) => { cand[String(c)] = []; ign[String(c)] = []; nomes[String(c)] = null; });
       (sc.data || []).forEach((ct: any) => {
-        const b = porParc[String(ct.codparc)]; if (!b) return;
-        if (!b.nome && ct.nome) b.nome = ct.nome;
-        pushCanal(b.out, b.seen, "whatsapp", ct.fone, ct.funcao || "Contato", "Sankhya");
-        pushCanal(b.out, b.seen, "email", ct.email, ct.funcao || "Contato", "Sankhya");
+        const k = String(ct.codparc); if (!cand[k]) return;
+        if (!nomes[k] && ct.nome) nomes[k] = ct.nome;
+        const f = ct.funcao || "Contato", r = rankDe(f);
+        const bloqueada = !todas && FORA_DA_COBRANCA.has(chaveFuncao(f));
+        [["whatsapp", ct.fone], ["email", ct.email]].forEach((par: any) => {
+          if (!String(par[1] || "").trim()) return;
+          if (bloqueada) { ign[k].push({ canal: par[0], valor: par[1], funcao: f }); return; }
+          cand[k].push({ canal: par[0], valor: par[1], funcao: f, origem: "Sankhya", rank: r });
+        });
       });
       (gc.data || []).forEach((g: any) => {
-        const b = porParc[String(g.codparc)]; if (!b) return;
-        if (!b.nome && g.nome) b.nome = g.nome;
-        pushCanal(b.out, b.seen, "whatsapp", g.fone, "CRM", "CRM");
-        pushCanal(b.out, b.seen, "email", g.email, "CRM", "CRM");
+        const k = String(g.codparc); if (!cand[k]) return;
+        if (!nomes[k] && g.nome) nomes[k] = g.nome;
+        cand[k].push({ canal: "whatsapp", valor: g.fone, funcao: "CRM", origem: "CRM", rank: RANK.CRM });
+        cand[k].push({ canal: "email", valor: g.email, funcao: "CRM", origem: "CRM", rank: RANK.CRM });
       });
       cods.forEach((c) => {
-        const b = porParc[String(c)];
-        itens[String(c)] = { nome: b.nome, contatos: b.out, aviso: b.out.length ? null : "cliente sem telefone nem e-mail cadastrado" };
+        const k = String(c);
+        // Ordena ANTES de deduplicar: o mesmo numero cadastrado em duas funcoes fica com a melhor.
+        const lista = cand[k].slice().sort((a, b) => a.rank - b.rank);
+        const out: any[] = [], seen: any = {};
+        lista.forEach((x) => pushCanal(out, seen, x.canal, x.valor, x.funcao, x.origem));
+        // Marca o primeiro de cada canal: e o unico que nasce marcado na tela.
+        const jaPref: any = {};
+        out.forEach((x: any) => { x.preferido = !jaPref[x.canal]; if (!jaPref[x.canal]) jaPref[x.canal] = 1; });
+        itens[k] = {
+          nome: nomes[k],
+          contatos: out,
+          ignorados: ign[k],
+          aviso: out.length ? null : (ign[k].length ? "só há contato de expedição/fiscal — não serve para cobrança" : "cliente sem telefone nem e-mail cadastrado"),
+        };
       });
     }
 
