@@ -1,4 +1,23 @@
-// copiloto-feedback (v4) — o retorno vem do CLIENTE, porque do representante nao vem.
+// copiloto-feedback (v5) — o retorno vem do CLIENTE; quando ele cala, a gente pergunta ao REPRESENTANTE.
+//
+// v5 (ordem do gestor, 28/09): a regua de acompanhamento ganhou os dois degraus que faltavam.
+//   Ate a v4 o representante so era procurado quando o CLIENTE reclamava. Dos 9 primeiros clientes
+//   perguntados, 4 nao responderam nada — e quando o cliente cala, o silencio do representante nunca
+//   era detectado: o lead sumia sem ninguem saber. A regua agora e:
+//     dia 2  -> pergunta ao CLIENTE          (feedback_dias, ja existia)
+//     dia 3  -> pergunta ao REPRESENTANTE    (rep_cobra_dias) — so quando o cliente nao respondeu
+//     dia 5  -> escala para o GESTOR         (rep_escala_dias) — quando nem um nem outro responderam
+//   * UMA mensagem por representante, com TODOS os leads dele parados — nao uma por lead. CNPJ em
+//     linha propria em cada um, como em toda comunicacao interna.
+//   * Ao representante pode ir a QUALQUER HORA: ele e que decide quando trabalha (mesma regra da
+//     copiloto-repasse). A janela de hora vale so para o cliente.
+//   * A resposta dele e lida e classificada: falou / tentou / nao_falou / nao_rolou / indefinido.
+//     So "nao_falou" dispara transferencia — e ai quem disse foi ele proprio, nao uma suposicao.
+//     "tentou" (numero errado, nao atendeu, vai tentar de novo) NAO tira o lead dele.
+//   * A escalacao NAO transfere nada. Transferir sem ninguem ter dito nada e chute: o gestor decide.
+//   * Tudo atras de rep_cobra_ativo, que nasce em 'nao'. E o cron proprio so existe quando o gestor
+//     mandar: uma linha de configuracao nao pode ser a unica coisa entre o silencio e 84
+//     representantes recebendo mensagem (licao de 16/09).
 //
 // v3/v4 (ordem do gestor, 18/09): a verificacao encurtou e deixou de morrer numa coluna.
 //   * Pergunta no FINAL DO SEGUNDO DIA depois que o representante recebeu o lead (feedback_dias=2 +
@@ -35,6 +54,7 @@
 //   ?acao=perguntar  — manda a pergunta a quem esta na janela, e o reforco a quem nao respondeu.
 //   ?acao=ler        — le a resposta, classifica, grava, abre tarefa e dispara a transferencia.
 //   ?acao=transferir — so as transferencias que ficaram pendentes (fora do expediente interno).
+//   ?acao=cobrar     — v5: pergunta ao representante, le a resposta dele e escala para o gestor.
 // Sem ?acao roda as tres. ?dry=1 mostra sem mandar e sem gravar. ?lead=<id> forca um lead.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -258,6 +278,51 @@ function textoEspelhoTransf(L: any, vendedora: string, foneLead: string, respost
   ].filter((x) => x !== null).join("\n");
 }
 
+// ---- v5: os textos da cobranca ao representante e da escalacao ---------------------------------
+// A pergunta e de mao dupla e sem prazo: o objetivo e saber, nao apertar. As tres respostas sugeridas
+// existem porque representante responde em uma linha ou nao responde — dar o formato aumenta a chance.
+function textoCobrarRep(rep: string, leads: any[], fones: Record<number, string>): string {
+  const um = leads.length === 1;
+  const nome = String(rep || "").trim().split(/\s+/)[0] || String(rep || "");
+  const L: (string | null)[] = ["Oi, " + nome + "! Aqui e a Nina, da Nitron.", ""];
+  L.push(um ? ("Sobre o lead do anuncio que te passei " + haDias(leads[0].repasse_em) + ":")
+            : ("Sobre os " + leads.length + " leads do anuncio que estao com voce:"));
+  for (const x of leads) {
+    const praca = [x.cidade, x.uf].filter(Boolean).join("/");
+    L.push("");
+    L.push("- " + (x.empresa || x.nome || foneFmt(x.fone)) + (praca ? " - " + praca : ""));
+    const d = docFmt(x.cnpj); if (d) L.push("  " + d);
+    L.push("  Contato: " + foneFmt(fones[x.id] || x.fone));
+    L.push("  Passado em " + new Date(x.repasse_em).toLocaleDateString("pt-BR") + " (" + haDias(x.repasse_em) + ")");
+  }
+  L.push("");
+  L.push(um ? "Como esta esse contato?" : "Como estao esses contatos?");
+  L.push("");
+  L.push("Pergunto porque " + (um ? "o cliente nao me respondeu" : "os clientes nao me responderam") + " e ainda nao encontrei cadastro nem pedido no sistema. Pode ser so que ainda nao chegou la — por isso prefiro perguntar a supor.");
+  L.push("");
+  L.push("Me responde do jeito que for mais facil: 'ja falei e esta em andamento', 'falei e nao rolou', ou 'ainda nao consegui falar'. Qualquer uma serve.");
+  L.push("");
+  L.push("Se preferir que o atendimento interno assuma, e so dizer que eu passo daqui. Sem cobranca de prazo.");
+  return L.filter((x) => x !== null).join("\n");
+}
+// A escalacao e informacao, nao acao. Ela NAO transfere: quem decide tirar o lead de um representante
+// e o gestor, e sem resposta de ninguem nao ha fato — so silencio.
+function textoEscalaGestor(leads: any[], fones: Record<number, string>, dias: number): string {
+  const L: (string | null)[] = ["Leads parados — nem o cliente nem o representante responderam", ""];
+  L.push("Passaram " + dias + " dias ou mais do repasse. A Nina perguntou ao cliente e depois ao representante, e nenhum dos dois respondeu:");
+  for (const x of leads) {
+    const praca = [x.cidade, x.uf].filter(Boolean).join("/");
+    L.push("");
+    L.push("- " + (x.empresa || x.nome || foneFmt(x.fone)) + (praca ? " - " + praca : ""));
+    const d = docFmt(x.cnpj); if (d) L.push("  " + d);
+    L.push("  Contato: " + foneFmt(fones[x.id] || x.fone));
+    L.push("  Com: " + String(x.repasse_para || "?") + (x.repasse_codvend ? (" (codvend " + x.repasse_codvend + ")") : "") + " desde " + new Date(x.repasse_em).toLocaleDateString("pt-BR") + " (" + haDias(x.repasse_em) + ")");
+  }
+  L.push("");
+  L.push("Nao transferi nada. Transferir sem ninguem ter dito nada seria chute — a decisao e sua: me diga quais quer que eu passe para a venda interna.");
+  return L.filter((x) => x !== null).join("\n");
+}
+
 async function anthropic(system: string, messages: any[]): Promise<any> {
   const key = Deno.env.get("ANTHROPIC_API_KEY"); if (!key) throw new Error("sem ANTHROPIC_API_KEY");
   const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" }, body: JSON.stringify({ model: MODELO, max_tokens: 400, system, messages }) });
@@ -283,6 +348,28 @@ async function classificar(texto: string): Promise<{ resultado: string; detalhe:
     const m = t.match(/\{[\s\S]*\}/);
     const o = JSON.parse(m ? m[0] : t);
     const ok = ["atendido", "nao_atendido", "comprou", "sem_interesse", "indefinido"];
+    return { resultado: ok.includes(o.resultado) ? o.resultado : "indefinido", detalhe: String(o.detalhe || "").slice(0, 300) };
+  } catch (_e) { return { resultado: "indefinido", detalhe: "nao consegui classificar a resposta automaticamente" }; }
+}
+
+// O representante responde diferente do lojista: "tentei e nao atendeu" nao e "nao falei com ele".
+// Essa diferenca decide se o lead sai dele ou nao, entao ela tem categoria propria.
+const SYS_CLASSIFICA_REP = `Voce le a resposta de um REPRESENTANTE COMERCIAL a uma pergunta da Nitron. A pergunta foi: "como esta o contato com esse lead que te passamos?".
+Classifique em UM destes valores, e nada mais:
+- falou: ja entrou em contato com o cliente, mesmo que a venda nao tenha fechado (ligou, mandou catalogo ou tabela, visitou, esta negociando, mandou orcamento).
+- tentou: TENTOU falar e nao conseguiu (nao atenderam, numero errado, deixou recado, aguardando retorno, vai tentar de novo).
+- nao_falou: ainda nao falou, esqueceu, nao vai dar conta, ou pede que outra pessoa atenda.
+- nao_rolou: falou e o negocio nao andou (cliente sem interesse, comprou de outro, fora do perfil, valor alto demais).
+- indefinido: a resposta nao permite dizer (mudou de assunto, falou de outro cliente, so emoji, so cumprimento).
+Responda SO com JSON valido, sem texto em volta: {"resultado":"<valor>","detalhe":"<uma frase curta, em portugues, do que ele disse>"}`;
+
+async function classificarRep(texto: string): Promise<{ resultado: string; detalhe: string }> {
+  try {
+    const r = await anthropic(SYS_CLASSIFICA_REP, [{ role: "user", content: "Resposta do representante:\n\n" + texto.slice(0, 1500) }]);
+    const t = (r.content || []).filter((x: any) => x.type === "text").map((x: any) => x.text).join("").trim();
+    const m = t.match(/\{[\s\S]*\}/);
+    const o = JSON.parse(m ? m[0] : t);
+    const ok = ["falou", "tentou", "nao_falou", "nao_rolou", "indefinido"];
     return { resultado: ok.includes(o.resultado) ? o.resultado : "indefinido", detalhe: String(o.detalhe || "").slice(0, 300) };
   } catch (_e) { return { resultado: "indefinido", detalhe: "nao consegui classificar a resposta automaticamente" }; }
 }
@@ -430,6 +517,159 @@ async function transferirPendentes(sb: any, cfg: Record<string, string>, insts: 
   return feitos;
 }
 
+// ---- v5, passada 4: cobrar o REPRESENTANTE ------------------------------------------------------
+// Uma mensagem por representante com todos os leads dele parados. So entra lead cujo CLIENTE nao deu
+// resposta util — se o cliente ja disse "atendido" ou "comprou", nao ha o que perguntar; se disse
+// "nao_atendido", a v4 ja transferiu e avisou.
+function repElegivel(L: any, intervaloH: number): boolean {
+  if (jaFez(L, "transferencia")) return false;
+  const fb = String(L.feedback_resultado || "");
+  if (fb && fb !== "sem_resposta" && fb !== "indefinido") return false;
+  if (L.rep_status) return false;
+  if (L.rep_cobra_em && (Date.now() - new Date(L.rep_cobra_em).getTime()) < intervaloH * 3600000) return false;
+  return true;
+}
+
+async function cobrarRep(sb: any, cfg: Record<string, string>, insts: Inst[], dry: boolean, umId: number) {
+  if (!umId && String(cfg.rep_cobra_ativo || "nao").toLowerCase() !== "sim") return [{ decisao: "pular", motivo: "rep_cobra_ativo=nao" }];
+  const dias = Math.max(1, parseInt(cfg.rep_cobra_dias || "3") || 3);
+  const maxToques = Math.max(1, parseInt(cfg.rep_cobra_max || "2") || 2);
+  const intervaloH = Math.max(6, parseInt(cfg.rep_cobra_intervalo_h || "48") || 48);
+  const limite = Math.min(parseInt(cfg.rep_cobra_limite || "8") || 8, 40);
+  const tipos = lista(cfg.feedback_tipos, "fisica");
+  const forcar = String(cfg.repasse_forcar_inst || "sim") === "sim";
+  const nomeInst = String(cfg.repasse_inst || "Nina");
+  const remetente = insts.find((i) => i.instancia === nomeInst) || null;
+
+  let q = sb.from("copiloto_lead").select("*");
+  if (umId) q = q.eq("id", umId);
+  else q = q.eq("repasse_ok", true).in("repasse_tipo", tipos).not("repasse_codvend", "is", null)
+             .lt("rep_cobra_tentativas", maxToques)
+             .lte("repasse_em", new Date(Date.now() - dias * 86400000).toISOString());
+  const { data, error } = await q.order("repasse_em", { ascending: true }).limit(200);
+  if (error) return [{ erro: error.message }];
+  const aptos = (data || []).filter((L: any) => repElegivel(L, intervaloH));
+  if (!aptos.length) return [{ decisao: "nada", motivo: "nenhum lead parado ha " + dias + " dias sem resposta do cliente" }];
+
+  const grupos = new Map<number, any[]>();
+  for (const L of aptos) { const k = Number(L.repasse_codvend); if (!grupos.has(k)) grupos.set(k, []); grupos.get(k)!.push(L); }
+
+  const feitos: any[] = []; let n = 0;
+  for (const [cod, leads] of grupos) {
+    if (n >= limite) break; n++;
+    const rep = String(leads[0].repasse_para || "");
+    const fones: Record<number, string> = {};
+    for (const x of leads) fones[x.id] = (await foneDoCrm(x.contact_id)) || x.fone;
+    const txt = textoCobrarRep(rep, leads, fones);
+    const base: any = { rep, codvend: cod, leads: leads.map((x: any) => x.id) };
+    if (dry) { feitos.push({ ...base, decisao: "previa", texto: txt }); continue; }
+    const r: any = await enviarInterno(insts, remetente, null, String(leads[0].repasse_fone || ""), txt, forcar);
+    const agora = new Date().toISOString();
+    for (const x of leads) {
+      const hist: any[] = Array.isArray(x.repasse_historico) ? x.repasse_historico : [];
+      hist.push({ em: agora, acao: "cobranca_rep", para: rep, ok: !!r.ok, motivo: r.ok ? undefined : r.motivo });
+      const patch: any = { repasse_historico: hist, atualizado: agora };
+      if (r.ok) { patch.rep_cobra_em = agora; patch.rep_cobra_tentativas = Number(x.rep_cobra_tentativas || 0) + 1; }
+      await sb.from("copiloto_lead").update(patch).eq("id", x.id);
+    }
+    feitos.push({ ...base, decisao: r.ok ? "cobrou" : "falhou", instancia: r.instancia, motivo: r.ok ? undefined : r.motivo });
+  }
+  return feitos;
+}
+
+// ---- v5, passada 5: ler a resposta do representante --------------------------------------------
+// So "nao_falou" tira o lead dele — e quem disse foi ele. "tentou" nao tira: foi exatamente o caso do
+// EDSON em 21/09 ("o primeiro numero estava errado, deixei recado, aguardando retorno"), e tirar o
+// lead de quem esta correndo atras seria punir o certo.
+async function lerRep(sb: any, cfg: Record<string, string>, insts: Inst[], dry: boolean, umId: number) {
+  if (!umId && String(cfg.rep_cobra_ativo || "nao").toLowerCase() !== "sim") return [{ decisao: "pular", motivo: "rep_cobra_ativo=nao" }];
+  const desistirH = Math.max(12, parseInt(cfg.rep_desistir_h || "72") || 72);
+  const limite = Math.min(parseInt(cfg.rep_cobra_limite || "8") || 8, 40);
+  const nomeInst = String(cfg.repasse_inst || "Nina");
+  let q = sb.from("copiloto_lead").select("*").not("rep_cobra_em", "is", null).is("rep_status", null);
+  if (umId) q = sb.from("copiloto_lead").select("*").eq("id", umId).not("rep_cobra_em", "is", null);
+  const { data, error } = await q.order("rep_cobra_em", { ascending: true }).limit(limite);
+  if (error) return [{ erro: error.message }];
+
+  const feitos: any[] = [];
+  for (const L of (data || [])) {
+    const base: any = { lead: L.id, contato: L.empresa || L.nome || foneFmt(L.fone), rep: L.repasse_para };
+    const lk: any = await lookupContato(String(L.repasse_fone || ""), nomeInst);
+    const cid = lk?.contactId ? String(lk.contactId) : "";
+    if (!cid) { feitos.push({ ...base, decisao: "pular", motivo: "nao achei o contato do representante no CRM" }); continue; }
+    const rc = await ghl("GET", `/conversations/search?locationId=${LOC}&contactId=${cid}&limit=1`);
+    const cv = (((await rc.json().catch(() => ({})))?.conversations) || [])[0];
+    if (!cv) { feitos.push({ ...base, decisao: "pular", motivo: "conversa do representante nao encontrada" }); continue; }
+    const rm = await ghl("GET", `/conversations/${cv.id}/messages?limit=20`, "2021-04-15");
+    const arr = (((await rm.json().catch(() => ({})))?.messages?.messages) || []) as any[];
+    const desde = new Date(L.rep_cobra_em).getTime();
+    const dele = arr.filter((m: any) => m.direction === "inbound" && new Date(m.dateAdded).getTime() > desde && limpa(m.body))
+                    .sort((a: any, b: any) => new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime())
+                    .map((m: any) => limpa(m.body));
+    if (!dele.length) {
+      const horas = (Date.now() - desde) / 3600000;
+      if (horas >= desistirH) {
+        if (!dry) await sb.from("copiloto_lead").update({ rep_status: "sem_resposta", rep_detalhe: "o representante nao respondeu em " + Math.round(horas) + "h", atualizado: new Date().toISOString() }).eq("id", L.id);
+        feitos.push({ ...base, decisao: "rep_sem_resposta", horas: Math.round(horas) });
+      } else feitos.push({ ...base, decisao: "aguardando_rep", horas: Math.round(horas) });
+      continue;
+    }
+    const resposta = dele.join(" | ").slice(0, 1200);
+    const cls = await classificarRep(resposta);
+    if (dry) { feitos.push({ ...base, decisao: "previa", resposta, ...cls }); continue; }
+    const agora = new Date().toISOString();
+    await sb.from("copiloto_lead").update({ rep_resposta: resposta, rep_resp_em: agora, rep_status: cls.resultado, rep_detalhe: cls.detalhe, atualizado: agora }).eq("id", L.id);
+    let transf: any = null;
+    if (cls.resultado === "nao_falou") transf = await transferir(sb, cfg, { ...L, feedback_resposta: "o proprio representante disse que ainda nao falou com ele" }, insts, dry);
+    feitos.push({ ...base, decisao: "classificou", ...cls, transferencia: transf, resposta: resposta.slice(0, 200) });
+  }
+  return feitos;
+}
+
+// ---- v5, passada 6: escalar para o gestor -------------------------------------------------------
+// Informacao, nao acao: NAO transfere nada. Duas perguntas sem resposta nao sao um fato, sao silencio.
+async function escalarGestor(sb: any, cfg: Record<string, string>, insts: Inst[], dry: boolean) {
+  if (String(cfg.rep_cobra_ativo || "nao").toLowerCase() !== "sim") return [{ decisao: "pular", motivo: "rep_cobra_ativo=nao" }];
+  if (String(cfg.rep_escala_ativo || "sim").toLowerCase() !== "sim") return [{ decisao: "pular", motivo: "rep_escala_ativo=nao" }];
+  const dias = Math.max(2, parseInt(cfg.rep_escala_dias || "5") || 5);
+  const nomeInst = String(cfg.repasse_inst || "Nina");
+  const remetente = insts.find((i) => i.instancia === nomeInst) || null;
+  const { data, error } = await sb.from("copiloto_lead").select("*")
+    .eq("repasse_ok", true).not("repasse_codvend", "is", null).is("rep_escala_em", null)
+    .not("rep_cobra_em", "is", null)
+    .lte("repasse_em", new Date(Date.now() - dias * 86400000).toISOString())
+    .order("repasse_em", { ascending: true }).limit(60);
+  if (error) return [{ erro: error.message }];
+  const aptos = (data || []).filter((L: any) => {
+    if (jaFez(L, "transferencia")) return false;
+    const fb = String(L.feedback_resultado || "");
+    if (fb && fb !== "sem_resposta" && fb !== "indefinido") return false;
+    const rs = String(L.rep_status || "");
+    if (rs && rs !== "sem_resposta") return false;   // se ele respondeu qualquer coisa, nao e silencio
+    return true;
+  });
+  if (!aptos.length) return [{ decisao: "nada" }];
+  const fones: Record<number, string> = {};
+  for (const x of aptos) fones[x.id] = (await foneDoCrm(x.contact_id)) || x.fone;
+  const txt = textoEscalaGestor(aptos, fones, dias);
+  if (dry) return [{ decisao: "previa", leads: aptos.map((x: any) => x.id), texto: txt }];
+  const avisados: any[] = [];
+  const { data: resp } = await sb.from("copiloto_responsaveis").select("nome, fone, avisar").eq("avisar", true);
+  const vistos = new Set<string>();
+  for (const r0 of (resp || [])) {
+    const f = digits(r0.fone);
+    if (!f || vistos.has(d10(f))) continue;
+    vistos.add(d10(f));
+    const e2: any = await enviarZaptos(null, f, txt, remetente?.instancia || nomeInst);
+    avisados.push({ quem: r0.nome, ok: !!e2?.ok, motivo: e2?.ok ? undefined : String(e2?.motivo || "").slice(0, 160) });
+  }
+  const agora = new Date().toISOString();
+  if (avisados.some((a) => a.ok)) {
+    for (const x of aptos) await sb.from("copiloto_lead").update({ rep_escala_em: agora, atualizado: agora }).eq("id", x.id);
+  }
+  return [{ decisao: "escalou", leads: aptos.map((x: any) => x.id), avisados }];
+}
+
 // ---- passada 2: ler a resposta -----------------------------------------------------------------
 async function ler(sb: any, cfg: Record<string, string>, dry: boolean, umId: number, insts: Inst[]) {
   const desistirH = Math.max(12, parseInt(cfg.feedback_desistir_h || "96") || 96);
@@ -525,6 +765,10 @@ Deno.serve(async (req) => {
     if (acao === "perguntar" || acao === "tudo") out.perguntar = await perguntar(sb, cfg, dry, umId);
     if (acao === "ler" || acao === "tudo") out.ler = await ler(sb, cfg, dry, umId, insts);
     if (acao === "ler" || acao === "tudo" || acao === "transferir") out.transferir = await transferirPendentes(sb, cfg, insts, dry, umId);
+    // v5: a regua do representante. Tudo atras de rep_cobra_ativo, que nasce em 'nao'.
+    if (acao === "cobrar" || acao === "tudo") out.cobrar_rep = await cobrarRep(sb, cfg, insts, dry, umId);
+    if (acao === "cobrar" || acao === "ler" || acao === "tudo") out.ler_rep = await lerRep(sb, cfg, insts, dry, umId);
+    if (acao === "cobrar" || acao === "tudo") out.escala_gestor = await escalarGestor(sb, cfg, insts, dry);
     return j(out);
   } catch (e) { return j({ ok: false, erro: String(e) }, 500); }
 });

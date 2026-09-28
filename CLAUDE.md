@@ -301,6 +301,24 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   vendedora interna com menos repasses; manda o lead a ela; avisa o cliente de quem vai falar com
   ele; e **espelha tudo para quem tem `avisar=true`** (o gestor e a Camyla). A pergunta ao cliente
   **diz** isso antes: quem lê precisa saber que responder "não" resolve alguma coisa.
+- **Quando o cliente cala, o silêncio do representante não pode ficar invisível** (`copiloto-feedback`
+  v5, 28/09). Até a v4 o representante só era procurado se o CLIENTE reclamasse — e 4 dos 9 primeiros
+  clientes perguntados não responderam nada. A régua agora tem três degraus: **dia 2** pergunta ao
+  cliente (`feedback_dias`), **dia 3** pergunta ao REPRESENTANTE (`rep_cobra_dias`) e só quando o
+  cliente não respondeu, **dia 5** escala para o gestor (`rep_escala_dias`). Uma mensagem por
+  representante com **todos** os leads parados dele, CNPJ em linha própria em cada um. Ao
+  representante pode ir a qualquer hora — a janela de hora vale só para o cliente.
+- **A resposta do representante tem categoria própria, e "tentou" não tira o lead dele.**
+  `classificarRep()` devolve `falou` / `tentou` / `nao_falou` / `nao_rolou` / `indefinido`. Só
+  `nao_falou` dispara transferência — e aí quem disse foi ele. "Tentei e não atenderam, deixei
+  recado" foi a resposta real do EDSON em 21/09: tirar o lead de quem está correndo atrás seria punir
+  o certo.
+- **A escalação ao gestor NÃO transfere nada.** Duas perguntas sem resposta não são um fato, são
+  silêncio — e transferir em cima de silêncio é chute. A mensagem lista os leads e devolve a decisão
+  ao gestor.
+- **A régua do representante nasce desligada, e sem cron.** `rep_cobra_ativo='nao'` **e** nenhum cron
+  novo: é a lição de 16/09 — uma linha de configuração não pode ser a única coisa entre o silêncio e
+  84 representantes recebendo mensagem. Ligar exige as duas coisas, e é decisão do gestor.
 - **O expediente da venda interna vale na transferência como vale no repasse.** O aviso ao
   representante sai na hora, sempre — ele pode receber a qualquer hora. A vendedora só recebe dentro
   da janela (`interna_*`: seg–qui até 18h, sex até 17h, sem fim de semana); fora dela a
