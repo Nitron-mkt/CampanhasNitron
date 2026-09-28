@@ -407,6 +407,19 @@ título; quando há mais de uma geração para o mesmo título fica a mais recen
 títulos abertos, 5 têm código — os que não têm são os antigos, e esses já não passam da janela.
 A mensagem ao cliente leva o copia-e-cola e **os dias que faltam da condição**, não os dias corridos.
 
+**E esse campo vem em BASE64 — não é o copia-e-cola** (achado em 28/09, ao montar a mensagem de teste
+para o gestor antes de mandar). O `QRCODE` guarda 240 caracteres começando em `MDAwMjAxMDEwMjEy…`; o
+que o cliente cola no banco é o conteúdo **decodificado**: `00020101021226820014br.gov.bcb.pix…`,
+~180 caracteres, CRC16 conferido, beneficiário NITRONPLAST INDUSTRIA E C / SAO PAULO, PSP
+qr.bankly.com.br, moeda 986, **sem tag de valor** (é QR dinâmico, o valor mora na URL do PSP).
+Mandar o base64 seria mandar um blob que nenhum aplicativo aceita — o cliente leria "segue o código
+PIX" e não conseguiria pagar, e ninguém descobriria olhando a tela. É a mesma família do
+`status: sent` de 26/08: o campo existia e parecia certo, só não era o que a pessoa do outro lado
+usa. Corrigido no `cobranca-pix-refresh` **v4**, que decodifica antes de gravar; se o valor não virar
+um BR Code de verdade (começa em `000201`) grava **NULL** e conta em `qrcode_ilegivel` na resposta —
+a tela então mostra "sem código PIX" e a mensagem cai no "peça a 2ª via com a gente", que é honesto.
+**Nunca mande código PIX novo sem colar o texto num aplicativo de banco antes.**
+
 **Cadência manhã/tarde** (`filtros_padrao` do `cobranca_pix_cliente`): `pix_turnos = [tarde, manha]`,
 começando pela **tarde**, com `pix_manha_hora=9` e `pix_tarde_hora=15`. É alternância estrita — o
 exemplo que o gestor deu repetia a tarde dois dias seguidos, e isso foi tratado como lapso da fala.
@@ -508,6 +521,11 @@ título pode já ter sido pago.
   Na v3 também foi corrigido o `valor_no_quadro`, que somava `s + 0` e dava sempre 0.
 - **As duas funções não estavam no repositório** (só publicadas). Entraram agora em
   `supabase/functions/`.
+
+**Teste no aparelho em 28/09**, a pedido do gestor, antes de qualquer disparo real: a mensagem ao
+cliente (a do PIX, com valor, prazo e copia-e-cola) foi enviada ao 11970399053 pela **Nina**, que é a
+dona do contato — `dono_crm: Nina`, nada tocado no `assignedTo`, GHL 201, troca confirmada em 1,9s,
+sem linha de queda na checagem de entrega. Foi esse teste que descobriu o base64 do QRCODE.
 
 **`instancia_erp` em branco não é divergência, é buraco — e apareceu custando caro.** Na leitura de
 28/09 o quadro de recusa veio com **14 pedidos sem assistente**, de 3 representantes: INACIO

@@ -1,4 +1,4 @@
-// cobranca-pix-refresh (v3) — snapshot dos titulos PIX ANTECIPADO em aberto no Sankhya.
+// cobranca-pix-refresh (v4) — snapshot dos titulos PIX ANTECIPADO em aberto no Sankhya.
 //
 // Pedido do gestor em 25/09: cobranca automatica do PIX antecipado, um quadro para o representante
 // e outro para o cliente. O titulo e o CODTIPTIT 57, "PIX – Antecipado"; em aberto e DHBAIXA nula,
@@ -22,6 +22,17 @@
 //        quem clicou. Passou a somar o valor de verdade (a coluna entrou no select).
 //     Ela continua SO LENDO o Sankhya e gravando o snapshot: nao enfileira e nao envia nada.
 //
+// v4 (28/09): O QRCODE DO SANKHYA VEM EM BASE64, NAO E O COPIA-E-COLA. Achado ao montar a mensagem
+//     de teste para o gestor: AD_HYAKRECEBIMENTOSPIX.QRCODE guarda o BR Code codificado em base64
+//     (240 chars que comecam com "MDAwMjAxMDEwMjEy…"), e o que o cliente precisa colar no banco e o
+//     conteudo decodificado — "00020101021226820014br.gov.bcb.pix…", 180 chars, CRC16 conferido.
+//     Mandar o base64 seria mandar um blob que nenhum aplicativo aceita: o cliente leria "segue o
+//     codigo PIX" e nao conseguiria pagar. Mesma familia do erro de 26/08 ("aceito" != "entregue"):
+//     o campo existia e parecia certo, so nao era o que a pessoa do outro lado usa.
+//     Se o valor nao virar um BR Code de verdade (comeca em 000201), grava NULL e conta em
+//     qrcode_ilegivel — a tela ja mostra "sem codigo PIX" e a mensagem cai no "peca a 2a via".
+//     Silenciar seria pior: ninguem descobriria olhando a tela.
+//
 // DUAS COISAS QUE A CONSULTA DESCOBRIU E QUE MUDAM O DESENHO:
 // 1. O VENDEDOR VEM DO PARCEIRO, NAO DO TITULO. TGFFIN.CODVEND vinha 0 em 6 dos 9 titulos abertos —
 //    e justamente nos maiores (R$ 12.235, R$ 5.733, R$ 3.640). Quem sabe de quem e o cliente e
@@ -36,6 +47,22 @@ const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers
 const j = (o: unknown, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
 const srvKey = () => Deno.env.get("SRV_JWT") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 const TIPTIT_PIX = 57;
+
+// O Sankhya guarda o BR Code em base64 (ver v4 no topo). Devolve o copia-e-cola, ou null quando o
+// que veio nao e reconhecivel como BR Code — melhor sem codigo do que com um codigo que nao paga.
+function pixCopiaCola(v: unknown): string | null {
+  const s = String(v ?? "").trim();
+  if (!s) return null;
+  if (s.startsWith("000201")) return s; // ja veio cru
+  try {
+    const bin = atob(s.replace(/\s+/g, ""));
+    const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+    const t = new TextDecoder().decode(bytes).trim();
+    return t.startsWith("000201") ? t : null;
+  } catch {
+    return null;
+  }
+}
 
 async function login(base: string, u: string, p: string) {
   const r = await fetch(`${base}/mge/service.sbr?serviceName=MobileLoginSP.login&outputType=json`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ serviceName: "MobileLoginSP.login", requestBody: { NOMUSU: { $: u }, INTERNO: { $: p }, KEEPCONNECTED: { $: "true" } } }) });
@@ -88,7 +115,7 @@ Deno.serve(async (req) => {
       dias_aberto: Number(r[8] || 0), dias_venc: Number(r[9] || 0), valor: Number(r[10] || 0),
       codvend: Number(r[11] || 0), rep: r[12] || null, tipvend: r[13] || null,
       venc_total: Number(r[14] || 0), venc_titulos: Number(r[15] || 0),
-      qrcode: r[16] || null,
+      qrcode: pixCopiaCola(r[16]),
       atualizado: lido_em,
     }));
     if (seco) return j({ ok: true, seco: true, total: linhas.length, com_qrcode: linhas.filter((x) => x.qrcode).length, linhas: linhas.map((x) => ({ ...x, qrcode: x.qrcode ? (String(x.qrcode).slice(0, 30) + "… (" + String(x.qrcode).length + " chars)") : null })) });
@@ -118,6 +145,8 @@ Deno.serve(async (req) => {
       fora_da_janela_7d: linhas.filter((x) => x.dias_aberto > 7).length,
       de_venda_interna: A.filter((x: any) => x.venda_interna).length,
       sem_qrcode: A.filter((x: any) => !x.qrcode).length,
+      // veio codigo do Sankhya mas nao virou BR Code — se isso subir, o formato do campo mudou
+      qrcode_ilegivel: rows.filter((r) => r[16] && !pixCopiaCola(r[16])).length,
       sem_assistente: A.filter((x: any) => !x.instancia).length,
       instancia_pausada: A.filter((x: any) => x.instancia_pausada).length,
       valor_no_quadro: Math.round(A.reduce((s: number, x: any) => s + Number(x.valor || 0), 0) * 100) / 100,
