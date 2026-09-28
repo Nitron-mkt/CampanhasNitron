@@ -536,6 +536,51 @@ discordam; aqui o ERP simplesmente não foi preenchido. Duas saídas: preencher 
 ou a view cair no CRM **quando o ERP estiver vazio** (sem mexer no caso de divergência). **Decisão do
 gestor — não mexer até ele dizer.**
 
+## O contato dos quadros de cobrança não vem da tela da duplicata (28/09)
+
+**Sintoma:** "nenhum contato encontrado" nos dois quadros do PIX, no do representante e no do cliente.
+
+**Causa:** os três quadros pediam o contato ao `campanhas-cobranca` (`?msg=<codparc>&publico=…`), que
+é a tela da **duplicata vencida** e só responde por quem está na audiência dela. Cliente sem título
+**vencido** recebe `{"erro":"grupo sem vencido"}` — e o PIX antecipado é exatamente o caso oposto:
+título aberto, ainda **dentro** do prazo. Os dois quadros do PIX nunca iam funcionar por ali. O de
+recusa funcionou **por acaso**, nos clientes que também tinham vencido.
+
+**Correção:** função nova **`cobranca-contatos`** — só contatos, sem IA, sem audiência, sem
+consolidação por matriz. `?publico=rep&codvends=51,19` lê `snap_rep`; `?publico=cliente&codparcs=…`
+lê `snap_contato` + `ghl_contato`. **Mesma fonte e mesmos rótulos do `campanhas-cobranca`**, de
+propósito. Não lê `rep_contato_extra` (os manuais de lá são internos e estão desligados desde 28/08).
+Sem consolidar por matriz porque aqui o título é de **uma loja** e o nome tem de ser o dela.
+
+A chave do contato passou a ser o **`codvend`** ao representante (antes ia o codparc de um cliente
+dele) e o **`codparc` da loja** ao cliente. O envio em lote faz **uma** chamada para o lote inteiro.
+
+**O lote agora recusa antes o que a fila recusaria depois**, nomeando quem e por quê: Zaptos sem
+assistente no Sankhya (o e-mail continua indo) e telefone fixo. Visto ao vivo em 28/09 — CARLINHOS
+sem `instancia_erp`, e a VALERIA com `11 00000000` no `snap_rep`.
+
+## Disparo de teste do quadro de recusa (28/09) — o que ele mostrou
+
+O gestor disparou o quadro de pedido recusado às 13h42: 8 linhas, 3 representantes.
+
+| resultado | linhas |
+|---|---|
+| e-mail entregue | 3 (VALERIA, JOSÉ FERNANDO, CARLINHOS) |
+| **Zaptos: `[System]: Isadora - The instance is disconnected.`** | 1 |
+| pendente, esperando a Isadora voltar | 1 |
+| `sem instancia (Zaptos nao roteavel)` — CARLINHOS | 2 |
+| `telefone fixo (sem WhatsApp)` — VALERIA, `11 00000000` | 1 |
+
+A **Isadora caiu de verdade** (a linha nomeia ela, que era a remetente) e foi pausada sozinha às
+13:43:21 — o automático funcionou como desenhado.
+
+**E há 50 mensagens paradas na "Nina Financeiro", que caiu em 25/09 às 13h56** e continua pausada:
+`cobranca_toque2` 23, `cobranca_vencido` 16, `cobranca_resposta` 9, `cobranca_toque3` 2. A queda foi
+real e bem detectada (a linha nomeia ela). O problema é o que veio depois: **os crons continuaram
+enfileirando para uma instância pausada por três dias** — é o mesmo acúmulo silencioso das 174 linhas
+de setembro, só que agora por queda legítima. Pela regra 10 a instrução é do gestor; nada foi
+mexido. Vale um alerta quando a fila de uma instância pausada passar de X linhas ou Y horas.
+
 ## Pendências esperando decisão do gestor (03/09/2026)
 
 1. **Bonificado e Troca contam como compra no roteiro?** O filtro novo conta **todo** `TIPMOV='P'`,
