@@ -1453,9 +1453,8 @@
       var cts=m.contatos,box=$("pix-"+i);
       var h='<div style="border:1px solid var(--line);border-radius:8px;padding:10px;margin-top:6px;background:#f7faf9">';
       h+='<div class="note" style="margin-bottom:5px"><b>Enviar ao '+(publico==="rep"?"Representante":"Cliente")+'</b> · 📲 '+esc(m.instancia)+' <i>(assistente pelo Sankhya)</i>'+(cts.length?' · marque os contatos:':'')+'</div>';
-      if(publico==="cliente"&&cts.length)h+='<div class="note" style="margin-bottom:5px">Ordem de quem recebe cobrança: <b>Financeiro</b> → Principal → Compras → contato do CRM. Só o primeiro de cada canal nasce marcado. Expedição e Fiscal ficam de fora.</div>';
-      if(it.ignorados&&it.ignorados.length)h+='<div class="note" style="color:#b7791f;margin-bottom:5px">⚠ fora da cobrança: '+esc(it.ignorados.map(function(g){return (g.funcao||"")+" ("+g.valor+")";}).join(" · "))+'</div>';
-      if(cts.length){cts.forEach(function(c,jj){h+='<label class="ctopt"><input type="checkbox" class="pixc-'+i+'" data-j="'+jj+'"'+(c.preferido?' checked':'')+'><span class="cf">'+(c.canal==="whatsapp"?foneIco(c.valor):"✉")+' '+esc(c.funcao||"")+(c.preferido?' <b style="color:#1a7f4b">•</b>':'')+'</span><span>'+esc(c.valor)+'</span></label>';});}
+      if(publico==="cliente"&&cts.length)h+='<div class="note" style="margin-bottom:5px">Ordem de quem recebe: <b>Financeiro</b> → Principal → Compras → contato do CRM → <i>expedição/fiscal (último recurso)</i>. Só o primeiro de cada canal nasce marcado.</div>';
+      if(cts.length){cts.forEach(function(c,jj){h+='<label class="ctopt"><input type="checkbox" class="pixc-'+i+'" data-j="'+jj+'"'+(c.preferido?' checked':'')+'><span class="cf">'+(c.canal==="whatsapp"?foneIco(c.valor):"✉")+' '+esc(c.funcao||"")+(c.ultimo_recurso?' <i style="color:#b7791f">último recurso</i>':'')+(c.preferido?' <b style="color:#1a7f4b">•</b>':'')+'</span><span>'+esc(c.valor)+'</span></label>';});}
       else h+='<div class="note" style="color:#b7791f">'+esc(it.aviso||"sem contato cadastrado")+'.</div>';
       h+='<textarea id="pixt-'+i+'" rows="9" style="width:100%" oninput="edGuardar(\'pix\','+i+',\'mensagem\',this)">'+esc(pixTexto(m,publico))+'</textarea>'+edTag("pix",i);
       if(cts.length)h+='<div class="dbtns" style="margin-top:6px"><button class="btn big ok" onclick="pixAgendar('+i+')">📅 Criar fila e enviar</button><span class="note" id="pix-ag-'+i+'"></span></div>';
@@ -1526,7 +1525,7 @@
       +'<button class="btn out" onclick="pixTodos(false)">limpar</button>'
       +'<span class="note" id="pix-sel-n">0 marcados</span></div>'
       +'<div class="note" style="margin-bottom:6px">'+(PIXTIPO==="cliente"
-        ?'Vai para <b>um contato por canal</b> de cada cliente, na ordem Financeiro → Principal → Compras → CRM. Para mandar a mais de um contato, abra o card.'
+        ?'Vai para <b>um contato por canal</b> de cada cliente, na ordem Financeiro → Principal → Compras → CRM → expedição/fiscal como último recurso. Para mandar a mais de um contato, abra o card.'
         :'Vai para o telefone e o e-mail do próprio representante, no cadastro do Sankhya.')+'</div>'
       +'<div class="lab">Modelo da mensagem — '+rot+'</div>'
       +'<textarea id="pix-tpl" rows="7" oninput="pixPrevia()">'+esc(PIXTPL[PIXTIPO]||"")+'</textarea>'

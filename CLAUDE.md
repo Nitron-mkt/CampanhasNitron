@@ -598,6 +598,37 @@ telefone e o e-mail dele mesmo, de `snap_rep` (`celular`, `fone_parc`, `email`, 
 mesmos números que todas as outras campanhas ao rep já usam. Confirmado pelo gestor em 28/09: "é mais
 para avisá-los mesmo".
 
+## Primeiro disparo real do PIX ao cliente (28/09) — e a regra final de contato
+
+O gestor fechou a regra **desta campanha**: *"o ideal é mandar sempre para o financeiro, mas no caso,
+às vezes por ser PIX, pode mandar diretamente para o vendedor ou qualquer número que esteja
+disponível"*. Então **nada é descartado** (`cobranca-contatos` v3): a função só decide a **ordem** —
+`FINANCEIRO` → `PRINCIPAL` → `COMPRAS` → contato do CRM → **expedição/fiscal como último recurso**,
+marcados como tal na tela. A v2 jogava expedição/fiscal fora, o que em cliente sem outro contato
+virava "sem contato" — pior do que mandar para o telefone da expedição, que ao menos é a empresa
+certa. Continua **1 contato por canal** no lote.
+
+**O disparo, registrado em `agenda_campanha` (28/09, `cobranca_pix_cliente`):**
+
+| | |
+|---|---|
+| Sankhya relido antes | 9 títulos abertos · 2 na janela · R$ 11.467,70 |
+| SUPER LOJAO (R$ 5.733,85, 5d, faltam 2d) | e-mail **entregue** 11h53 · Zaptos **pendente** |
+| SUPER MINNIE (R$ 5.733,85) | **não recebeu** — sem telefone e sem e-mail, no Sankhya e no CRM |
+| fora da janela | 7 títulos, R$ 18,9 mil |
+
+**O Zaptos ficou pendente porque a assistente do MARCIO é a Isadora, que caiu às 10h43.** A linha
+espera e sai sozinha quando ela voltar — não se desvia de instância por conta própria (regra 10).
+
+**A rodada automática da fila não pegou a linha nos dois minutos seguintes; foi preciso chamar o
+`fila-processar` na mão** (respondeu `emails: 1` e o e-mail saiu). O cron `fila-processar-1min`
+dispara todo minuto e o `cron.job_run_details` diz `succeeded`, então o problema não é o agendador: em
+`net._http_response` há chamadas do `pg_net` morrendo com **`Timeout of 5000 ms … DNS time:
+5001 ms`**. Como o `pg_net` tem timeout de 5s e a função demora mais (ela espera ~12s pela checagem
+de entrega), o timeout em si é esperado e inofensivo — a função roda até o fim do lado de lá. O que
+**não** é normal é o erro ser de **DNS**: aí a requisição nem chega a sair. **Não está diagnosticado**
+— fica para observar se a fila voltar a atrasar sem instância pausada explicando.
+
 ## Disparo de teste do quadro de recusa (28/09) — o que ele mostrou
 
 O gestor disparou o quadro de pedido recusado às 13h42: 8 linhas, 3 representantes.

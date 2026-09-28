@@ -1,4 +1,4 @@
-// cobranca-contatos (v2) — so os CONTATOS de um representante ou de um cliente. Sem IA, sem
+// cobranca-contatos (v3) — so os CONTATOS de um representante ou de um cliente. Sem IA, sem
 // audiencia, sem consolidacao por matriz.
 //
 // POR QUE ELA EXISTE. Os quadros do PIX antecipado e do pedido recusado pediam os contatos ao
@@ -25,12 +25,18 @@
 // cadastrados, sem distinguir funcao — inclusive Expedicao e Fiscal, que nao tem nada com cobranca.
 // Agora a funcao do contato no Sankhya manda:
 //   FINANCEIRO (1) > PRINCIPAL (2) > COMPRAS (3) > contato do CRM (4)
-// e EXPEDICAO/FISCAL saem da cobranca (voltam em `ignorados`, para sumirem da tela mas nao do
-// conhecimento de quem opera). O primeiro de cada canal vem com `preferido: true` — e so esse nasce
-// marcado na tela; os outros ficam a um clique.
+// O primeiro de cada canal vem com `preferido: true` — e so esse nasce marcado na tela; os outros
+// ficam a um clique.
 // NUMEROS DA BASE (28/09): 1.740 clientes tem PRINCIPAL, 546 COMPRAS, so **87** tem FINANCEIRO,
 // 45 EXPEDICAO e 37 FISCAL. Entre os 619 clientes com titulo vencido, apenas **6** tem financeiro.
 // Por isso o financeiro e PREFERENCIA, nao exigencia: exigir financeiro apagaria a campanha.
+//
+// v3 (28/09) — EXPEDICAO/FISCAL VOLTAM COMO ULTIMO RECURSO. O gestor fechou a regra desta campanha:
+// "o ideal e mandar sempre para o financeiro, mas por ser PIX pode mandar direto para o vendedor ou
+// qualquer numero que esteja disponivel". Entao nada e descartado: expedicao e fiscal entram no fim
+// da fila (rank 6, `ultimo_recurso: true`) e so sao escolhidos quando nao ha mais nada naquele canal.
+// A v2 os jogava fora, o que em cliente sem outro contato virava "sem contato" — pior do que mandar
+// para o telefone da expedicao, que pelo menos e a empresa certa.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, content-type, apikey", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };
 const j = (o: unknown, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
@@ -39,8 +45,9 @@ const digits = (s: any) => String(s || "").replace(/\D/g, "");
 // "Expedicao" e "EXPEDIÇÃO" sao a mesma funcao; o cadastro tem as duas grafias.
 const chaveFuncao = (f: any) => String(f || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
 const RANK: Record<string, number> = { FINANCEIRO: 1, PRINCIPAL: 2, COMPRAS: 3, CRM: 4 };
-const FORA_DA_COBRANCA = new Set(["EXPEDICAO", "FISCAL"]);
-const rankDe = (f: any) => RANK[chaveFuncao(f)] || 5;
+// Nao sao descartados: vao para o fim da fila e so entram se nao houver mais nada (ver v3).
+const ULTIMO_RECURSO = new Set(["EXPEDICAO", "FISCAL"]);
+const rankDe = (f: any) => (ULTIMO_RECURSO.has(chaveFuncao(f)) ? 6 : (RANK[chaveFuncao(f)] || 5));
 
 // Copia literal do campanhas-cobranca: mesma deduplicacao (o mesmo numero com e sem +55 e um so).
 function pushCanal(out: any[], seen: any, canal: string, valor: any, funcao: string, origem: string) {
@@ -85,7 +92,7 @@ Deno.serve(async (req) => {
         }
         // Mesmo contrato do lado do cliente: o primeiro de cada canal nasce marcado na tela.
         const jaPref: any = {};
-        out.forEach((x: any) => { x.preferido = !jaPref[x.canal]; if (!jaPref[x.canal]) jaPref[x.canal] = 1; });
+        out.forEach((x: any) => { x.ultimo_recurso = false; x.preferido = !jaPref[x.canal]; if (!jaPref[x.canal]) jaPref[x.canal] = 1; });
         itens[String(c)] = {
           nome: r?.rep || null,
           contatos: out,
@@ -96,7 +103,7 @@ Deno.serve(async (req) => {
     } else {
       const cods = nums(p, "codparc", "codparcs");
       if (!cods.length) return j({ ok: false, erro: "informe codparc" });
-      const todas = p.get("incluir_todas") === "1"; // sem filtro de funcao, para outros usos
+      // nada e descartado por funcao; a funcao so decide a ORDEM (ver v3)
       const [sc, gc] = await Promise.all([
         sb.from("snap_contato").select("codparc,funcao,nome,fone,email").in("codparc", cods),
         sb.from("ghl_contato").select("codparc,nome,fone,email").in("codparc", cods),
@@ -105,17 +112,14 @@ Deno.serve(async (req) => {
       if (gc.error) throw gc.error;
       type Cand = { canal: string; valor: any; funcao: string; origem: string; rank: number };
       const cand: Record<string, Cand[]> = {};
-      const ign: Record<string, any[]> = {};
       const nomes: Record<string, string | null> = {};
-      cods.forEach((c) => { cand[String(c)] = []; ign[String(c)] = []; nomes[String(c)] = null; });
+      cods.forEach((c) => { cand[String(c)] = []; nomes[String(c)] = null; });
       (sc.data || []).forEach((ct: any) => {
         const k = String(ct.codparc); if (!cand[k]) return;
         if (!nomes[k] && ct.nome) nomes[k] = ct.nome;
         const f = ct.funcao || "Contato", r = rankDe(f);
-        const bloqueada = !todas && FORA_DA_COBRANCA.has(chaveFuncao(f));
         [["whatsapp", ct.fone], ["email", ct.email]].forEach((par: any) => {
           if (!String(par[1] || "").trim()) return;
-          if (bloqueada) { ign[k].push({ canal: par[0], valor: par[1], funcao: f }); return; }
           cand[k].push({ canal: par[0], valor: par[1], funcao: f, origem: "Sankhya", rank: r });
         });
       });
@@ -129,16 +133,20 @@ Deno.serve(async (req) => {
         const k = String(c);
         // Ordena ANTES de deduplicar: o mesmo numero cadastrado em duas funcoes fica com a melhor.
         const lista = cand[k].slice().sort((a, b) => a.rank - b.rank);
-        const out: any[] = [], seen: any = {};
-        lista.forEach((x) => pushCanal(out, seen, x.canal, x.valor, x.funcao, x.origem));
+        const out: any[] = [], seen: any = {}, rankDo: Record<string, number> = {};
+        lista.forEach((x) => { const antes = out.length; pushCanal(out, seen, x.canal, x.valor, x.funcao, x.origem); if (out.length > antes) rankDo[String(out.length - 1)] = x.rank; });
         // Marca o primeiro de cada canal: e o unico que nasce marcado na tela.
         const jaPref: any = {};
-        out.forEach((x: any) => { x.preferido = !jaPref[x.canal]; if (!jaPref[x.canal]) jaPref[x.canal] = 1; });
+        out.forEach((x: any, idx: number) => {
+          x.ultimo_recurso = rankDo[String(idx)] === 6;
+          x.preferido = !jaPref[x.canal];
+          if (!jaPref[x.canal]) jaPref[x.canal] = 1;
+        });
         itens[k] = {
           nome: nomes[k],
           contatos: out,
-          ignorados: ign[k],
-          aviso: out.length ? null : (ign[k].length ? "só há contato de expedição/fiscal — não serve para cobrança" : "cliente sem telefone nem e-mail cadastrado"),
+          ignorados: [], // vazio desde a v3; mantido para nao quebrar quem ja lia o campo
+          aviso: out.length ? null : "cliente sem telefone nem e-mail cadastrado",
         };
       });
     }
