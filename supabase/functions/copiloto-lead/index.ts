@@ -1,3 +1,11 @@
+// copiloto-lead (v12) — O LEAD DO GOOGLE SE IDENTIFICA SOZINHO. A landing "Acelera Nitron" (a
+// campanha de Search) nao grava NADA: nao cria contato, nao escreve `source` no CRM, nao manda
+// gclid nem UTM. O formulario monta um texto e abre o wa.me da Nina — entao o unico lugar onde
+// existe a prova de que o lead veio do Google e a PRIMEIRA MENSAGEM dele. Ate aqui, contar lead do
+// Google era varrer conversa a mao (25, 28 e 29/09), e o nome, o CNPJ e o e-mail que ele digitou
+// no formulario morriam no texto: a Nina pedia tudo de novo — o erro da Natalie, de novo. Agora a
+// assinatura da landing e reconhecida e vira origem='google-acelera' no registro, com o CNPJ e o
+// nome aproveitados. Nao muda nada para quem vem do META nem para quem chega sem assinatura.
 // copiloto-lead (v11) — NOME E SOBRENOME, confirmados com a pessoa, e gravados NO CRM. Ordem do
 // gestor em 22/09: o nome que a Nina usava vinha do perfil do WhatsApp — apelido, emoji ("🙂",
 // "😜"), versiculo ("Deus E Fiel") ou o nome da loja. O consultor recebia o lead sem saber com quem
@@ -185,6 +193,31 @@ async function contatoCrm(contact_id: string | null): Promise<any> {
   } catch (_e) { return {}; }
 }
 
+// ---- assinatura da landing "Acelera Nitron" (campanha do Google) ------------------------------
+// O formulario da landing so monta um texto e abre o wa.me da Nina: nao persiste linha nenhuma, nao
+// escreve `source` no contato e nao carrega gclid/UTM. Quem chega por ali e, para o CRM,
+// indistinguivel de quem achou o numero na rua — e o que ele digitou (nome, CNPJ, e-mail) so existe
+// dentro do texto que ele mandou. Ler a assinatura aqui e o que permite CONTAR o lead do Google sem
+// varrer conversa a mao, e o que evita pedir de novo o dado que ele ja deu.
+// A linha "Origem: Campanha Acelera Nitron" e a marca; a frase de abertura fica como rede, para o
+// caso de alguem mexer no texto da landing e tirar so a linha de origem.
+const ACELERA_ORIGEM = "google-acelera";
+const ACELERA_RE = /origem:\s*campanha\s+acelera\s+nitron/i;
+const ACELERA_RE2 = /equipe\s+nitron[\s\S]{0,160}?tabela\s+acelera\s+nitron/i;
+function acelera(txt: any): { origem: string; nome: string | null; cnpj: string | null; email: string | null } | null {
+  const t = String(txt || "");
+  if (!ACELERA_RE.test(t) && !ACELERA_RE2.test(t)) return null;
+  const g = (re: RegExp) => { const m = t.match(re); return m ? String(m[1]).trim() : ""; };
+  const cnpj = digits(g(/cnpj:\s*([\d.\/\-\s]{14,25})/i));
+  const email = g(/e-?mail:\s*([^\s<>,;]+@[^\s<>,;]+)/i);
+  return {
+    origem: ACELERA_ORIGEM,
+    nome: g(/\bsou\s+(.{2,60}?)\s+e\s+quero\s+conhecer/i) || null,
+    cnpj: cnpj.length === 14 ? cnpj : null,
+    email: email || null,
+  };
+}
+
 // ---- ferramentas -----------------------------------------------------------------------------
 // Conjunto CURTO de proposito: sem codparc, as ferramentas de preco/boleto/pedido/entrega so
 // responderiam "codparc invalido" e convidariam a IA a inventar.
@@ -362,6 +395,11 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
   // ("ok, obrigado") entraria pela porta da frente e a Nina tentaria qualificar o proprio gestor.
   if (fone && opts.internos.has(fk8(fone))) return { ...base, decisao: "pular", motivo: "numero interno (copiloto_responsaveis) — aviso da casa, nao lead" };
 
+  // A assinatura da landing do Google vem na PRIMEIRA mensagem, que nem sempre e a ultima quando o
+  // lead manda duas seguidas antes de a rodada de 5 min passar. Por isso olha o que ele escreveu na
+  // conversa inteira, nao so o texto desta passada.
+  const acl = acelera(msgs.filter((m: any) => m.direction === "inbound").map((m: any) => String(m.body || "")).join("\n"));
+
   // O fluxo do GHL marca quem vem do anuncio com a tag "ads" (e a instancia com "nina"). Isso e
   // MUITO mais confiavel do que adivinhar pela frase: o texto que o META pre-enche pode mudar a
   // qualquer momento no gerenciador, a tag nao. O regex fica como rede, para o caso de o contato
@@ -377,7 +415,7 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
   // "Atacado Nitron Pro"). Isso e sinal de lead tao bom quanto a tag, e serve para campanha que
   // ninguem aqui conhece ainda.
   const crm = await contatoCrm(contact_id);
-  if (!leadRow && !ehAds && !crm.source && !ehAbertura(texto)) return { ...base, decisao: "pular", motivo: "sem tag, sem source no CRM e a mensagem nao parece lead: " + texto.slice(0, 60) };
+  if (!leadRow && !ehAds && !acl && !crm.source && !ehAbertura(texto)) return { ...base, decisao: "pular", motivo: "sem tag, sem source no CRM e a mensagem nao parece lead: " + texto.slice(0, 60) };
 
   // JANELA DE 24h DA META (so no canal nativo): passadas 24h da ultima mensagem do lead, texto
   // livre e RECUSADO — so template aprovado passa. Entao a Nina nao tenta: registra e chama humano,
@@ -392,30 +430,52 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
     return { ...base, decisao: "janela_fechada", lead_id: up.lead?.id || null, tarefa: tfj?.id || null, motivo: "passaram " + idadeH.toFixed(1) + "h — tarefa aberta p/ o comercial (template ou ligacao)" };
   }
 
-  const ctx: any = { contact_id, fone: foneNac(fone), instancia: nativo ? "ghl-nativo" : instancia, dry: opts.dry, source: crm.source || (ehAds ? "anuncio META" : null) };
+  const ctx: any = { contact_id, fone: foneNac(fone), instancia: nativo ? "ghl-nativo" : instancia, dry: opts.dry, source: acl?.origem || crm.source || (ehAds ? "anuncio META" : null) };
   // Se ele ja informou o CNPJ no formulario, a Nina NAO pede de novo — e o codigo ja confere se
   // esse CNPJ tem cadastro, para ela nao tratar cliente antigo como lead novo.
+  // O CNPJ pode vir do campo do CRM (formulario que grava no contato) ou da propria assinatura da
+  // landing do Google, que nao grava em lugar nenhum. Nos dois casos ele JA informou.
+  const cnpjForm = crm.cnpj || acl?.cnpj || "";
   let cadastro: any = null;
-  if (crm.cnpj && crm.cnpj.length >= 11) { const { data } = await sb.from("ghl_cliente").select("codparc, razao, situacao, dias").ilike("cnpj", "%" + crm.cnpj + "%").limit(1).maybeSingle(); cadastro = data || null; }
+  if (cnpjForm && cnpjForm.length >= 11) { const { data } = await sb.from("ghl_cliente").select("codparc, razao, situacao, dias").ilike("cnpj", "%" + cnpjForm + "%").limit(1).maybeSingle(); cadastro = data || null; }
   // nome do CRM entra so como provisorio: se a Nina JA confirmou o nome com a pessoa, esta linha
   // nao pode reescrever com o apelido do perfil (era o mesmo vao que fazia o status voltar na v4).
-  if (!opts.dry && (crm.cnpj || crm.source)) await upsertLead(sb, ctx, { nome: (leadRow?.nome_confirmado ? null : (nomeCrm || null)), empresa: crm.empresa || cadastro?.razao || null, cnpj: crm.cnpj || null, codparc: cadastro?.codparc || null, origem: ctx.source });
+  // NOME: o que ele DIGITOU no formulario e ele mesmo escrevendo, nao o apelido do perfil — passa
+  // pela mesma peneira (nomePlausivel) e vale como confirmado. Continua valendo a regra da v11: se
+  // ja havia nome confirmado, nada aqui reescreve.
+  const aclNome = (acl?.nome && nomePlausivel(acl.nome)) ? acl.nome.replace(/\s+/g, " ").trim() : "";
+  const nomeConf = leadRow?.nome_confirmado ? String(leadRow.nome || "") : aclNome;
+  if (!opts.dry && (cnpjForm || crm.source || acl)) {
+    await upsertLead(sb, ctx, {
+      nome: leadRow?.nome_confirmado ? null : (aclNome || nomeCrm || null),
+      nome_confirmado: (!leadRow?.nome_confirmado && aclNome) ? true : null,
+      empresa: crm.empresa || cadastro?.razao || null,
+      cnpj: cnpjForm || null,
+      codparc: cadastro?.codparc || null,
+      origem: ctx.source,
+    });
+    // e o CRM tambem: nao adianta a Nina saber o nome e quem for atender continuar vendo "🙂".
+    if (aclNome && contact_id && !leadRow?.nome_confirmado && !leadRow?.nome_crm_em) {
+      const cr = await nomeNoCrm(contact_id, aclNome);
+      if (cr.ok) await upsertLead(sb, ctx, { nome_crm_em: new Date().toISOString() });
+    }
+  }
   const jaSei = leadRow ? [(leadRow.nome && leadRow.nome_confirmado) && "nome: " + leadRow.nome, leadRow.empresa && "loja: " + leadRow.empresa, leadRow.cnpj && "CNPJ ja informado", (leadRow.cidade || leadRow.uf) && "praca: " + [leadRow.cidade, leadRow.uf].filter(Boolean).join("/"), leadRow.tipo_loja && "tipo: " + leadRow.tipo_loja, leadRow.ja_revende && "compra hoje: " + leadRow.ja_revende, leadRow.interesse && "interesse: " + leadRow.interesse, leadRow.sabe_minimo && "JA sabe do pedido minimo", "status: " + leadRow.status].filter(Boolean).join(" | ") : "";
 
   const nome = prim(cfg.nome_assistente || opts.inst || "Nina");
   const sys = `Voce e a ${nome}, do time comercial da Nitronplast (Nitron), por WhatsApp. Calorosa e natural, pessoa de verdade da equipe.` + ESTILO
     + `\n\nHOJE e ${hojeBRT()} (data atual REAL; datas de 2026 sao normais).`
     + (opts.pb ? `\n\nMANUAIS DA CASA (o [LEAD] manda aqui):\n${opts.pb}` : "")
-    + `\n\nQUEM E ESTE CONTATO: um LEAD, nao representante. ${ehAds ? "Veio do anuncio da Nitron no META (tag ads no CRM)." : crm.source ? ("Veio da campanha/landing \"" + crm.source + "\" — foi o que o CRM registrou como origem" + (crm.url ? (", pela pagina " + crm.url) : "") + (crm.utm ? (", chegando por " + crm.utm) : "") + ".") : "A origem nao esta registrada no CRM."}`
-    + `\n${ehAds ? "" : "VOCE NAO SABE qual criativo ou promessa ele viu, e NAO PODE adivinhar: nao invente oferta, valor, brinde nem condicao que possa ter sido anunciada. Se ele citar algo que viu, pergunte o que exatamente foi oferecido antes de confirmar qualquer coisa — e diga que confirma com o consultor. Comece perguntando, de leve, que tipo de loja ele tem e o que quer abastecer."}`
+    + `\n\nQUEM E ESTE CONTATO: um LEAD, nao representante. ${acl ? "Veio da landing \"Acelera Nitron\" — a campanha da Nitron no GOOGLE — e preencheu o formulario de la antes de te escrever." : ehAds ? "Veio do anuncio da Nitron no META (tag ads no CRM)." : crm.source ? ("Veio da campanha/landing \"" + crm.source + "\" — foi o que o CRM registrou como origem" + (crm.url ? (", pela pagina " + crm.url) : "") + (crm.utm ? (", chegando por " + crm.utm) : "") + ".") : "A origem nao esta registrada no CRM."}`
+    + `\n${(ehAds || acl) ? "" : "VOCE NAO SABE qual criativo ou promessa ele viu, e NAO PODE adivinhar: nao invente oferta, valor, brinde nem condicao que possa ter sido anunciada. Se ele citar algo que viu, pergunte o que exatamente foi oferecido antes de confirmar qualquer coisa — e diga que confirma com o consultor. Comece perguntando, de leve, que tipo de loja ele tem e o que quer abastecer."}`
     + (cadastro ? `\nATENCAO: o CNPJ que ele informou JA TEM CADASTRO na Nitron — ${cadastro.razao} (codparc ${cadastro.codparc}, situacao ${cadastro.situacao}). Nao trate como lead novo: reconheca que ele ja e cliente e passe pro comercial com passar_comercial.` : "")
-    + (crm.cnpj && !cadastro ? `\nELE JA INFORMOU O CNPJ no formulario e NAO tem cadastro ainda. NAO peca o CNPJ de novo — isso irrita. Se precisar confirmar, confirme a EMPRESA pelo nome, nao o numero.` : "")
+    + (cnpjForm && !cadastro ? `\nELE JA INFORMOU O CNPJ no formulario e NAO tem cadastro ainda. NAO peca o CNPJ de novo — isso irrita. Se precisar confirmar, confirme a EMPRESA pelo nome, nao o numero.` : "")
     + `\nPEDIDO MINIMO da Nitron: R$ ${opts.pedidoMin.toLocaleString("pt-BR")}. Diga quando a conversa chegar em volume, mix ou como comprar — nunca na abertura.`
     + (cfg.catalogo_url ? `\nCATALOGO (mande o LINK quando ele quiser ver produtos): ${cfg.catalogo_url}` : "")
     + (cfg.site_url ? `\nSITE: ${cfg.site_url}` : "")
     + `\n${jaSei ? "JA APURADO (nao pergunte de novo): " + jaSei : "AINDA NAO SEI NADA sobre ele — comece pelo tipo de loja e o que ele precisa abastecer."}`
-    + (leadRow?.nome_confirmado
-      ? `\nNOME JA CONFIRMADO por ele: ${leadRow.nome}. Use esse e NAO pergunte de novo.`
+    + (nomeConf
+      ? `\nNOME JA CONFIRMADO por ele: ${nomeConf}. Use esse e NAO pergunte de novo.`
       : `\nNOME — regra do gestor (22/09): ${nomeCrm ? `no CRM esta "${nomeCrm}", e isso vem do perfil do WhatsApp: pode ser apelido, emoji, versiculo ou o nome da loja. NAO trate como o nome dele.` : "voce ainda nao sabe o nome dele."} Pergunte o nome COMPLETO (nome e sobrenome), de leve e UMA vez, cedo na conversa — algo como "antes de a gente seguir, com quem eu falo? seu nome completo" — e nunca deduza nem complete sobrenome por conta propria. Quando ele responder, chame salvar_lead com nome (nome e sobrenome, como ele escreveu) e nome_confirmado=true. Sem isso o consultor recebe o lead sem saber com quem vai falar.`)
     + opts.lic;
 
@@ -432,7 +492,7 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
   }
   if (!reply) return { ...base, decisao: "erro", motivo: "o modelo nao devolveu texto", ferramentas: usadas };
 
-  if (opts.dry || !opts.ativo) return { ...base, decisao: "previa", canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + instancia), origem: crm.source || (ehAds ? "anuncio META (tag ads)" : null), cnpj_do_form: crm.cnpj ? docFmt(crm.cnpj) : null, ja_cliente: cadastro ? (cadastro.razao + " / codparc " + cadastro.codparc) : null, horas_desde_a_mensagem: Number(idadeH.toFixed(1)), ferramentas: usadas, recebido: texto.slice(0, 200), rascunho: reply, motivo: opts.dry ? "previa (dry=1)" : "lead_ativo=nao" };
+  if (opts.dry || !opts.ativo) return { ...base, decisao: "previa", canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + instancia), origem: (acl ? "landing Acelera Nitron (Google) — google-acelera" : null) || crm.source || (ehAds ? "anuncio META (tag ads)" : null), cnpj_do_form: cnpjForm ? docFmt(cnpjForm) : null, ja_cliente: cadastro ? (cadastro.razao + " / codparc " + cadastro.codparc) : null, horas_desde_a_mensagem: Number(idadeH.toFixed(1)), ferramentas: usadas, recebido: texto.slice(0, 200), rascunho: reply, motivo: opts.dry ? "previa (dry=1)" : "lead_ativo=nao" };
 
   const env = nativo ? await enviarNativo(String(contact_id), reply) : await enviar(contact_id, fone, reply, opts.inst);
   // NAO escreve status aqui. Quem manda no status sao as ferramentas (descartar_lead,
@@ -442,7 +502,7 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
   // pode ter acabado de gravar o nome confirmado, e o valor antigo o apagaria.
   const up = await upsertLead(sb, ctx, { ultima_msg_id: ultima.id, ultima_resposta_em: new Date().toISOString() });
   if (!env?.ok) return { ...base, decisao: "falhou", canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + instancia), ferramentas: usadas, motivo: env?.motivo || "envio recusado", texto: reply };
-  return { ...base, decisao: "respondeu", canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + instancia), origem: crm.source || (ehAds ? "anuncio META (tag ads)" : null), ferramentas: usadas, lead_id: up.lead?.id || null, status: up.lead?.status, recebido: texto.slice(0, 200), texto: reply };
+  return { ...base, decisao: "respondeu", canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + instancia), origem: (acl ? "landing Acelera Nitron (Google) — google-acelera" : null) || crm.source || (ehAds ? "anuncio META (tag ads)" : null), ferramentas: usadas, lead_id: up.lead?.id || null, status: up.lead?.status, recebido: texto.slice(0, 200), texto: reply };
 }
 
 // ---- seguimento: o toque em quem nao respondeu ----------------------------------------------
@@ -512,7 +572,7 @@ async function seguir(sb: any, cfg: Record<string, string>, o: any) {
       + `\nNAO repita o que voce ja disse nem reformule a mesma pergunta: troque de angulo. Ofereca algo util (o link do catalogo, uma sugestao pelo tipo de loja dele, dizer que pode mandar so o que interessa) e faca no maximo UMA pergunta facil de responder.`
       + `\nNUNCA use pressa, escassez, "so hoje" nem cobranca de resposta.`
       + (toqueN >= o.toquesMax ? `\nESTE E O ULTIMO TOQUE: deixe a porta aberta sem insistir — diga que fica a disposicao quando ele quiser, e encerre com leveza.` : "")
-      + `\n\nQUEM E: lead de campanha, nao representante e sem cadastro de cliente. ${L.origem ? ("Origem registrada no CRM: \"" + L.origem + "\".") : "Origem nao registrada."} Nao invente oferta nem condicao que possa ter sido anunciada.`
+      + `\n\nQUEM E: lead de campanha, nao representante e sem cadastro de cliente. ${L.origem === ACELERA_ORIGEM ? "Veio da landing \"Acelera Nitron\", a campanha da Nitron no GOOGLE." : L.origem ? ("Origem registrada no CRM: \"" + L.origem + "\".") : "Origem nao registrada."} Nao invente oferta nem condicao que possa ter sido anunciada.`
       + `\nPEDIDO MINIMO: R$ ${o.pedidoMin.toLocaleString("pt-BR")}.`
       + (cfg.catalogo_url ? `\nCATALOGO (link): ${cfg.catalogo_url}` : "")
       + `\n${jaSei ? "JA APURADO (nao pergunte de novo): " + jaSei : "Nao sei nada sobre a loja dele ainda."}`

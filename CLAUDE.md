@@ -193,6 +193,19 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   (`PUT /contacts/{id}` com `firstName`/`lastName`, testado em 22/09). Enquanto não confirmado, a
   tarefa ao comercial marca "(nome do perfil do WhatsApp — não confirmado com ele)". A regra também
   está em `copiloto_licoes` (id 204), que entra no prompt sem deploy.
+- **O lead do Google se identifica sozinho — na mensagem, porque a landing não grava nada**
+  (`copiloto-lead` v12). A landing "Acelera Nitron" (a campanha de Search) não cria contato, não
+  escreve `source` no CRM e não carrega gclid nem UTM: o formulário monta um texto e abre o `wa.me`
+  da Nina. O **único** lugar onde existe a prova de que o lead veio do Google é a primeira mensagem
+  dele, que traz `Origem: Campanha Acelera Nitron` junto com o nome, o CNPJ e o e-mail que ele
+  digitou. Até aqui contar lead do Google era varrer conversa a mão (25, 28 e 29/09) e esses três
+  dados morriam no texto — a Nina pedia tudo de novo, que é o erro da Natalie. Agora a assinatura
+  vira `copiloto_lead.origem='google-acelera'`, o CNPJ entra como CNPJ já informado (e é conferido
+  contra `ghl_cliente` como o do formulário do META) e o nome digitado no formulário vale como
+  confirmado **se passar por `nomePlausivel()`** — "Ray" sozinho não passa, e a Nina continua
+  perguntando o sobrenome. Os quatro leads já existentes (202, 204, 233, 272) foram marcados à mão;
+  estavam todos com `origem='WhatsApp'`, que é o que o GHL escreve e não diz nada. **Isso não mede
+  a campanha no Google** — quem mede é tag de conversão na landing, que continua não existindo.
 - **O nome confirmado não pode ser sobrescrito pelo do perfil.** Duas linhas regravavam `nome` a cada
   rodada (o upsert do CRM e o patch de depois do envio) — era o mesmo vão que fazia o `status` voltar
   atrás na v4. Hoje o upsert do CRM só grava nome quando `nome_confirmado` é falso, e o patch de
