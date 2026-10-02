@@ -202,6 +202,49 @@ duplicado.** A branch padrão é `claude/supabase-access-8190et`.
 **Uma sessão de cada vez editando `app/gestor.html`.** Duas já sobrescreveram trabalho uma da outra.
 Ao abrir sessão nova, encerre as antigas.
 
+## Hyak WhatsApp — o gateway que substitui o Zaptos
+
+O **Hyak WhatsApp** não é uma campanha nem um schema: é o **gateway de WhatsApp do grupo** —
+Evolution API (Baileys) + um bridge em Node numa VPS, ligado ao GHL como provedor de SMS. Dois
+provedores convivem no app e **a distinção importa**:
+
+| provedor | id | papel |
+|---|---|---|
+| Hyak WhatsApp **SMS** | `6aa320fd652d120992c7a592` | **entrega** — é o provedor padrão da subconta, por onde a Nina e as campanhas saem |
+| Hyak WhatsApp | `6aa2d8476548eab979ff881e` | **entrada** — por onde o cliente chega, e por onde o bridge espelha o que foi digitado no celular |
+
+**Quem usa (varrido nas 43 subcontas do GHL em 29/09):** Teak, Roga e Constelação têm o gateway
+como padrão. Nitron, Hyak International e Mood Distribuidora têm instalado mas ainda não usam
+(a Mood sem padrão nenhum definido). O resto segue na Zaptos ou sem provedor.
+
+**Mensagem digitada no celular aparece no CRM** desde 02/10. Antes, o webhook do bridge
+descartava todo `fromMe` e o CRM só mostrava metade da conversa — a IA achava que ninguém tinha
+respondido ao cliente e respondia por cima.
+
+**Quem escreveu uma mensagem NÃO se descobre pelo `source`.** Toda mensagem postada por API no
+GHL chega com `source: "api"` — a da IA, a que a pessoa digita no CRM e o espelho do celular.
+O que separa é `userId` + `conversationProviderId`:
+
+- **com `userId`** → pessoa digitando no CRM;
+- **sem `userId` e pelo provedor de ENTRADA** → pessoa digitando no app do WhatsApp;
+- **sem `userId` e pelo provedor de SAÍDA** → IA/campanha.
+
+É assim que a `emp-copiloto-responder` (v14, 29/09) monta o histórico. Antes ela usava `source`
+e lia mensagem de humano como se fosse dela.
+
+**Cada subconta tem um atendente diferente, e isso não é óbvio:** a **Roga** é atendida pela
+`emp-copiloto-responder` no Supabase; a **Teak**, por uma sessão do Claude via MCP do GHL
+(`meta.marketplace.appName: "lc-mcp - Anthropic"`). Correção em uma não vale para a outra.
+
+**`The instance is disconnected.` entra como mensagem de ENTRADA**, com o telefone do cliente no
+`from`. Na caixa (e para a IA) parece fala do cliente — foi o que atrasou o diagnóstico da queda
+da instância "Marcelo" em 02/10.
+
+A configuração completa do gateway (VPS, app do Marketplace, roteamento, runbook de migração e
+troubleshooting) é mantida pelo Ricardo em `CONFIGURACAO-HYAK-WHATSAPP.md`. **Esse arquivo não
+está neste repositório** — ele traz IP da VPS, endpoints e identificadores do app, e o repositório
+é público. Peça a ele, ou veja `docs/whatsapp-gateway/` do lado dele.
+
 ## Constelação das Frutas (ex-Hyak) — o outro inquilino do mesmo banco
 
 O projeto que o Ricardo chamava de **Hyak WhatsApp** existe, está rodando e mora no
