@@ -1,3 +1,18 @@
+// copiloto-lead (v13) — A INSTANCIA CAIU E ELA FALOU SOZINHA 200 VEZES. Em 02/10 o Zaptos da Nina
+// caiu as 08:02 e o copiloto continuou tocando de 5 em 5 minutos ate as 12:30: 200 envios recusados,
+// 8 conversas, e no lead Martins 41 mensagens DIFERENTES escritas pelo modelo, uma por passada. O
+// lead recebeu UMA e depois silencio; as outras 40 ficaram no CRM sem sair — mas quem abrisse a
+// conversa veria a Nina monologando. Tres causas, todas corrigidas aqui:
+//   1. O contador de toques so avancava DEPOIS do envio dar certo (`if (!env?.ok) continue` antes do
+//      update). Com a instancia morta ele ficava em 0 para sempre, entao "esta na hora de tocar?"
+//      dava sim em TODA passada. O teto de 2 toques nunca chegava a valer.
+//   2. Nada parava a instancia. O `pausada_em` e escrito por quem passa pela FILA (fila-processar,
+//      fila-acao, copiloto-repasse, copiloto-feedback); a resposta ao lead chama o campanhas-enviar
+//      direto e nunca encostava nessa coluna. O caminho que a Nina mais usa era o unico sem trava.
+//   3. O `pausada_em` tambem nao era LIDO aqui: o campanhas-enviar filtra por `ativa`, nao por pausa.
+// Agora: a primeira queda pausa a instancia e ABORTA a rodada; a rodada seguinte nem comeca; e um
+// envio recusado por qualquer motivo poe o lead de molho por `lead_erro_espera_min` antes de tentar
+// de novo. O aviso ao gestor nao mora aqui — e do vigia-instancia, que cobre TODAS as instancias.
 // copiloto-lead (v12) — O LEAD DO GOOGLE SE IDENTIFICA SOZINHO. A landing "Acelera Nitron" (a
 // campanha de Search) nao grava NADA: nao cria contato, nao escreve `source` no CRM, nao manda
 // gclid nem UTM. O formulario monta um texto e abre o wa.me da Nina — entao o unico lugar onde
@@ -152,6 +167,26 @@ async function anthropic(system: string, messages: any[], tools: any[]): Promise
   const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" }, body: JSON.stringify({ model: MODELO, max_tokens: 1500, system, tools, messages }) });
   if (!r.ok) throw new Error("anthropic " + r.status + " " + (await r.text()).slice(0, 300));
   return await r.json();
+}
+
+// Instancia caida: pausar na PRIMEIRA recusa, nao na quinquagesima. O campanhas-enviar ja sabe
+// distinguir "o GHL aceitou" de "o ZaptosWPP entregou" e devolve instancia_caiu=true — faltava
+// alguem agir sobre isso. Quem escreve a pausa aqui e esta funcao; quem avisa o gestor e o
+// vigia-instancia, que varre as conversas e cobre tambem as quedas que acontecem fora daqui.
+async function pausarInstancia(sb: any, instancia: string, motivo: string) {
+  if (!instancia) return { ok: false, motivo: "sem instancia" };
+  try {
+    const { error } = await sb.from("instancia_ghl")
+      .update({ pausada_em: new Date().toISOString(), pausada_motivo: motivo.slice(0, 400) })
+      .eq("instancia", instancia).is("pausada_em", null);
+    return error ? { ok: false, motivo: error.message } : { ok: true };
+  } catch (e) { return { ok: false, motivo: String(e).slice(0, 160) }; }
+}
+async function instanciasPausadas(sb: any): Promise<Set<string>> {
+  try {
+    const { data } = await sb.from("instancia_ghl").select("instancia").not("pausada_em", "is", null);
+    return new Set((data || []).map((x: any) => norm(x.instancia)));
+  } catch (_e) { return new Set(); }
 }
 
 async function enviar(contact_id: string | null, fone: string, texto: string, instancia: string) {
@@ -501,7 +536,16 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
   // "qualificando" na mesma rodada (10/09). Pelo mesmo motivo nao escreve mais o NOME: a ferramenta
   // pode ter acabado de gravar o nome confirmado, e o valor antigo o apagaria.
   const up = await upsertLead(sb, ctx, { ultima_msg_id: ultima.id, ultima_resposta_em: new Date().toISOString() });
-  if (!env?.ok) return { ...base, decisao: "falhou", canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + instancia), ferramentas: usadas, motivo: env?.motivo || "envio recusado", texto: reply };
+  if (!env?.ok) {
+    // QUEDA: para tudo agora. Sem isto a rodada seguinte escreve outra mensagem, e a seguinte outra.
+    if (env?.instancia_caiu) {
+      const p = await pausarInstancia(sb, opts.inst, "queda detectada ao responder lead: " + String(env?.recusado || env?.motivo || "").slice(0, 200));
+      return { ...base, decisao: "instancia_caiu", canal: "zaptos:" + instancia, instancia_pausada: p.ok, motivo: env?.recusado || env?.motivo, abortar: true };
+    }
+    // recusa comum (fixo, numero sem WhatsApp, dono errado): poe de molho para nao tentar de 5 em 5 min
+    if (!opts.dry) await upsertLead(sb, ctx, { envio_erro: String(env?.motivo || "envio recusado").slice(0, 300), envio_erro_em: new Date().toISOString() });
+    return { ...base, decisao: "falhou", canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + instancia), ferramentas: usadas, motivo: env?.motivo || "envio recusado", texto: reply };
+  }
   return { ...base, decisao: "respondeu", canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + instancia), origem: (acl ? "landing Acelera Nitron (Google) — google-acelera" : null) || crm.source || (ehAds ? "anuncio META (tag ads)" : null), ferramentas: usadas, lead_id: up.lead?.id || null, status: up.lead?.status, recebido: texto.slice(0, 200), texto: reply };
 }
 
@@ -554,6 +598,11 @@ async function seguir(sb: any, cfg: Record<string, string>, o: any) {
     // toca quando ja passou a espera, OU quando a janela vai fechar e ele nunca foi tocado
     const naHora = minDesde >= o.seguirMin;
     const ultimaChance = nativo && restamMin <= o.avisoMin && Number(L.toques || 0) === 0;
+    // de molho: um envio recusado ha pouco nao se repete na passada seguinte. Sem isto, um numero
+    // fixo ou um dono errado no CRM gera uma mensagem nova do modelo a cada 5 minutos, para sempre.
+    if (L.envio_erro_em && (Date.now() - new Date(L.envio_erro_em).getTime()) / 60000 < o.erroEsperaMin) {
+      feitos.push({ ...base, decisao: "pular", motivo: "envio recusado ha pouco (" + String(L.envio_erro || "").slice(0, 80) + ") — de molho ate " + o.erroEsperaMin + "min" }); continue;
+    }
     if (!naHora && !ultimaChance) { feitos.push({ ...base, decisao: "pular", motivo: "ainda cedo (" + Math.round(minDesde) + "min de " + o.seguirMin + (nativo ? ("; janela fecha em " + Math.round(restamMin) + "min") : "") + ")" }); continue; }
     if (o.soHorario && foraHorarioComercial()) { feitos.push({ ...base, decisao: "pular", motivo: "fora do horario comercial de SP" }); continue; }
 
@@ -593,7 +642,16 @@ async function seguir(sb: any, cfg: Record<string, string>, o: any) {
     if (!texto) { feitos.push({ ...base, decisao: "erro", motivo: "o modelo nao devolveu texto" }); continue; }
     if (o.dry || !o.ativo) { feitos.push({ ...base, decisao: "previa_toque", toque: toqueN, canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + (L.instancia || o.inst)), horas_sem_resposta: Math.round(minDesde / 60), janela_fecha_em_min: restamMin === Infinity ? null : Math.round(restamMin), rascunho: texto }); continue; }
     const env = nativo ? await enviarNativo(String(L.contact_id), texto) : await enviar(L.contact_id, L.fone || "", texto, L.instancia || o.inst);
-    if (!env?.ok) { feitos.push({ ...base, decisao: "falhou", motivo: env?.motivo || "envio recusado", texto }); continue; }
+    if (!env?.ok) {
+      if (env?.instancia_caiu) {
+        const p = await pausarInstancia(sb, L.instancia || o.inst, "queda detectada no toque ao lead: " + String(env?.recusado || env?.motivo || "").slice(0, 200));
+        feitos.push({ ...base, decisao: "instancia_caiu", instancia: L.instancia || o.inst, instancia_pausada: p.ok, motivo: env?.recusado || env?.motivo });
+        break; // nao adianta tentar os proximos leads: a instancia e a mesma
+      }
+      if (!o.dry) await sb.from("copiloto_lead").update({ envio_erro: String(env?.motivo || "envio recusado").slice(0, 300), envio_erro_em: new Date().toISOString(), atualizado: new Date().toISOString() }).eq("id", L.id);
+      feitos.push({ ...base, decisao: "falhou", motivo: env?.motivo || "envio recusado", texto });
+      continue;
+    }
     await sb.from("copiloto_lead").update({ toques: toqueN, ultimo_toque_em: new Date().toISOString(), ultima_resposta_em: new Date().toISOString(), atualizado: new Date().toISOString() }).eq("id", L.id);
     tocados++;
     feitos.push({ ...base, decisao: "tocou", toque: toqueN, canal: nativo ? "whatsapp-nativo-ghl" : ("zaptos:" + (L.instancia || o.inst)), texto });
@@ -654,9 +712,19 @@ Deno.serve(async (req) => {
     const toquesMax = Math.max(0, parseInt(cfg.lead_toques_max || "2") || 0);
     const soHorario = String(cfg.lead_toque_horario || "sim").toLowerCase() === "sim";
     const avisoMin = Math.max(0, parseInt(cfg.lead_janela_aviso_min || "90") || 0);
+    const erroEsperaMin = Math.max(5, parseInt(cfg.lead_erro_espera_min || "120") || 120);
     const acao = String(sp.get("acao") || b.acao || "tudo").toLowerCase();
     RUIDO_EXTRA = null;
     if (String(cfg.lead_ruido_extra || "").trim()) { try { RUIDO_EXTRA = new RegExp(String(cfg.lead_ruido_extra).trim(), "i"); } catch (_e) { RUIDO_EXTRA = null; } }
+
+    // Instancia pausada nao tenta NADA — nem responder, nem tocar. Esta leitura faltava: o
+    // campanhas-enviar filtra por `ativa`, nao por `pausada_em`, entao o copiloto seguia batendo
+    // numa sessao morta. Quem religa a sessao no Zaptos tira a pausa (ou o vigia-instancia tira).
+    const pausadas = await instanciasPausadas(sb);
+    if (pausadas.has(norm(inst))) {
+      return j({ ok: true, instancia: inst, pausado: true,
+        motivo: "instancia '" + inst + "' esta pausada em instancia_ghl — nada foi enviado. Religue a sessao no Zaptos e limpe pausada_em." });
+    }
 
     // as conversas em que a ULTIMA mensagem e do contato: ninguem respondeu ainda
     const r = await ghl("GET", `/conversations/search?locationId=${LOC}&limit=100&sortBy=last_message_date&sort=desc&lastMessageDirection=inbound`);
@@ -694,7 +762,7 @@ Deno.serve(async (req) => {
     // conversa ja foi atendida acima e o seguimento a pula.
     let seg: any = null;
     if (acao !== "inbound" && toquesMax > 0) {
-      try { seg = await seguir(sb, cfg, { dry, ativo, pedidoMin, inst, janelaH, seguirMin, toquesMax, soHorario, avisoMin, pb, lic, limite: Math.max(1, Math.min(limite, 4)) }); }
+      try { seg = await seguir(sb, cfg, { dry, ativo, pedidoMin, inst, janelaH, seguirMin, toquesMax, soHorario, avisoMin, erroEsperaMin, pb, lic, limite: Math.max(1, Math.min(limite, 4)) }); }
       catch (e) { seg = { erro: String(e).slice(0, 200) }; }
     }
 

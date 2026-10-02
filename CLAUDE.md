@@ -289,6 +289,32 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   retorno traz `escopo='cidade'` ou `escopo='uf'`, e no `escopo='uf'` a mensagem avisa o rep de que
   ele entrou como representante do estado e pede que devolva se a praça não for dele. Cordeiro/RJ
   caiu nesse caso: não temos cliente na cidade.
+- **Instância caída não pode continuar tentando — e tem de avisar na hora** (02/10). O Zaptos da
+  **Nina** (a dos leads, `zEMc7K35JO8eUGghqHMN`, não a Nina Financeiro) caiu às 08:02 e ninguém
+  soube até o gestor abrir o CRM às 12:30. Nesse meio tempo o copiloto tocou de 5 em 5 min: **200
+  envios recusados em 8 conversas**, e no lead Martins **41 mensagens DIFERENTES** escritas pelo
+  modelo, uma por passada, cada uma puxando assunto de novo. O lead recebeu a primeira e nada mais —
+  as outras 40 ficaram no CRM sem sair, então a bagunça era só nossa; mas quem abrisse a conversa
+  via a Nina monologando. Três causas:
+  1. **O contador de toques só avançava depois do envio dar certo** (`if (!env?.ok) continue` antes
+     do update). Com a instância morta ele ficava em 0 para sempre, e "está na hora de tocar?" dava
+     sim em toda passada — o teto de 2 toques nunca chegava a valer.
+  2. **Nada pausava a instância.** O `pausada_em` é escrito por quem passa pela FILA
+     (`fila-processar`, `fila-acao`, `copiloto-repasse`, `copiloto-feedback`); a resposta ao lead
+     chama o `campanhas-enviar` direto e nunca encostava nessa coluna. O caminho que a Nina mais usa
+     era o único sem trava. A Isadora, que caiu em 28/09 **pela fila**, foi pausada na 1ª falha.
+  3. **O `pausada_em` também não era LIDO** pelo copiloto: o `campanhas-enviar` filtra por `ativa`,
+     não por pausa.
+  Hoje: `copiloto-lead` v13 pausa na primeira queda e aborta a rodada, lê `pausada_em` antes de
+  tentar qualquer coisa, e põe o lead de molho (`lead_erro_espera_min`, 120) depois de qualquer
+  recusa — assim um fixo ou um dono errado no CRM também não gera mensagem nova a cada 5 min. O
+  aviso mora no **`vigia-instancia`**, função nova que varre as conversas atrás de
+  `[System]: <inst> - The instance is disconnected.`, pausa, e avisa quem tem `avisar=true` **por
+  uma instância viva** (preferindo a Camyla — avisar pela que caiu seria dar recado pelo telefone
+  quebrado), com e-mail de reserva e dedupe em `instancia_queda`. **Nasce desligada e sem cron**
+  (`vigia_inst_ativo='nao'`).
+  **Tirar a pausa é ato de quem religou a sessão** — o vigia não tira sozinho, senão volta a bater
+  numa sessão morta.
 - **Contato de lead SEM DONO recebe Zaptos normalmente; com dono de outra instância, não.** Os
   contatos que a Nina atende nascem sem `assignedTo` (quem cria é o inbound do ZaptosWPP) e o
   `#contact_instance` resolve a saída. Mas quando alguém do time **assume** o contato (o dono passa
