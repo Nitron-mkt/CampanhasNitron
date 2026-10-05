@@ -240,6 +240,34 @@ e lia mensagem de humano como se fosse dela.
 `from`. Na caixa (e para a IA) parece fala do cliente — foi o que atrasou o diagnóstico da queda
 da instância "Marcelo" em 02/10.
 
+### Aviso de sistema NUNCA chega ao WhatsApp de ninguém (regra do gestor, repetida em 05/10)
+
+O `#contact_instance:<instância>` é **comando, e só comando**. O que ele produz — o ack
+`Contact Instance Updated!`, o `The instance is disconnected.`, o `The specified instance does not
+exist.` — é conversa entre sistemas e **mora apenas no CRM**. Não vai para o aparelho do cliente,
+e não vai para o número interno.
+
+Em 05/10 o gestor recebeu no próprio celular `[System]: Contact Instance Updated!`. Como **toda**
+mensagem do `emp-enviar` é precedida de um bind, se o ack é entregue, *todo* destinatário recebe
+esse texto antes da mensagem de verdade.
+
+Duas regras, as duas valem para qualquer bridge (Zaptos, Hyak WhatsApp ou o que vier):
+
+1. **O ack e os avisos de sistema são postados pelo endpoint que REGISTRA, nunca pelo que ENVIA.**
+   `POST /conversations/messages/inbound` grava na conversa sem entregar;
+   `POST /conversations/messages` ("Send a new message") **entrega pelo provedor**. Trocar um pelo
+   outro é o que faz o aviso vazar para o cliente. Na versão do bridge de 21/09 o ack ia pelo
+   endpoint certo e sem o prefixo `[System]:`; a versão no ar em 05/10 tem o prefixo e chegou ao
+   celular — o caminho mudou junto.
+2. **No `/ghl/outbound`, texto que comece com `[System]:` nunca é entregue** — a mesma trava que
+   já existe para o `#contact_instance`. Marca como entregue para o GHL não repetir, e descarta.
+   É cinto de segurança: mesmo que alguém poste pelo caminho errado, não vaza.
+
+E o aviso de sistema, quando gravado no CRM, **é nosso, não do cliente**: hoje entra como mensagem
+de ENTRADA com o telefone do cliente no `from`, e passa a impressão (para quem lê a caixa e para a
+IA) de que foi o cliente que disse aquilo. No Zaptos aparecia como originado do próprio número.
+Deve ser gravado como saída/nota nossa.
+
 A configuração completa do gateway (VPS, app do Marketplace, roteamento, runbook de migração e
 troubleshooting) é mantida pelo Ricardo em `CONFIGURACAO-HYAK-WHATSAPP.md`. **Esse arquivo não
 está neste repositório** — ele traz IP da VPS, endpoints e identificadores do app, e o repositório
