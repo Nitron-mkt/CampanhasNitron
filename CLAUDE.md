@@ -273,6 +273,52 @@ troubleshooting) é mantida pelo Ricardo em `CONFIGURACAO-HYAK-WHATSAPP.md`. **E
 está neste repositório** — ele traz IP da VPS, endpoints e identificadores do app, e o repositório
 é público. Peça a ele, ou veja `docs/whatsapp-gateway/` do lado dele.
 
+## Nina — Autoatendimento da Teak
+
+*(mesma coisa, outros nomes: **Nina da Teak**, **Autoatendimento Teak**, atendimento virtual da
+Teak, "a IA que responde os leads da Teak", instância `Autoatendimento`. Manual completo em
+[`docs/nina-teak/`](docs/nina-teak/README.md).)*
+
+**Existem DUAS coisas chamadas "Nina" e elas não são a mesma.** Confundir já custou um
+diagnóstico errado em 07/10:
+
+| | Nina **da Teak** | Nina **do Supabase** |
+|---|---|---|
+| o que é | sessão do Claude + corrente de Routines, agindo no GHL pelo MCP | edge function `emp-copiloto-responder` |
+| quem usa | **Teak** | **Roga Village** (`roga-responder-3min`) |
+| latência | ~1 hora, varredura em lote | ~3 minutos |
+| estado | **no ar, respondendo lead sozinha** | funciona — mas **nunca foi ligada para a Teak** |
+
+A da Teak **não é edge function, não é cron, não é tabela**. Procurar por ela no Supabase não
+acha nada: ela mora nas Routines.
+
+**Onde ela está:** sessão `session_018p5VgFu7232CT4sLsikHdP` ("Nina — Autoatendimento da Teak"),
+subconta GHL `DRhJc78pTfF9dlaH5NK9`, assinando como app `lc-mcp - Anthropic`
+(`6a3e39daceb2ab00111df10c`) pelo provedor de saída `6aa320fd652d120992c7a592`. As Routines
+levam o prefixo `Nina — Autoatendimento da Teak`; **o `prompt` da Routine habilitada é o manual
+de operação do dia** — é ali que se mexe, não no banco.
+
+**Duas instâncias, dois papéis:** `Autoatendimento` só fala com interno (relatório ao gestor e
+ao Marcelo); `Marcelo` é por onde ela fala com lead — ela lê o `Instance Source` do inbound e
+responde **pela instância que originou a conversa**, para não atropelar o vendedor.
+
+**A corrente depende dela mesma.** Cada Routine é one-shot e a seguinte só existe se a sessão a
+criar. Se uma rodada falhar sem reagendar, **o autoatendimento morre em silêncio** — não há cron
+de segurança, nada avisa. É a fragilidade nº 1. A memória dela (`respondidos.txt`, `ACHADOS.md`)
+vive em scratchpad volátil de outro container.
+
+**O que ela nunca faz** (regras do prompt, não do banco): não anuncia condição comercial (preço,
+frete, mínimo, prazo, exportação) — já errou inflando o mínimo e perdeu um lead; não deduz
+segmento, nome nem gênero; não age pelo campo do CRM, lê a conversa real; não encosta nos ~26
+contatos que são do Marcelo; não diz "fechou" antes de material, medidas, fixação, prazo e
+pagamento aceitos; não lê áudio, vídeo nem PDF-imagem — diz isso em vez de fingir.
+
+**Ligar a Nina do Supabase para a Teak** (se o gestor mandar) tem cinco peças faltando e uma
+armadilha: `teak.conversa_estado` hoje é a tabela do **classificador** (`conversation_id`,
+`etapa`, `classificado_em`) e **não tem** as colunas que o respondedor grava (`conversa_id`,
+`assumida_em`, `humano_ate`, `decidido_em`) — ligar sem resolver isso **quebra**. As outras
+quatro e o modo rascunho estão no doc.
+
 ## Constelação das Frutas (ex-Hyak) — o outro inquilino do mesmo banco
 
 O projeto que o Ricardo chamava de **Hyak WhatsApp** existe, está rodando e mora no
