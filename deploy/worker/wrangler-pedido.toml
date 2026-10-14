@@ -1,0 +1,6 @@
+# Worker do montador de pedido do cliente. O do painel e o wrangler.toml ao lado — sao dois
+# Workers independentes na mesma conta; publicar este nao encosta no gestor-nitron.
+# Deploy:  wrangler deploy -c deploy/worker/wrangler-pedido.toml
+name = "pedido-nitron"
+main = "pedido-worker.js"
+compatibility_date = "2026-10-01"
