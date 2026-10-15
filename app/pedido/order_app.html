@@ -11,7 +11,7 @@
    numerado, e UM botão principal. Cores da marca (vermelho #E53221, turquesa #11ABB3,
    amarelo #FFD402); o verde aparece só no botao que abre o WhatsApp, onde a cor e informacao. */
 :root{
-  --paper:#faf7f4; --surface:#ffffff; --well:#f4f1ed; --sunken:#efeae5;
+  --paper:#ffffff; --surface:#ffffff; --well:#f5f3f0; --sunken:#f0edea;
   --ink:#1a1512; --ink-2:#5f564f; --ink-3:#8d837b;
   --line:#e7e0d9; --line-2:#f0ebe5;
   --red:#e53221; --red-ink:#c4231a; --red-bg:#fdeceb;
@@ -25,30 +25,9 @@
   --f-body:"Hanken Grotesk",system-ui,Segoe UI,sans-serif;
   --barh:150px;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --paper:#15110f; --surface:#1f1a17; --well:#f4f1ed; --sunken:#2a2320;
-  --ink:#f6f1ec; --ink-2:#b6aba2; --ink-3:#877d75;
-  --line:#352d28; --line-2:#2a2320;
-  --red:#ff5a46; --red-ink:#ff7a68; --red-bg:#3a1a16;
-  --turq:#3ecad2; --turq-ink:#5ad8df; --turq-bg:#10302f;
-  --sol:#ffd402; --sol-ink:#ffdd4d; --sol-bg:#3a2f08;
-  --zap:#2fc468;
-  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.45);
-  --shadow-up:0 -8px 28px rgba(0,0,0,.5);
-  color-scheme:dark;
-}}
-:root[data-theme="dark"]{
-  --paper:#15110f; --surface:#1f1a17; --well:#f4f1ed; --sunken:#2a2320;
-  --ink:#f6f1ec; --ink-2:#b6aba2; --ink-3:#877d75;
-  --line:#352d28; --line-2:#2a2320;
-  --red:#ff5a46; --red-ink:#ff7a68; --red-bg:#3a1a16;
-  --turq:#3ecad2; --turq-ink:#5ad8df; --turq-bg:#10302f;
-  --sol:#ffd402; --sol-ink:#ffdd4d; --sol-bg:#3a2f08;
-  --zap:#2fc468;
-  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.45);
-  --shadow-up:0 -8px 28px rgba(0,0,0,.5);
-  color-scheme:dark;
-}
+/* Sem tema escuro: o gestor pediu fundo branco sempre. A pagina vai para lojista em
+   celular qualquer, e foto de produto em fundo branco dentro de tela preta fica horrivel. */
+:root{color-scheme:light}
 *{box-sizing:border-box}
 html,body{margin:0}
 /* O atributo hidden perdia para .segsel{display:flex} e o seletor de segmento (que e do modo
@@ -110,7 +89,7 @@ button{font-family:inherit;cursor:pointer}
 
 /* ---- Conteudo ---- */
 main{max-width:1180px;margin:0 auto;padding:14px 12px}
-.panel-intro{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--red);
+.panel-intro{background:var(--well);border:1px solid var(--line);border-left:4px solid var(--red);
   border-radius:var(--r-sm);padding:13px 15px;margin-bottom:14px;font-size:15px;color:var(--ink-2);box-shadow:var(--shadow)}
 .panel-intro b{color:var(--ink)}
 .chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;vertical-align:middle}
@@ -189,7 +168,19 @@ main{max-width:1180px;margin:0 auto;padding:14px 12px}
 .promo{font-size:13px;font-weight:800;text-align:center;padding:7px 12px;line-height:1.25}
 .promo.go{background:var(--sol-bg);color:var(--sol-ink)}
 .promo.win{background:var(--sol);color:#4a3800}
-.bar-in{max-width:1180px;margin:0 auto;padding:9px 14px 10px;display:flex;align-items:center;gap:12px}
+.bar-in{max-width:1180px;margin:0 auto;padding:9px 14px 10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.totals .k{gap:7px}
+@media (max-width:599px){
+  /* 390px nao comporta total + 3 botoes lado a lado: um empurrava o outro e tudo quebrava */
+  .bar-in{flex-direction:column;align-items:stretch;gap:8px;padding:8px 12px 10px}
+  .totals{flex-direction:row;align-items:baseline;flex-wrap:wrap;gap:4px 10px}
+  .totals .big{font-size:25px}
+  .totals .dline{width:100%;order:3}
+  .totals .k{width:100%;order:4;font-size:12px}
+  .acts{width:100%}
+  .acts .btn{flex:1;min-width:0;padding:12px 8px;font-size:14px}
+  .acts .btn.wa{flex:1.5;font-size:15px}
+}
 .totals{display:flex;flex-direction:column;gap:0;min-width:0;flex:1}
 .totals .k{font-size:12.5px;color:var(--ink-2);display:flex;gap:9px;flex-wrap:wrap}
 .totals .k b{color:var(--ink);font-weight:800}
@@ -206,10 +197,10 @@ main{max-width:1180px;margin:0 auto;padding:14px 12px}
 .btn.wa:active{filter:brightness(.94)}
 .btn svg{width:19px;height:19px;display:block;flex:0 0 auto}
 /* secundarios: existem, mas nao disputam com o Enviar */
-.minor{display:flex;gap:18px;justify-content:center;padding:0 14px 7px;margin-top:-4px}
-.minor button{background:transparent;border:0;color:var(--ink-2);font-size:13.5px;font-weight:700;
-  text-decoration:underline;padding:4px 2px;display:inline-flex;align-items:center;gap:6px}
-.minor svg{width:15px;height:15px}
+.btn .longo{display:none}
+@media (min-width:600px){.btn .longo{display:inline}}
+.acts .btn{padding:13px 13px}
+.acts .btn.wa{padding:13px 16px}
 
 /* ---- Resumo ---- */
 .modal{position:fixed;inset:0;z-index:100;background:rgba(20,14,10,.6);display:flex;align-items:flex-end;justify-content:center}
@@ -234,11 +225,13 @@ main{max-width:1180px;margin:0 auto;padding:14px 12px}
 /* ---- Telas maiores: a lista vira grade ---- */
 @media (min-width:600px){
   main{padding:18px 16px}
-  .grid{grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:13px}
   /* Em tela grande o card volta a ser vertical: a foto manda, e e ela que vende. */
   .card{grid-template-columns:1fr}
-  .imgwrap{aspect-ratio:4/3;min-height:0;border-right:0;border-bottom:1px solid var(--line-2)}
-  .imgwrap img{padding:14px}
+  /* altura FIXA, nao proporcional: com a coluna larga o 4/3 crescia junto e um produto so
+     tomava a tela inteira. Agora cabem tres ou quatro de uma vez. */
+  .imgwrap{aspect-ratio:auto;height:168px;min-height:0;border-right:0;border-bottom:1px solid var(--line-2)}
+  .imgwrap img{padding:12px}
   .rm{top:9px;right:9px}
   .body{padding:13px 15px 15px}
   .stepper{max-width:100%}
@@ -249,7 +242,7 @@ main{max-width:1180px;margin:0 auto;padding:14px 12px}
   .sheet{border-radius:18px}
 }
 @media (min-width:900px){
-  .grid{grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(244px,1fr))}
   .bar-in{padding:13px 16px}
   .totals .big{font-size:30px}
 }
@@ -312,14 +305,13 @@ main{max-width:1180px;margin:0 auto;padding:14px 12px}
       <div class="k"><span><b id="tItens">0</b> produtos</span><span><b id="tFardos">0</b> fardos</span><span><b id="tUn">0</b> pe&ccedil;as</span></div>
     </div>
     <div class="acts">
+      <button class="btn" id="btnResumo">Ver pedido</button>
+      <button class="btn" id="btnPdf" title="Baixar o pedido em PDF">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg><span class="rot">PDF</span></button>
       <button class="btn wa" id="btnWa">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91C21.95 6.45 17.5 2 12.04 2m0 18.15c-1.52 0-3.01-.41-4.3-1.18l-.31-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.37c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.82c0 4.54-3.69 8.24-8.24 8.24m4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43-.14-.01-.31-.01-.48-.01-.17 0-.43.06-.66.31-.22.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28"/></svg>
-        Enviar</button>
+        <span class="rot">Enviar<span class="longo"> para a Nina</span></span></button>
     </div>
-  </div>
-  <div class="minor">
-    <button id="btnResumo">Ver o pedido escrito</button>
-    <button id="btnPdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>Baixar PDF</button>
   </div>
 </div>
 
