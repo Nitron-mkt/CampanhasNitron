@@ -338,6 +338,9 @@ main{max-width:1180px;margin:0 auto;padding:14px 12px}
 "use strict";
 // WhatsApp da Nina (Nitron) — só dígitos, com DDI 55.
 var NINA_WA = "5511960390203";
+// O pedido inteiro vai para ca; o WhatsApp leva so o codigo. Uma cesta de 55 itens dava uma
+// URL de wa.me com 9.802 caracteres, que o celular nao entrega.
+var PEDIDO_API = "https://bwbeieumxcuomtrvlqxs.supabase.co/functions/v1/nina-pedido-recebido";
 // Desconto por volume no total do pedido
 function discountRate(sub){ if(sub>15000)return .15; if(sub>5000)return .10; return 0; }
 // Modo interno (vendedor): mostra seletor de segmento, curva e penetração. Cliente não vê.
@@ -600,6 +603,28 @@ function orderText(){
   if(t.rate>0){L.push("Subtotal: R$ "+fmt(t.sub));L.push("Desconto "+Math.round(t.rate*100)+"%: -R$ "+fmt(t.disc));}
   L.push("*VALOR TOTAL: R$ "+fmt(t.total)+"*"); return L.join("\n");
 }
+function dadosLoja(){
+  var g=function(id){var e=els.whoBox.querySelector(id); return e?e.value.trim():"";};
+  return {loja:g("#f_loja"), cnpj:g("#f_cnpj"), cidade:g("#f_cidade"), fone:g("#f_fone")};
+}
+function pedidoJSON(){
+  var t=orderTotals();
+  return { segmento: curSeg, origem: "pagina", cliente: dadosLoja(),
+    itens: t.lines.map(function(l){ return {cod:l.it.cod, ref:l.it.ref, desc:l.it.desc,
+      linha:l.it.linha, emb:l.it.emb, preco:l.it.preco, fardos:l.fardos}; }),
+    qtd_fardos: t.far, qtd_pecas: t.un, subtotal: t.sub, desconto: t.disc, total: t.total };
+}
+// A mensagem que o cliente manda para a Nina: curta, so o codigo. O pedido completo ja esta
+// com a gente e ja saiu por e-mail para quem vai fechar.
+function textoCurto(cod){
+  var t=orderTotals(), d=dadosLoja(), L=["*PEDIDO NITRON — "+cod+"*"];
+  if(d.loja) L.push(d.loja);
+  L.push(fmtI(t.lines.length)+" produtos · "+fmtI(t.far)+" fardos · "+fmtI(t.un)+" peças");
+  L.push("Total: R$ "+fmt(t.total));
+  L.push(""); L.push("Montei meu pedido no link. Pode conferir?");
+  return L.join("\n");
+}
+function waCurto(cod){ return "https://wa.me/"+NINA_WA.replace(/\D/g,"")+"?text="+encodeURIComponent(textoCurto(cod)); }
 function waURL(){var txt=encodeURIComponent(orderText());return (NINA_WA?("https://wa.me/"+NINA_WA.replace(/\D/g,"")+"?text="):"https://wa.me/?text=")+txt;}
 
 function openModal(){
@@ -649,7 +674,25 @@ var toTimer; function toast(m){els.toast.textContent=m;els.toast.classList.add("
 els.seg.onchange=function(){loadSeg(els.seg.value);window.scrollTo({top:0});};
 els.q.oninput=function(){if(activeTab!=="mine")render();};
 els.btnResumo.onclick=openModal;
-els.btnWa.onclick=function(){var lines=orderLines();if(!lines.length){toast("Seu pedido está vazio.");return;} if(NINA_WA){openLink(waURL());}else{openModal();}};
+els.btnWa.onclick=function(){
+  var lines=orderLines();
+  if(!lines.length){toast("Seu pedido está vazio.");return;}
+  if(!NINA_WA){openModal();return;}
+  var b=els.btnWa, antes=b.innerHTML;
+  b.disabled=true; b.innerHTML="Enviando…";
+  var volta=function(){ b.disabled=false; b.innerHTML=antes; };
+  // location.href em vez de abrir aba: depois do fetch o gesto do dedo ja passou, e aba nova
+  // e bloqueada no celular. Navegar entrega o link para o app do WhatsApp do mesmo jeito.
+  var vai=function(url){ volta(); try{ location.href=url; }catch(e){ openLink(url); } };
+  var tudo=function(){ toast("Não consegui registrar — mandando o pedido escrito."); vai(waURL()); };
+  var acabou=false, pronto=setTimeout(function(){ if(!acabou){acabou=true; tudo();} }, 12000);
+  fetch(PEDIDO_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(pedidoJSON())})
+    .then(function(r){return r.json();})
+    .then(function(d){ if(acabou)return; acabou=true; clearTimeout(pronto);
+      if(d&&d.ok&&d.codigo){ toast("Pedido "+d.codigo+" registrado!"); vai(waCurto(d.codigo)); }
+      else tudo(); })
+    .catch(function(){ if(acabou)return; acabou=true; clearTimeout(pronto); tudo(); });
+};
 els.btnPdf.onclick=makePDF;
 els.mClose.onclick=closeModal; els.modal.onclick=function(e){if(e.target===els.modal)closeModal();};
 els.mCopy.onclick=function(){copyText(orderText(),"Pedido copiado!");};
