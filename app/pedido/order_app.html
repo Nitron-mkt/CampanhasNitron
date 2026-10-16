@@ -1,3 +1,16 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<!-- SEM ESTA LINHA O CELULAR NAO E CELULAR. O Chrome do Android assume um viewport de 980px quando
+     a pagina nao declara nenhum, encolhe tudo para caber, e NENHUMA media query de celular dispara:
+     a grade de uma coluna virava tres, a barra do pedido ficava cortada e a letra, ilegivel. Era
+     exatamente o que o gestor via em 16/10 — o CSS de celular estava certo desde 15/10 e nunca
+     chegou a rodar. Conferido com innerWidth: 980 antes, 393 depois.
+     viewport-fit=cover faz o env(safe-area-inset-*) valer no iPhone com entalhe. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#ffffff">
 <title>Pedido Nitron</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,7 +42,11 @@
    celular qualquer, e foto de produto em fundo branco dentro de tela preta fica horrivel. */
 :root{color-scheme:light}
 *{box-sizing:border-box}
-html,body{margin:0}
+html,body{margin:0;max-width:100%}
+/* Nada pode ser mais largo que a tela. Uma linha so de produto com nome comprido, ou a tira de
+   categorias, empurrava a pagina para o lado e o Android respondia encolhendo tudo. */
+html{overflow-x:hidden;-webkit-text-size-adjust:100%}
+img,svg{max-width:100%}
 /* O atributo hidden perdia para .segsel{display:flex} e o seletor de segmento (que e do modo
    interno) aparecia para o cliente. Esta linha devolve a prioridade a quem escreveu hidden. */
 [hidden]{display:none!important}
@@ -90,8 +107,22 @@ button{font-family:inherit;cursor:pointer}
 /* ---- Conteudo ---- */
 main{max-width:1180px;margin:0 auto;padding:14px 12px}
 .panel-intro{background:var(--well);border:1px solid var(--line);border-left:4px solid var(--red);
-  border-radius:var(--r-sm);padding:13px 15px;margin-bottom:14px;font-size:15px;color:var(--ink-2);box-shadow:var(--shadow)}
+  border-radius:var(--r-sm);padding:10px 12px;margin-bottom:10px;font-size:13.5px;line-height:1.35;color:var(--ink-2);box-shadow:var(--shadow)}
 .panel-intro b{color:var(--ink)}
+/* As duas coisas que o lojista precisa saber antes de mexer em quantidade: quanto e o minimo, e
+   que a lista nao foi inventada — saiu da media de compra de lojas do mesmo ramo que a dele.
+   Ordem do gestor em 16/10. Fica no corpo da pagina, nao em tooltip: tooltip ninguem abre. */
+.regras{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);
+  margin-bottom:9px;box-shadow:var(--shadow);overflow:hidden}
+.regra{display:flex;gap:9px;align-items:flex-start;padding:9px 11px;font-size:13px;line-height:1.33;color:var(--ink-2)}
+.regra+.regra{border-top:1px solid var(--line-2)}
+.regra .ic{flex:0 0 auto;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:800;line-height:1;margin-top:1px}
+.regra.min .ic{background:var(--sol);color:#4a3800}
+.regra.med .ic{background:var(--turq-bg);color:var(--turq-ink)}
+.regra.como .ic{background:var(--well);color:var(--ink-2)}
+.regra b{color:var(--ink);font-weight:800}
+.regra .t{min-width:0}
 .chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;vertical-align:middle}
 .chip.a{background:var(--turq-bg);color:var(--turq-ink)}
 .chip.n{background:var(--sol-bg);color:var(--sol-ink)}
@@ -168,18 +199,23 @@ main{max-width:1180px;margin:0 auto;padding:14px 12px}
 .promo{font-size:13px;font-weight:800;text-align:center;padding:7px 12px;line-height:1.25}
 .promo.go{background:var(--sol-bg);color:var(--sol-ink)}
 .promo.win{background:var(--sol);color:#4a3800}
+.promo.falta{background:var(--red-bg);color:var(--red-ink)}
 .bar-in{max-width:1180px;margin:0 auto;padding:9px 14px 10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .totals .k{gap:7px}
 @media (max-width:599px){
   /* 390px nao comporta total + 3 botoes lado a lado: um empurrava o outro e tudo quebrava */
-  .bar-in{flex-direction:column;align-items:stretch;gap:8px;padding:8px 12px 10px}
-  .totals{flex-direction:row;align-items:baseline;flex-wrap:wrap;gap:4px 10px}
-  .totals .big{font-size:25px}
-  .totals .dline{width:100%;order:3}
-  .totals .k{width:100%;order:4;font-size:12px}
-  .acts{width:100%}
-  .acts .btn{flex:1;min-width:0;padding:12px 8px;font-size:14px}
-  .acts .btn.wa{flex:1.5;font-size:15px}
+  /* a barra fica fixa no pe da tela: cada linha dela e uma linha a menos de produto. No 360px
+     ela chegou a 203px (um quarto da tela) — subtotal, desconto e contagem cabem numa linha so. */
+  .bar-in{flex-direction:column;align-items:stretch;gap:6px;padding:7px 12px 8px}
+  .totals{flex-direction:row;align-items:baseline;flex-wrap:wrap;gap:2px 8px}
+  .totals .big{font-size:24px;width:100%}
+  .totals .dline{order:3;font-size:11.5px}
+  .totals .k{order:4;font-size:11.5px;gap:7px}
+  .promo{font-size:12px;padding:5px 10px}
+  .acts{width:100%;gap:7px}
+  .acts .btn{flex:1;min-width:0;padding:11px 6px;font-size:13.5px;min-height:46px;white-space:nowrap}
+  .acts .btn.wa{flex:1.4;font-size:15px}
+  .minor{padding:0}
 }
 .totals{display:flex;flex-direction:column;gap:0;min-width:0;flex:1}
 .totals .k{font-size:12.5px;color:var(--ink-2);display:flex;gap:9px;flex-wrap:wrap}
@@ -247,6 +283,8 @@ main{max-width:1180px;margin:0 auto;padding:14px 12px}
   .totals .big{font-size:30px}
 }
 </style>
+</head>
+<body>
 
 <div class="top">
   <div class="top-in">
@@ -276,6 +314,11 @@ main{max-width:1180px;margin:0 auto;padding:14px 12px}
 <div class="tabwrap"><div class="tabs" id="tabs" role="tablist"></div></div>
 
 <main>
+  <div class="regras" id="regras" hidden>
+    <div class="regra min"><span class="ic">R$</span><span class="t"><b>Pedido m&iacute;nimo de R$ 2.500.</b> &Eacute; o m&iacute;nimo de f&aacute;brica &mdash; abaixo disso n&atilde;o conseguimos faturar.</span></div>
+    <div class="regra med"><span class="ic">&#9679;</span><span class="t" id="regraMedia"></span></div>
+    <div class="regra como"><span class="ic">&#9998;</span><span class="t">Use o <b>+</b> e o <b>&minus;</b> para a quantidade, <b>tirar do pedido</b> para remover, e as <b>categorias</b> ali em cima para incluir mais. No fim, bot&atilde;o verde <b>Enviar</b>.</span></div>
+  </div>
   <div class="panel-intro" id="intro"></div>
 
   <details class="who" id="whoBox">
@@ -342,6 +385,8 @@ var NINA_WA = "5511960390203";
 // URL de wa.me com 9.802 caracteres, que o celular nao entrega.
 var PEDIDO_API = "https://bwbeieumxcuomtrvlqxs.supabase.co/functions/v1/nina-pedido-recebido";
 // Desconto por volume no total do pedido
+// Minimo de fabrica. Nao e preferencia de tela: abaixo disto o pedido nao e faturado.
+var MINIMO=2500;
 function discountRate(sub){ if(sub>15000)return .15; if(sub>5000)return .10; return 0; }
 // Modo interno (vendedor): mostra seletor de segmento, curva e penetração. Cliente não vê.
 var ADMIN = (location.hash||"").toLowerCase().indexOf("adm")>=0;
@@ -370,7 +415,7 @@ var activeTab="mine";
 var pendAdd={}; // cod -> fardos pendentes (antes de incluir)
 var els={};
 ["seg","ramoTitle","baseN","sugN","tabs","intro","grid","searchWrap","q","whoBox",
- "seg","segselWrap","subInfo","segheadWrap","steps","tGrand","tItens","tFardos","tUn","tDisc","promo","btnResumo","btnPdf","btnWa",
+ "seg","segselWrap","subInfo","segheadWrap","steps","regras","regraMedia","tGrand","tItens","tFardos","tUn","tDisc","promo","btnResumo","btnPdf","btnWa",
  "modal","mTitle","mSub","mText","mNote","mClose","mCopy","mWa","toast"].forEach(function(id){els[id]=document.getElementById(id);});
 
 function pickSeg(){var h=(location.hash||"").replace(/^#/,"").replace(/~?adm$/i,"").replace(/^adm$/i,""); return (h&&D.segs[h])?h:segIds[0];}
@@ -381,6 +426,11 @@ function loadSeg(id){
   var s=D.segs[id];
   (s.itens||[]).forEach(function(it){ if(it.fardos>0) cart[it.cod]=it.fardos; });
   if(ADMIN){ els.ramoTitle.textContent=s.ramo+" · "+s.reg; els.baseN.textContent=fmtI(s.base); els.sugN.textContent=(s.itens||[]).length; }
+  // De onde a sugestao saiu, em numero: a media de compra das lojas do MESMO ramo (o ramo vem do
+  // CNAE do CNPJ que o cliente informou). Sem isso a lista parece palpite nosso.
+  els.regraMedia.innerHTML="Estes <b>"+fmtI((s.itens||[]).length)+" produtos</b> s\u00e3o a <b>m\u00e9dia de compra de "+fmtI(s.base)
+    +" lojas do mesmo ramo</b> do CNPJ que voc\u00ea informou (<i>"+esc(s.ramo)+"</i>). \u00c9 um ponto de partida: mude o que quiser.";
+  els.regras.hidden=false;
   try{ if(location.hash.replace(/^#/,"")!==id) history.replaceState(null,"","#"+id); }catch(e){}
   activeTab="mine"; buildTabs(); render(); recompute();
 }
@@ -493,10 +543,11 @@ function render(){
   els.searchWrap.hidden=!showSearch;
   var s=D.segs[curSeg];
   if(activeTab==="mine"){
-    els.intro.innerHTML= ADMIN
-      ? '<b>Seu pedido</b> — cesta sugerida para <b>'+esc(s.ramo)+'</b> no <b>'+esc(s.reg)+'</b>. Curva e penetração visíveis (modo interno). Preço tabela padrão PV-0003.'
-      : '<b>Já deixamos este pedido pronto para a sua loja.</b> Use o <b>+</b> e o <b>−</b> para mudar a quantidade de cada produto. Para tirar um produto, toque em <b>tirar do pedido</b>. Quer mais coisas? Toque nas categorias lá em cima. No fim, toque no botão verde <b>Enviar</b>.';
+    els.intro.hidden=!ADMIN;
+    els.regras.hidden=!!ADMIN;
+    if(ADMIN) els.intro.innerHTML='<b>Seu pedido</b> — cesta sugerida para <b>'+esc(s.ramo)+'</b> no <b>'+esc(s.reg)+'</b>. Curva e penetração visíveis (modo interno). Preço tabela padrão PV-0003.';
   } else {
+    els.intro.hidden=false; els.regras.hidden=true;
     var teca=isTeca(activeTab);
     els.intro.innerHTML=(teca?'<span class="chip n">LINHA NOVA</span> ':'')
       +'Escolha quantos fardos você quer e toque em <b>Incluir no pedido</b>. Os produtos com a borda vermelha já estão no seu pedido.';
@@ -580,6 +631,8 @@ function recompute(){
   else els.tDisc.hidden=true;
   var p=els.promo;
   if(sub<=0){p.hidden=true;}
+  else if(sub<MINIMO){p.hidden=false;p.className="promo falta";
+    p.innerHTML="Falta <b>R$ "+fmt(MINIMO-sub)+"</b> para o pedido m\u00ednimo de <b>R$ "+fmt(MINIMO)+"</b>";}
   else if(sub<=5000){p.hidden=false;p.className="promo go";p.innerHTML="Compre mais <b>R$ "+fmt(5000-sub)+"</b> e ganhe <b>10% de desconto</b> no pedido";}
   else if(sub<=15000){p.hidden=false;p.className="promo go";p.innerHTML="Você já ganhou <b>10% de desconto</b>! Compre mais <b>R$ "+fmt(15000-sub)+"</b> e suba para <b>15%</b>";}
   else {p.hidden=false;p.className="promo win";p.innerHTML="Parabéns! Seu pedido ganhou o <b>desconto máximo de 15%</b>";}
@@ -675,6 +728,8 @@ els.seg.onchange=function(){loadSeg(els.seg.value);window.scrollTo({top:0});};
 els.q.oninput=function(){if(activeTab!=="mine")render();};
 els.btnResumo.onclick=openModal;
 els.btnWa.onclick=function(){
+  var t0=orderTotals();
+  if(t0.sub>0 && t0.sub<MINIMO && !confirm("Seu pedido est\u00e1 em R$ "+fmt(t0.sub)+" e o m\u00ednimo de f\u00e1brica \u00e9 R$ "+fmt(MINIMO)+".\n\nQuer enviar assim mesmo? A Nina vai te ajudar a completar.")) return;
   var lines=orderLines();
   if(!lines.length){toast("Seu pedido está vazio.");return;}
   if(!NINA_WA){openModal();return;}
@@ -714,3 +769,6 @@ if(ADMIN){ els.segselWrap.hidden=false; els.subInfo.hidden=false; els.segheadWra
 loadSeg(pickSeg());
 })();
 </script>
+
+</body>
+</html>

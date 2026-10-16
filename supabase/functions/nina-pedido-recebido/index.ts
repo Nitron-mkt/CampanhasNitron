@@ -1,5 +1,5 @@
 // nina-pedido-recebido — recebe o pedido montado na pagina do lojista, registra, e manda o
-// pedido COMPLETO por e-mail para quem atende (hoje a Camyla). Devolve o codigo.
+// pedido COMPLETO por e-mail para quem atende (hoje a Camyla) e para o marketing. Devolve o codigo.
 //
 // Por que existe: o botao da pagina abria o WhatsApp com o pedido inteiro no texto. Numa cesta
 // de 55 itens isso da 6.114 caracteres de texto e uma URL de wa.me com 9.802 — muito acima do
@@ -114,7 +114,12 @@ Deno.serve(async (req) => {
     const fardos = n(b.qtd_fardos) || itens.reduce((s: number, it: any) => s + it.fardos, 0);
 
     const conf = await cfg();
-    const para = (conf.pedido_email_para || "").trim();
+    // A chave aceita VARIOS destinos separados por virgula (ou ponto-e-virgula). Ordem do gestor em
+    // 16/10: alem de quem fecha, o pedido vai sempre para o marketing. Um e-mail por destino, porque
+    // o campanhas-enviar resolve um contato do CRM por endereco — nao tem campo de copia.
+    const destinos = (conf.pedido_email_para || "").split(/[,;]/).map((x) => x.trim())
+      .filter((x) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x));
+    const para = destinos[0] || "";
     const dono = conf.pedido_dono || "";
 
     const reg = {
@@ -122,7 +127,7 @@ Deno.serve(async (req) => {
       cidade: txt(c.cidade, 80), fone: txt(c.fone, 30), contact_id: txt(b.contact_id, 40) || null,
       itens, qtd_itens: itens.length, qtd_fardos: fardos, qtd_pecas: pecas,
       subtotal, desconto: n(b.desconto), total: n(b.total) || subtotal - n(b.desconto),
-      origem: txt(b.origem, 30) || "pagina", dono: dono || null, email_para: para || null,
+      origem: txt(b.origem, 30) || "pagina", dono: dono || null, email_para: destinos.join(", ") || null,
     };
 
     const ins = await rest("pedido_recebido", { method: "POST", body: JSON.stringify(reg) });
@@ -132,23 +137,30 @@ Deno.serve(async (req) => {
     const codigo = "PED-" + String(row.id).padStart(4, "0");
     await rest(`pedido_recebido?id=eq.${row.id}`, { method: "PATCH", body: JSON.stringify({ codigo }) });
 
-    // ---- aviso por e-mail com o pedido COMPLETO ----
+    // ---- aviso por e-mail com o pedido COMPLETO, para cada destino ----
+    // email_ok so e true quando TODOS receberam: se o do marketing sair e o de quem fecha nao, o
+    // pedido esta perdido do mesmo jeito e a linha nao pode dizer que deu certo.
     let email_ok: boolean | null = null, email_erro: string | null = null;
-    if ((conf.pedido_aviso_ativo || "sim").toLowerCase() === "sim" && para) {
-      try {
-        const r = await fetch(`${URL_()}/functions/v1/campanhas-enviar`, {
-          method: "POST",
-          headers: { Authorization: "Bearer " + srvKey(), "Content-Type": "application/json" },
-          body: JSON.stringify({
-            canal: "email", email: para, nome: dono || undefined,
-            assunto: `${codigo} — pedido novo${reg.loja ? " de " + reg.loja : ""} (R$ ${brl(reg.total)})`,
-            texto: corpoEmail(reg, itens, codigo),
-          }),
-        });
-        const d = await r.json().catch(() => ({}));
-        email_ok = !!d?.ok;
-        if (!email_ok) email_erro = String(d?.motivo || d?.erro || "recusado").slice(0, 300);
-      } catch (e) { email_ok = false; email_erro = String(e).slice(0, 300); }
+    if ((conf.pedido_aviso_ativo || "sim").toLowerCase() === "sim" && destinos.length) {
+      const corpo = corpoEmail(reg, itens, codigo);
+      const assunto = `${codigo} — pedido novo${reg.loja ? " de " + reg.loja : ""} (R$ ${brl(reg.total)})`;
+      const falhas: string[] = [];
+      for (const d0 of destinos) {
+        try {
+          const r = await fetch(`${URL_()}/functions/v1/campanhas-enviar`, {
+            method: "POST",
+            headers: { Authorization: "Bearer " + srvKey(), "Content-Type": "application/json" },
+            body: JSON.stringify({
+              canal: "email", email: d0, nome: d0 === para ? (dono || undefined) : undefined,
+              assunto, texto: corpo,
+            }),
+          });
+          const d = await r.json().catch(() => ({}));
+          if (!d?.ok) falhas.push(d0 + ": " + String(d?.motivo || d?.erro || "recusado").slice(0, 120));
+        } catch (e) { falhas.push(d0 + ": " + String(e).slice(0, 120)); }
+      }
+      email_ok = falhas.length === 0;
+      if (falhas.length) email_erro = falhas.join(" | ").slice(0, 300);
       await rest(`pedido_recebido?id=eq.${row.id}`, {
         method: "PATCH",
         body: JSON.stringify({ email_ok, email_em: new Date().toISOString(), email_erro }),
@@ -167,8 +179,8 @@ Deno.serve(async (req) => {
 
 // ---- Exposicao -------------------------------------------------------------------------------
 // A pagina e publica e nao carrega chave, entao esta funcao sobe com --no-verify-jwt: qualquer um
-// que descubra a URL consegue gravar uma linha e disparar um e-mail para a Camyla. O destino NUNCA
-// vem do pedido (sai de copiloto_config.pedido_email_para), entao nao da para usar isto para mandar
-// e-mail para terceiros — o estrago possivel e ruido na caixa dela. Se virar problema:
+// que descubra a URL consegue gravar uma linha e disparar um e-mail para os destinos. O destino
+// NUNCA vem do pedido (sai de copiloto_config.pedido_email_para), entao nao da para usar isto para
+// mandar e-mail para terceiros — o estrago possivel e ruido na caixa deles. Se virar problema:
 // desligue com copiloto_config.pedido_aviso_ativo = 'nao' (a gravacao continua) ou ponha um token
 // na querystring e confira aqui.

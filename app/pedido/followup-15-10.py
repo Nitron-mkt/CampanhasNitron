@@ -7,8 +7,17 @@
 import io, json
 
 L = "https://bitter-math-090f.marketing-da5.workers.dev/#"
-RODA = ("Prazo de entrega, condição de pagamento e frete quem combina com você é a Camyla, "
+RODA_FECHA = ("Prazo de entrega, condição de pagamento e frete quem combina com você é a Camyla, "
         "do nosso comercial — eu só organizo o pedido pra chegar certo nela.")
+# As DUAS frases obrigatórias desde 16/10 (ordem do gestor; também gravadas na lição 280, que entra
+# no prompt da Nina sem deploy). Sem a primeira, o lojista monta um pedido de R$ 400 que a fábrica
+# não fatura. Sem a segunda, ele acha que escolhemos produto a produto para a loja dele — e a lista
+# é estatística do ramo, não curadoria.
+MINIMO = "*O pedido mínimo é de R$ 2.500* — é o mínimo de fábrica para a gente faturar e enviar."
+MEDIA = ("Uma coisa importante sobre essa lista: ela não foi escolhida produto a produto para a sua "
+         "loja. Ela é a *média de compra das lojas do mesmo ramo* do seu CNPJ, então é ponto de "
+         "partida — tire, troque e mude a quantidade do que quiser.")
+RODA = MINIMO + "\n\n" + MEDIA + "\n\n" + RODA_FECHA
 COMO = ("No link você vê cada produto com foto, quantos vêm no fardo e o preço de fábrica. "
         "Use o + e o − pra mudar a quantidade, tire o que não quiser, e no fim toque no botão verde "
         "*Enviar*. O pedido chega aqui pra gente já montado.")
@@ -95,9 +104,7 @@ A gente conversou no dia 13 e eu acabei não voltando — desculpa. Você me con
 
 """ + COMO + u"""
 
-""" + RODA + u"""
-
-Só pra te adiantar: o pedido mínimo de fábrica é de R$ 2.500."""))
+""" + RODA + u""""""))
 
 M.append((443, "6OwmqOx9VFllr5HTIPkO", "Orineide / Cidade Ocidental-GO",
 u"""Oi Orineide, aqui é a Nina, da Nitron.
@@ -109,9 +116,7 @@ Pra mercado a gente tem uma lista própria: é o que os mercados do Centro-Oeste
 
 """ + COMO + u"""
 
-""" + RODA + u"""
-
-O pedido mínimo de fábrica é de R$ 2.500."""))
+""" + RODA + u""""""))
 
 M.append((439, "jSmF8PTuTMgHHaJFv6CG", "Shopping das Frutas / Gamaliel",
 u"""Oi Gamaliel, aqui é a Nina, da Nitron.

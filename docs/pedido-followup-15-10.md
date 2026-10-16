@@ -80,3 +80,71 @@ errada.
 R$ 2.065,32, e o e-mail chegou em `camyla.castro@nitron.com.br` (`email_ok: true`). A loja no teste
 se chama "TESTE NINA - PODE IGNORAR" de propósito. Os pedidos 1 e 2 são testes anteriores e foram
 para `marketing@nitron.com.br`, antes de a chave `pedido_email_para` ser trocada.
+
+
+---
+
+## 16/10 — o celular nunca foi celular, e duas regras que faltavam na tela
+
+### O erro que o gestor viu, e por que eu nao tinha visto
+
+O gestor abriu a pagina no celular e viu a versao de computador: tres colunas de produto,
+letra minuscula, barra do pedido cortada no "ubtotal". A causa nao era o CSS — era uma linha que
+nunca existiu no arquivo:
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+```
+
+Sem ela o Chrome do Android assume um viewport de **980px**, encolhe a pagina inteira para caber, e
+**nenhuma media query de celular dispara**. Medido: `innerWidth` dava **980** num aparelho de 393px.
+Todo o CSS de celular escrito em 15/10 (uma coluna, foto grande, barra empilhada) estava certo e
+nunca chegou a rodar.
+
+**Por que passou batido:** eu testei com o Playwright em `viewport:{width:390}`, que define o
+viewport de layout **direto**. Ali as media queries disparam e a tela parecia certa. Um celular de
+verdade so chega a esse estado se a pagina declarar o meta. O teste era otimista por construcao.
+
+O arquivo tambem nao tinha `<!doctype html>`, `<html>`, `<head>` nem `<meta charset>` — rodava em
+quirks mode e dependia so do `charset=utf-8` do header do Worker para os acentos.
+
+Agora, medido com o meta no lugar (`innerWidth` = largura real, zero estouro horizontal, sem erro de
+JS):
+
+| largura | colunas | barra do pedido | estouro horizontal |
+|---|---|---|---|
+| 360px | 1 | 176px | 0 |
+| 393px | 1 | 176px | 0 |
+| 768px | 3 | 116px | 0 |
+| 1366px | 4 | 126px | 0 |
+
+Trava de seguranca junto: `html{overflow-x:hidden}`, `max-width:100%` em `html/body/img/svg`.
+
+### Texto demais empurra produto para fora da tela
+
+Com o celular respondendo, os avisos novos criaram o problema oposto: tres caixas de texto antes do
+primeiro produto. Num aparelho de 852px o lojista abria o link e nao via **nenhum** produto. As tres
+viraram **um cartao de tres linhas** e a barra foi de 203px para 176px. O primeiro produto agora
+comeca em 473px, com ~200px visiveis na primeira tela.
+
+### As duas regras que o gestor mandou deixar claras
+
+1. **Pedido minimo R$ 2.500**, em tres lugares: no cartao do topo, **ao vivo na barra** enquanto o
+   pedido nao chega la (`Falta R$ 2.157,76 para o pedido minimo de R$ 2.500,00` — conferido), e numa
+   confirmacao se ele tocar em Enviar abaixo do minimo. Antes a barra so falava de desconto, que e
+   conversa fora de hora para quem ainda nao pode comprar.
+2. **A lista e a media do ramo, nao curadoria**: "Estes 55 produtos sao a media de compra de 262
+   lojas do mesmo ramo do CNPJ que voce informou (Casa de Utilidades / Variedades)". Os numeros saem
+   de `pedido_base.base_clientes` e do tamanho da cesta — nao sao texto fixo.
+
+Nas mensagens da Nina as duas frases viraram **obrigatorias**: estao no rodape do
+`app/pedido/followup-15-10.py` e na **licao 280** do `copiloto_licoes`, que entra no prompt sem
+deploy.
+
+### Pedido vai para dois e-mails
+
+`copiloto_config.pedido_email_para` passou a aceitar lista separada por virgula, e a
+`nina-pedido-recebido` (v2) manda **um e-mail por destino** — o `campanhas-enviar` resolve um contato
+do CRM por endereco e nao tem campo de copia. Hoje:
+`camyla.castro@nitron.com.br, marketing@nitron.com.br`. O `email_ok` so e `true` quando **todos**
+receberam. Testado: `PED-0004`, R$ 2.234,52, `email_ok: true` nos dois.
