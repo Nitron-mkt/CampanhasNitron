@@ -148,3 +148,43 @@ deploy.
 do CRM por endereco e nao tem campo de copia. Hoje:
 `camyla.castro@nitron.com.br, marketing@nitron.com.br`. O `email_ok` so e `true` quando **todos**
 receberam. Testado: `PED-0004`, R$ 2.234,52, `email_ok: true` nos dois.
+
+
+## 16/10 (tarde) — a tira de categorias precisava dizer que continua
+
+São **21 categorias em 2.773px de tira** dentro de 393px de tela. Quem abria o link via quatro e
+achava que tinha acabado. O gestor propôs duas saídas: uma animação puxando a tira, ou um "+" no fim
+da fila abrindo a lista. **Fiz as duas** — resolvem coisas diferentes — com uma correção no desenho
+do botão.
+
+| sinal | o que resolve |
+|---|---|
+| **Degradê na borda** + a categoria cortada ao meio | diz que *existe* conteúdo escondido, e some quando você chega no fim |
+| **Balanço de 22px, uma vez só** na primeira abertura | *ensina o gesto* a quem nunca arrastou uma tira. Não é loop: animação que não para vira ruído. Respeita `prefers-reduced-motion` e só dispara se a tira realmente transbordar |
+| **Botão "Todas ▾"** abrindo a lista completa com as contagens | atalho para quem *já sabe* o que procura — arrastar até "Frasqueiras" é pior que ler um índice, mesmo sabendo arrastar |
+
+**Duas correções que o teste obrigou:**
+
+1. **O botão não fica no fim da fila, fica fixo na borda.** No fim da fila seria preciso arrastar
+   para alcançá-lo — exatamente o que ele existe para evitar.
+2. **Ele não some quando a tira chega ao fim.** Na primeira versão sumia (a lógica era "tem mais
+   para a direita?"), e quem chegasse lá ficava sem volta rápida para "Meu pedido" a não ser
+   arrastando tudo de novo. Agora quem governa o botão é `data-rola` (a tira não cabe?) e quem
+   governa os degradês é `data-ini`/`data-fim`. São perguntas diferentes.
+
+Escolher pela lista também **rola a tira até a aba escolhida** (`scrollIntoView` centralizado):
+escolher "Frasqueiras" e cair numa tira mostrando "Potes" deixa a pessoa sem saber onde está.
+
+**Medido** (393px, instância da tira com 2.773px):
+
+| estado | degradê esq. | degradê dir. | botão | folga da tira |
+|---|---|---|---|---|
+| início | off | on (96px) | visível | 84px reservados |
+| meio | on | on | visível | 84px |
+| fim | on | off | **visível** | 84px |
+| desktop 1366px | off | on | visível | ainda transborda 1.665px |
+
+A folga de 2px na conta do fim é de propósito: o scroll fracionário do Android nunca fecha a conta
+exata e o degradê ficava aceso no fim da tira. Lista com 22 linhas (as 21 + "Meu pedido"), escolha
+por ela testada até o produto certo aparecer, sem erro de JS, zero estouro horizontal nas quatro
+larguras.

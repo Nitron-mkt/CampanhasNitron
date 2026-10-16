@@ -90,9 +90,52 @@ button{font-family:inherit;cursor:pointer}
 .step.done .n{background:var(--turq-ink)}
 
 /* ---- Abas de categoria ---- */
+/* A TIRA DE CATEGORIAS CONTINUA PARA O LADO, E ISSO PRECISA APARECER.
+   Sao 21 categorias em 2.773px de tira dentro de 393px de tela: sem indicacao, quem abre o link ve
+   quatro e acha que acabou. Tres sinais, de proposito, porque resolvem coisas diferentes:
+   1) o DEGRADE na borda diz que tem conteudo cortado (e some quando chega no fim);
+   2) o BALANCO de uma vez so, na primeira abertura, ENSINA o gesto a quem nunca arrastou tira;
+   3) o botao TODAS, fixo na borda, da a lista inteira para quem sabe o que procura — porque
+      arrastar ate "Frasqueiras" e pior do que ler um indice, mesmo sabendo arrastar.
+   O botao fica FIXO na borda, nao no fim da fila: no fim da fila seria preciso arrastar para
+   alcanca-lo, que e exatamente o que ele existe para evitar. */
 .tabwrap{position:sticky;top:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--line)}
-.tabs{max-width:1180px;margin:0 auto;padding:7px 12px;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none}
+.tabrail{position:relative;max-width:1180px;margin:0 auto}
+.tabs{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:7px 12px;
+  scroll-behavior:smooth;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
 .tabs::-webkit-scrollbar{display:none}
+/* o degrade so existe do lado que tem conteudo escondido */
+.tabrail::before,.tabrail::after{content:"";position:absolute;top:0;bottom:0;width:34px;pointer-events:none;
+  z-index:2;opacity:0;transition:opacity .18s}
+.tabrail::before{left:0;background:linear-gradient(90deg,var(--surface),rgba(255,255,255,0))}
+.tabrail::after{right:0;background:linear-gradient(270deg,var(--surface),rgba(255,255,255,0))}
+.tabrail[data-ini="0"]::before{opacity:1}
+.tabrail[data-fim="0"]::after{opacity:1}
+/* a tira abre espaco para o botao sempre que ele existe, senao a ultima categoria fica embaixo dele */
+.tabrail[data-rola="1"] .tabs{padding-right:84px}
+.tabrail[data-rola="1"][data-fim="0"]::after{width:96px}
+.btodas{position:absolute;right:8px;top:50%;transform:translateY(-50%);z-index:3;display:none;
+  align-items:center;gap:4px;border:1px solid var(--line);background:var(--surface);color:var(--ink);
+  border-radius:999px;padding:8px 12px;font-size:13.5px;font-weight:800;min-height:40px;
+  box-shadow:0 2px 10px rgba(20,14,10,.14)}
+.tabrail[data-rola="1"] .btodas{display:inline-flex}
+.btodas svg{width:14px;height:14px;display:block}
+/* o balanco: anda 22px e volta, duas vezes. Nao e loop — animacao que nao para vira ruido. */
+@keyframes puxa{0%{transform:translateX(0)}18%{transform:translateX(-22px)}36%{transform:translateX(0)}
+  54%{transform:translateX(-14px)}72%{transform:translateX(0)}100%{transform:translateX(0)}}
+.tabs.dica{animation:puxa 1.5s ease-in-out .5s 1}
+
+/* A lista inteira de categorias, para quem sabe o que procura */
+.catlist{display:grid;gap:7px;padding:2px 0 14px}
+.catbtn{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;
+  border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;
+  padding:12px 14px;font-size:15px;font-weight:700;text-align:left;min-height:50px}
+.catbtn[aria-selected="true"]{border-color:var(--ink);background:var(--ink);color:var(--surface)}
+.catbtn.mine{border-color:var(--red);color:var(--red-ink)}
+.catbtn.mine[aria-selected="true"]{background:var(--red);border-color:var(--red);color:#fff}
+.catbtn .n{font-size:13px;font-weight:700;color:var(--ink-3);flex:0 0 auto}
+.catbtn[aria-selected="true"] .n{color:rgba(255,255,255,.7)}
+.catbtn .nome{min-width:0;display:flex;align-items:center;gap:7px}
 .tab{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);
   padding:9px 14px;font-size:14px;font-weight:700;border-radius:999px;white-space:nowrap;min-height:40px}
 .tab[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
@@ -311,7 +354,14 @@ main{max-width:1180px;margin:0 auto;padding:14px 12px}
 
 <div class="steps"><div class="steps-in" id="steps"></div></div>
 
-<div class="tabwrap"><div class="tabs" id="tabs" role="tablist"></div></div>
+<div class="tabwrap">
+  <div class="tabrail" id="tabrail" data-rola="0" data-ini="1" data-fim="1">
+    <div class="tabs" id="tabs" role="tablist"></div>
+    <button class="btodas" id="btodas" aria-haspopup="dialog" aria-label="Ver todas as categorias">Todas
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+  </div>
+</div>
 
 <main>
   <div class="regras" id="regras" hidden>
@@ -371,6 +421,14 @@ main{max-width:1180px;margin:0 auto;padding:14px 12px}
   </div>
 </div>
 
+<div class="modal" id="catModal" hidden>
+  <div class="sheet">
+    <div class="shhead"><h2>Categorias</h2><button class="x" id="catClose" aria-label="Fechar">&times;</button></div>
+    <div class="sub">Toque na categoria para ver os produtos dela.</div>
+    <div class="scroll"><div class="catlist" id="catList"></div></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="app_data.js"></script>
@@ -415,7 +473,7 @@ var activeTab="mine";
 var pendAdd={}; // cod -> fardos pendentes (antes de incluir)
 var els={};
 ["seg","ramoTitle","baseN","sugN","tabs","intro","grid","searchWrap","q","whoBox",
- "seg","segselWrap","subInfo","segheadWrap","steps","regras","regraMedia","tGrand","tItens","tFardos","tUn","tDisc","promo","btnResumo","btnPdf","btnWa",
+ "seg","segselWrap","subInfo","segheadWrap","steps","regras","regraMedia","tabrail","btodas","catModal","catList","catClose","tGrand","tItens","tFardos","tUn","tDisc","promo","btnResumo","btnPdf","btnWa",
  "modal","mTitle","mSub","mText","mNote","mClose","mCopy","mWa","toast"].forEach(function(id){els[id]=document.getElementById(id);});
 
 function pickSeg(){var h=(location.hash||"").replace(/^#/,"").replace(/~?adm$/i,"").replace(/^adm$/i,""); return (h&&D.segs[h])?h:segIds[0];}
@@ -448,10 +506,53 @@ function buildTabs(){
   });
   els.tabs.innerHTML=t.join("");
   Array.prototype.forEach.call(els.tabs.querySelectorAll(".tab"),function(b){
-    b.onclick=function(){activeTab=b.getAttribute("data-tab");
-      Array.prototype.forEach.call(els.tabs.querySelectorAll(".tab"),function(x){x.setAttribute("aria-selected",x===b);});
-      render(); window.scrollTo({top:0,behavior:"smooth"});};
+    b.onclick=function(){irParaAba(b.getAttribute("data-tab"));};
   });
+  atualizaTrilho();
+}
+function irParaAba(nome){
+  activeTab=nome;
+  Array.prototype.forEach.call(els.tabs.querySelectorAll(".tab"),function(x){
+    x.setAttribute("aria-selected", x.getAttribute("data-tab")===nome);
+  });
+  // deixa a aba ativa visivel na tira, senao quem escolheu pela lista nao se acha
+  var at=els.tabs.querySelector('.tab[aria-selected="true"]');
+  if(at&&at.scrollIntoView) try{ at.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"}); }catch(e){ at.scrollIntoView(); }
+  render(); window.scrollTo({top:0,behavior:"smooth"});
+}
+// Quanto ainda sobra para cada lado. 2px de folga porque o scroll fracionario do Android nunca
+// fecha a conta exata e a seta ficava acesa no fim da tira.
+function atualizaTrilho(){
+  var t=els.tabs, r=els.tabrail; if(!t||!r) return;
+  var sobra=t.scrollWidth-t.clientWidth-t.scrollLeft;
+  r.setAttribute("data-rola", t.scrollWidth-t.clientWidth>8 ? "1" : "0");
+  r.setAttribute("data-ini", t.scrollLeft>2 ? "0" : "1");
+  r.setAttribute("data-fim", sobra>2 ? "0" : "1");
+}
+// O balanco so faz sentido se houver mesmo o que arrastar, e so na PRIMEIRA abertura.
+var dicaFeita=false;
+function dicaDeArrastar(){
+  if(dicaFeita) return; 
+  var t=els.tabs; if(!t||t.scrollWidth-t.clientWidth<40) return;
+  if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  dicaFeita=true;
+  t.classList.add("dica");
+  setTimeout(function(){t.classList.remove("dica");},2200);
+}
+function abreCategorias(){
+  var L=[];
+  L.push('<button class="catbtn mine" data-tab="mine" aria-selected="'+(activeTab==="mine")+'">'
+    +'<span class="nome">Meu pedido</span><span class="n">'+Object.keys(cart).length+' no pedido</span></button>');
+  linhaOrder.forEach(function(l){
+    L.push('<button class="catbtn" data-tab="'+esc(l)+'" aria-selected="'+(activeTab===l)+'">'
+      +'<span class="nome">'+esc(l.replace(/^Linha /,""))+(isTeca(l)?'<span class="dot" title="linha nova"></span>':'')+'</span>'
+      +'<span class="n">'+linhas[l].length+'</span></button>');
+  });
+  els.catList.innerHTML=L.join("");
+  Array.prototype.forEach.call(els.catList.querySelectorAll(".catbtn"),function(b){
+    b.onclick=function(){ els.catModal.hidden=true; irParaAba(b.getAttribute("data-tab")); };
+  });
+  els.catModal.hidden=false;
 }
 function setMineCnt(){var e=document.getElementById("mineCnt"); if(e)e.textContent=Object.keys(cart).length;}
 
@@ -750,9 +851,18 @@ els.btnWa.onclick=function(){
 };
 els.btnPdf.onclick=makePDF;
 els.mClose.onclick=closeModal; els.modal.onclick=function(e){if(e.target===els.modal)closeModal();};
+els.btodas.onclick=abreCategorias;
+els.catClose.onclick=function(){els.catModal.hidden=true;};
+els.catModal.onclick=function(e){if(e.target===els.catModal)els.catModal.hidden=true;};
+els.tabs.addEventListener("scroll",atualizaTrilho,{passive:true});
+window.addEventListener("resize",atualizaTrilho);
 els.mCopy.onclick=function(){copyText(orderText(),"Pedido copiado!");};
 els.mWa.onclick=function(){openLink(waURL());};
-document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!els.modal.hidden)closeModal();});
+document.addEventListener("keydown",function(e){
+  if(e.key!=="Escape") return;
+  if(!els.catModal.hidden){els.catModal.hidden=true;return;}
+  if(!els.modal.hidden)closeModal();
+});
 (function(){
   // A barra cresce e encolhe (promocao aparece, desconto aparece). Reservar uma altura fixa no CSS
   // escondia produto atras dela em telefone pequeno — entao ela se mede e avisa o corpo.
@@ -767,6 +877,8 @@ window.addEventListener("hashchange",function(){var h=location.hash.replace(/^#/
 
 if(ADMIN){ els.segselWrap.hidden=false; els.subInfo.hidden=false; els.segheadWrap.hidden=false; buildSegSelect(); }
 loadSeg(pickSeg());
+// depois que as abas existem e o navegador ja calculou a largura delas
+setTimeout(function(){atualizaTrilho();dicaDeArrastar();},350);
 })();
 </script>
 
