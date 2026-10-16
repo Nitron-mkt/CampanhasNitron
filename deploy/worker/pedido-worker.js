@@ -16,7 +16,15 @@
 // Por isso qualquer caminho entrega a mesma pagina.
 //
 // Publicar o app:  POST host-upload?path=pedido.html com o HTML cru no corpo (ver README).
-// Deploy do Worker: wrangler deploy   (ou colar no editor do dashboard da Cloudflare)
+// Deploy do Worker: wrangler deploy -c deploy/worker/wrangler-pedido.toml
+//   (ou colar no editor do dashboard da Cloudflare)
+//
+// NOME DO WORKER = COMECO DA URL. O endereco e <nome-do-worker>.<subdominio-da-conta>.workers.dev,
+// entao o `name` do wrangler-pedido.toml (`pedido-nitron`) e o que aparece para o lojista. A
+// primeira publicacao foi feita pelo editor do dashboard, que sorteou `bitter-math-090f` — dai o
+// endereco antigo. Renomear move a rota workers.dev junto, e por isso o
+// `deploy/worker/redirect-antigo.js` existe: ele reivindica o nome antigo e devolve 301, senao os
+// links ja mandados por WhatsApp morrem.
 
 const BASE = "https://bwbeieumxcuomtrvlqxs.supabase.co/storage/v1/object/public/app/";
 const ARQ = "pedido.html";
