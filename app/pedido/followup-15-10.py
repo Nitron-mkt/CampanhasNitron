@@ -6,7 +6,7 @@
 # nenhuma promessa de horario ("ainda hoje") — licao de 17/09.
 import io, json
 
-L = "https://bitter-math-090f.marketing-da5.workers.dev/#"
+L = "https://pedido-nitron.marketing-da5.workers.dev/#"
 RODA_FECHA = ("Prazo de entrega, condição de pagamento e frete quem combina com você é a Camyla, "
         "do nosso comercial — eu só organizo o pedido pra chegar certo nela.")
 # As DUAS frases obrigatórias desde 16/10 (ordem do gestor; também gravadas na lição 280, que entra

@@ -9,7 +9,7 @@ set -u
 cd "$(dirname "$0")"
 K=$(cat .k); B=https://bwbeieumxcuomtrvlqxs.supabase.co/rest/v1
 H=(-H "apikey: $K" -H "Authorization: Bearer $K")
-BASE="https://bitter-math-090f.marketing-da5.workers.dev"
+BASE="https://pedido-nitron.marketing-da5.workers.dev"
 C=$(echo "${1:-}" | tr -cd '0-9')
 [ ${#C} -ne 14 ] && { echo "uso: ./ponte.sh <cnpj 14 digitos> [ramo forcado, ex R01]"; exit 1; }
 

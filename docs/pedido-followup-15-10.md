@@ -188,3 +188,31 @@ A folga de 2px na conta do fim é de propósito: o scroll fracionário do Androi
 exata e o degradê ficava aceso no fim da tira. Lista com 22 linhas (as 21 + "Meu pedido"), escolha
 por ela testada até o produto certo aparecer, sem erro de JS, zero estouro horizontal nas quatro
 larguras.
+
+
+## 16/10 (fim da tarde) — o link tem nome
+
+`bitter-math-090f.marketing-da5.workers.dev` era o nome que o editor do dashboard sorteou na
+primeira publicacao. O `deploy/worker/wrangler-pedido.toml` ja pedia `pedido-nitron` desde o comeco
+— o deploy e que nunca passou por ele.
+
+**Agora:** `https://pedido-nitron.marketing-da5.workers.dev/#<Regiao>-<Ramo>`
+
+O fim da URL e o segmento, e sai do CNAE do CNPJ que o cliente informou — o `ponte.sh` monta. Nao e
+decoracao: `#Sudeste-R01` e `#Nordeste-R04` entregam cestas diferentes.
+
+Conferido: endereco novo responde 200 com o md5 identico ao que foi publicado, e o painel do gestor
+(`gestordecampanhas.marketing-da5...`) ficou intacto — trocar o nome do Worker nao encosta no
+subdominio da conta.
+
+### O endereco antigo esta 404, e 11 lojistas tem ele
+
+Renomear moveu a rota workers.dev junto com o nome. Medido logo depois:
+`bitter-math-090f.marketing-da5.workers.dev` devolve **404**. Os 11 links que sairam em 15/10 estao
+mortos, e nenhum daqueles lojistas tinha aberto a pagina ate aqui.
+
+O conserto e o `deploy/worker/redirect-antigo.js`: um Worker de dez linhas com o nome **antigo**,
+que devolve 301 para o novo. O nome ficou livre com o rename, entao da para reivindica-lo. Custa
+zero e e melhor do que mandar mensagem de novo para 11 pessoas — pendura dois minutos no dashboard
+e os links de ontem voltam a funcionar sozinhos, com o segmento certo de cada um (o fragmento nao
+chega ao servidor; o navegador o reanexa no 301).
