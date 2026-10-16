@@ -1,5 +1,6 @@
 // nina-pedido-recebido — recebe o pedido montado na pagina do lojista, registra, e manda o
-// pedido COMPLETO por e-mail para quem atende (hoje a Camyla) e para o marketing. Devolve o codigo.
+// pedido COMPLETO por e-mail para quem atende (hoje a Camyla) e para o marketing, mais um aviso
+// curto por Zaptos para quem acompanha (pedido_avisar_fones). Devolve o codigo.
 //
 // Por que existe: o botao da pagina abria o WhatsApp com o pedido inteiro no texto. Numa cesta
 // de 55 itens isso da 6.114 caracteres de texto e uma URL de wa.me com 9.802 — muito acima do
@@ -167,9 +168,47 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ---- aviso curto por Zaptos para quem acompanha ----
+    // O e-mail vai para quem FECHA (a Camyla). Este aviso e para quem ACOMPANHA: pedido que entra
+    // nao pode esperar alguem abrir a caixa de e-mail. Lista propria em pedido_avisar_fones, e nao
+    // copiloto_responsaveis.avisar, que assina todo espelho de repasse — sao duas coisas.
+    const avisoFones = (conf.pedido_avisar_fones || "").split(/[,;]/)
+      .map((x) => x.replace(/\D/g, "")).filter((x) => x.length >= 10);
+    let aviso_zap: any = null;
+    if (avisoFones.length && (conf.pedido_aviso_ativo || "sim").toLowerCase() === "sim") {
+      const curto = [
+        `PEDIDO NOVO — ${codigo}`,
+        reg.loja ? `Loja: ${reg.loja}` : "",
+        reg.cnpj ? `CNPJ ${fmtDoc(reg.cnpj)}` : "",
+        reg.cidade ? `Cidade: ${reg.cidade}` : "",
+        reg.fone ? `WhatsApp: ${reg.fone}` : "",
+        "",
+        `${itens.length} produtos | ${int(fardos)} fardos | ${int(pecas)} pecas`,
+        `TOTAL: R$ ${brl(reg.total)}`,
+        "",
+        `Montado na pagina (${reg.segmento || "segmento nao informado"}). O pedido completo foi por e-mail para ${para || "ninguem"}.`,
+        "Ele NAO combinou preco, prazo, pagamento nem frete com ninguem.",
+      ].filter((x) => x !== "").join("\n");
+      aviso_zap = [];
+      for (const f of avisoFones) {
+        try {
+          const r = await fetch(`${URL_()}/functions/v1/campanhas-enviar`, {
+            method: "POST",
+            headers: { Authorization: "Bearer " + srvKey(), "Content-Type": "application/json" },
+            // usar_dono: o contato interno pode estar em nome de outra pessoa no CRM; sair pela
+            // instancia do dono e melhor do que o recado morrer por cadastro.
+            body: JSON.stringify({ canal: "whatsapp", fone: f, texto: curto,
+                                   instancia: conf.pedido_status_inst || "Camyla", usar_dono: true }),
+          });
+          const d = await r.json().catch(() => ({}));
+          aviso_zap.push({ fone: f, ok: !!d?.ok, motivo: d?.ok ? undefined : String(d?.motivo || "recusado").slice(0, 140) });
+        } catch (e) { aviso_zap.push({ fone: f, ok: false, motivo: String(e).slice(0, 140) }); }
+      }
+    }
+
     // A pagina so precisa do codigo e do resumo para montar a mensagem curta do WhatsApp.
     return j({
-      ok: true, codigo, id: row.id, email_ok,
+      ok: true, codigo, id: row.id, email_ok, aviso_zap,
       resumo: { produtos: itens.length, fardos, pecas, total: reg.total },
     });
   } catch (e) {

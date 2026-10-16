@@ -216,3 +216,74 @@ que devolve 301 para o novo. O nome ficou livre com o rename, entao da para reiv
 zero e e melhor do que mandar mensagem de novo para 11 pessoas — pendura dois minutos no dashboard
 e os links de ontem voltam a funcionar sozinhos, com o segmento certo de cada um (o fragmento nao
 chega ao servidor; o navegador o reanexa no 301).
+
+## 16/10 (noite) — a notificacao, e as tres primeiras respostas
+
+### Quem e avisado, e por que sao DUAS listas
+
+O gestor pediu para ser notificado do status desses contatos no 11970399053, e para incluir o
+**Ricardo Fonseca (11 98377-6720)**.
+
+A tentacao era por o Ricardo em `copiloto_responsaveis` com `avisar=true`. **Nao fiz**, e o motivo
+importa: aquela flag e lida pelo `copiloto-repasse`, pelo `copiloto-feedback` e pelo
+`copiloto-entrega` — quem a tem recebe o espelho de **todo** lead repassado e **toda**
+transferencia. Pedir "me avisa dos pedidos" nao e pedir "me manda os 84 avisos de lead".
+
+Entao a notificacao do pedido tem lista propria: `copiloto_config.pedido_avisar_fones`
+(`5511970399053, 5511983776720`). Uma palavra do gestor move o Ricardo para a outra lista, se for
+isso que ele quiser — mas e decisao dele, nao suposicao minha.
+
+### Duas saidas, porque sao dois momentos
+
+| quando | o que sai | para quem |
+|---|---|---|
+| **na hora** que um pedido entra | aviso curto por Zaptos: loja, CNPJ, total, quantos produtos | `pedido_avisar_fones` |
+| **resumo** (`pedido-status`) | os que pediram, os que responderam, os que estao calados | `pedido_avisar_fones` |
+
+O e-mail com o pedido COMPLETO continua indo para quem fecha (Camyla + marketing). O Zaptos e para
+quem acompanha: pedido que entra nao pode esperar alguem abrir a caixa de e-mail.
+
+A lista de contatos do relatorio **nao e chumbada**: sai do filtro jsonb
+`repasse_historico=cs.[{"acao":"followup_link"}]`. Quem receber o link amanha entra sozinho.
+
+**O que o relatorio NAO sabe, e diz que nao sabe:** se a pessoa abriu o link. O Worker da
+Cloudflare nao registra visita e nao ha pixel na pagina. Entre "mandei" e "mandou pedido" ha um vao
+cego.
+
+### Dois erros que a previa pegou antes de o relatorio sair
+
+Rodei com `?dry=1` antes de mandar, e ainda bem:
+
+1. **O relatorio dizia que a Agrocamp mandou pedido.** Nao mandou. O `PED-0003` e o meu teste de
+   ponta a ponta, e eu tinha posto o CNPJ da Agrocamp nele so para a linha de identificacao nao sair
+   vazia. O casamento por CNPJ fez o resto. Era exatamente o tipo de numero errado que nao pode
+   chegar ao gestor.
+2. **O `PED-0002` aparecia como pedido de fora da lista** — ele tem `origem='pagina'`, e o filtro so
+   tirava quem tem "teste" na origem.
+
+Conserto: os quatro pedidos de teste perderam `cnpj` e `fone` (nao casam mais com lead nenhum) e o
+`PED-0002` virou `origem='teste-pagina'`. **Dado de teste com cara de dado real e uma bomba-relogio
+num relatorio automatico** — a primeira vez que ela explodiu foi aqui, de graca.
+
+### E as tres primeiras respostas
+
+Os dez disparos de venda sairam 17:43–17:56 UTC. Ate 19:12, **tres responderam** — 25 a 75 minutos
+depois:
+
+- **Alex Fernandes (SP)** — *"Boa tarde, é preço final?"*, depois *"Comprando em grande quantidade,
+  pagamento à vista, tem algum desconto?"*. Ele **abriu a pagina e leu os precos**: e a primeira
+  prova de que alguem abriu. Depois: *"Tenho outro CNPJ com faturamento maior"* e
+  *"De qualquer forma o consultor vai ter que entrar em contato para pedidos"*.
+- **Maria Socorro (S. J. Rio Preto)** — *"Oi ok vou ver obrigado 😉"* e um 👍 na mensagem seguinte.
+- **Marcilio / Isabela Dias (MG)** — respondeu as 18:26.
+
+**A Nina respondeu sozinha aos tres, e respondeu bem.** Ao Alex: *"é o preço de fábrica mesmo, por
+peça, é a tabela real. Desconto por quantidade ou à vista quem fecha com você é o consultor — eu não
+mexo em preço"*, e repetiu o minimo e a media do ramo. A **licao 280 esta valendo na Nina ao vivo**,
+sem deploy, como era a intencao.
+
+**A objecao do Alex e o achado do dia:** *"de qualquer forma o consultor vai ter que entrar em
+contato para pedidos"*. Ele viu a pagina, entendeu o preco, e mesmo assim acha que precisa de um
+humano para pedir. Ou a mensagem nao convenceu, ou ele **prefere** assim. Com uma resposta so nao da
+para saber qual dos dois — e e a pergunta que decide se esta campanha vira canal de venda ou vira um
+catalogo bonito.
