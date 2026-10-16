@@ -287,3 +287,64 @@ contato para pedidos"*. Ele viu a pagina, entendeu o preco, e mesmo assim acha q
 humano para pedir. Ou a mensagem nao convenceu, ou ele **prefere** assim. Com uma resposta so nao da
 para saber qual dos dois — e e a pergunta que decide se esta campanha vira canal de venda ou vira um
 catalogo bonito.
+
+## 16/10 (fim do dia) — a Nina ASSUME, e o objetivo vira fechar venda
+
+Ordem do gestor, depois de ver o fluxo do Alex Fernandes: lead que esperou tempo demais pelo
+representante passa a ser atendido pela Nina **direto**, sem repassar para ninguem. O objetivo dela
+deixa de ser qualificar e repassar; passa a ser **fechar o pedido pela pagina**.
+
+### O caso que originou a ordem
+
+Alex Fernandes (lead 239), loja multinicho em Sao Paulo:
+
+| quando | o que |
+|---|---|
+| 28/09 12:21 | entra pelo anuncio, qualificado, ja sabe do minimo |
+| 28/09 13:01 | repassado ao **ADAO** em 40 minutos, `escopo='cidade'`, envio aceito |
+| 01/10 13:47 | tarefa 247 aberta no CRM, dona Camyla, entregue |
+| ate 16/10 | **18 dias, nenhum contato.** A tarefa segue `status='nova'` |
+| 16/10 14:49 | recebe o link, abre a pagina, pergunta se e preco final |
+
+**E a Nina nunca perguntou a ele se o ADAO ligou**, apesar de `feedback_dias=2`. O motivo e uma
+fila: o `copiloto-feedback` processa do **mais antigo para o mais novo** com teto de **20 por
+rodada**, e hoje ha **56 na fila**. A rodada termina no #224; o Alex e o **#21**. A chave
+`feedback_limite` ja esta em 20, que e o teto do codigo (`Math.min(..., 20)`), entao subir no banco
+nao resolve.
+
+### O que foi feito
+
+**Alex** recebeu a mensagem de tomada de conta, que teve de desfazer duas coisas: os 18 dias de
+silencio, e o que a propria Nina dissera duas horas antes (*"isso e com o consultor mesmo, ele vai
+te ligar pra fechar certinho"*). Quem muda de ideia avisa — nao faz de conta.
+
+**Mais oito**, pelo criterio mais indefensavel que existia: repassado a representante ha **21+
+dias**, quente, com CNPJ, e **nunca perguntado nada**. Monteiro Casa (28d), Mix 10 (25d), Tamaio
+(25d), Bazar da Mana (25d), Rei dos Achados (25d), Ponto do Real (24d), Princesas10 (24d), Minas
+Utilidades (21d). O nono (#71 Dona Antoninha) ficou de fora: o contato e da Monica no CRM, humano
+na conversa.
+
+Em **6 dos 8** o CNAE mandava a cesta errada outra vez.
+
+### Sobre desconto, o que ficou permitido e o que nao
+
+O gestor autorizou dizer que **pode** haver condicao melhor no fechamento, e **proibiu dizer
+quanto**. Entao a mensagem diz: a pagina ja aplica desconto por volume sozinha, e com o pedido bem
+montado ainda da para olhar a condicao com mais carinho — *"nao vou prometer numero porque nao sou
+eu quem define isso"*. Prazo, pagamento e frete continuam sendo de quem fecha.
+
+Isso virou a **licao 281**, que entra no prompt da Nina ao vivo sem deploy — necessario, porque sem
+ela a Nina continuaria dizendo "o consultor vai te ligar", que foi exatamente o que ela disse ao
+Alex as 18:22.
+
+### O que ficou em aberto, e e decisao do gestor
+
+1. **Sao 68 leads parados ha 14 dias ou mais** com representante (44 ha 21+ dias). Assumi 8. O
+   resto espera o criterio dele.
+2. **O representante nao foi avisado de que perdeu o lead.** O fluxo de transferencia que ele
+   aprovou em 18/09 sempre avisa o rep e abre a porta ("se voce falou e o cliente nao lembrou, me
+   avisa"). Assumir calado quebra isso. Nao avisei ninguem: 8 reps hoje, 68 depois, e uma
+   conversa que e dele, nao minha.
+3. **A ordem da fila de feedback esta errada para o objetivo.** Perguntar primeiro a quem esperou
+   28 dias e perguntar tarde de qualquer jeito. O certo seria priorizar quem **nunca** foi
+   perguntado, do mais recente para o mais antigo, e tirar o teto de 20 do codigo.
