@@ -743,6 +743,40 @@ que o botão novo da tela já oferece. Entre eles JOSÉ ALVES (306 clientes), MO
 **As 32 linhas do comunicado de 15/10 foram canceladas em 19/10 a pedido do gestor** — nunca tinham
 saído (a fila está desligada desde 15/10 17h14, e o último envio do comunicado foi 17h09).
 
+## As CONTAS do CRM foram transferidas: Elaine herdou a da Beatriz, Mara a da Isadora (19/10)
+
+O gestor mostrou a tela **Vendedores/Compradores** do Sankhya, coluna **"Apelido (Gerente)"**, já com
+**JULIETE, MARA e ELAINE KITAHARA**. Ele estava certo: **o Sankhya está atualizado.** O que estava
+velho era o **nosso** `instancia_ghl`.
+
+Conferido usuário por usuário no GHL (`/users/search`):
+
+| `usuario_ghl_id` | como chamávamos | quem É hoje no CRM | e-mail |
+|---|---|---|---|
+| `qZXd7wbATAFdznMpRPze` | "Beatriz" (`ativa=false`) | **Elaine Kitahara** | beatriz.farias@nitron.com.br |
+| `WlHZT90d36qnnXFbKzbl` | "Isadora" (pausada) | **Mara Oliveira** | vendas15@nitron.com.br |
+| `SajXOmyjd7MdoMLmbQ8D` | Juliete | Juliete Silva | vendas7@nitron.com.br |
+
+**As contas foram passadas para quem assumiu a carteira** — a Elaine herdou o login da Beatriz (o
+e-mail ainda é o dela) e a Mara herdou o da Isadora. Por isso o `AD_IDCRM` do gerente no Sankhya
+**nunca precisou mudar e sempre bateu**: o id é o mesmo. O que estava errado era só o **nome** que
+dávamos ao usuário — e o `ativa=false` posto quando a Beatriz saiu, que estava barrando **22
+representantes que hoje são da ELAINE**.
+
+**Lição que vale além deste caso:** quando alguém sai, a empresa **transfere a conta**, não cria
+outra. Então `instancia_ghl` tem de ser lida como "o usuário do CRM", não como "a pessoa". Antes de
+concluir que o ERP está desatualizado, **confira o `usuario_ghl_id` contra o `/users/search` do
+GHL** — foi o que desfez o diagnóstico errado de que o Sankhya apontava 31 reps para quem saiu.
+
+Corrigido por migração em 19/10: a instância virou **Elaine Kitahara** (`ativa=true`) e **Mara
+Oliveira**. Renomear foi seguro justamente nesse momento porque a fila estava vazia — as 285 linhas
+pendentes tinham acabado de ser canceladas, então nenhuma linha em aberto apontava para os nomes
+antigos; `rep_instancia` e `snap_rep` são derivadas e voltam no próximo refresh.
+
+**A pausa da ex-"Isadora" NÃO foi tocada.** Ela é de 28/09 e se refere ao **número** que caiu; trocar
+o nome não prova que o aparelho voltou. Hoje: Mara Oliveira 36 reps (**pausada**), Juliete 35,
+Elaine Kitahara 31, 1 sem instância cadastrada.
+
 ## A "assistente" do representante é o GERENTE dele no Sankhya (19/10)
 
 O gestor perguntou se o acesso ao Sankhya estava funcionando, por achar que já tinha ajustado as
