@@ -821,6 +821,62 @@ comunicações." **285 linhas canceladas** — as 32 do `rep_comunicado` de 15/1
 a fila está desligada desde 15/10 17h14. **As chaves continuam desligadas** — religar é decisão dele,
 e a combinação é reenviar depois do acerto.
 
+## `instancia_ghl.instancia` é um TOKEN do ZaptosWPP, não o nome da pessoa (19/10)
+
+Erro cometido e desfeito no mesmo dia: renomear a coluna `instancia` para "Elaine Kitahara" /
+"Mara Oliveira". **Essa coluna não é rótulo, é token.** O `campanhas-enviar` monta
+`#contact_instance:${instancia}`, espera o ZaptosWPP **confirmar a troca na conversa** e só então
+manda o texto — token que o app não reconhece nunca recebe ack, e a mensagem **não sai**
+("troca de instancia nao confirmada — texto nao enviado"). O nome é o do **aparelho no ZaptosWPP**,
+não o de quem opera.
+
+A prova está nas linhas que o próprio app escreveu, gravadas em `fila_envio.resultado`:
+`[System]: Isadora - The instance is disconnected.` (28/09), `[System]: Nina Financeiro - …`,
+`[System]: Juliete - …`, `[System]: Campanhas Nitron - …`.
+
+Então o token voltou a ser `Isadora` e `Beatriz`, e **a pessoa foi para `usuario_ghl`**:
+"Mara Oliveira (aparelho/instancia \"Isadora\")" e "Elaine Kitahara (aparelho/instancia \"Beatriz\")".
+Se os aparelhos forem renomeados no ZaptosWPP, aí sim o token muda — isso se confere **no app**, não
+se adivinha aqui.
+
+## Propriedade dos representantes passada para a assistente do Sankhya (19/10)
+
+O gestor: *"para mim a instância das duas estão ativas e operantes, antes de enviar as mensagens
+mande a mensagem de passar a instância para elas e começe o disparo normal como sempre combinado no
+CRM"*. Feito, nesta ordem:
+
+1. **Pausa liberada** no aparelho "Isadora" (hoje da Mara) — era de 28/09 e ele confirmou que está
+   operante.
+2. **`rep-dono-crm` v2** com `{"aplicar":true,"mover":true}`: **46 contatos**, 0 falhas —
+   3 que estavam sem dono e **43 movidos** para a assistente que o Sankhya manda.
+
+| de | para | reps |
+|---|---|---|
+| Nina | Beatriz *(Elaine)* | 15 |
+| Nina | Juliete | 12 |
+| Isadora *(Mara)* | Juliete | 5 |
+| Juliete | Beatriz *(Elaine)* | 4 |
+| Nina | Isadora *(Mara)* | 3 |
+| (sem dono) | Beatriz / Isadora | 2 / 1 |
+| Isadora | Beatriz | 2 |
+| Bianca → Juliete · Juliete → Isadora | | 1 · 1 |
+
+**Mover dono é a operação que custou dois dias em 15/09**, então a v2 é opt-in (`mover`) e **grava
+cada troca em `rep_dono_log` ANTES de chamar o GHL**, com o dono anterior — o GHL não guarda
+histórico de `assignedTo`, e sem esse log não haveria marcha a ré. Conferido antes de aplicar que o
+contato do gestor (11970399053) **não** estava na lista: ele continua da Nina, como tem de ser.
+
+**A "mensagem de passar a instância" é automática**: o `campanhas-enviar` manda
+`#contact_instance:<instância>` antes de cada texto e só envia depois do ack do app. Não é um passo
+separado.
+
+**Resultado na tela do comunicado: 89 dos 103 com Zaptos roteável** (Isadora/Mara 31, Juliete 30,
+Beatriz/Elaine 27, Camyla 1) e os outros 14 pelo e-mail, que o botão novo oferece. Antes, no
+comunicado de 14–15/10, 19 não recebiam nada.
+
+**Fila religada** (`wpp_ativo` e `email_ativo` = true, 19/10 16h12), com a fila vazia: o UPDATE só
+passa se `pendentes = 0`, justamente para não despejar backlog velho ao religar.
+
 ## Pendências esperando decisão do gestor (03/09/2026)
 
 1. **Bonificado e Troca contam como compra no roteiro?** O filtro novo conta **todo** `TIPMOV='P'`,
