@@ -651,6 +651,60 @@ enfileirando para uma instância pausada por três dias** — é o mesmo acúmul
 de setembro, só que agora por queda legítima. Pela regra 10 a instrução é do gestor; nada foi
 mexido. Vale um alerta quando a fila de uma instância pausada passar de X linhas ou Y horas.
 
+## A FILA ESTÁ DESLIGADA desde 15/10 (achado em 19/10)
+
+`fila_config.wpp_ativo = false` **e** `email_ativo = false`, gravados em **15/10 17:14:52**. O último
+envio de todos foi às 17h do mesmo dia. Desde então **nada sai** — nem Zaptos nem e-mail — e a fila
+só acumula. **285 linhas pendentes** quando isso foi descoberto, 4 dias depois:
+
+| campanha | canal | linhas | desde |
+|---|---|---|---|
+| cobranca_vencido | Zaptos | 39 | 15/10 |
+| rep_roteiro_visitas | e-mail / Zaptos | 37 / 35 | 16/10 |
+| rep_comunicado | Zaptos | 32 | 15/10 |
+| reativacao_email_cliente | e-mail | 29 | 16–19/10 |
+| cobranca_toque2/3/4/5 + resposta | Zaptos | 54 | 15–19/10 |
+| cobranca_alerta (interno) | e-mail + Zaptos | 38 | 15–19/10 |
+| rep_sugestao_produto / clube_saldo | Zaptos | 21 | 05–13/10 |
+
+**Desligar o `email_ativo` contraria a regra permanente nº 1**, que diz que essa chave NUNCA é
+desligada. O banco não guarda quem desligou nem por quê. **Não religado por conta própria**: religar
+despeja ~285 mensagens de uma vez, muitas com texto de 4 dias atrás (as de cobrança carregam valor e
+prazo que já mudaram). A ordem tem de vir do gestor, e antes dela vale revisar o que ainda faz
+sentido sair.
+
+**Isadora continua pausada desde 28/09** — 21 dias — com 66 linhas presas (comunicado, roteiro,
+sugestão de produto, clube). Ele disse em 28/09 "estou vendo e resolvendo"; não foi resolvido. Karla
+pausada desde 15/10 e Nina Financeiro desde 25/09.
+
+## Por que o comunicado "não pega todos os representantes" (19/10)
+
+A rede vem **completa**: `campanhas-comunicado` lê `rep_carteira`, que tinha **103 reps ativos do
+ERP** atualizados às 05h55 do próprio dia. O furo é na tela: um rep podia estar **marcado** e mesmo
+assim não gerar **nenhuma** linha, em silêncio.
+
+Duas causas, medidas no comunicado de 14–15/10 — **19 dos 103 não receberam nada**:
+
+1. **Sem dono no CRM (14 reps).** `comInst()` usa só `instancia_crm` quando `crm_lido` é true; sem
+   dono no GHL ela devolve null e o `comItens()` descarta a linha de Zaptos ("sairia pelo número
+   errado"). Como a caixa "mandar também por e-mail" **nasce desligada**, o rep fica com zero linhas.
+   Entre eles: **JOSÉ ALVES (306 clientes), PAULO HENRIQUE (165), WALDEMAR (159), LUCIANE VOGEL
+   (153), MORAES (152), MAURO (119), ROBERTO (41)**.
+2. **Só telefone fixo ou de rótulo duvidoso (5 reps).** `comTelForte()` descarta fixo e
+   `CRM·empresa`/`CRM·casado`, e não sobra nada para marcar: WALDEMBERG, OSCAR PIMENTEL, JOSE MANUEL,
+   MARCELO BEZERRA.
+
+**Todos os 19 têm e-mail cadastrado** — o buraco é de roteamento, não de cadastro de contato.
+
+A tela agora mostra, **antes de enviar**, um bloco amarelo com quantos ficam de fora, o motivo e os
+nomes, e um botão **"✉ Mandar por e-mail para N deles"** que liga o e-mail só de quem ficaria sem
+nada (não duplica para quem já tem Zaptos). O aviso **mostra e oferece** — quem decide é o gestor.
+O "N sem instância, fora" que existia aparecia só **depois** do envio, quando já não dava para agir.
+
+**O que isso deixa em aberto:** 14 representantes sem dono no CRM é problema de cadastro, e o ERP
+sabe quem deveria atendê-los (`rep_carteira.assist_idcrm`). Corrigir o `assignedTo` no GHL resolveria
+de vez — mas mexer em dono de contato é a regra que custou dois dias em 15/09. **Decisão do gestor.**
+
 ## Pendências esperando decisão do gestor (03/09/2026)
 
 1. **Bonificado e Troca contam como compra no roteiro?** O filtro novo conta **todo** `TIPMOV='P'`,

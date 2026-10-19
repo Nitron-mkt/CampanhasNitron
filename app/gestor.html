@@ -2106,6 +2106,58 @@
     var t = comTelForte(r); if (t) COMCT[comCk(r.codvend, "tel", t.valor)] = true;
     if (COMEMAIL) { var e0 = (r.emails || []).filter(function (x) { return !rotFuzzy(x.rotulo); })[0]; if (e0) COMCT[comCk(r.codvend, "em", e0.valor)] = true; }
   }
+  /* QUEM FICA DE FORA, E POR QUE (19/10). O gestor viu que o comunicado "nao pega todos os
+     representantes cadastrados no Sankhya". A rede vem completa (rep_carteira, 103 ativos do ERP),
+     mas o rep podia ser marcado e mesmo assim nao gerar NENHUMA linha, em silencio:
+       a) sem dono no CRM — comInst() devolve null e o comItens() descarta o Zaptos ("sairia pelo
+          numero errado"), e o e-mail nasce desligado. Resultado: zero linhas, sem aviso.
+       b) so telefone fixo, ou so telefone de rotulo duvidoso (CRM·empresa/CRM·casado) — o
+          comTelForte() nao acha nenhum para marcar.
+     Medido em 19/10 no ultimo comunicado: 19 dos 103 receberam nada — entre eles JOSE ALVES (306
+     clientes), PAULO HENRIQUE (165), WALDEMAR (159), LUCIANE (153), MORAES (152), MAURO (119).
+     TODOS os 19 tem e-mail cadastrado. O aviso aqui so MOSTRA e oferece; quem decide e o gestor. */
+  function comForaMotivo(r) {
+    var temTelMarcado = false, temEmailMarcado = false;
+    (r.telefones || []).forEach(function (t) { if (COMCT[comCk(r.codvend, "tel", t.valor)]) temTelMarcado = true; });
+    (r.emails || []).forEach(function (e) { if (COMCT[comCk(r.codvend, "em", e.valor)]) temEmailMarcado = true; });
+    if (temEmailMarcado) return null;
+    if (temTelMarcado && comInst(r)) return null;
+    if (temTelMarcado && !comInst(r)) return "sem dono no CRM — o Zaptos não tem por onde sair";
+    if (!(r.telefones || []).length && !(r.emails || []).length) return "sem telefone e sem e-mail no cadastro";
+    return "só telefone fixo ou duvidoso — nenhum celular para marcar";
+  }
+  function comFora() {
+    var out = [];
+    comReps().forEach(function (r) { if (!COMSEL[r.codvend]) return; var m = comForaMotivo(r); if (m) out.push({ r: r, motivo: m }); });
+    return out;
+  }
+  /* Liga o e-mail de quem ficaria sem nada. Nao mexe em quem ja tem Zaptos: o objetivo e tapar o
+     buraco, nao duplicar mensagem para quem ja recebe. */
+  function comEmailDosFora() {
+    var n = 0;
+    comFora().forEach(function (x) {
+      var e0 = (x.r.emails || []).filter(function (y) { return !rotFuzzy(y.rotulo); })[0] || (x.r.emails || [])[0];
+      if (!e0) return;
+      COMCT[comCk(x.r.codvend, "em", e0.valor)] = true; n++;
+    });
+    if (!n) return;
+    /* a caixa de e-mail precisa estar aberta, senao o texto do e-mail fica invisivel e vai o do Zaptos */
+    COMEMAIL = true;
+    comRender();
+  }
+  function comForaHTML() {
+    var f = comFora();
+    if (!f.length) return '';
+    var porMotivo = {};
+    f.forEach(function (x) { (porMotivo[x.motivo] = porMotivo[x.motivo] || []).push(x.r.nome); });
+    var comEmail = f.filter(function (x) { return (x.r.emails || []).length; }).length;
+    var h = '<div class="cbox" style="border-color:#f0d9a8;background:#fffaf0">'
+      + '<b>⚠ ' + f.length + ' representante' + (f.length > 1 ? 's' : '') + ' marcado' + (f.length > 1 ? 's' : '') + ' não vai receber nada</b>';
+    for (var m in porMotivo) h += '<div class="note" style="margin-top:6px"><b>' + esc(m) + '</b> — ' + esc(porMotivo[m].join(", ")) + '</div>';
+    if (comEmail) h += '<div class="cfoot" style="margin-top:8px"><button class="btn" id="comForaEmail">✉ Mandar por e-mail para ' + comEmail + ' deles</button>'
+      + '<span class="note">todos esses têm e-mail no cadastro</span></div>';
+    return h + '</div>';
+  }
   function abrirComunicado() {
     $("op-nome").textContent = "Comunicado aos representantes";
     $("op-meta").textContent = "Recado livre da gestão · o texto vale exatamente como você escrever · sai pela assistente de cada rep";
@@ -2193,6 +2245,7 @@
       + '<div id="comChips"></div><div class="fbig" id="comResumo" style="margin-top:4px"></div>'
       + '<div class="note" id="comCad" style="margin-top:2px"></div></div>'
       + '<div id="comLista"></div></div>';
+    h += comForaHTML();
     h += '<div class="cbox"><div class="cfoot"><button class="btn big ok" id="comFila">📅 Criar fila e enviar</button>'
       + '<button class="btn out" id="comTeste">Testar no meu e-mail</button>'
       + '<span class="note" id="comCadNota"></span><span class="fbig" id="comSt" style="margin-left:auto"></span></div>'
@@ -2350,6 +2403,7 @@
     var ap = $("comApagar"); if (ap) ap.addEventListener("click", comApagar);
     var sv = $("comSalvar"); if (sv) sv.addEventListener("click", comSalvar);
     var fl = $("comFila"); if (fl) fl.addEventListener("click", comFila);
+    var fe = $("comForaEmail"); if (fe) fe.addEventListener("click", comEmailDosFora);
     var ts = $("comTeste"); if (ts) ts.addEventListener("click", comTeste);
     midiaLigar("rep", comPreview);
   }
