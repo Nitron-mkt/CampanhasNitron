@@ -705,6 +705,44 @@ O "N sem instância, fora" que existia aparecia só **depois** do envio, quando 
 sabe quem deveria atendê-los (`rep_carteira.assist_idcrm`). Corrigir o `assignedTo` no GHL resolveria
 de vez — mas mexer em dono de contato é a regra que custou dois dias em 15/09. **Decisão do gestor.**
 
+## O Sankhya ainda aponta 31 representantes para a BEATRIZ, que saiu (19/10)
+
+O gestor autorizou em 19/10 marcar a assistente do ERP como dona do contato de quem está sem dono no
+CRM. A função **`rep-dono-crm`** faz isso, com `?seco=1` por padrão e `{"aplicar":true}` para
+escrever. Ela é estreita de propósito: **só escreve em contato que está HOJE sem dono** (trocar dono
+existente foi o que custou dois dias em 15/09 — esses vão para `ja_tinham_dono` e são pulados), só
+toca o telefone que o comunicado usaria, e só aceita assistente cadastrada em `instancia_ghl`.
+
+**O plano seco de 19/10 derrubou o diagnóstico anterior.** Dos 103 reps:
+
+| | |
+|---|---|
+| realmente sem dono no contato que o comunicado usa | **3** |
+| têm dono, mas o **ERP discorda** do CRM | **44** |
+| sem celular confiável / telefone fora do CRM | 20 |
+
+E o ERP, nesses 44, aponta: **Juliete 18, Beatriz 21, Isadora 5**. Somando os sem dono,
+**31 representantes têm a Beatriz como assistente no `rep_carteira.assist_idcrm`** — e a Beatriz
+está `ativa=false` no `instancia_ghl` e **não envia nada desde 25/08**. Seguir o ERP ao pé da letra
+hoje entregaria 31 reps a quem não atende mais.
+
+**Nada foi aplicado.** Os 3 sem dono cairiam em: LUCIANE VOGEL (153 clientes) → Beatriz,
+CICERO (3) → Beatriz, JOÃO CARLOS (**413 clientes**) → Isadora, que está pausada há 21 dias. Ou seja,
+os três continuariam sem receber. **A pergunta que destrava isso é quem substituiu a Beatriz** — e é
+do gestor.
+
+**Correção de cadastro, não de código:** `rep_carteira.assist_idcrm` vem do `AD_IDCRM` do gerente no
+Sankhya. Enquanto o ERP não for atualizado, qualquer regra que "siga o Sankhya" (regra 8) manda para
+uma pessoa que saiu.
+
+**Também achado:** 12 dos 14 reps que a tela mostra sem instância na verdade **não têm celular
+confiável nenhum** — só fixo ou rótulo `CRM·empresa`/`CRM·casado`. Para eles o caminho é o e-mail,
+que o botão novo da tela já oferece. Entre eles JOSÉ ALVES (306 clientes), MORAES (152), WALDEMAR
+(159), MARIA JULIA (82), NELSON (50), WALDEMBERG (43).
+
+**As 32 linhas do comunicado de 15/10 foram canceladas em 19/10 a pedido do gestor** — nunca tinham
+saído (a fila está desligada desde 15/10 17h14, e o último envio do comunicado foi 17h09).
+
 ## Pendências esperando decisão do gestor (03/09/2026)
 
 1. **Bonificado e Troca contam como compra no roteiro?** O filtro novo conta **todo** `TIPMOV='P'`,
