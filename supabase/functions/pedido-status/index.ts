@@ -54,21 +54,26 @@ const sp = (iso: string) => new Date(iso).toLocaleString("pt-BR", { timeZone: "A
 
 async function montar() {
   // os leads que receberam o link, ache quando receberem — nada chumbado aqui
+  // DOIS jeitos de ter recebido o link: o toque de follow-up e a tomada de conta. O `or` do
+  // PostgREST com `cs` em jsonb precisa dos parenteses e das virgulas escapadas pelo encodeURI.
+  const cs = (acao: string) => 'repasse_historico.cs.' + encodeURIComponent('[{"acao":"' + acao + '"}]');
   const leads: any[] = await rest(
     'copiloto_lead?select=id,nome,empresa,fone,cnpj,cidade,uf,status,ultima_resposta_em,repasse_historico' +
-    '&repasse_historico=cs.' + encodeURIComponent('[{"acao":"followup_link"}]') + '&order=id');
+    '&or=(' + cs("followup_link") + ',' + cs("nina_assumiu") + ')&order=id');
   const pedidos: any[] = await rest("pedido_recebido?select=id,codigo,loja,cnpj,fone,total,qtd_itens,criado,origem&order=id");
 
   const resp: any[] = [], mudos: any[] = [], comPedido: any[] = [];
   for (const L of leads) {
     const hist = Array.isArray(L.repasse_historico) ? L.repasse_historico : [];
-    const toques = hist.filter((h: any) => h?.acao === "followup_link");
+    const toques = hist.filter((h: any) => h?.acao === "followup_link" || h?.acao === "nina_assumiu");
+    const assumido = hist.some((h: any) => h?.acao === "nina_assumiu");
     const ultimo = toques[toques.length - 1];
     const quando = ultimo?.em || null;
     const linha = {
       id: L.id, nome: L.empresa || L.nome || L.fone, cnpj: d10(L.cnpj), fone: L.fone,
       praca: [L.cidade, L.uf].filter(Boolean).join("/"), toques: toques.length,
       toque_em: quando, segmento: ultimo?.segmento || "",
+      assumido,
       respondeu: !!(quando && L.ultima_resposta_em && new Date(L.ultima_resposta_em) > new Date(quando)),
       resp_em: L.ultima_resposta_em,
     };
@@ -101,12 +106,12 @@ async function montar() {
   }
   if (resp.length) {
     L.push("--- RESPONDERAM, AINDA SEM PEDIDO ---");
-    for (const x of resp) L.push(`${x.nome} (${x.praca || "-"}) — respondeu ${haDias(x.resp_em)}`);
+    for (const x of resp) L.push(`${x.nome} (${x.praca || "-"}) — respondeu ${haDias(x.resp_em)}${x.assumido ? " [a Nina assumiu]" : ""}`);
     L.push("");
   }
   if (mudos.length) {
     L.push("--- SEM RESPOSTA ATE AGORA ---");
-    for (const x of mudos) L.push(`${x.nome} (${x.praca || "-"}) — link ${haDias(x.toque_em)}, ${x.toques} toque(s)`);
+    for (const x of mudos) L.push(`${x.nome} (${x.praca || "-"}) — link ${haDias(x.toque_em)}, ${x.toques} toque(s)${x.assumido ? " [a Nina assumiu]" : ""}`);
     L.push("");
   }
   if (soltos.length) {
