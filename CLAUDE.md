@@ -743,6 +743,50 @@ que o botão novo da tela já oferece. Entre eles JOSÉ ALVES (306 clientes), MO
 **As 32 linhas do comunicado de 15/10 foram canceladas em 19/10 a pedido do gestor** — nunca tinham
 saído (a fila está desligada desde 15/10 17h14, e o último envio do comunicado foi 17h09).
 
+## A "assistente" do representante é o GERENTE dele no Sankhya (19/10)
+
+O gestor perguntou se o acesso ao Sankhya estava funcionando, por achar que já tinha ajustado as
+assistentes por lá. **O acesso funciona** — o `rep-refresh` foi rodado à mão às 14h51 de 19/10 e
+trouxe os 103 reps. O que mudou foi entender **qual campo** estamos lendo:
+
+```sql
+SELECT v.CODVEND, v.APELIDO, v.CODPARC, v.AD_IDCRM, vg.AD_IDCRM, v.AD_CELULAR, v.EMAIL
+  FROM TGFVEN v LEFT JOIN TGFVEN vg ON vg.CODVEND = v.CODGER
+ WHERE v.TIPVEND='R' AND v.ATIVO='S'
+```
+
+`rep_carteira.assist_idcrm` é o **`AD_IDCRM` do GERENTE do representante** — o gerente é o
+`TGFVEN.CODGER` do próprio vendedor. **Não existe um campo "assistente"**: quem define quem atende o
+rep é o **Gerente** no cadastro dele. O `cache-refresh` lê o mesmo caminho (`a.CODVEND = v.CODGER`).
+Então, para trocar a assistente de um rep no Sankhya, muda-se o **gerente** daquele vendedor. Mexer
+em qualquer outro campo não chega até aqui.
+
+**Depois da releitura de 19/10 às 14h51, a divisão continua:**
+
+| assistente pelo ERP | reps | estado no CRM |
+|---|---|---|
+| Isadora | 36 | **pausada desde 28/09** |
+| Juliete | 35 | ativa |
+| **Beatriz** | **31** | **`ativa=false`, não envia desde 25/08** |
+| (id fora do `instancia_ghl`) | 1 | — |
+
+Os 31 da Beatriz, por carteira: MILTON, HELENA SANTOS S, CARLINHOS, INACIO, PAULO HENRIQUE, LUCIANE
+VOGEL, MORAES, MAURO, MARIA JULIA, ADÃO, HERMES, GIOVANE, FABIO, LUCIO, REGINALDO, MARCELO, FRANCIEL,
+FIGUEROA, JUNIOR, MAURI CONCI, PLINIO, JOÃO ANTONIO, RONALDO JR, JUSTINO AUGUSTO, JOSE MANUEL,
+CICERO, PAULO LACERDA, RAFAEL C, GEORGE SERRA, MICHELLA, ALESANDRA Q.
+
+**Nada de dono foi aplicado**: aplicar o ERP hoje entregaria 31 reps à Beatriz, que saiu, e 36 à
+Isadora, que está pausada — ou seja, 67 dos 103 continuariam sem receber. O passo que destrava é no
+**cadastro do Sankhya** (gerente do vendedor), não no código.
+
+## Fila zerada a pedido do gestor (19/10)
+
+"Desse painel pode cancelar tudo que está pendente, depois que ajustarmos, colocamos para reenviar as
+comunicações." **285 linhas canceladas** — as 32 do `rep_comunicado` de 15/10 e as outras 253
+(cobrança 93, roteiro 72, reativação 29, alerta interno 38, sugestão/clube 21). Nenhuma tinha saído:
+a fila está desligada desde 15/10 17h14. **As chaves continuam desligadas** — religar é decisão dele,
+e a combinação é reenviar depois do acerto.
+
 ## Pendências esperando decisão do gestor (03/09/2026)
 
 1. **Bonificado e Troca contam como compra no roteiro?** O filtro novo conta **todo** `TIPMOV='P'`,
