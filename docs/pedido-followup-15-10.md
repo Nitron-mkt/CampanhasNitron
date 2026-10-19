@@ -348,3 +348,27 @@ Alex as 18:22.
 3. **A ordem da fila de feedback esta errada para o objetivo.** Perguntar primeiro a quem esperou
    28 dias e perguntar tarde de qualquer jeito. O certo seria priorizar quem **nunca** foi
    perguntado, do mais recente para o mais antigo, e tirar o teto de 20 do codigo.
+
+## 19/10 — a objecao do Alex nao era a que eu achava
+
+Depois da mensagem em que a Nina assumiu (16/10, 16:53), o Alex respondeu **tres minutos depois**
+citando uma mensagem de 28/09 — a do catalogo em PDF — com uma frase so:
+
+> *"Gostaria de fazer a pesquisa no catalogo inteiro"*
+
+**A objecao dele nunca foi "preciso de um humano para pedir".** Era *"essa lista e pequena demais
+para a minha loja"* — e, olhando so a cesta de 42 itens que abre na tela, ele tem razao. Loja
+multinicho nao se abastece com 42 SKUs.
+
+E a pagina **ja tem o catalogo inteiro**: 639 produtos em 21 categorias, na tira de categorias e no
+botao *Todas* que entrou na propria sexta. A Nina respondeu oferecendo mandar foto de produto,
+porque **nenhuma licao contava isso a ela**. O cliente pediu exatamente o que a ferramenta faz, e a
+ferramenta nao soube dizer que fazia.
+
+Virou a **licao 306**, com as palavras exatas: *"toque em Todas, no alto da pagina, que abre o
+catalogo inteiro por categoria"*. O PDF continua existindo para folhear — mas quem vai MONTAR
+pedido vai pela pagina, porque no PDF nao da para fechar.
+
+**E eu deixei o lead parado de sexta 17:03 ate segunda 16:20 sem voltar.** O objetivo passou a ser
+fechar venda e o Alex era o teste; a Nina respondeu a pergunta dele sozinha, mas ninguem fechou o
+circuito na coisa que de fato o travava. Erro meu, nao do sistema.
