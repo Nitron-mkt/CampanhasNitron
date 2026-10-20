@@ -123,3 +123,36 @@ Em 20/10, depois de o gestor dizer "arrumei uma coisa no codigo", conferi:
 Ou seja: a edicao **nao salvou no GHL**, ou foi feita num arquivo fora dele. Os testes 2, 3 e 4
 foram enviados com o HTML corrigido por fora — **o modelo que esta no GHL ainda tem o
 `{{email.unsubscribe_link}}` solto no texto**, e vai encolher de novo se for disparado assim.
+
+## Envio 6 (TESTE 5) — eu estava consertando a doenca errada
+
+O gestor mandou comparar com o da manha. Era a pergunta certa. **A diferenca nao e largura, e a
+tecnica de colunas:**
+
+| | o da manha (renderizou certo) | a versao "Att" (empilha) |
+|---|---|---|
+| hero | `<td class="hero-col" width="57%">` e `width="43%"` | `<div style="display:inline-block;max-width:340px">` |
+| cartoes | `<td class="card-cell" width="50%">` (12 celulas) | `<div style="display:inline-block;max-width:300px">` |
+| empilha quando | so pela media query (<=660px) | **sempre que o container for menor que a soma** |
+
+Celula de tabela com largura em **porcentagem** nunca empilha sozinha — 57% e 43% de qualquer
+largura continuam lado a lado. `inline-block` com `max-width` em **pixels** depende de caber, e o
+cliente do gestor nao estava colocando esses divs lado a lado de jeito nenhum.
+
+Por isso reduzir a escala (560, depois 500) **nao mudou nada**: eu estava tratando sintoma de outra
+doenca. Duas rodadas gastas.
+
+**O envio 6 e o HTML da manha** — as 12 celulas de cartao e as 2 colunas de hero intactas, zero
+`inline-block` fora do botao do CTA — **com as tres correcoes por cima**:
+
+1. `alt` do logo do rodape (estava `width="350" ="Nitron. Toda casa tem."`);
+2. `&utm_source=chatgpt.com` removido da URL do botao;
+3. descadastro como **link** (`clique aqui`) + `word-break` na celula.
+
+Arquivo: `app/email/nitronmob-FINAL.html`. As versoes em escala 560 e 500 foram apagadas — nao
+serviam.
+
+**Nota sobre o `maior_palavra_visivel` do `?conferir=`:** no envio 6 ele devolve 120, mas e CSS de
+dentro do `<style>`, nao texto visivel — o extrator tira tags, nao o conteudo de `<style>`. O da
+manha dava o mesmo 120 e renderizava bem. O indicador so vale quando a sequencia longa aparece
+tambem no campo `rodape`.
