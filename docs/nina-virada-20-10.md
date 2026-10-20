@@ -92,3 +92,58 @@ procurou e ficou 29 dias esperando.
 A faixa 6 (257) e a maior e a mais fraca: conversou e nunca deu CNPJ. Com a licao 318 pedindo o
 CNPJ no comeco, a proxima leva nao deve repetir esse buraco — e esses 257 sao justamente o teste
 de quanto a mudanca vale.
+
+## Correcao e ajustes da segunda rodada (ainda 20/10)
+
+### A Valeria ja estava fora — o erro foi meu
+
+Eu escrevi "venda interna (Monica/Valeria)" e "Monica e Valeria carregam 1.114 conversas", como se
+as duas estivessem recebendo lead. **Nao estavam.** `copiloto_venda_interna` mostra a Valeria com
+`ativo=false` desde **15/10**, com a observacao "DESLIGADA por ordem do gestor: repasse de venda
+interna vai so para a Monica". Nenhum lead foi para ela depois dessa data. As 495 conversas dela
+sao historico de carteira, nao fila de lead.
+
+### A porta para a Monica fechou, e so o CLIENTE abre
+
+`copiloto_config.repasse_ativa = 'nao'`. **Nada mais cai na Monica por decisao de maquina.**
+
+A ordem do gestor: passa "quando a nina perguntar se pode seguir com o atendimento ou quer um
+atendimento humano, porem so depois que qualificar o lead, isso e, quando o lead falar o CNPJ,
+saber do pedido minimo e disser que realmente quer comprar".
+
+Virou `nina-passar-monica` (cron 199, `*/10 11-22 * * 1-6`), que so passa quando **as tres**
+respondem sim:
+
+1. existe tarefa da Nina registrando que o cliente pediu atendente humano;
+2. o lead tem CNPJ de 14 digitos;
+3. consta que ele sabe do pedido minimo.
+
+Faltando uma, nao passa **e diz qual faltou**. "So depois que qualificar" aqui tem definicao, nao
+opiniao. Testado: recusou corretamente um lead que ja tinha sido repassado.
+
+O `copiloto-repasse-15min` (cron 150) continua ligado de proposito — com `repasse_ativa=nao` ele
+nao faz nada, e sao duas travas em vez de uma.
+
+### Licoes 322 a 325
+
+| licao | regra |
+|---|---|
+| **322** | quem fecha e a Nina; a unica passagem possivel e para a **Monica**; a Valeria nao recebe lead desde 15/10 — nunca citar o nome dela, nunca prometer representante |
+| **323** | qualificado sao **tres coisas juntas**: informou CNPJ, sabe do minimo e nao recuou, e disse com clareza que quer comprar. Faltando uma, a Nina **continua atendendo e nao passa**. "Vou ver" nao e lead qualificado |
+| **324** | so depois disso ela **pergunta**: "posso seguir te atendendo por aqui mesmo, ou voce prefere falar com uma atendente?". "Pode seguir" → ela fecha pela pagina de pedido. "Prefiro atendente" → abre a tarefa e para de conduzir. **A escolha e do cliente** |
+| **325** | a Nina **nao atende representante** — rep ja tem a assistente dele |
+
+### As mensagens aos representantes passam a se identificar
+
+O gestor mandou: pode sair pelo numero das meninas, mas tem de ficar claro que **quem fala e a
+Nina** e que **e uma pesquisa**. As 46 que ainda nao tinham saido foram reescritas:
+
+> Oi Fulano! Aqui e a **NINA**, da Nitron.
+> Estou escrevendo pelo numero da assistente que te atende, mas quem fala aqui sou eu.
+>
+> E uma **pesquisa rapida** sobre os leads de anuncio que te passamos.
+
+No grupo A, que e aviso e nao pesquisa, a linha e "E um aviso sobre os leads de anuncio, e tambem
+uma conferencia" — dizer "pesquisa" ali seria falso.
+
+**As 9 primeiras sairam sem essa identificacao** (CARLOS ALFAYA, e mais 8). Fica registrado.
