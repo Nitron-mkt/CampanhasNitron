@@ -448,6 +448,12 @@ var MINIMO=2500;
 function discountRate(sub){ if(sub>15000)return .15; if(sub>5000)return .10; return 0; }
 // Modo interno (vendedor): mostra seletor de segmento, curva e penetração. Cliente não vê.
 var ADMIN = (location.hash||"").toLowerCase().indexOf("adm")>=0;
+// Onde a visita e registrada. A pagina manda e esquece: se isto falhar, o lojista nao ve nada.
+var VISITA_API = "https://bwbeieumxcuomtrvlqxs.supabase.co/functions/v1/pedido-visita";
+// A marca e lida UMA VEZ, aqui, antes de qualquer coisa: o loadSeg reescreve o hash para so o
+// segmento (history.replaceState), entao quem for ler depois ja nao a encontra. Medido — a
+// primeira versao deste ping mandava marca vazia exatamente por isso.
+var MARCA = (function(){var h=(location.hash||"").replace(/^#/,"");var i=h.indexOf("~");return i<0?"":h.slice(i+1);})();
 function openLink(url){ var a=document.createElement("a"); a.href=url; a.target="_blank"; a.rel="noopener noreferrer"; document.body.appendChild(a); a.click(); setTimeout(function(){a.remove();},0); }
 
 var D = window.DATA || {segs:{},catalogo:[]};
@@ -476,7 +482,10 @@ var els={};
  "seg","segselWrap","subInfo","segheadWrap","steps","regras","regraMedia","tabrail","btodas","catModal","catList","catClose","tGrand","tItens","tFardos","tUn","tDisc","promo","btnResumo","btnPdf","btnWa",
  "modal","mTitle","mSub","mText","mNote","mClose","mCopy","mWa","toast"].forEach(function(id){els[id]=document.getElementById(id);});
 
-function pickSeg(){var h=(location.hash||"").replace(/^#/,"").replace(/~?adm$/i,"").replace(/^adm$/i,""); return (h&&D.segs[h])?h:segIds[0];}
+// O hash e #<Segmento>[~<marca>]. A marca pode ser "adm" (visao interna) ou "L23" (o id do lead,
+// para o pedido-visita saber QUEM abriu). Tudo depois do ~ sai antes de procurar o segmento —
+// sem isto um link com marca cairia em D.segs[undefined] e entregaria a cesta errada.
+function pickSeg(){var h=(location.hash||"").replace(/^#/,"").split("~")[0].replace(/^adm$/i,""); return (h&&D.segs[h])?h:segIds[0];}
 function buildSegSelect(){els.seg.innerHTML=segIds.map(function(id){var s=D.segs[id];return '<option value="'+id+'">'+esc(s.reg)+' · '+esc(s.ramo)+'</option>';}).join("");}
 
 function loadSeg(id){
@@ -877,6 +886,22 @@ window.addEventListener("hashchange",function(){var h=location.hash.replace(/^#/
 
 if(ADMIN){ els.segselWrap.hidden=false; els.subInfo.hidden=false; els.segheadWrap.hidden=false; buildSegSelect(); }
 loadSeg(pickSeg());
+
+// Avisa que a pagina foi ABERTA. Era o unico buraco do relatorio: entre "mandei o link" e "mandou
+// pedido" nao havia nada, porque o Worker da Cloudflare nao registra visita. Manda e esquece —
+// sem await, sem tratar erro, sem travar nada do que o lojista veio fazer. A visao interna (~adm)
+// nao conta: somos nos olhando, nao cliente.
+(function(){
+  if(ADMIN) return;
+  var ss="";
+  try{ ss=sessionStorage.getItem("pv")||""; if(!ss){ ss=Date.now().toString(36)+Math.random().toString(36).slice(2,10); sessionStorage.setItem("pv",ss);} }
+  catch(e){ ss=Date.now().toString(36)+Math.random().toString(36).slice(2,10); }  // aba anonima: conta como visita, so nao deduplica
+  try{
+    fetch(VISITA_API,{method:"POST",keepalive:true,headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({segmento:curSeg,marca:MARCA,sessao:ss,referrer:document.referrer||""})}).catch(function(){});
+  }catch(e){}
+})();
+
 // depois que as abas existem e o navegador ja calculou a largura delas
 setTimeout(function(){atualizaTrilho();dicaDeArrastar();},350);
 })();

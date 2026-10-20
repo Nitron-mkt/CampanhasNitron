@@ -13,9 +13,12 @@
 // repasse_historico[].acao='followup_link', entao o filtro e `cs` (contains) em jsonb — quem
 // receber o link amanha entra no relatorio sozinho, sem deploy.
 //
-// O que esta funcao NAO sabe: se a pessoa ABRIU o link. O Worker da Cloudflare nao registra visita
-// e nao ha pixel na pagina. Entre "mandei" e "mandou pedido" existe um vao cego, e dizer o
-// contrario seria inventar. Para fechar esse vao seria preciso log no Worker.
+// ABERTURA DA PAGINA (desde 20/10): a pagina avisa a `pedido-visita` quando carrega, e a visita
+// cai em `pedido_visita`. Antes disso havia um vao cego entre "mandei" e "mandou pedido" — o
+// Worker da Cloudflare nao registra visita e nao havia pixel.
+// A visita so cola NA PESSOA se o link levou a marca `~L<id>` (o ponte.sh monta). Link sem marca
+// vira visita anonima: conta no total, nao conta em "fulano abriu". Os 29 primeiros links sairam
+// sem marca — para eles o relatorio continua sem saber quem abriu, e diz isso.
 //
 // Deploy: supabase functions deploy pedido-status
 // Uso:    ?dry=1 para ver o texto sem mandar  |  ?fone=55... para mandar so para um numero
@@ -44,10 +47,16 @@ async function cfg(): Promise<Record<string, string>> {
   return o;
 }
 
-// "ha 2 dias", "hoje" — numero na boca da Nina tem de sair de conta, nunca da mao (licao de 16/09)
+// "ha 2 dias", "hoje" — numero na boca da Nina tem de sair de conta, nunca da mao (licao de 16/09).
+// Conta DIA DE CALENDARIO em Sao Paulo, nao bloco de 24h: em 20/10 o relatorio dizia "link hoje"
+// para um toque das 16h27 de ONTEM, porque faltavam 4 horas para fechar as 24. Quem le "hoje" e
+// sabe que nada saiu hoje perde a confianca no resto do relatorio.
+const diaSP = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
 function haDias(iso: string | null) {
   if (!iso) return "";
-  const n = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  const a = Date.parse(diaSP(new Date(iso)) + "T12:00:00Z");
+  const b = Date.parse(diaSP(new Date()) + "T12:00:00Z");
+  const n = Math.round((b - a) / 86400000);
   return n <= 0 ? "hoje" : n === 1 ? "ontem" : "ha " + n + " dias";
 }
 const sp = (iso: string) => new Date(iso).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit" });
@@ -61,6 +70,10 @@ async function montar() {
     'copiloto_lead?select=id,nome,empresa,fone,cnpj,cidade,uf,status,ultima_resposta_em,repasse_historico' +
     '&or=(' + cs("followup_link") + ',' + cs("nina_assumiu") + ')&order=id');
   const pedidos: any[] = await rest("pedido_recebido?select=id,codigo,loja,cnpj,fone,total,qtd_itens,criado,origem&order=id");
+  const visitas: any[] = await rest("pedido_visita?select=id,lead_id,segmento,em&order=em");
+  const abertoPor = new Map<number, string>();   // lead -> quando abriu pela primeira vez
+  for (const v of visitas) if (v.lead_id && !abertoPor.has(v.lead_id)) abertoPor.set(v.lead_id, v.em);
+  const anonimas = visitas.filter((v: any) => !v.lead_id).length;
 
   const resp: any[] = [], mudos: any[] = [], comPedido: any[] = [];
   for (const L of leads) {
@@ -74,6 +87,7 @@ async function montar() {
       praca: [L.cidade, L.uf].filter(Boolean).join("/"), toques: toques.length,
       toque_em: quando, segmento: ultimo?.segmento || "",
       assumido,
+      abriu_em: abertoPor.get(L.id) || null,
       respondeu: !!(quando && L.ultima_resposta_em && new Date(L.ultima_resposta_em) > new Date(quando)),
       resp_em: L.ultima_resposta_em,
     };
@@ -94,6 +108,8 @@ async function montar() {
   L.push(new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }));
   L.push("");
   L.push("Pediram: " + comPedido.length + "   |   Responderam sem pedir: " + resp.length + "   |   Calados: " + mudos.length);
+  L.push("Abriram a pagina: " + abertoPor.size + " identificados" + (anonimas ? " + " + anonimas + " sem identificacao" : "")
+         + " (so da para identificar quem recebeu link com marca)");
   L.push("");
 
   if (comPedido.length) {
@@ -106,12 +122,12 @@ async function montar() {
   }
   if (resp.length) {
     L.push("--- RESPONDERAM, AINDA SEM PEDIDO ---");
-    for (const x of resp) L.push(`${x.nome} (${x.praca || "-"}) — respondeu ${haDias(x.resp_em)}${x.assumido ? " [a Nina assumiu]" : ""}`);
+    for (const x of resp) L.push(`${x.nome} (${x.praca || "-"}) — respondeu ${haDias(x.resp_em)}${x.abriu_em ? ", abriu a pagina " + haDias(x.abriu_em) : ""}${x.assumido ? " [a Nina assumiu]" : ""}`);
     L.push("");
   }
   if (mudos.length) {
     L.push("--- SEM RESPOSTA ATE AGORA ---");
-    for (const x of mudos) L.push(`${x.nome} (${x.praca || "-"}) — link ${haDias(x.toque_em)}, ${x.toques} toque(s)${x.assumido ? " [a Nina assumiu]" : ""}`);
+    for (const x of mudos) L.push(`${x.nome} (${x.praca || "-"}) — link ${haDias(x.toque_em)}, ${x.toques} toque(s)${x.abriu_em ? ", ABRIU a pagina " + haDias(x.abriu_em) : ""}${x.assumido ? " [a Nina assumiu]" : ""}`);
     L.push("");
   }
   if (soltos.length) {
@@ -119,8 +135,10 @@ async function montar() {
     for (const p of soltos) L.push(`${p.codigo} — ${p.loja || "(sem loja)"} — R$ ${brl(p.total)}, ${sp(p.criado)}`);
     L.push("");
   }
-  L.push("Quem abriu o link e quem nao abriu, isto NAO sabe: o Worker nao registra visita.");
-  return { texto: L.join("\n"), total: leads.length, pediram: comPedido.length, responderam: resp.length, mudos: mudos.length, soltos: soltos.length };
+  if (!visitas.length) L.push("Nenhuma abertura de pagina registrada ainda.");
+  L.push("Link mandado antes de 20/10 saiu sem marca: a abertura dele conta no total, mas nao tem nome.");
+  return { texto: L.join("\n"), total: leads.length, pediram: comPedido.length, responderam: resp.length,
+           mudos: mudos.length, soltos: soltos.length, abriram: abertoPor.size, visitas_anonimas: anonimas };
 }
 
 async function mandar(fone: string, texto: string, inst: string) {

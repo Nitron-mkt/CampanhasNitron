@@ -89,7 +89,13 @@ s = porseg[alvo]
 val = f"{float(s['valor_estimado'] or 0):,.0f}".replace(",", ".")
 print(f"\n  SEGMENTO: {alvo}   [{como}]")
 print(f"  {s['ramo_nome']} · {s['n_itens']} itens · base de {s['base_clientes']} lojas · cesta ~R$ {val}")
+# A marca ~L<id> e o que torna "abriu a pagina" atribuivel A PESSOA. Sem ela o pedido_visita so
+# sabe que alguem com aquela cesta entrou — e a cesta repete entre lojistas do mesmo ramo.
+# O lojista nao ve a marca: a pagina limpa a URL no primeiro carregamento (history.replaceState).
+marca = f"~L{lead[0]['id']}" if lead else ""
 print(f"\n  LINK PARA O CLIENTE:")
-print(f"    {BASE}/#{alvo}")
+print(f"    {BASE}/#{alvo}{marca}")
+if not marca:
+    print("    (sem lead no copiloto_lead: este link NAO fica atribuivel a ninguem no relatorio)")
 print(f"  (interno, com curva e penetracao: {BASE}/#{alvo}~adm)\n")
 PY

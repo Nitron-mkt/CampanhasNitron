@@ -474,3 +474,52 @@ inclusive. E decisao do gestor.
   perdeu o nome.
 - **`{{unsubscribe}}` renderiza VAZIO.** O rodape entregue diz "Para deixar de receber essas
   mensagens: " e termina ali. O e-mail esta saindo sem link de descadastro.
+
+## 20/10 — "quantos clicaram no link?" nao tinha resposta. Agora tem.
+
+A pergunta do gestor nao podia ser respondida: o Worker da Cloudflare nao registra visita, nao
+havia pixel, e o proprio `pedido-status` imprimia isso no rodape ("quem abriu o link e quem nao
+abriu, isto NAO sabe"). Entre "mandei o link" e "mandou pedido" havia um vao cego de cinco dias.
+
+**O que passou a existir:**
+
+| peca | o que faz |
+|---|---|
+| tabela `pedido_visita` | id, data, segmento, marca, lead_id, sessao, UA, referrer. RLS ligada, sem policy: so a chave de servico entra. A anon do painel foi **revogada** de proposito |
+| funcao `pedido-visita` (v2, `--no-verify-jwt`) | recebe o aviso do navegador e grava. Publica porque e o navegador do lojista que chama, igual ao `nina-pedido-recebido` |
+| `order_app.html` | no fim do arranque, um `fetch` keepalive que manda e esquece. **Nao sai na visao interna (`~adm`)** — somos nos olhando, nao cliente |
+| `ponte.sh` | passa a imprimir o link com a marca `~L<id>` quando o lead existe, e avisa quando nao existe |
+| `pedido-status` (v4) | nova linha "Abriram a pagina: N identificados + M sem identificacao", e cada pessoa da lista ganha ", ABRIU a pagina ha X dias" |
+
+### A marca `~L<id>` e o que faz a visita ter nome
+
+O hash `#Sudeste-R01` diz a **cesta**, e cesta repete entre lojistas do mesmo ramo — sozinho ele
+nao identifica ninguem. Por isso o link passa a sair `#Sudeste-R01~L23`. O lojista nao ve a marca:
+o `loadSeg` limpa a URL no primeiro carregamento (`history.replaceState`).
+
+**Armadilha que custou uma rodada de teste:** o ping lia a marca *depois* do `loadSeg`, ou seja
+depois de o hash ja ter sido limpo — chegava sempre vazia. Hoje a marca e lida UMA vez, em `MARCA`,
+no topo do script.
+
+**`pickSeg()` tambem teve de mudar.** Ele so sabia tirar o sufixo `~adm`; com `~L23` ele procurava
+`D.segs["Sudeste-R01~L23"]`, nao achava e **caia na primeira cesta da lista** — o lojista receberia
+a cesta errada. Agora corta tudo depois do `~`. Testado nos tres casos (`~L99`, sem marca, `~adm`)
+contra a pagina publicada: segmento certo nos tres, zero erro de JS, zero estouro horizontal.
+
+### Os 29 primeiros links nao tem como virar nome
+
+Sairam em 15, 16 e 19/10, sem marca. Se um deles abrir a pagina agora, entra como visita anonima:
+conta no total, nao cola na pessoa. O relatorio diz isso em vez de fingir.
+
+Para o retroativo existe **uma** fonte: o painel da Cloudflare (Workers & Pages -> `pedido-nitron`
+-> Metrics) conta requisicoes. Como o app e **um arquivo so**, requisicao ~ abertura de pagina. Nao
+diz quem, mas diz se alguem abriu. Nao tenho credencial da Cloudflare nesta sessao — e tela do
+gestor.
+
+### Dois reparos de passagem
+
+- **`haDias()` contava bloco de 24h, nao dia.** O relatorio dizia "link **hoje**" para o toque das
+  16h27 de **ontem** (faltavam 4 horas para fechar as 24). Agora conta dia de calendario em Sao
+  Paulo. E a doenca de 16/09 em escala pequena: numero errado na boca da Nina.
+- **`DELETE` puro pelo MCP do Supabase da timeout**; `with d as (delete ... returning id) select
+  count(*) from d` funciona. Anotado porque custou tres tentativas.
