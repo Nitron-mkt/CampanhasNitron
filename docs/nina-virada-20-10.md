@@ -264,3 +264,51 @@ O conserto nao e trocar dono de contato — e **o nome do token**. Sei o da Beat
 escreveu (`Elaine Kitahara`); o da Isadora/Mara eu **nao** vi e nao vou adivinhar: o
 `campanhas-enviar` confere o nome contra o token e recusa se divergir, entao chutar aqui so troca
 uma recusa por outra.
+
+## 20/10 (17h) — os dois tokens vieram do gestor, e o bind voltou
+
+Ele mandou as duas telas do ZaptosWPP:
+
+| numero | token (nome da instancia) | sessao |
+|---|---|---|
+| 5511964530909 | **Mara** | connected |
+| 5511958246668 | **Elaine Kitahara** | connected |
+
+Renomeado em cinco lugares, com o `usuario_ghl_id` **intacto** (e ele que define o numero de saida:
+`WlHZT90d36qnnXFbKzbl` para a Mara, `qZXd7wbATAFdznMpRPze` para a Elaine):
+
+| onde | o que mudou |
+|---|---|
+| `instancia_ghl` | as duas linhas passaram a se chamar `Mara` e `Elaine Kitahara`; `pausada_em` limpo |
+| `assistente_instancia` | idem |
+| `instancia_alias` | `isadora`→Mara e `beatriz`→Elaine Kitahara (os apelidos velhos **continuam resolvendo**), mais `mara`, `elaine kitahara` e `elaine` |
+| `snap_rep.assistente` | 43 linhas |
+| `fila_envio` pendente | 1 linha |
+
+Conferido depois: **zero** referencia a "Isadora" ou "Beatriz" nos cinco lugares. O teste foi o
+DIVINO (dono Mara, que tinha falhado tres vezes seguidas por `troca de instancia nao confirmada`):
+passou de primeira.
+
+`rep_carteira.assist_idcrm` ficou como estava de proposito — guarda id de usuario do CRM, que nao
+mudou.
+
+### A fila dos representantes, depois do conserto
+
+Grupo A (os que nao chamaram os leads) saiu inteiro: **15 de 15 entregues**. B e C seguem saindo a
+2 por rodada. A unica recusa que sobra nao e de bind: **ARY CARVALHO, telefone fixo (sem WhatsApp)**.
+
+## 20/10 (17h45) — Bolsao 10: "nao compro no escuro" nao e fim de conversa
+
+O lead 254 (Ed Carlos, **Bolsao 10**, CNPJ 68.687.822/0001-26, Cubatao/SP), repassado ao MILTON em
+28/09, respondeu a pesquisa de hoje assim: *"Formato de vcs nao me interessa. Escolho produto para
+depois saber preco nao e algo legal de se fazer. Nunca comprei algo no escuro."*
+
+A Nina abriu a tarefa #403 com a decisao em aberto. **O gestor decidiu: mandar o link e dizer que
+tem preco sim.** Feito — `#Sudeste-R01~L254`, pela instancia Nina, entrega confirmada.
+
+A objecao dele era contra o catalogo sem preco, nao contra a Nitron: a pagina de pedido mostra o
+preco de cada produto, soma o total na tela e aplica o desconto sozinha (10% acima de R$ 5.000, 15%
+acima de R$ 15.000). Isso virou `copiloto_licoes` **#326** — entra no prompt sem deploy, entao vale
+para o proximo lead que disser a mesma coisa, e nao so para este.
+
+Tarefa #403 marcada como resolvida com o motivo no corpo.
