@@ -147,3 +147,65 @@ No grupo A, que e aviso e nao pesquisa, a linha e "E um aviso sobre os leads de 
 uma conferencia" — dizer "pesquisa" ali seria falso.
 
 **As 9 primeiras sairam sem essa identificacao** (CARLOS ALFAYA, e mais 8). Fica registrado.
+
+## O envio aos representantes parou — e nao e o texto, e o ZaptosWPP
+
+Das 55 mensagens, **14 sairam** e **41 estao presas**. Vale registrar o caminho ate a causa, porque
+eu errei duas vezes antes de achar.
+
+**Primeiro erro meu:** vi 24 recusas de "troca de instancia nao confirmada" e chamei de transitorio.
+Devolvi tudo a fila e tentei de novo. **Falhou nos mesmos.** Nao era transitorio.
+
+**Segundo erro meu:** concluí que era lentidao do ack do `#contact_instance` sob rajada, alarguei a
+janela de 25s para 55s e mandei um. **Falhou igual.** Tambem nao era pressa.
+
+**A causa real** estava escrita na propria conversa, que e sempre onde ela esta nesta casa. No
+contato do DIVINO e no do LUCIO:
+
+```
+[System]: The specified instance does not exist.
+```
+
+Nao e queda de sessao (`instance is disconnected`), que e o sinal que a gente ja conhecia. E outra
+coisa: **o token da instancia nao existe mais no aplicativo**. Confirmado em duas — **Isadora** e
+**Beatriz** — e as duas sao exatamente as que o CLAUDE.md registra como "reativadas em 19/10/2026".
+Reativar a linha na nossa tabela nao recriou a instancia no ZaptosWPP.
+
+E a tabela `instancia_ghl` dizia `ativa=true, pausada_em=null` para as duas. **O nosso registro
+estava mentindo sobre as duas ha pelo menos um dia.**
+
+### Quem esta preso
+
+Dos 41 que faltam, por dona do contato no CRM:
+
+| instancia | reps presos | estado |
+|---|---|---|
+| **Isadora** | 17 | token nao existe no app |
+| **Beatriz** | 16 | token nao existe no app |
+| Juliete | 6 | funciona (o primeiro envio do dia saiu por ela) |
+| Nina | 1 | funciona |
+| sem dono | 1 | — |
+
+**33 dos 41 dependem de duas instancias que nao existem.** Pausei as duas (`pausada_em`), que e a
+unica acao automatica que o CLAUDE.md autoriza sem perguntar — e aqui ela so evita queimar
+tentativa, porque o `campanhas-enviar` ja estava recusando corretamente em vez de mandar pelo
+numero errado.
+
+### O alarme que ja existia e ninguem leu
+
+Na mesma varredura apareceu, na conversa do Renato, um e-mail automatico:
+
+> "O numero da Bianca continua fora do ar ha 26h30. A cobranca PAROU de enviar por WhatsApp —
+> nenhum numero de pe."
+
+Ou seja: **tres instancias de cobranca fora** (Bianca, Karla, Nina Financeiro), mais Isadora e
+Beatriz inexistentes, mais a Campanhas Nitron restringida desde agosto. Sobram de pe: Camyla,
+Estevany, Juliete, Monica, Nina e Valeria.
+
+### O que isso diz sobre o `vigia-instancia`
+
+Esta e a terceira vez registrada neste repositorio que uma instancia cai e a gente descobre tarde
+(02/10 com a Nina, 19/10 com a Bianca, agora). O `vigia-instancia` esta **escrito e nunca
+publicado** (`vigia_inst_ativo='nao'`). E ele hoje so procura `instance is disconnected` — **nao
+reconheceria** `The specified instance does not exist`, que e o caso de agora. Precisa dos dois
+padroes.

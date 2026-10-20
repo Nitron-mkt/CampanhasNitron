@@ -11,6 +11,13 @@
 // manda POUCAS por chamada, com pausa, e e o cron que repete — assim nenhuma chamada chega perto
 // do limite de tempo da edge function e nada estoura o teto do Zaptos.
 //
+// ESPERA DO BIND, medido em 20/10: na primeira rodada 24 de 39 envios foram RECUSADOS com "troca
+// de instancia nao confirmada". Nao era instancia morta — a mesma Isadora ora passava ora falhava.
+// E o ack do `#contact_instance` demorando mais que os 25s padrao (BIND_ESPERA_MS) quando varios
+// binds saem em sequencia: cada um troca a sessao do ZaptosWPP, e o app vai ficando lento para
+// confirmar. Por isso aqui a janela vai a 55s e so UMA mensagem sai por chamada. Fica lento de
+// proposito: a recusa esta certa, o que estava errado era a pressa.
+//
 // Uso:  ?n=4   manda ate 4 e para   |   ?status=1   quanto falta
 // Deploy: supabase functions deploy rep-aviso-enviar
 
@@ -46,7 +53,7 @@ Deno.serve(async (req) => {
                  falhas: l.filter((x) => x.enviado_em && !x.ok).map((x) => ({ rep: x.rep, erro: String(x.erro || "").slice(0, 120) })) });
     }
 
-    const n = Math.min(Math.max(1, Number(u.searchParams.get("n") || 4) | 0), 6);
+    const n = Math.min(Math.max(1, Number(u.searchParams.get("n") || 1) | 0), 2);
     const r = await rest(`rep_aviso_lead?select=id,rep,fone,grupo,texto&enviado_em=is.null&order=grupo,id&limit=${n}`);
     const fila: any[] = await r.json();
     if (!fila.length) return j({ ok: true, fim: "fila vazia" });
@@ -60,7 +67,7 @@ Deno.serve(async (req) => {
         // O numero de saida E o assignedTo, entao honrar o dono e o que faz a mensagem sair; e de
         // quebra espalha a carga entre instancias em vez de empilhar tudo numa so.
         body: JSON.stringify({ canal: "whatsapp", fone: x.fone, texto: x.texto,
-                               instancia: "Camyla", usar_dono: true }),
+                               instancia: "Camyla", usar_dono: true, espera_ms: 55000 }),
       });
       const d = await env.json().catch(() => ({}));
       const ok = !!d?.ok;
@@ -70,7 +77,7 @@ Deno.serve(async (req) => {
                                erro: ok ? null : String(d?.motivo || "recusado").slice(0, 200) }),
       });
       saida.push({ rep: x.rep, grupo: x.grupo, ok });
-      await dorme(25000);   // 25s entre uma e outra: abaixo do teto de 2/min por instancia
+      await dorme(8000);   // o bind ja gasta quase um minuto por envio; 8s bastam para o teto de 2/min
     }
     return j({ ok: true, mandados: saida.filter((s) => s.ok).length, detalhe: saida });
   } catch (e) {
