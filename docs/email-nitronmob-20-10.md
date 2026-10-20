@@ -239,3 +239,22 @@ Mesma licao de 26/08 com o Zaptos, agora no e-mail. Numa amostra de 12 mensagens
 por conta de amostra — num dominio virgem a taxa de rejeicao e o que decide se a rampa continua ou
 para. Dai o `?entrega=1`, que varre os `message_id` gravados e pergunta ao GHL o estado real de
 cada um, e o `?status=1`, que passa a mostrar `entrega_real` e `taxa_rejeicao` ao lado dos aceites.
+
+### Entrega real do lote 1 — os 100 conferidos um a um
+
+| estado no GHL | quantos |
+|---|---|
+| `delivered` | **86** |
+| `opened` | **8** |
+| `sent` (ainda em transito) | 5 |
+| `failed` | **1** (`jefferson.borges@grupocvlb.com.br`, CVLB BRASIL) |
+
+**Taxa de rejeicao: 1%.** Para dominio virgem e bom — o perigo com Gmail e Outlook comeca acima de
+5%. A amostra de 12 que eu tinha olhado antes dava 1 em 12 (8%) e teria levado a uma conclusao
+errada; por isso o `?entrega=1` varre os 100, e nao uma amostra.
+
+**8 aberturas em ~40 minutos**, todas de cliente `Em dia` — ATEF, BIG BAM, CENTERLAR, PAGUE MENOS,
+PALACE, SANTORO HOME, SOSIL, WP3. E a evidencia de que comecar a rampa pelos engajados estava
+certo: abertura cedo e o que constroi reputacao de dominio novo.
+
+**Verde para o lote 2.** Restam 5.267 aptos, 143 deles engajados.
