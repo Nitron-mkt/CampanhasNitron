@@ -1,24 +1,30 @@
 // nina-email-arte — manda uma arte do construtor de e-mail do GHL informando o remetente.
 //
-// ATENCAO — ESTA FUNCAO NAO RESOLVE O REMETENTE. Medido em 20/10, e a conclusao e o contrario do
-// que esta funcao foi escrita para fazer:
+// O REMETENTE SO VALE SE O DOMINIO ESTIVER VERIFICADO NA LOCATION. Medido duas vezes, com
+// resultados opostos, e a diferenca explica a regra:
 //
-//   O GHL ACEITA o `emailFrom` e o IGNORA. A chamada volta 201 {"msg":"Email queued successfully"},
-//   esta funcao devolve `de=timecomercial@email.nitron.com.br` — e o GET
-//   /conversations/messages/email/DlDnYlfWQojJBz4LdrWM, do proprio e-mail entregue, traz
-//   "from":"Nitron <marketing@nitron.com.br>". Quem decide o remetente e a configuracao da
-//   location, nao o corpo da chamada. Nao ha endpoint na API para ler nem para trocar essa
-//   configuracao (procurado em 20/10): e tela do GHL, em Settings -> Email Services.
+//   20/10 manha — pedi `timecomercial@email.nitron.com.br`. O GHL respondeu 201 "Email queued
+//   successfully" e entregou com "from":"Nitron <marketing@nitron.com.br>". Ignorou o campo.
+//   20/10 tarde — o gestor verificou o subdominio `crm.nitron.com.br` no GHL. Pedi
+//   `comercial@crm.nitron.com.br` e o e-mail entregue veio
+//   "from":"Nitron <comercial@crm.nitron.com.br>". Honrou.
 //
-// Consequencia do remetente ser `marketing@nitron.com.br`: o dominio do From (nitron.com.br) e
-// diferente do dominio que assina o envio (email.nitron.com.br, o autenticado no Mailgun/LC). Por
-// isso o Outlook mostra o Return-Path cru — `marketing=nitron.com.br@email.nitron.com.br` — e o
-// "em nome de". Isso NAO se conserta por codigo; conserta-se pondo o From num endereco de
-// email.nitron.com.br.
+// Ou seja: o GHL **cai calado** no remetente padrao da location quando o dominio do `emailFrom`
+// nao esta verificado. Nao devolve erro, nao avisa — a chamada volta 201 nos dois casos. Por isso
+// **nunca confie na resposta da API**: confira o remetente real com
+// `GET /conversations/messages/email/{id}`, que e de onde sairam as duas medicoes acima.
 //
-// O que esta funcao continua servindo: mandar uma arte do construtor para um destino avulso sem
-// passar por campanha. O campo `de` fica porque nao atrapalha e porque, se o GHL passar a honra-lo,
-// ja esta no lugar.
+// `email.nitron.com.br` NAO EXISTE MAIS (NXDOMAIN em dois resolvedores, 20/10) — foi substituido
+// pelo `crm.nitron.com.br`, que tem SPF (leadconnectorhq + mailgun), MX do Mailgun e DKIM em `k1`
+// e `default`. Nada no codigo nem no banco aponta para o dominio morto; o remetente e decidido
+// pela configuracao da location.
+//
+// Quando o dominio do From bate com o dominio que assina o envio, o Outlook para de mostrar o
+// Return-Path cru (`marketing=nitron.com.br@email.nitron.com.br`) e o "em nome de". Era esse o
+// sintoma que o gestor cobrava.
+//
+// O que esta funcao serve: mandar uma arte do construtor para um destino avulso, pelo remetente
+// que se quiser, sem passar por campanha.
 //
 // Esta funcao e separada de proposito: mexer no campanhas-enviar, de que dependem todas as
 // campanhas, para resolver um caso de remetente seria risco desproporcional. Aqui o raio de
@@ -88,11 +94,11 @@ Deno.serve(async (req) => {
     if (!contactId) return j({ ok: false, erro: "nao achei/criei contato para " + email, lookup: d }, 500);
 
     const payload: any = { type: "Email", contactId, subject: String(b.assunto || "Nitron"), html };
-    // o GHL aceita e IGNORA este campo (medido 20/10) — ver o cabecalho. Fica porque nao custa.
+    // so e honrado se o dominio estiver verificado na location — ver o cabecalho
     if (de) payload.emailFrom = de;
     const r = await ghl("POST", "/conversations/messages", payload, "2021-04-15");
     const txt = (await r.text()).slice(0, 400);
-    return j({ ok: r.status >= 200 && r.status < 300, http: r.status, contactId, de_pedido: de || "(padrao da location)", de_real: "o GHL ignora emailFrom — confira com GET /conversations/messages/email/{id}",
+    return j({ ok: r.status >= 200 && r.status < 300, http: r.status, contactId, de_pedido: de || "(padrao da location)", de_real: "confira em GET /conversations/messages/email/{id} — a API responde 201 mesmo quando ignora",
                arte_ok, tamanho_html: html.length, resposta: txt });
   } catch (e) { return j({ ok: false, erro: String(e).slice(0, 300) }, 500); }
 });
