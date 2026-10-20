@@ -156,3 +156,52 @@ serviam.
 dentro do `<style>`, nao texto visivel — o extrator tira tags, nao o conteudo de `<style>`. O da
 manha dava o mesmo 120 e renderizava bem. O indicador so vale quando a sequencia longa aparece
 tambem no campo `rodape`.
+
+## O disparo para a base — `nitronmob-disparar` (20/10, aprovado pelo gestor)
+
+Aprovado o TESTE 5, o gestor mandou comecar: **100 hoje**, validando antes de abrir.
+
+### Por que uma funcao nova, e nao o `campanhas-enviar`
+
+| | `campanhas-enviar` | `nitronmob-disparar` |
+|---|---|---|
+| remetente | **nao informa `emailFrom`** (linha 259) → sairia por `marketing@nitron.com.br` | `comercial@crm.nitron.com.br` |
+| arte | so por `templateId` do construtor — e o modelo de la ainda encolhe | o HTML aprovado, de `app/nitronmob.html` no storage |
+
+Mexer no `campanhas-enviar` para isto seria risco desproporcional: dele dependem todas as
+campanhas. O raio de alcance desta funcao nova e so o lancamento.
+
+### A audiencia: view `nitronmob_apto`
+
+Tira, por regra escrita na view e nao na funcao:
+
+- **representante** (`snap_rep.email`, `email_crm`, `email_parc`) — a licao do `rep_contato_extra`;
+- **time interno** (`copiloto_responsaveis`, `@nitron.com.br`, `@hyakgroup.com.br`);
+- **cadastro poluido** (`contato_cadastro_poluido`);
+- e-mail que aparece em **mais de 3 clientes** — e contador ou agencia, nao lojista;
+- **caixa que nao decide compra**: `contasapagar@`, `financeiro@`, `fiscal@`, `nfe@`, `cobranca@`,
+  `sac@`, `noreply@`… Isto saiu da **previa do lote 1**, que trouxe `contasapagar@modenuti.com.br`
+  e `contasapagar@campineiraud.com.br`. Lancamento de produto para o financeiro nao vende e custa
+  reclamacao — e reclamacao em dominio novo vale caro;
+- **quem ja recebeu** (`nitronmob_envio`, indice unico em `lower(email)`).
+
+Sobram **5.375 aptos**, dos quais **251 engajados** (Em dia + Giro a vencer).
+
+### A ordem importa mais que o numero
+
+A view devolve ordenado por `prioridade`: Em dia → Giro a vencer → Giro vencido → Reativacao →
+Perdido. **Dominio novo se aquece com abertura**, e quem abre e quem compra. Comecar pelos 4.136 da
+reativacao seria o jeito mais rapido de queimar `crm.nitron.com.br` antes de ele ter reputacao.
+
+### Teto de 40 por chamada
+
+Cada envio custa ~1,5s (lookup + GHL) mais a pausa de 1s. 100 numa chamada so estouraria o limite
+de tempo da edge function. 40 cabe com folga; 100 sao tres chamadas. E a mesma conta que fez o lote
+da reativacao ser 12.
+
+### Grava antes de mandar
+
+A linha em `nitronmob_envio` e criada **antes** do envio. Se a funcao morrer no meio, o que saiu
+fica registrado e a proxima chamada nao repete. O preco disso e um terceiro estado: `ok=false` com
+`erro` vazio significa **interrompido — nao da para saber se saiu**. O `?status=1` conta isso em
+coluna propria (`desconhecidos`) em vez de mentir dizendo "falhou".
