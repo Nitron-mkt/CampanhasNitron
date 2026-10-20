@@ -258,3 +258,76 @@ PALACE, SANTORO HOME, SOSIL, WP3. E a evidencia de que comecar a rampa pelos eng
 certo: abertura cedo e o que constroi reputacao de dominio novo.
 
 **Verde para o lote 2.** Restam 5.267 aptos, 143 deles engajados.
+
+## A rampa automatica, o vigia da Nina e os tres crons (20/10)
+
+Ordem do gestor, nesta ordem: continuar amanha aumentando a quantidade; mandar o status para o
+WhatsApp dele; e **a Nina avisar quando chegar contato interessado** pelo botao do e-mail.
+
+### 1. A rampa — `nitronmob-rampa` (cron 194, `*/5 12-20 * * 1-5`)
+
+Nao manda nada: faz a conta e aperta o botao do `nitronmob-disparar`. Separada de proposito —
+o disparador e o que toca em 5 mil clientes e ja esta validado; mexer nele para acrescentar cron
+seria mexer no que funciona.
+
+O ritmo mora em `copiloto_config.nitronmob_rampa` = `100,250,500,1000,2000,2000`: um teto por DIA.
+Hoje foi o dia 1 (100). Amanha vira 250, depois 500, 1000, 2000. **Mudar o ritmo e um UPDATE, nao
+um deploy.** O cron rodar de 5 em 5 minutos nao manda mais e-mail: so termina o teto do dia mais
+cedo e para.
+
+**O freio.** Se a taxa de rejeicao passar de `nitronmob_rejeicao_max` (5%), o dia **nao comeca** e
+o gestor e avisado por Zaptos na hora. E o unico caso em que isto para sozinho, e vale a excecao:
+parar e-mail promocional nao e travar campanha de ninguem — e a diferenca entre perder um lote e
+perder o dominio. Dominio novo que insiste com rejeicao alta leva a base inteira para o spam.
+
+A taxa so conta a partir de **50 conferidos**. Abaixo disso uma unica falha vira 2% ou 8% conforme
+o acaso — foi exatamente o que aconteceu no lote 1, onde 1 em 12 parecia 8% e nos 100 deu 1%.
+
+**Imprecisao conhecida, e conservadora:** o teto do dia conta LINHAS gravadas, nao envios aceitos.
+Os 8 recusados de hoje contaram contra os 100. Erra para menos, que e o lado certo de errar numa
+rampa.
+
+### 2. A entrega — cron 195 (`15,45 12-23 * * *`)
+
+`nitronmob-disparar?entrega=1` meia hora depois de cada rodada. "Aceito pelo GHL" nunca foi
+"chegou", e e dessa leitura que sai o numero que alimenta o freio acima.
+
+### 3. O contato que chega pela Nina — `nitronmob-nina` (cron 196, `*/10 0,9-23 * * *`)
+
+O botao do e-mail abre o WhatsApp da Nina com um texto pronto:
+
+> "Olá! Vi o e-mail da NitronMob e gostaria de saber mais."
+
+**Essa frase e a unica prova de que o contato veio do e-mail.** O `wa.me` nao carrega parametro
+nosso, o GHL grava `source: WhatsApp` para todo mundo e o lead nao traz mais nada. E a mesma
+historia do lead do Google (`copiloto-lead` v12): a prova mora no texto da primeira mensagem, e se
+ninguem ler, morre ali.
+
+A funcao varre as conversas nascidas nas ultimas 96h, acha a assinatura (sem acento, sem caixa,
+sem pontuacao — `nitron mob` + `e-mail`, para pegar tambem quem edita o texto antes de mandar),
+grava em `nitronmob_contato` e **avisa o gestor por Zaptos**, com o nome, o telefone e o que a
+pessoa escreveu. Grava antes de avisar: se o envio falhar, o contato nao se perde, e a chave
+primaria impede aviso duplicado.
+
+Matcher testado em 10 frases (variacoes de acento, caixa, hifen, "nitron mob" separado, e tres
+casos que NAO podem casar) — 10 de 10.
+
+**Ela nao responde ao cliente.** Quem conversa e a Nina de sempre, pelo `copiloto-lead`. O que
+ensina a linha a ela sao as licoes **315, 316 e 317**, que entram no prompt sem deploy:
+
+| licao | o que diz |
+|---|---|
+| 315 | o que e a linha, os 13 itens, e que contato vindo do e-mail da NitronMob e lead deste lancamento — perguntar o que ele quer saber e qual item chamou a atencao |
+| 316 | os valores do e-mail sao condicao de Clube Varejo / Acelera Nitron: a Nina **confirma** o que esta escrito, mas nao negocia preco, nao promete desconto, nao inventa prazo nem estoque. Minimo de R$ 2.500 vale igual |
+| 317 | quem veio do botao **ja clicou em comprar**: atender primeiro, qualificar depois. Nao devolver com pergunta generica antes de responder o que ele perguntou |
+
+### Como parar qualquer uma das tres
+
+```sql
+update copiloto_config set valor='nao' where chave='nitronmob_auto';          -- para a rampa
+update copiloto_config set valor='nao' where chave='nitronmob_vigia_ativo';   -- para o aviso
+select cron.unschedule('nitronmob-rampa-5min');                               -- ou o cron inteiro
+```
+
+A chave desliga o comportamento; o cron desliga a batida. Sao duas travas de proposito — a licao de
+16/09: uma linha de configuracao nao pode ser a unica coisa entre o silencio e a base inteira.
