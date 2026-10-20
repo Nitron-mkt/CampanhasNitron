@@ -11,8 +11,7 @@
 //
 // Ou seja: o GHL **cai calado** no remetente padrao da location quando o dominio do `emailFrom`
 // nao esta verificado. Nao devolve erro, nao avisa — a chamada volta 201 nos dois casos. Por isso
-// **nunca confie na resposta da API**: confira o remetente real com
-// `GET /conversations/messages/email/{id}`, que e de onde sairam as duas medicoes acima.
+// **nunca confie na resposta da API**: confira o remetente real com `?conferir=<messageId>`.
 //
 // `email.nitron.com.br` NAO EXISTE MAIS (NXDOMAIN em dois resolvedores, 20/10) — foi substituido
 // pelo `crm.nitron.com.br`, que tem SPF (leadconnectorhq + mailgun), MX do Mailgun e DKIM em `k1`
@@ -20,8 +19,7 @@
 // pela configuracao da location.
 //
 // Quando o dominio do From bate com o dominio que assina o envio, o Outlook para de mostrar o
-// Return-Path cru (`marketing=nitron.com.br@email.nitron.com.br`) e o "em nome de". Era esse o
-// sintoma que o gestor cobrava.
+// Return-Path cru (`marketing=nitron.com.br@email.nitron.com.br`) e o "em nome de".
 //
 // O que esta funcao serve: mandar uma arte do construtor para um destino avulso, pelo remetente
 // que se quiser, sem passar por campanha.
@@ -32,8 +30,9 @@
 //
 // Uso:
 //   POST { "templateId": "<id da arte>", "email": "destino@x.com", "assunto": "...",
-//          "de": "timecomercial@email.nitron.com.br", "nome": "Fulano" }
+//          "de": "comercial@crm.nitron.com.br", "nome": "Fulano" }
 //   ou  { "html": "<html>...", ... } para mandar um HTML pronto.
+//   GET ?conferir=<messageId> para ler o que FOI ENTREGUE.
 //
 // Deploy: supabase functions deploy nina-email-arte
 
@@ -69,8 +68,35 @@ async function arteHtml(templateId: string): Promise<string | null> {
   } catch { return null; }
 }
 
+// GET ?conferir=<messageId> — le a mensagem ENTREGUE e devolve so o que importa.
+// Existe porque a regra desta funcao e "nao confie no 201": o remetente real e o corpo real so
+// aparecem aqui. Devolver o HTML inteiro (40 KB) para ler quatro campos nao serve a ninguem.
+//
+// `maior_palavra_visivel` nao e curiosidade: em 20/10 o rodape passou a imprimir o link de
+// descadastro como TEXTO CRU (430 caracteres sem espaco). Uma sequencia assim nao quebra linha,
+// estoura a largura da tabela e o Outlook ENCOLHE o e-mail inteiro para caber. Acima de ~80
+// caracteres, desconfie.
+async function conferir(id: string) {
+  const r = await ghl("GET", `/conversations/messages/email/${id}`, null, "2021-04-15");
+  const d = await r.json().catch(() => ({} as any));
+  const m = d?.emailMessage || {};
+  const body = String(m.body || "");
+  const semTags = body.replace(/<[^>]*>/g, " ");
+  const i = semTags.indexOf("Para deixar de receber");
+  return {
+    ok: r.ok, http: r.status,
+    de: m.from, para: m.to, assunto: m.subject, status: m.status, provedor: m.provider,
+    tamanho_corpo: body.length,
+    maior_palavra_visivel: semTags.split(/\s+/).reduce((a: string, b: string) => (b.length > a.length ? b : a), "").slice(0, 120),
+    rodape: i < 0 ? "(nao achei o rodape)" : semTags.slice(i, i + 200).replace(/\s+/g, " "),
+  };
+}
+
 Deno.serve(async (req) => {
-  if (req.method !== "POST") return j({ ok: false, erro: "use POST" }, 405);
+  const u = new URL(req.url);
+  const id = u.searchParams.get("conferir");
+  if (id) { try { return j(await conferir(id)); } catch (e) { return j({ ok: false, erro: String(e).slice(0, 200) }, 500); } }
+  if (req.method !== "POST") return j({ ok: false, erro: "use POST, ou GET ?conferir=<messageId>" }, 405);
   try {
     const b = await req.json().catch(() => ({} as any));
     const email = String(b.email || "").trim();
@@ -98,7 +124,11 @@ Deno.serve(async (req) => {
     if (de) payload.emailFrom = de;
     const r = await ghl("POST", "/conversations/messages", payload, "2021-04-15");
     const txt = (await r.text()).slice(0, 400);
-    return j({ ok: r.status >= 200 && r.status < 300, http: r.status, contactId, de_pedido: de || "(padrao da location)", de_real: "confira em GET /conversations/messages/email/{id} — a API responde 201 mesmo quando ignora",
+    let msgId = "";
+    try { msgId = JSON.parse(txt)?.emailMessageId || ""; } catch { /* resposta nao-JSON */ }
+    return j({ ok: r.status >= 200 && r.status < 300, http: r.status, contactId,
+               de_pedido: de || "(padrao da location)",
+               confira_em: msgId ? `?conferir=${msgId}` : "(sem messageId na resposta)",
                arte_ok, tamanho_html: html.length, resposta: txt });
   } catch (e) { return j({ ok: false, erro: String(e).slice(0, 300) }, 500); }
 });
