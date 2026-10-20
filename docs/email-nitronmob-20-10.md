@@ -73,3 +73,24 @@ disparo em massa.
 2. `email.nitron.com.br` **nao existe mais** (NXDOMAIN em dois resolvedores). Nada no codigo nem no
    banco aponta para ele, mas fluxo montado na mao no GHL pode apontar.
 3. Conferir o envio real com `?conferir=`, nao com a resposta da API.
+
+## Envio 4 (TESTE 3) — a escala
+
+Depois do conserto do rodape o e-mail voltou ao tamanho normal, mas **empilhado**: o hero virou
+titulo em cima e foto embaixo, e os cartoes foram um por linha. Nao e defeito do modelo — e o
+painel de leitura do gestor, que tem **cerca de 555 px**.
+
+A versao "Att" usa a tecnica de colunas fluidas (`display:inline-block` com `max-width`). O hero
+pede 340 + 300 = **640 px**; os cartoes pedem 2 x 300 = 600 px. Num painel de 555 px nada disso
+cabe, entao tudo quebra para uma coluna — e, em uma coluna, cada bloco ocupa a largura inteira e
+parece grande. O envio da manha nao empilhava porque usava tabela de largura fixa: em vez de
+quebrar, ele era **cortado** (na imagem do gestor o "NI" de NITRON estava fora da tela).
+
+Conserto: **escala de 640 para 560** (fator 0,875) aplicada a todas as larguras —
+shell 640→560, hero 340/300→298/252, cartoes 300→262, imagem do cartao 286→250, logo do rodape
+350→306, tabelas `mso` 600→525 — e a tipografia do hero na mesma proporcao (44/68 → 38/59).
+
+Agora hero (298+252 = 550) e cartoes (2 x 262 = 524 + folga) **cabem em 555 px**: volta a duas
+colunas no painel do gestor, continua certo em tela larga e continua empilhando no celular.
+
+Arquivo: `app/email/nitronmob-560.html`.
