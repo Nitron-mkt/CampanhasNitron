@@ -1,10 +1,24 @@
-// nina-email-arte — manda uma arte do construtor de e-mail do GHL ESCOLHENDO O REMETENTE.
+// nina-email-arte — manda uma arte do construtor de e-mail do GHL informando o remetente.
 //
-// Por que existe: o `campanhas-enviar` monta a arte e envia, mas nao informa o `emailFrom` ao GHL.
-// Sem esse campo o GHL usa o remetente padrao da location — que hoje e `marketing@nitron.com.br`.
-// Medido em 20/10: o gestor pediu o modelo "Lancamento NitronMob" pelo endereco do disparo em massa
-// (timecomercial@email.nitron.com.br) e o e-mail saiu por marketing@. Ou seja, TODA campanha de
-// e-mail que passa pelo campanhas-enviar sai pelo marketing@, nao pelo timecomercial@.
+// ATENCAO — ESTA FUNCAO NAO RESOLVE O REMETENTE. Medido em 20/10, e a conclusao e o contrario do
+// que esta funcao foi escrita para fazer:
+//
+//   O GHL ACEITA o `emailFrom` e o IGNORA. A chamada volta 201 {"msg":"Email queued successfully"},
+//   esta funcao devolve `de=timecomercial@email.nitron.com.br` — e o GET
+//   /conversations/messages/email/DlDnYlfWQojJBz4LdrWM, do proprio e-mail entregue, traz
+//   "from":"Nitron <marketing@nitron.com.br>". Quem decide o remetente e a configuracao da
+//   location, nao o corpo da chamada. Nao ha endpoint na API para ler nem para trocar essa
+//   configuracao (procurado em 20/10): e tela do GHL, em Settings -> Email Services.
+//
+// Consequencia do remetente ser `marketing@nitron.com.br`: o dominio do From (nitron.com.br) e
+// diferente do dominio que assina o envio (email.nitron.com.br, o autenticado no Mailgun/LC). Por
+// isso o Outlook mostra o Return-Path cru — `marketing=nitron.com.br@email.nitron.com.br` — e o
+// "em nome de". Isso NAO se conserta por codigo; conserta-se pondo o From num endereco de
+// email.nitron.com.br.
+//
+// O que esta funcao continua servindo: mandar uma arte do construtor para um destino avulso sem
+// passar por campanha. O campo `de` fica porque nao atrapalha e porque, se o GHL passar a honra-lo,
+// ja esta no lugar.
 //
 // Esta funcao e separada de proposito: mexer no campanhas-enviar, de que dependem todas as
 // campanhas, para resolver um caso de remetente seria risco desproporcional. Aqui o raio de
@@ -74,10 +88,11 @@ Deno.serve(async (req) => {
     if (!contactId) return j({ ok: false, erro: "nao achei/criei contato para " + email, lookup: d }, 500);
 
     const payload: any = { type: "Email", contactId, subject: String(b.assunto || "Nitron"), html };
-    if (de) payload.emailFrom = de;   // <- a razao de esta funcao existir
+    // o GHL aceita e IGNORA este campo (medido 20/10) — ver o cabecalho. Fica porque nao custa.
+    if (de) payload.emailFrom = de;
     const r = await ghl("POST", "/conversations/messages", payload, "2021-04-15");
     const txt = (await r.text()).slice(0, 400);
-    return j({ ok: r.status >= 200 && r.status < 300, http: r.status, contactId, de: de || "(padrao da location)",
+    return j({ ok: r.status >= 200 && r.status < 300, http: r.status, contactId, de_pedido: de || "(padrao da location)", de_real: "o GHL ignora emailFrom — confira com GET /conversations/messages/email/{id}",
                arte_ok, tamanho_html: html.length, resposta: txt });
   } catch (e) { return j({ ok: false, erro: String(e).slice(0, 300) }, 500); }
 });

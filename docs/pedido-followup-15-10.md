@@ -417,3 +417,60 @@ e isso muda o remetente de tudo que ja esta rodando, inclusive a reativacao.
 Na linha do logo do rodape o atributo `alt` perdeu o nome: `width="350" ="Nitron. Toda casa tem."`.
 E HTML invalido e deixa a imagem sem texto alternativo — o que aparece em quem bloqueia imagem, que
 e boa parte de uma base B2B.
+
+## 20/10 — o remetente do e-mail: a API nao resolve, a tela do GHL resolve
+
+O gestor pediu o modelo "Lancamento NitronMob" enviado pelo endereco do disparo em massa
+(`timecomercial@email.nitron.com.br`). Mandei pela `nina-email-arte` com `emailFrom` preenchido e
+**previ ao gestor que chegaria certo. Previ errado.**
+
+A prova, no proprio e-mail entregue (`GET /conversations/messages/email/DlDnYlfWQojJBz4LdrWM`):
+
+```
+"from": "Nitron <marketing@nitron.com.br>",
+"provider": "mailgun",
+"status": "delivered"
+```
+
+O GHL respondeu `201 {"msg":"Email queued successfully"}`, a funcao reportou
+`de=timecomercial@email.nitron.com.br`, e a plataforma **substituiu o From pelo remetente
+configurado na location**. Aceita o campo e ignora.
+
+### Por que aparece `marketing=nitron.com.br@email.nitron.com.br`
+
+Sao duas coisas, e so uma delas e defeito:
+
+1. `marketing=nitron.com.br@email.nitron.com.br` e o **Return-Path (envelope sender)** do Mailgun.
+   O padrao dele e `<local>=<dominio-do-From>@<dominio-que-assina>`. Isso e normal e nao se tira.
+2. O Outlook **mostra** esse endereco, com o "em nome de", porque o dominio do From
+   (`nitron.com.br`) e **diferente** do dominio que assina (`email.nitron.com.br`). Quando os dois
+   batem, o Outlook cala.
+
+Logo: o conserto e por o From num endereco de **`email.nitron.com.br`**.
+
+O caminho contrario — autenticar `nitron.com.br` no GHL — e pior: o SPF da raiz hoje e
+`v=spf1 include:_spf.rdstation.com.br include:sendgrid.net include:spf.protection.outlook.com -all`
+(termina em hard fail e **nao** autoriza LeadConnector/Mailgun), e mexer nele mexe em RD Station,
+SendGrid e Outlook ao mesmo tempo. O subdominio `email.nitron.com.br` ja esta pronto:
+`v=spf1 include:spf.leadconnectorhq.com include:mailgun.org ~all` + MX do Mailgun.
+
+### Onde se troca (tela, nao API)
+
+Procurei endpoint para ler ou escrever o remetente da location em 20/10: **nao existe**. O
+`GET /locations/{id}` so devolve o e-mail do perfil (`renato.fonseca@nitron.com.br`, que nao e o
+que sai), e nao ha operacao de email-service. E tela:
+
+- **Settings -> Email Services**, no dominio verificado `email.nitron.com.br`, o endereco de envio
+  padrao;
+- **Settings -> Business Profile**, se o "Business Email" estiver sendo usado como From;
+- e, por envio, o campo **From Email** da campanha em Marketing -> Emails.
+
+Nao mexi: trocar o remetente da location muda o From de **toda** campanha que ja roda, a reativacao
+inclusive. E decisao do gestor.
+
+### Dois defeitos no corpo entregue, achados de passagem
+
+- A imagem do rodape tem atributo quebrado: `width="350" ="Nitron. Toda casa tem."` — o `alt`
+  perdeu o nome.
+- **`{{unsubscribe}}` renderiza VAZIO.** O rodape entregue diz "Para deixar de receber essas
+  mensagens: " e termina ali. O e-mail esta saindo sem link de descadastro.
