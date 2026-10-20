@@ -64,8 +64,35 @@ Deno.serve(async (req) => {
   try {
     const u = new URL(req.url);
 
+    // ?entrega=1 — pergunta ao GHL o que aconteceu com cada mensagem ja mandada e grava.
+    // Existe porque "o GHL aceitou" (ok=true) NAO e "chegou": na amostra do lote 1, 1 em 12 tinha
+    // dado `failed`. Num dominio novo a taxa de rejeicao e o numero que decide se a rampa continua.
+    // Processa em pedaco para nao estourar o tempo; chame de novo ate `faltam` dar 0.
+    if (u.searchParams.get("entrega") === "1") {
+      const r = await rest("nitronmob_envio?select=id,message_id&ok=is.true&message_id=not.is.null" +
+                           "&entrega=is.null&order=id&limit=60");
+      const pend: any[] = await r.json();
+      let lidos = 0;
+      for (const x of pend) {
+        try {
+          const g = await ghl("GET", `/conversations/messages/email/${x.message_id}`, null);
+          const d = await g.json().catch(() => ({} as any));
+          const st = d?.emailMessage?.status || null;
+          if (st) {
+            await rest(`nitronmob_envio?id=eq.${x.id}`, {
+              method: "PATCH", body: JSON.stringify({ entrega: st, entrega_em: new Date().toISOString() }),
+            });
+            lidos++;
+          }
+        } catch { /* uma leitura perdida volta na proxima chamada */ }
+      }
+      const f = await rest("nitronmob_envio?select=id&ok=is.true&message_id=not.is.null&entrega=is.null");
+      const faltam = (await f.json()).length;
+      return j({ ok: true, lidos, faltam });
+    }
+
     if (u.searchParams.get("status") === "1") {
-      const r = await rest("nitronmob_envio?select=id,email,nome,situacao,lote,ok,erro,message_id,enviado_em&order=id");
+      const r = await rest("nitronmob_envio?select=id,email,nome,situacao,lote,ok,erro,message_id,enviado_em,entrega&order=id");
       const linhas: any[] = await r.json();
       const porLote: Record<string, any> = {};
       for (const x of linhas) {
@@ -77,7 +104,17 @@ Deno.serve(async (req) => {
         porLote[k][x.ok ? "enviados" : (x.erro ? "falharam" : "desconhecidos")]++;
         porLote[k].ultimo = x.enviado_em;
       }
-      return j({ ok: true, total: linhas.length, por_lote: porLote,
+      const entrega: Record<string, number> = {};
+      for (const x of linhas) if (x.ok) entrega[x.entrega || "(ainda nao conferido)"] = (entrega[x.entrega || "(ainda nao conferido)"] || 0) + 1;
+      const dur = linhas.filter((x) => x.entrega === "failed");
+      // quanto ainda ha para mandar, e quanto disso e gente engajada — e o que decide o proximo lote
+      const ap = await rest("nitronmob_apto?select=prioridade");
+      const aptos: any[] = ap.ok ? await ap.json() : [];
+      return j({ ok: true, total: linhas.length, por_lote: porLote, entrega_real: entrega,
+                 taxa_rejeicao: entrega["failed"] ? (100 * entrega["failed"] / linhas.filter((x) => x.ok).length).toFixed(1) + "%" : "0%",
+                 rejeitados: dur.map((x) => x.email).slice(0, 60),
+                 aptos_restantes: aptos.length,
+                 aptos_engajados: aptos.filter((x) => x.prioridade <= 2).length,
                  falhas: linhas.filter((x) => !x.ok && x.erro).map((x) => ({ email: x.email, erro: String(x.erro).slice(0,120) })).slice(0, 40) });
     }
 

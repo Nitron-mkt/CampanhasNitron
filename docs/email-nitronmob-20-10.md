@@ -205,3 +205,37 @@ A linha em `nitronmob_envio` e criada **antes** do envio. Se a funcao morrer no 
 fica registrado e a proxima chamada nao repete. O preco disso e um terceiro estado: `ok=false` com
 `erro` vazio significa **interrompido — nao da para saber se saiu**. O `?status=1` conta isso em
 coluna propria (`desconhecidos`) em vez de mentir dizendo "falhou".
+
+### Lote 1 fechado — 100 enviados, e o que ele ensinou
+
+| | |
+|---|---|
+| aceitos pelo GHL | **100** |
+| recusados na hora | **8** — todos `contact's e-mail is invalid` |
+| linhas gravadas | 108 |
+| duracao | 15h20 as 15h32 (SP), ~3,8s por envio |
+
+Os 8 recusados foram **repostos** com outros 8 da mesma fila, para fechar os 100 que o gestor
+pediu. Eles ficam gravados com `ok=false` e, pelo indice unico, nunca mais entram — o que esta
+certo enquanto o cadastro nao for corrigido:
+
+| cliente | e-mail | o que ha de errado |
+|---|---|---|
+| OMEGA PRESENTE | `anabellyperfumaria@yahoo.com.nr` | `.nr` no lugar de `.br` |
+| NIAZI CHOHFI | `compras.ud@niazi.com.br` | dominio nao aceita |
+| FR COMERCIO | `frcomercio@outlook.com.br` e `@outlook.com` | as duas formas no cadastro, nenhuma valida |
+| RMI ARTIGOS | `rmiminoro@outlook.com` | |
+| AKI TEM UTILIDADES | `loja43itupeva@akitem.com` | |
+| ZHEN MIAOYUN | `bazar.estrela@terra.com.br` | |
+| PRADOLAR | `welonprado0980@gmail.com` | |
+
+E a mesma doenca da pendencia 3 do CLAUDE.md ("21 e-mails de representante que o GHL recusa"),
+agora medida tambem no cadastro de cliente.
+
+### "Aceito pelo GHL" nao e "chegou" — de novo
+
+Mesma licao de 26/08 com o Zaptos, agora no e-mail. Numa amostra de 12 mensagens do lote 1:
+**9 `delivered`, 1 `opened`, 1 `sent`, 1 `failed`**. Uma rejeicao em doze e alto demais para deixar
+por conta de amostra — num dominio virgem a taxa de rejeicao e o que decide se a rampa continua ou
+para. Dai o `?entrega=1`, que varre os `message_id` gravados e pergunta ao GHL o estado real de
+cada um, e o `?status=1`, que passa a mostrar `entrega_real` e `taxa_rejeicao` ao lado dos aceites.
