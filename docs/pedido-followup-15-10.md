@@ -372,3 +372,48 @@ pedido vai pela pagina, porque no PDF nao da para fechar.
 **E eu deixei o lead parado de sexta 17:03 ate segunda 16:20 sem voltar.** O objetivo passou a ser
 fechar venda e o Alex era o teste; a Nina respondeu a pergunta dele sozinha, mas ninguem fechou o
 circuito na coisa que de fato o travava. Erro meu, nao do sistema.
+
+## 20/10 — a Nina caiu de madrugada, e o e-mail de campanha nao sai de quem a gente pensa
+
+### A queda, com hora medida
+
+A Nina ficou **fora do ar das 06:02 as 10:30 de 20/10**. A sequencia, na conversa do Iago Seixas:
+
+| hora (SP) | o que |
+|---|---|
+| 19/10 17:51 | envio `delivered`, sem erro — **viva** |
+| 19/10 22:02 | Iago responde "nao" (o representante nunca o procurou) — ainda recebia |
+| 20/10 **06:02** | primeira falha: `[System]: Nina - The instance is disconnected.` |
+| 20/10 09:10 | teste ao vivo confirma: `ok=false`, `instancia_caiu=true` |
+
+**6 mensagens** aceitas pelo GHL e nao entregues nesse intervalo. A pior: a resposta ao Iago, em que
+a Nina assumia o atendimento dele, ficou parada no CRM.
+
+**E ninguem avisou.** A tabela dizia que a instancia estava normal (`pausada_em` nulo), porque a
+coluna so e escrita por quem passa pela fila; o `copiloto-lead` v13, que pausaria na primeira
+recusa, e o `vigia-instancia`, que varreria as conversas e avisaria, continuam **escritos e nao
+publicados**. O buraco de 02/10 esta inteiro.
+
+### O remetente das campanhas de e-mail nao e o que o gestor pensava
+
+Ele pediu o modelo "Lancamento NitronMob" pelo endereco do disparo em massa
+(`timecomercial@email.nitron.com.br`). Mandei pelo `campanhas-enviar`, que e o caminho das
+campanhas, e conferi o que saiu: **`marketing@nitron.com.br`**.
+
+O motivo e simples e vale para TODA campanha de e-mail: o `campanhas-enviar` monta a arte e envia,
+mas **nao informa o `emailFrom` ao GHL**, entao o GHL usa o remetente padrao da location.
+
+Conserto: **`nina-email-arte`**, funcao nova e pequena, que faz o mesmo e aceita `de`. Ficou
+separada de proposito — mexer no `campanhas-enviar`, de que dependem todas as campanhas, por causa
+de um campo de remetente seria risco desproporcional. O modelo foi reenviado por ela, e o GHL
+confirmou `timecomercial@email.nitron.com.br`.
+
+**Fica em aberto para o gestor:** se as campanhas de e-mail devem passar a sair pelo
+`timecomercial@`, o lugar certo e o `campanhas-enviar` (ou o remetente padrao da location no GHL) —
+e isso muda o remetente de tudo que ja esta rodando, inclusive a reativacao.
+
+### Um defeito na arte
+
+Na linha do logo do rodape o atributo `alt` perdeu o nome: `width="350" ="Nitron. Toda casa tem."`.
+E HTML invalido e deixa a imagem sem texto alternativo — o que aparece em quem bloqueia imagem, que
+e boa parte de uma base B2B.
