@@ -94,3 +94,32 @@ Agora hero (298+252 = 550) e cartoes (2 x 262 = 524 + folga) **cabem em 555 px**
 colunas no painel do gestor, continua certo em tela larga e continua empilhando no celular.
 
 Arquivo: `app/email/nitronmob-560.html`.
+
+## Envio 5 (TESTE 4) — escala 500, e a conta que faltava
+
+O TESTE 3 (escala 560) **nao mudou nada na tela do gestor**, e a conta explica:
+
+```
+painel de leitura          ~555 px
+padding da celula externa   -16 px  (8px de cada lado)
+largura util               ~539 px
+hero na escala 560          550 px  (298 + 252)   -> NAO CABE por 11 px
+```
+
+Faltavam onze pixels. Por isso continuou empilhando, e empilhado tudo ocupa a largura inteira.
+
+Escala 500: hero 266+234 = **500 px**, dois cartoes 2 x (234+12) = **492 px**. Folga de ~40 px
+sobre os 539 uteis. Arquivo: `app/email/nitronmob-500.html`.
+
+## O modelo no GHL nao mudou
+
+Em 20/10, depois de o gestor dizer "arrumei uma coisa no codigo", conferi:
+
+- `updatedAt` da "Lançamento NitronMob Att" continua **2026-10-20T15:32:20Z**;
+- o HTML servido pelo `previewUrl` e **byte a byte identico** ao que eu havia baixado antes
+  (md5 `88463cc03eb188723bdf6233451b46b6` nos dois);
+- nenhum modelo novo apareceu na location.
+
+Ou seja: a edicao **nao salvou no GHL**, ou foi feita num arquivo fora dele. Os testes 2, 3 e 4
+foram enviados com o HTML corrigido por fora — **o modelo que esta no GHL ainda tem o
+`{{email.unsubscribe_link}}` solto no texto**, e vai encolher de novo se for disparado assim.
