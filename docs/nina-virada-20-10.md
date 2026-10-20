@@ -209,3 +209,58 @@ Esta e a terceira vez registrada neste repositorio que uma instancia cai e a gen
 publicado** (`vigia_inst_ativo='nao'`). E ele hoje so procura `instance is disconnected` — **nao
 reconheceria** `The specified instance does not exist`, que e o caso de agora. Precisa dos dois
 padroes.
+
+## Onde a Isadora e a Beatriz ainda aparecem — varredura de 20/10
+
+O gestor avisou que as duas sairam e que **Sankhya e CRM ja foram atualizados**, e pediu o resto.
+Varri as tabelas com coluna de instancia/dono/assistente e contei no CRM.
+
+### O achado que explica tudo: o aparelho existe, o nome mudou
+
+Numa conversa atribuida ao usuario da "Beatriz", a ultima mensagem traz:
+
+```
+Instance Source: Elaine Kitahara
+```
+
+Ou seja: **o aparelho esta de pe e mandando** — so que o token dele no ZaptosWPP agora se chama
+**"Elaine Kitahara"**, nao "Beatriz". O `#contact_instance:Beatriz` falha porque esse token nao
+existe mais, exatamente como o app respondeu. **Nao e instancia caida: e o nosso registro com o
+nome velho.**
+
+Isso tambem corrige o que eu escrevi antes: eu disse "a instancia nao existe", e a frase certa e
+"o token com AQUELE nome nao existe".
+
+### No CRM (GoHighLevel)
+
+Os usuarios nao foram apagados — passaram de dono, como o proprio CLAUDE.md ja registrava:
+
+| usuario do CRM | quem e hoje | conversas atribuidas |
+|---|---|---|
+| `WlHZT90d36qnnXFbKzbl` (era Isadora) | **Mara Oliveira** | **2.245** |
+| `qZXd7wbATAFdznMpRPze` (era Beatriz) | **Elaine Kitahara** | **79** |
+
+**Nenhum contato ficou sem dono.** Mas todo WhatsApp de saida para essas 2.324 conversas tenta
+amarrar num token que nao existe — e por isso e recusado.
+
+### No nosso banco
+
+| onde | o que ainda tem | quantos |
+|---|---|---|
+| `instancia_ghl` | as duas linhas, com o nome antigo servindo de token | 2 |
+| `assistente_instancia` | Beatriz (5511958246668) e Isadora (5511964530909) | 2 |
+| `instancia_alias` | `beatriz`→Beatriz e `isadora`→Isadora | 2 |
+| **`snap_rep.assistente`** | **43 representantes** — 22 na Beatriz, 21 na Isadora | 43 |
+| **`rep_carteira.assist_idcrm`** | **67 linhas** — 31 e 36 | 67 |
+| `fila_envio` pendente | 1 linha presa na Beatriz | 1 |
+| `fila_envio` historico | 1.030 Isadora + 141 Beatriz | — |
+
+`snap_rep` e `rep_carteira` sao **fotos** do Sankhya/CRM: se a origem ja mudou, elas se corrigem no
+proximo refresh. As outras quatro sao nossas e precisam da mao.
+
+### O que falta para destravar
+
+O conserto nao e trocar dono de contato — e **o nome do token**. Sei o da Beatriz porque o app
+escreveu (`Elaine Kitahara`); o da Isadora/Mara eu **nao** vi e nao vou adivinhar: o
+`campanhas-enviar` confere o nome contra o token e recusa se divergir, entao chutar aqui so troca
+uma recusa por outra.
