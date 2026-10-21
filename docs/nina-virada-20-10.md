@@ -426,3 +426,19 @@ Montado o pedido, a pagina chama o `nina-pedido-recebido`: o pedido vira linha d
 e-mail completo para a **Camyla** e para o marketing, e um aviso curto por Zaptos para quem
 acompanha. **Quem digita no Sankhya e uma pessoa.** Isso nao e "passar o lead" — e a unica etapa
 que nao tem como ser nossa.
+
+## 21/10 (11h) — primeira conferida: o link esta sendo aberto
+
+| lead | cesta | enviado | aberturas |
+|---|---|---|---|
+| Levi Reis (466) | Sudeste-R01 | 10:34, a mao | **3** — 10:34, 10:49, 10:55 |
+| Brendo Santana (469) | Sudeste-R01 | 10:00, pela Nina | **1** — 10:03, tres minutos depois |
+| Gabriela Nunes (472) | Sudeste-R01 | 09:41, pela Nina | ainda nao |
+
+Os tres sao SP e variedades/preco unico, entao `Sudeste-R01` e a cesta certa nos tres; a regiao bate
+com a UF. A abertura do Brendo tres minutos depois do envio e a prova de que a URL chegou inteira e
+clicavel — a `~L469` veio junto no `pedido_visita`, que e o que torna a visita atribuivel a ele.
+
+**Nenhum lead foi para representante.** O ultimo repasse a rep foi **19/10 as 16:02** (Cheila da
+Silva → PAULO DRESCH), antes da ordem. Os 12 leads que aparecem como `passado` nas ultimas 24h sao
+antigos, mexidos pela regua de feedback — nao sao passagem nova.
