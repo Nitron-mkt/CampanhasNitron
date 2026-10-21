@@ -475,3 +475,25 @@ toques, e insistir um terceiro e o que o proprio prompt proibe.
 **O conserto certo nao e mexer em linha:** e uma regra que leia `pedido_visita`, e quando alguem
 abriu e nao escreveu em algumas horas, a Nina volte perguntando se ficou alguma duvida no que ele
 viu. Isso e falar sozinho de um jeito novo — decisao do gestor, nao minha.
+
+## 21/10 (17h15) — fechamento do dia: 6 links, 9 aberturas, 0 pedidos
+
+A Nina mandou **6 links sozinha** no primeiro dia (mais o do Ed Carlos, que saiu a mao em 20/10):
+
+| lead | praca | cesta | link | abriu |
+|---|---|---|---|---|
+| Gabriela Nunes (472) | Guarulhos/SP | Sudeste-R01 | 09:41 | 12:48 |
+| Brendo Santana (469) | São Paulo/SP | Sudeste-R01 | 10:00 | 10:03 |
+| Levi Reis (466) | São Paulo/SP | Sudeste-R01 | 10:34 (a mao) | 10:34, 10:49, 10:55 |
+| Marcos Santos (402) | Sumaré/SP | Sudeste-R01 | 13:15 | 13:58 |
+| Luccas Abramo (475) | São Paulo/SP | Sudeste-R01 | 15:56 | 16:44 |
+| **Fabio Garcia (477)** | **Mandaguari/PR** | **Sul-R01** | 16:15 | **16:16** |
+| Ed Carlos (254) | Cubatão/SP | Sudeste-R01 | 20/10 17:44 | 12:23 |
+
+**O Fabio Garcia e a prova de que a regiao generaliza:** primeiro lead fora do Sudeste, PR virou
+`Sul-R01` sozinho, e ele abriu **um minuto** depois de receber.
+
+**Zero pedidos montados.** Sete lojistas abriram a pagina, nenhum chegou ao fim. Com uma amostra
+desse tamanho ainda nao da para dizer se e a pagina ou se e so cedo — mas se amanha a conta
+continuar 0 com dez ou mais aberturas, o problema deixa de ser do funil e passa a ser da pagina: o
+passo de fechar o pedido pode nao estar obvio para quem chega nela sem ninguem explicando.
