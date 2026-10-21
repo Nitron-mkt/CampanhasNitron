@@ -442,3 +442,36 @@ clicavel — a `~L469` veio junto no `pedido_visita`, que e o que torna a visita
 **Nenhum lead foi para representante.** O ultimo repasse a rep foi **19/10 as 16:02** (Cheila da
 Silva → PAULO DRESCH), antes da ordem. Os 12 leads que aparecem como `passado` nas ultimas 24h sao
 antigos, mexidos pela regua de feedback — nao sao passagem nova.
+
+## 21/10 (14h40) — sete aberturas, cinco pessoas, zero pedidos
+
+| lead | link em | aberturas |
+|---|---|---|
+| Levi Reis (466) | 10:34 | 10:34, 10:49, 10:55 |
+| Brendo Santana (469) | 10:00 | 10:03 |
+| **Ed Carlos / Bolsao 10 (254)** | 20/10 17:44 | **12:23 do dia seguinte** |
+| Gabriela Nunes (472) | 09:41 | 12:48 |
+| **Marcos Santos (402)** | **13:15** | **13:58** |
+
+O **Marcos Santos** e o caso mais interessante: lead de Sumare/SP marcado `frio` desde 09/10 (dois
+toques, sem resposta). Ele voltou a escrever sozinho hoje as 13:15, a Nina respondeu com o link na
+mesma passada, e ele abriu **43 minutos depois**. Lead morto que o link trouxe de volta.
+
+**Nenhum pedido montado.** O `pedido_recebido` continua so com os quatro testes de 15–16/10.
+
+### O buraco que isso revelou: quem ABRE e some fica invisivel
+
+Dois dos cinco que abriram **nao recebem seguimento nenhum**, e o motivo e o status:
+
+- **Ed Carlos (254)** estava `passado` — e `seguir` so olha `qualificando` e `qualificado`.
+- **Marcos Santos (402)** esta `frio` e com `toques=2`, o teto.
+
+Os dois abriram a pagina e calaram. Se nao escreverem, ninguem fala com eles de novo. **Abrir a
+pagina e o sinal mais quente que esse funil produz** — e hoje nada le o `pedido_visita` para agir
+sobre ele. O 254 foi reaberto a mao (volta para `qualificado`, com o link registrado para a Nina nao
+mandar de novo, e `toques=0`, entao ela da um toque leve). O 402 fica como esta: ja levou os dois
+toques, e insistir um terceiro e o que o proprio prompt proibe.
+
+**O conserto certo nao e mexer em linha:** e uma regra que leia `pedido_visita`, e quando alguem
+abriu e nao escreveu em algumas horas, a Nina volte perguntando se ficou alguma duvida no que ele
+viu. Isso e falar sozinho de um jeito novo — decisao do gestor, nao minha.
