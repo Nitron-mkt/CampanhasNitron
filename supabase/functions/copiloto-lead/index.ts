@@ -1,4 +1,20 @@
-// copiloto-lead (v13) — A INSTANCIA CAIU E ELA FALOU SOZINHA 200 VEZES. Em 02/10 o Zaptos da Nina
+// copiloto-lead (v14) — A NINA MANDA O LINK DA PAGINA DE PEDIDO. Ordem do gestor em 20/10, ao
+// religar as campanhas do META: "nao passar para o representante e agora vamos testar o link com
+// todos que chegarem". Ate aqui o link so existia na mao (app/pedido/ponte.sh), montado por uma
+// pessoa, um lead por vez — e por isso so 11 lojistas tinham recebido. A ferramenta `link_pedido`
+// monta o endereco da cesta certa (regiao pela UF + ramo que a Nina escolhe pela conversa), grava
+// que o link saiu (link_em / link_seg / link_url / link_vezes) e devolve a URL ja com a marca
+// ~L<id>, que e o que torna "abriu a pagina" atribuivel A PESSOA no pedido_visita.
+//
+// Por que o RAMO vem da conversa e nao do CNAE: o CNAE e o que o contador escreveu na abertura da
+// empresa, e a propria ponte.sh ja dizia que "o que ele DISSE vence o CNAE quando discordam". A
+// Nina sabe o que ele acabou de contar que vende; o CNAE exigiria uma chamada externa que cai.
+//
+// O que a ferramenta NAO faz: nao promete prazo, frete nem tabela. O desconto que ela pode citar e
+// o POR VOLUME, que esta impresso na propria pagina (10% acima de R$ 5.000, 15% acima de R$ 15.000)
+// — o desconto ligado ao CNPJ continua sendo do comercial, e a licao 319 continua valendo.
+//
+// v13 — A INSTANCIA CAIU E ELA FALOU SOZINHA 200 VEZES. Em 02/10 o Zaptos da Nina
 // caiu as 08:02 e o copiloto continuou tocando de 5 em 5 minutos ate as 12:30: 200 envios recusados,
 // 8 conversas, e no lead Martins 41 mensagens DIFERENTES escritas pelo modelo, uma por passada. O
 // lead recebeu UMA e depois silencio; as outras 40 ficaram no CRM sem sair — mas quem abrisse a
@@ -253,6 +269,17 @@ function acelera(txt: any): { origem: string; nome: string | null; cnpj: string 
   };
 }
 
+// ---- pagina de pedido -------------------------------------------------------------------------
+// Mesmo endereco do app/pedido/ponte.sh. O fragmento (#Regiao-Ramo) nao chega ao servidor: quem le
+// e o proprio app, no navegador do lojista.
+const PEDIDO_URL = "https://pedido-nitron.marketing-da5.workers.dev";
+const UF2REG: Record<string, string> = {};
+for (const [reg, ufs] of [["Norte", "AC AP AM PA RO RR TO"], ["Nordeste", "AL BA CE MA PB PE PI RN SE"],
+  ["Centro-Oeste", "DF GO MT MS"], ["Sudeste", "ES MG RJ SP"], ["Sul", "PR RS SC"]] as [string, string][]) {
+  for (const u of ufs.split(" ")) UF2REG[u] = reg;
+}
+const DESCONTO_PAGINA = "automatico no total do pedido: 10% acima de R$ 5.000 e 15% acima de R$ 15.000";
+
 // ---- ferramentas -----------------------------------------------------------------------------
 // Conjunto CURTO de proposito: sem codparc, as ferramentas de preco/boleto/pedido/entrega so
 // responderiam "codparc invalido" e convidariam a IA a inventar.
@@ -262,6 +289,7 @@ const TOOLS = [
   { name: "produtos", description: "Produtos por categoria/nome/ramo: devolve nome e LINK da foto. SEM preco.", input_schema: { type: "object", properties: { termo: { type: "string" } }, required: ["termo"] } },
   { name: "salvar_lead", description: "Anota/atualiza o que voce JA apurou deste lead. Chame assim que descobrir um dado novo. Mande so o que ele disse — nao preencha por deducao.", input_schema: { type: "object", properties: { nome: { type: "string", description: "nome da pessoa COMO ELA MESMA ESCREVEU nesta conversa, com sobrenome. NUNCA o nome do perfil do WhatsApp (apelido, emoji, frase, nome da loja)." }, nome_confirmado: { type: "boolean", description: "true SOMENTE quando a propria pessoa disse o nome nesta conversa. Falso/ausente se voce pegou do perfil ou deduziu." }, empresa: { type: "string", description: "nome da loja / razao social" }, cnpj: { type: "string" }, cidade: { type: "string" }, uf: { type: "string" }, tipo_loja: { type: "string", description: "bazar, utilidades, variedades, presentes, supermercado, magazine, material de construcao..." }, ja_revende: { type: "string", description: "de quem ele compra hoje, ou que nao compra direto de fabrica" }, interesse: { type: "string", description: "linha/produto que ele quer abastecer" }, sabe_minimo: { type: "boolean", description: "true depois de VOCE dizer o pedido minimo nesta conversa" }, temperatura: { type: "string", enum: ["frio", "morno", "quente"] }, resumo: { type: "string", description: "2 a 3 frases do caso, para o comercial ler" } }, required: [] } },
   { name: "passar_comercial", description: "Fecha a qualificacao e passa pro comercial fechar a venda. Use quando ja souber o NOME COMPLETO da pessoa (confirmado por ela), a loja, a praca (cidade/UF) e o que ele quer, e ele ja souber do pedido minimo. Abre a tarefa na fila de execucao e devolve o protocolo.", input_schema: { type: "object", properties: { resumo: { type: "string", description: "o caso em 2 a 4 frases: quem e, o que quer, em que pe esta" }, falta: { type: "string", description: "o que o comercial ainda precisa levantar ou combinar" }, temperatura: { type: "string", enum: ["frio", "morno", "quente"] } }, required: ["resumo"] } },
+  { name: "link_pedido", description: "Monta o LINK da pagina de pedido da Nitron para ESTE lead e devolve a URL pronta. Na pagina cada produto aparece COM O PRECO, o total soma na tela e o desconto por volume entra sozinho — e por isso ela resolve a objecao de catalogo sem preco. Use assim que souber que tipo de loja ele tem; nao precisa esperar o CNPJ.", input_schema: { type: "object", properties: { ramo: { type: "string", enum: ["R01", "R02", "R03", "R04", "R05", "R06", "R07", "R08", "R09", "R10"], description: "a cesta que combina com a loja dele: R01 = casa de utilidades, variedades, bazar, 1,99, armarinho; R02 = loja de departamento, magazine, loja grande com varias secoes; R03 = joalheria, bijuteria, presentes, festa; R04 = supermercado, mercearia, mercado, atacarejo; R05 = cama, mesa, banho, tecidos, enxoval; R06 = vestuario, calcados, moda; R07 = papelaria, livraria, escritorio; R08 = material de construcao, ferragem, tintas; R09 = farmacia, perfumaria, cosmeticos, higiene; R10 = esporte, brinquedo, lazer, pet. Na duvida, R01." }, uf: { type: "string", description: "UF dele (2 letras), se voce souber e ainda nao tiver salvado com salvar_lead" } }, required: ["ramo"] } },
   { name: "descartar_lead", description: "Use quando NAO e revenda: consumidor final querendo uma peca, curriculo, fornecedor oferecendo servico, engano de numero. Marca como descartado e NAO abre tarefa pro comercial.", input_schema: { type: "object", properties: { motivo: { type: "string" } }, required: ["motivo"] } },
 ];
 const CAMPOS = ["nome", "empresa", "cnpj", "cidade", "uf", "tipo_loja", "ja_revende", "interesse", "resumo", "temperatura"];
@@ -327,6 +355,53 @@ async function runTool(sb: any, ctx: any, name: string, input: any): Promise<any
       const { data } = await sb.from("produto_web").select("categoria, nome, url, ramo").eq("ativo", true).or(`nome.ilike.${like},categoria.ilike.${like},ramo.ilike.${like}`).limit(6);
       if (!data || !data.length) return { encontrados: 0, aviso: "nenhum produto com esse termo" };
       return { encontrados: data.length, produtos: data, dica: "mande o url; sem preco (o lead ainda nao tem tabela)." };
+    }
+    // LINK DA PAGINA DE PEDIDO. Tres decisoes moram aqui:
+    //   1. A REGIAO sai da UF do lead (nao da cidade): e so o que a cesta precisa saber.
+    //   2. O RAMO vem da Nina, nao do CNAE — ver o cabecalho.
+    //   3. A marca ~L<id> e o que torna a visita atribuivel. Sem linha de lead nao ha marca, e o
+    //      link sai mesmo assim: melhor um link sem atribuicao do que lead sem link.
+    if (name === "link_pedido") {
+      const ufIn = String(input?.uf || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2);
+      let L: any = null;
+      if (ctx.dry) {
+        const { data } = await sb.from("copiloto_lead").select("id, uf, link_vezes, link_seg")
+          .or(`contact_id.eq.${ctx.contact_id || "__none__"},fone.eq.${ctx.fone || "__none__"}`)
+          .order("id", { ascending: false }).limit(1).maybeSingle();
+        L = data || null;
+      } else {
+        const up = await upsertLead(sb, ctx, ufIn ? { uf: ufIn } : {});
+        if (up.erro) return { erro: up.erro };
+        L = up.lead || null;
+      }
+      const uf = String(L?.uf || ufIn || "").toUpperCase().slice(0, 2);
+      const reg = UF2REG[uf] || "Sudeste";
+      let ramo = String(input?.ramo || "").toUpperCase().trim();
+      if (!/^R\d{2}$/.test(ramo)) ramo = "R01";
+      const { data: segs } = await sb.from("pedido_base").select("pedido_id, ramo_nome, n_itens");
+      const por = new Map((segs || []).map((x: any) => [x.pedido_id, x]));
+      let alvo = reg + "-" + ramo; let como = "exato";
+      if (!por.has(alvo)) {
+        for (const [c, r] of [["Sudeste-" + ramo, "mesmo ramo, cesta do Sudeste"], [reg + "-R01", "R01 da regiao"], ["Sudeste-R01", "cesta geral"]] as [string, string][]) {
+          if (por.has(c)) { alvo = c; como = r; break; }
+        }
+      }
+      const seg: any = por.get(alvo);
+      if (!seg) return { erro: "nenhuma cesta montada no pedido_base — nao mande link nenhum" };
+      const url = PEDIDO_URL + "/#" + alvo + (L?.id ? "~L" + L.id : "");
+      if (!ctx.dry && L?.id) {
+        await sb.from("copiloto_lead").update({
+          link_em: new Date().toISOString(), link_seg: alvo, link_url: url,
+          link_vezes: (Number(L.link_vezes) || 0) + 1, atualizado: new Date().toISOString(),
+        }).eq("id", L.id);
+      }
+      return {
+        ok: true, link: url, segmento: alvo, cesta: seg.ramo_nome, itens: seg.n_itens,
+        escolha: como, ja_mandei_antes: !!L?.link_seg,
+        desconto_da_pagina: DESCONTO_PAGINA,
+        pedido_minimo: "R$ " + Number(ctx.pedidoMin || 2500).toLocaleString("pt-BR"),
+        como_mandar: "Mande a URL EXATAMENTE como esta, sozinha numa linha, sem encurtar e sem colar texto nela. Diga que cada produto aparece COM O PRECO e que o total soma na tela — ele nao fecha nada sem ver o valor. Pode citar o desconto por volume, que esta impresso na propria pagina. NAO prometa prazo de entrega, frete nem percentual de tabela: isso e do comercial.",
+      };
     }
     if (["salvar_lead", "passar_comercial", "descartar_lead"].includes(name)) {
       const patch: any = {};
@@ -465,7 +540,7 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
     return { ...base, decisao: "janela_fechada", lead_id: up.lead?.id || null, tarefa: tfj?.id || null, motivo: "passaram " + idadeH.toFixed(1) + "h — tarefa aberta p/ o comercial (template ou ligacao)" };
   }
 
-  const ctx: any = { contact_id, fone: foneNac(fone), instancia: nativo ? "ghl-nativo" : instancia, dry: opts.dry, source: acl?.origem || crm.source || (ehAds ? "anuncio META" : null) };
+  const ctx: any = { contact_id, fone: foneNac(fone), instancia: nativo ? "ghl-nativo" : instancia, dry: opts.dry, pedidoMin: opts.pedidoMin, source: acl?.origem || crm.source || (ehAds ? "anuncio META" : null) };
   // Se ele ja informou o CNPJ no formulario, a Nina NAO pede de novo — e o codigo ja confere se
   // esse CNPJ tem cadastro, para ela nao tratar cliente antigo como lead novo.
   // O CNPJ pode vir do campo do CRM (formulario que grava no contato) ou da propria assinatura da
@@ -495,7 +570,7 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
       if (cr.ok) await upsertLead(sb, ctx, { nome_crm_em: new Date().toISOString() });
     }
   }
-  const jaSei = leadRow ? [(leadRow.nome && leadRow.nome_confirmado) && "nome: " + leadRow.nome, leadRow.empresa && "loja: " + leadRow.empresa, leadRow.cnpj && "CNPJ ja informado", (leadRow.cidade || leadRow.uf) && "praca: " + [leadRow.cidade, leadRow.uf].filter(Boolean).join("/"), leadRow.tipo_loja && "tipo: " + leadRow.tipo_loja, leadRow.ja_revende && "compra hoje: " + leadRow.ja_revende, leadRow.interesse && "interesse: " + leadRow.interesse, leadRow.sabe_minimo && "JA sabe do pedido minimo", "status: " + leadRow.status].filter(Boolean).join(" | ") : "";
+  const jaSei = leadRow ? [(leadRow.nome && leadRow.nome_confirmado) && "nome: " + leadRow.nome, leadRow.empresa && "loja: " + leadRow.empresa, leadRow.cnpj && "CNPJ ja informado", (leadRow.cidade || leadRow.uf) && "praca: " + [leadRow.cidade, leadRow.uf].filter(Boolean).join("/"), leadRow.tipo_loja && "tipo: " + leadRow.tipo_loja, leadRow.ja_revende && "compra hoje: " + leadRow.ja_revende, leadRow.interesse && "interesse: " + leadRow.interesse, leadRow.sabe_minimo && "JA sabe do pedido minimo", leadRow.link_seg && "JA RECEBEU o link da pagina de pedido (cesta " + leadRow.link_seg + ") — nao mande de novo", "status: " + leadRow.status].filter(Boolean).join(" | ") : "";
 
   const nome = prim(cfg.nome_assistente || opts.inst || "Nina");
   const sys = `Voce e a ${nome}, do time comercial da Nitronplast (Nitron), por WhatsApp. Calorosa e natural, pessoa de verdade da equipe.` + ESTILO
@@ -507,6 +582,7 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
     + (cnpjForm && !cadastro ? `\nELE JA INFORMOU O CNPJ no formulario e NAO tem cadastro ainda. NAO peca o CNPJ de novo — isso irrita. Se precisar confirmar, confirme a EMPRESA pelo nome, nao o numero.` : "")
     + `\nPEDIDO MINIMO da Nitron: R$ ${opts.pedidoMin.toLocaleString("pt-BR")}. Diga quando a conversa chegar em volume, mix ou como comprar — nunca na abertura.`
     + (cfg.catalogo_url ? `\nCATALOGO (mande o LINK quando ele quiser ver produtos): ${cfg.catalogo_url}` : "")
+    + `\nPAGINA DE PEDIDO — ordem do gestor em 20/10, vale para TODO lead desta rodada: existe uma pagina com a cesta sugerida para o ramo dele, onde cada produto aparece COM O PRECO, o total soma na tela e o desconto por volume entra sozinho. Assim que voce souber que tipo de loja ele tem, chame link_pedido e mande o link — nao espere ele pedir e nao espere o CNPJ. O CNPJ voce continua pedindo cedo, porque e com ele que a gente confere o cadastro e aplica o desconto; mas o link nao depende disso. Se ele JA recebeu o link nesta conversa, nao mande de novo sem um motivo novo.`
     + (cfg.site_url ? `\nSITE: ${cfg.site_url}` : "")
     + `\n${jaSei ? "JA APURADO (nao pergunte de novo): " + jaSei : "AINDA NAO SEI NADA sobre ele — comece pelo tipo de loja e o que ele precisa abastecer."}`
     + (nomeConf
@@ -624,11 +700,12 @@ async function seguir(sb: any, cfg: Record<string, string>, o: any) {
       + `\n\nQUEM E: lead de campanha, nao representante e sem cadastro de cliente. ${L.origem === ACELERA_ORIGEM ? "Veio da landing \"Acelera Nitron\", a campanha da Nitron no GOOGLE." : L.origem ? ("Origem registrada no CRM: \"" + L.origem + "\".") : "Origem nao registrada."} Nao invente oferta nem condicao que possa ter sido anunciada.`
       + `\nPEDIDO MINIMO: R$ ${o.pedidoMin.toLocaleString("pt-BR")}.`
       + (cfg.catalogo_url ? `\nCATALOGO (link): ${cfg.catalogo_url}` : "")
+      + (L.link_seg ? `\nELE JA RECEBEU O LINK da pagina de pedido (cesta ${L.link_seg}). Nao mande de novo: se for falar dele, fale do que tem dentro.` : `\nPAGINA DE PEDIDO: se voce ja souber que tipo de loja ele tem, este toque e um bom lugar para mandar o link — la cada produto aparece COM O PRECO e o total soma na tela. Chame link_pedido para pegar a URL. Se nao souber o tipo de loja, pergunte isso em vez de mandar.`)
       + `\n${jaSei ? "JA APURADO (nao pergunte de novo): " + jaSei : "Nao sei nada sobre a loja dele ainda."}`
       + (L.nome_confirmado ? `\nNOME JA CONFIRMADO por ele: ${L.nome}. Use esse.` : `\nVoce ainda NAO confirmou o nome dele (o que aparece e o do perfil do WhatsApp). Se couber no toque, pergunte o nome completo de leve — e chame salvar_lead com nome e nome_confirmado=true quando ele responder.`)
       + o.lic;
     const messages: any[] = [{ role: "user", content: msgs.map((m: any) => (m.direction === "inbound" ? "CONTATO: " : "VOCE (Nitron): ") + limpa(m.body).slice(0, 400)).join("\n") + "\n\n(Escreva SO o toque de seguimento, sem prefixo.)" }];
-    const ctx: any = { contact_id: L.contact_id, fone: L.fone, instancia: L.instancia, dry: o.dry, source: L.origem };
+    const ctx: any = { contact_id: L.contact_id, fone: L.fone, instancia: L.instancia, dry: o.dry, pedidoMin: o.pedidoMin, source: L.origem };
     let texto = ""; const usadas: string[] = [];
     for (let i = 0; i < 4; i++) {
       const resp = await anthropic(sys, messages, TOOLS);

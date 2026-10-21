@@ -312,3 +312,58 @@ acima de R$ 15.000). Isso virou `copiloto_licoes` **#326** — entra no prompt s
 para o proximo lead que disser a mesma coisa, e nao so para este.
 
 Tarefa #403 marcada como resolvida com o motivo no corpo.
+
+## 20/10 (noite) — as campanhas voltaram, e o link agora sai sozinho
+
+O gestor religou as campanhas do META e deu a regra da rodada:
+
+> "não passar para o representante e agora vamos testar o link com todos que chegarem"
+
+A primeira metade ja estava de pe (`repasse_ativa=nao`, mais as licoes 321–325). A segunda nao
+existia: o link so era montado **a mao**, pelo `app/pedido/ponte.sh`, uma pessoa de cada vez — e por
+isso so 11 lojistas tinham recebido ate aqui.
+
+### A ferramenta `link_pedido` (copiloto-lead v14)
+
+A Nina ganhou uma ferramenta que devolve a URL pronta:
+
+```
+https://pedido-nitron.marketing-da5.workers.dev/#<Regiao>-<Ramo>~L<id do lead>
+```
+
+| peca | de onde vem | por que assim |
+|---|---|---|
+| **Regiao** | UF do lead (`copiloto_lead.uf`) | e so o que a cesta precisa saber; cidade nao entra |
+| **Ramo** | a **Nina escolhe**, entre as 10 cestas | o CNAE e o que o contador escreveu na abertura; a `ponte.sh` ja dizia que "o que ele DISSE vence o CNAE". E consultar CNAE exigiria chamada externa, que cai |
+| **~L\<id\>** | o id do lead | e o que torna "abriu a pagina" atribuivel A PESSOA no `pedido_visita`. O lojista nao ve: a pagina limpa a URL no primeiro carregamento |
+
+Sem cesta exata, cai na mesma cadeia da `ponte.sh`: mesmo ramo no Sudeste → R01 da regiao → cesta
+geral. Cada envio grava `link_em`, `link_seg`, `link_url` e `link_vezes`, e as duas pontas do prompt
+(resposta e toque de seguimento) leem isso para **nao mandar duas vezes**.
+
+**Quando ela manda:** assim que souber o tipo de loja. Nao espera ele pedir e **nao espera o CNPJ** —
+o CNPJ continua sendo pedido cedo, porque e com ele que se confere o cadastro, mas o link nao depende
+disso. O toque de seguimento tambem pode levar o link, que e muito melhor do que repetir a pergunta.
+
+**O que a ferramenta nao deixa prometer:** prazo, frete e percentual de tabela. O unico desconto que
+ela pode citar e o **por volume**, porque ele esta impresso na propria pagina e soma na tela. Isso
+virou a licao **335**, que separa os dois descontos — o da pagina (pode dizer quanto) e o do CNPJ
+(diz que existe, nunca quanto, licao 319).
+
+### O deploy trouxe junto a v12 e a v13, que nunca tinham subido
+
+O publicado era a **v11**. As duas versoes seguintes existiam so no repositorio:
+
+| versao | o que entra agora no ar |
+|---|---|
+| v12 | le a assinatura da landing "Acelera Nitron" e marca `origem='google-acelera'`, aproveitando nome, CNPJ e e-mail que o lead digitou no formulario |
+| v13 | **pausa a instancia na primeira queda e aborta a rodada**; le `pausada_em` antes de tentar qualquer coisa; poe o lead de molho depois de qualquer recusa — e a correcao do 02/10, quando a Nina escreveu 41 mensagens diferentes para o mesmo lead com o Zaptos morto |
+
+Conferido antes de publicar: nao havia nada no publicado que nao estivesse no repositorio (zero
+simbolos a perder), e nenhuma chave de servico chumbada. Conferido depois: o fonte publicado e
+**byte a byte identico** ao arquivo local (76.641 caracteres nos dois).
+
+### A fila dos representantes terminou
+
+55 mensagens, **54 entregues**. A unica recusa nao e de instancia: **ARY CARVALHO, telefone fixo,
+sem WhatsApp**.
