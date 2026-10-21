@@ -1,4 +1,18 @@
-// copiloto-lead (v14) — A NINA MANDA O LINK DA PAGINA DE PEDIDO. Ordem do gestor em 20/10, ao
+// copiloto-lead (v15) — A NINA FECHA; `passar_comercial` DEIXA DE SER A SAIDA. Em 21/10 o gestor
+// repetiu a ordem olhando os leads que chegaram: "nao vai passar mais, vai fazer o combinado da
+// Nina fechar". O leak estava aqui: o `passar_comercial` continuava sendo o fim natural da
+// qualificacao, e ele fazia duas coisas ruins de uma vez — abria tarefa para o comercial E gravava
+// status='passado', que TIRA o lead da lista do seguimento (`seguir` so olha qualificando e
+// qualificado). O lead parava de ser trabalhado por todo mundo ao mesmo tempo.
+// Custou o Levi Reis (lead 466): quente, CNPJ dado, pedido minimo aceito, querendo montar pedido —
+// e as 09:03 de 21/10 ele virou a tarefa 413 ("gerar e enviar o link, urgente") porque a Nina ainda
+// nao tinha como montar link nenhum. Ele estava "cobrando retorno ha dias".
+// Agora: a ferramenta se chama a mesma coisa (para nao quebrar conversa em curso) mas e o PEDIDO DE
+// ATENDIMENTO HUMANO, nao o fim da qualificacao. Ela abre a tarefa — que e a porta que o
+// nina-passar-monica exige — e deixa o lead em 'qualificado', entao a Nina continua com ele ate
+// alguem assumir de verdade. Quem nao pode ser o destino, nunca: representante.
+//
+// v14 — A NINA MANDA O LINK DA PAGINA DE PEDIDO. Ordem do gestor em 20/10, ao
 // religar as campanhas do META: "nao passar para o representante e agora vamos testar o link com
 // todos que chegarem". Ate aqui o link so existia na mao (app/pedido/ponte.sh), montado por uma
 // pessoa, um lead por vez — e por isso so 11 lojistas tinham recebido. A ferramenta `link_pedido`
@@ -288,7 +302,7 @@ const TOOLS = [
   { name: "consultar_conhecimento", description: "Base de conhecimento da casa (produto, mercado, playbook). Use quando ele perguntar algo que voce nao sabe de cabeca.", input_schema: { type: "object", properties: { termo: { type: "string" } }, required: ["termo"] } },
   { name: "produtos", description: "Produtos por categoria/nome/ramo: devolve nome e LINK da foto. SEM preco.", input_schema: { type: "object", properties: { termo: { type: "string" } }, required: ["termo"] } },
   { name: "salvar_lead", description: "Anota/atualiza o que voce JA apurou deste lead. Chame assim que descobrir um dado novo. Mande so o que ele disse — nao preencha por deducao.", input_schema: { type: "object", properties: { nome: { type: "string", description: "nome da pessoa COMO ELA MESMA ESCREVEU nesta conversa, com sobrenome. NUNCA o nome do perfil do WhatsApp (apelido, emoji, frase, nome da loja)." }, nome_confirmado: { type: "boolean", description: "true SOMENTE quando a propria pessoa disse o nome nesta conversa. Falso/ausente se voce pegou do perfil ou deduziu." }, empresa: { type: "string", description: "nome da loja / razao social" }, cnpj: { type: "string" }, cidade: { type: "string" }, uf: { type: "string" }, tipo_loja: { type: "string", description: "bazar, utilidades, variedades, presentes, supermercado, magazine, material de construcao..." }, ja_revende: { type: "string", description: "de quem ele compra hoje, ou que nao compra direto de fabrica" }, interesse: { type: "string", description: "linha/produto que ele quer abastecer" }, sabe_minimo: { type: "boolean", description: "true depois de VOCE dizer o pedido minimo nesta conversa" }, temperatura: { type: "string", enum: ["frio", "morno", "quente"] }, resumo: { type: "string", description: "2 a 3 frases do caso, para o comercial ler" } }, required: [] } },
-  { name: "passar_comercial", description: "Fecha a qualificacao e passa pro comercial fechar a venda. Use quando ja souber o NOME COMPLETO da pessoa (confirmado por ela), a loja, a praca (cidade/UF) e o que ele quer, e ele ja souber do pedido minimo. Abre a tarefa na fila de execucao e devolve o protocolo.", input_schema: { type: "object", properties: { resumo: { type: "string", description: "o caso em 2 a 4 frases: quem e, o que quer, em que pe esta" }, falta: { type: "string", description: "o que o comercial ainda precisa levantar ou combinar" }, temperatura: { type: "string", enum: ["frio", "morno", "quente"] } }, required: ["resumo"] } },
+  { name: "passar_comercial", description: "PEDIDO DE ATENDIMENTO HUMANO. NAO e o fim da qualificacao e NAO tira o lead de voce — quem fecha a venda e VOCE, pela pagina de pedido. Chame isto so em tres casos: (1) ele PEDIU falar com uma atendente; (2) o CNPJ dele ja tem cadastro na Nitron, entao ele ja tem consultor; (3) voce esta genuinamente travada em algo que so uma pessoa resolve. Nunca como \"ja qualifiquei, entrego pra outro\". Abre a tarefa e devolve o protocolo; voce continua na conversa.", input_schema: { type: "object", properties: { resumo: { type: "string", description: "o caso em 2 a 4 frases: quem e, o que quer, em que pe esta" }, falta: { type: "string", description: "o que o comercial ainda precisa levantar ou combinar" }, temperatura: { type: "string", enum: ["frio", "morno", "quente"] } }, required: ["resumo"] } },
   { name: "link_pedido", description: "Monta o LINK da pagina de pedido da Nitron para ESTE lead e devolve a URL pronta. Na pagina cada produto aparece COM O PRECO, o total soma na tela e o desconto por volume entra sozinho — e por isso ela resolve a objecao de catalogo sem preco. Use assim que souber que tipo de loja ele tem; nao precisa esperar o CNPJ.", input_schema: { type: "object", properties: { ramo: { type: "string", enum: ["R01", "R02", "R03", "R04", "R05", "R06", "R07", "R08", "R09", "R10"], description: "a cesta que combina com a loja dele: R01 = casa de utilidades, variedades, bazar, 1,99, armarinho; R02 = loja de departamento, magazine, loja grande com varias secoes; R03 = joalheria, bijuteria, presentes, festa; R04 = supermercado, mercearia, mercado, atacarejo; R05 = cama, mesa, banho, tecidos, enxoval; R06 = vestuario, calcados, moda; R07 = papelaria, livraria, escritorio; R08 = material de construcao, ferragem, tintas; R09 = farmacia, perfumaria, cosmeticos, higiene; R10 = esporte, brinquedo, lazer, pet. Na duvida, R01." }, uf: { type: "string", description: "UF dele (2 letras), se voce souber e ainda nao tiver salvado com salvar_lead" } }, required: ["ramo"] } },
   { name: "descartar_lead", description: "Use quando NAO e revenda: consumidor final querendo uma peca, curriculo, fornecedor oferecendo servico, engano de numero. Marca como descartado e NAO abre tarefa pro comercial.", input_schema: { type: "object", properties: { motivo: { type: "string" } }, required: ["motivo"] } },
 ];
@@ -449,8 +463,11 @@ async function runTool(sb: any, ctx: any, name: string, input: any): Promise<any
       ].filter((x) => x !== null).join("\n");
       const { data: tf, error: eT } = await sb.from("copiloto_tarefas").insert({ area: "comercial", tipo: "lead-anuncio", acao: ("Fechar lead do anuncio: " + (L.empresa || L.nome || "lead sem nome")).slice(0, 500), detalhe: det.slice(0, 1500), cliente_nome: L.empresa || L.nome || null, contact_id: ctx.contact_id || null, origem: "nina-lead", prioridade: 1 }).select("id").maybeSingle();
       if (eT) return { erro: eT.message };
-      await upsertLead(sb, ctx, { status: "passado", tarefa_id: tf?.id || null });
-      return { ok: true, protocolo: tf?.id, aviso: "passado pro comercial (tarefa #" + tf?.id + ", area comercial). Diga a ele que um consultor assume daqui, sem prometer preco, prazo nem data." };
+      // NAO grava status='passado'. Era isso que tirava o lead do seguimento (`seguir` so olha
+      // qualificando/qualificado) e o deixava sem ninguem: o comercial achava que a Nina cuidava, a
+      // Nina ja tinha saido. Fica 'qualificado' — ela continua com ele ate alguem assumir de fato.
+      await upsertLead(sb, ctx, { tarefa_id: tf?.id || null });
+      return { ok: true, protocolo: tf?.id, aviso: "tarefa #" + tf?.id + " aberta na area comercial. VOCE CONTINUA NA CONVERSA: nao se despeca, nao diga que outra pessoa assume daqui a menos que ele tenha pedido atendimento humano. Siga ajudando a montar o pedido pela pagina, sem prometer preco, prazo nem data." };
     }
     return { erro: "ferramenta desconhecida: " + name };
   } catch (e) { return { erro: String(e) }; }
@@ -582,6 +599,7 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
     + (cnpjForm && !cadastro ? `\nELE JA INFORMOU O CNPJ no formulario e NAO tem cadastro ainda. NAO peca o CNPJ de novo — isso irrita. Se precisar confirmar, confirme a EMPRESA pelo nome, nao o numero.` : "")
     + `\nPEDIDO MINIMO da Nitron: R$ ${opts.pedidoMin.toLocaleString("pt-BR")}. Diga quando a conversa chegar em volume, mix ou como comprar — nunca na abertura.`
     + (cfg.catalogo_url ? `\nCATALOGO (mande o LINK quando ele quiser ver produtos): ${cfg.catalogo_url}` : "")
+    + `\nQUEM FECHA E VOCE — ordem do gestor, repetida em 21/10: "nao vai passar mais, vai fazer o combinado da Nina fechar". NENHUM lead vai para representante. Voce leva a conversa do inicio ao fim, pela pagina de pedido. So existe UMA passagem possivel, e e para a venda interna (Monica), quando ele PEDIR atendimento humano e ja estiver qualificado. Nao se despeca do lead dizendo que alguem assume daqui.`
     + `\nPAGINA DE PEDIDO — ordem do gestor em 20/10, vale para TODO lead desta rodada: existe uma pagina com a cesta sugerida para o ramo dele, onde cada produto aparece COM O PRECO, o total soma na tela e o desconto por volume entra sozinho. Assim que voce souber que tipo de loja ele tem, chame link_pedido e mande o link — nao espere ele pedir e nao espere o CNPJ. O CNPJ voce continua pedindo cedo, porque e com ele que a gente confere o cadastro e aplica o desconto; mas o link nao depende disso. Se ele JA recebeu o link nesta conversa, nao mande de novo sem um motivo novo.`
     + (cfg.site_url ? `\nSITE: ${cfg.site_url}` : "")
     + `\n${jaSei ? "JA APURADO (nao pergunte de novo): " + jaSei : "AINDA NAO SEI NADA sobre ele — comece pelo tipo de loja e o que ele precisa abastecer."}`

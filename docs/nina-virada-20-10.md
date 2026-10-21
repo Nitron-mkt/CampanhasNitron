@@ -373,3 +373,56 @@ sem WhatsApp**.
 representantes, rename das instancias). Ficou como esta de proposito: o fonte publicado e o do
 repositorio sao byte a byte identicos, e nao vale um redeploy de funcao que esta atendendo so para
 corrigir um numero em comentario. Na proxima publicacao por motivo funcional, acerta-se junto.
+
+## 21/10 (meio-dia) — o vazamento que ainda mandava lead embora
+
+O gestor repetiu a ordem olhando os leads do dia:
+
+> "esses da campanha que chegaram de ontem pra hoje (...) não vai passar mais, vai fazer o
+> combinado da Nina fechar, se tiver alguma dificuldade em continuar, pode me informar"
+
+Representante ja nao recebia nada (`repasse_ativa=nao`). **Mas havia outra porta, e ela estava
+aberta:** a ferramenta `passar_comercial` continuava sendo o fim natural da qualificacao, e fazia
+duas coisas ruins de uma vez — abria tarefa para o comercial **e** gravava `status='passado'`.
+Esse status tira o lead do seguimento (`seguir` so olha `qualificando`/`qualificado`), entao o lead
+saia da mao da Nina e entrava numa fila que alguem precisa abrir. Ninguem ficava com ele.
+
+### O caso que mostrou isso: Levi Reis (lead 466)
+
+Marketplace de variedades em SP, **CNPJ informado**, **pedido minimo aceito**, temperatura
+**quente**, querendo potes, organizacao, cozinha e lixeiras. As 09:03 de 21/10 a Nina abriu a
+tarefa **413** com este texto:
+
+> "Esta pronto para montar pedido mas o link da pagina de pedido nao foi gerado corretamente — ja
+> tentamos duas vezes e ele esta **cobrando retorno ha dias**."
+> Falta: "Gerar e enviar o link da pagina de pedido com o CNPJ dele certinho, **urgente**"
+
+Ela nao tinha como montar link nenhum: a `link_pedido` so foi ao ar as 09:34. O lead mais quente do
+dia virou tarefa de outra pessoa por falta de ferramenta.
+
+**Resolvido na mao:** link `Sudeste-R01~L466` enviado pela instancia Nina, entrega confirmada, com
+o pedido de desculpa pela demora. Lead de volta para `qualificado` (a Nina segue com ele) e tarefa
+413 fechada.
+
+### A correcao (v15)
+
+| antes | agora |
+|---|---|
+| `passar_comercial` = "terminei de qualificar, entrego pra outro" | = **pedido de atendimento humano**, e so em tres casos: ele pediu uma atendente; o CNPJ ja tem cadastro (ja tem consultor); ou a Nina esta travada em algo que so pessoa resolve |
+| gravava `status='passado'` | **nao grava** — fica `qualificado`, e a Nina continua com ele ate alguem assumir de verdade |
+| o `aviso` mandava ela se despedir ("um consultor assume daqui") | manda o contrario: continue na conversa, siga montando o pedido |
+
+E o prompt ganhou a ordem por extenso: *"QUEM FECHA E VOCE (...) nenhum lead vai para
+representante (...) so existe UMA passagem possivel, e e para a venda interna (Monica), quando ele
+PEDIR atendimento humano e ja estiver qualificado."*
+
+A tarefa continua sendo aberta de proposito: ela e a porta que o `nina-passar-monica` **exige**
+para deixar passar (`copiloto_tarefas` + CNPJ + `sabe_minimo`). Tirar a tarefa quebraria o unico
+caminho legitimo.
+
+### O unico passo que a Nina nao faz sozinha
+
+Montado o pedido, a pagina chama o `nina-pedido-recebido`: o pedido vira linha de tabela, sai por
+e-mail completo para a **Camyla** e para o marketing, e um aviso curto por Zaptos para quem
+acompanha. **Quem digita no Sankhya e uma pessoa.** Isso nao e "passar o lead" — e a unica etapa
+que nao tem como ser nossa.
