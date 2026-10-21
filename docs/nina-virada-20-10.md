@@ -313,7 +313,7 @@ para o proximo lead que disser a mesma coisa, e nao so para este.
 
 Tarefa #403 marcada como resolvida com o motivo no corpo.
 
-## 20/10 (noite) — as campanhas voltaram, e o link agora sai sozinho
+## 21/10 (manha) — as campanhas voltaram, e o link agora sai sozinho
 
 O gestor religou as campanhas do META e deu a regra da rodada:
 
@@ -363,7 +363,13 @@ Conferido antes de publicar: nao havia nada no publicado que nao estivesse no re
 simbolos a perder), e nenhuma chave de servico chumbada. Conferido depois: o fonte publicado e
 **byte a byte identico** ao arquivo local (76.641 caracteres nos dois).
 
-### A fila dos representantes terminou
+### A fila dos representantes terminou (ainda em 20/10)
 
 55 mensagens, **54 entregues**. A unica recusa nao e de instancia: **ARY CARVALHO, telefone fixo,
 sem WhatsApp**.
+
+**Nota de data:** o cabecalho do `copiloto-lead` e a linha do prompt dizem "ordem do gestor em
+20/10". O pedido do link veio na manha de **21/10**; 20/10 e a data da virada (Bolsao 10, fila dos
+representantes, rename das instancias). Ficou como esta de proposito: o fonte publicado e o do
+repositorio sao byte a byte identicos, e nao vale um redeploy de funcao que esta atendendo so para
+corrigir um numero em comentario. Na proxima publicacao por motivo funcional, acerta-se junto.
