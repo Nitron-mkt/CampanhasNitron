@@ -1,4 +1,18 @@
-// copiloto-lead (v15) — A NINA FECHA; `passar_comercial` DEIXA DE SER A SAIDA. Em 21/10 o gestor
+// copiloto-lead (v16) — O TOQUE DE SEGUIMENTO PASSA A CONTORNAR, NAO A SE DESPEDIR. Ordem do
+// gestor em 22/10: "a todos os leads que morrem, precisamos contornar, ou falando do desconto que
+// ja tem, ou falando que escolhendo os itens que precisam eles podem receber uma condicao especial
+// diferente, basta concluir o pedido que a Nina passara para um dos nossos vendedores onde podem
+// abrir mais opcoes de tabelas, descontos e tudo mais".
+// As licoes 347 e 348 entraram primeiro, sem deploy — e NAO bastaram. Na previa dos tres primeiros
+// toques a Nina escreveu mensagens corretas e genericas ("me conta o que mais vende que eu te
+// aponto o mix"), sem citar desconto nem vendedor. O motivo estava no proprio prompt: ele dava um
+// CARDAPIO do que oferecer ("o link do catalogo, uma sugestao pelo tipo de loja dele, dizer que
+// pode mandar so o que interessa") e ela escolhia dali. Licao nao vence instrucao concreta do
+// prompt quando as duas falam do mesmo assunto.
+// Agora o cardapio e o contorno, o catalogo saiu dele (nao tem preco) e o ultimo toque deixou de
+// ser uma despedida.
+//
+// v15 — A NINA FECHA; `passar_comercial` DEIXA DE SER A SAIDA. Em 21/10 o gestor
 // repetiu a ordem olhando os leads que chegaram: "nao vai passar mais, vai fazer o combinado da
 // Nina fechar". O leak estava aqui: o `passar_comercial` continuava sendo o fim natural da
 // qualificacao, e ele fazia duas coisas ruins de uma vez — abria tarefa para o comercial E gravava
@@ -712,9 +726,12 @@ async function seguir(sb: any, cfg: Record<string, string>, o: any) {
       + `\n\nHOJE e ${hojeBRT()} (data atual REAL).`
       + (o.pb ? `\n\nMANUAIS DA CASA (o [LEAD] manda aqui):\n${o.pb}` : "")
       + `\n\nTOQUE DE SEGUIMENTO (toque ${toqueN} de ${o.toquesMax}): ele NAO respondeu sua ultima mensagem, mandada ha ${Math.round(minDesde / 60)}h. Mande UMA mensagem curta, leve e SEM cobranca.`
-      + `\nNAO repita o que voce ja disse nem reformule a mesma pergunta: troque de angulo. Ofereca algo util (o link do catalogo, uma sugestao pelo tipo de loja dele, dizer que pode mandar so o que interessa) e faca no maximo UMA pergunta facil de responder.`
+      + `\nNAO repita o que voce ja disse nem reformule a mesma pergunta: troque de angulo.`
+      + `\nO ANGULO E O CONTORNO (ordem do gestor, 22/10) — use UM dos dois, o que couber na conversa: (a) o DESCONTO QUE ELE JA TEM, sem negociar nada: acima de R$ 5.000 entram 10% e acima de R$ 15.000 entram 15%, somando sozinho na tela enquanto ele monta; (b) que montando so com os itens que ELE precisa pode haver CONDICAO ESPECIAL, porque ao concluir o pedido voce passa para um dos nossos vendedores, e e ele quem abre outras tabelas e condicoes que voce nao libera sozinha. Concluir nao obriga a nada — poe um vendedor na conversa. NUNCA prometa percentual, tabela ou prazo especifico, e nao use pressa nem escassez.`
+      + `\nNAO ofereca o catalogo como saida: ele NAO tem preco, e foi essa a reclamacao que ja nos custou um lead. O que resolve e a pagina de pedido.`
+      + `\nFaca no maximo UMA pergunta facil de responder.`
       + `\nNUNCA use pressa, escassez, "so hoje" nem cobranca de resposta.`
-      + (toqueN >= o.toquesMax ? `\nESTE E O ULTIMO TOQUE: deixe a porta aberta sem insistir — diga que fica a disposicao quando ele quiser, e encerre com leveza.` : "")
+      + (toqueN >= o.toquesMax ? `\nESTE E O ULTIMO TOQUE, entao e ele que tem de carregar o contorno inteiro: diga o desconto que ele ja tem na pagina E que concluir o pedido coloca um vendedor na conversa, com poder de ver tabela e condicao. NAO se despeca, nao diga "fico a disposicao" e pare por ai — quem se despede perde o lead. Deixe a porta aberta COM um motivo concreto para ele voltar.` : "")
       + `\n\nQUEM E: lead de campanha, nao representante e sem cadastro de cliente. ${L.origem === ACELERA_ORIGEM ? "Veio da landing \"Acelera Nitron\", a campanha da Nitron no GOOGLE." : L.origem ? ("Origem registrada no CRM: \"" + L.origem + "\".") : "Origem nao registrada."} Nao invente oferta nem condicao que possa ter sido anunciada.`
       + `\nPEDIDO MINIMO: R$ ${o.pedidoMin.toLocaleString("pt-BR")}.`
       + (cfg.catalogo_url ? `\nCATALOGO (link): ${cfg.catalogo_url}` : "")

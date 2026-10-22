@@ -711,3 +711,55 @@ Sete dos 30 se descreveram como loja **online/marketplace** (Fransciele, Luccas,
 Gabriel, Letícia, Carla). Eles recebem a cesta do ramo deles, que e montada com a **media de compra
 de lojas fisicas** daquele ramo. Pode ser o mix errado para quem vende em marketplace — nao da para
 afirmar com sete casos, mas e a primeira vez que o perfil aparece em volume.
+
+## 22/10 (15h30) — "lead que morre se contorna" (v16)
+
+Ordem do gestor:
+
+> "A todos os leads que morrem, precisamos contornar, ou falando do desconto que já tem, ou falando
+> que escolhendo os itens que precisam eles podem receber uma condição especial diferente, basta
+> concluir o pedido que a Nina passará para um dos nossos vendedores onde podem abrir mais opções de
+> tabelas, descontos e tudo mais."
+
+Isso muda duas coisas de uma vez: o **argumento** do toque e o **momento do repasse** — concluir o
+pedido deixa de ser o fim e passa a ser o que chama o vendedor.
+
+### As licoes entraram primeiro, e NAO bastaram
+
+Licoes 347 e 348 gravadas, sem deploy. Rodei a previa dos tres primeiros toques e as mensagens
+sairam **corretas e genericas**:
+
+> "Gabriela, deixa eu facilitar: me conta o que mais vende aí na loja hoje que eu já te aponto o que
+> colocar no mix primeiro, pra não ficar escolhendo no escuro."
+
+Nenhuma citou desconto nem vendedor. O motivo estava no proprio prompt do toque: ele dava um
+**cardapio** do que oferecer — "o link do catalogo, uma sugestao pelo tipo de loja dele, dizer que
+pode mandar so o que interessa" — e ela escolhia dali. **Licao nao vence instrucao concreta do
+prompt quando as duas falam do mesmo assunto.** Esse e o aprendizado que fica.
+
+### O que a v16 mudou
+
+| antes | agora |
+|---|---|
+| cardapio: catalogo, sugestao de mix, "mando so o que interessa" | **o contorno**: (a) o desconto que ele ja tem na pagina, ou (b) concluir o pedido poe um vendedor na conversa, com poder de abrir tabela e condicao |
+| catalogo era uma das saidas | **proibido como saida** — nao tem preco, e foi essa a reclamacao que custou o Bolsao 10 |
+| ultimo toque: "fico a disposicao", encerre com leveza | **o ultimo toque carrega o contorno inteiro**, e nao se despede: "quem se despede perde o lead" |
+
+A trava continua: nunca prometer percentual, tabela ou prazo. Quem abre isso e o vendedor; a Nina
+so abre a porta.
+
+### A regua: de 3 para 10 horas entre os toques
+
+`lead_seguir_min` 180 → **600**. Mesma quantidade de mensagens (`lead_toques_max` continua 2), mas
+o lead passa a viver mais de um dia util em vez de seis horas. Foi o que a revisao das 14h mostrou
+matando os leads, e cumpre a ordem de nao deixar lead parado sem aumentar o quanto a Nina fala.
+
+### Cinco revividos, e tres pegaram a mensagem antiga
+
+Resetei para `qualificando` os cinco que tinham **aberto a pagina** e foram marcados frio: Luccas
+Abramo (475), Gabriela Nunes (472), Gislaine (479), Brendo Santana (469) e Marcos Santos (402).
+
+**O cron tocou tres deles as 15:21–15:22, um minuto antes do deploy da v16** — Marcos, Brendo e
+Gabriela receberam a versao generica. Nao e prejuizo (as mensagens estao corretas), mas nao
+carregam o argumento novo. Os tres ficaram com `toques=1`, entao o **proximo** toque deles e o
+ultimo e vai com o contorno inteiro. Luccas e Gislaine ainda nao foram tocados e pegam a v16.
