@@ -656,3 +656,58 @@ zerado puxando a conta para baixo.
 O que o PDF **nao** tem e identificacao: o cabecalho e so "NITRON — Pedido / Casa de Utilidades ·
 Sudeste / Emitido em 22/10/2026". Sem loja, sem CNPJ, sem contato — `clientBlock()` sai vazio
 quando o lojista nao preencheu quem e. Um PDF desses chega na Camyla sem dizer de quem e.
+
+## 22/10 (15h) — a revisao do fluxo desde que o link comecou
+
+30 leads entraram entre 20/10 e agora (466 a 495). Conferi um por um.
+
+### O que esta certo
+
+- **Nenhum foi para representante.** `repasse_para` vazio nos 30. A ordem esta sendo cumprida.
+- **16 dos 30 receberam o link**, e a cesta bateu com o que a pessoa disse em todos:
+
+| cesta | para quem | conferencia |
+|---|---|---|
+| Sudeste-R01 | variedades/bazar/preco unico em SP | certo |
+| **Sudeste-R04** | Cleber, "ecommerce — produtos de mercado" | certo (Supermercado/Mercearia) |
+| **Sul-R01** | Fabio Garcia, Mandaguari/PR | certo |
+| **Nordeste-R01** | Daniela Montino, Cafarnaú/BA | certo |
+| **Norte-R01** | Bruna Daltiba, RO | certo |
+
+Quatro das cinco regioes ja sairam sozinhas, e um ramo fora do R01. A conta de regiao e de ramo
+esta funcionando.
+
+- Uma unica tarefa foi aberta no periodo (a 413, do Levi) e ela e **anterior** a v15.
+
+### O que esta errado: o lead morre em meio dia
+
+**13 dos 30 ja estao `frio`.** E o tempo que leva para isso e o problema:
+
+| lead | o que tinha | parado ha | status |
+|---|---|---|---|
+| Luccas Abramo (475) | CNPJ, razao social, **abriu a pagina** | 7h | **frio** |
+| Mônica Mariz (470) | — | 7h | **frio** |
+| Andreia (476) | — | 7h | **frio** |
+| Gabriela Nunes (472) | CNPJ, **abriu a pagina** | 23h | **frio** |
+| Brendo Santana (469) | **abriu a pagina 3 min depois** | 24h | **frio** |
+
+A regua e `lead_seguir_min = 180` (3 horas) e `lead_toques_max = 2`. Ou seja: o lead que nao
+responde leva o primeiro toque em 3h, o segundo em 6h, e **e declarado frio no mesmo dia**. Quem
+chega as 6h da manha esta morto ao meio-dia.
+
+**Tres dos que ABRIRAM a pagina foram marcados frio.** Sao os mais quentes do funil, e o sistema os
+descartou por nao terem escrito de volta em algumas horas.
+
+Hoje, dos 30 leads do periodo, **so 12 ainda tem algum toque pela frente**. Os outros 18 acabaram.
+
+**O conserto e parametro, nao codigo:** espacar os toques (`lead_seguir_min`) faz o lead viver dias
+em vez de horas **sem aumentar o numero de mensagens**. Subir de 180 para 600 minutos daria um
+toque no fim do dia e outro na manha seguinte — mesma quantidade de fala, vida util dobrada.
+**Nao mudei:** mexer na regua muda quando a Nina fala sozinha, e isso e decisao do gestor.
+
+### Um padrao que vale olhar: a maioria e e-commerce
+
+Sete dos 30 se descreveram como loja **online/marketplace** (Fransciele, Luccas, Cleber, Fabio,
+Gabriel, Letícia, Carla). Eles recebem a cesta do ramo deles, que e montada com a **media de compra
+de lojas fisicas** daquele ramo. Pode ser o mix errado para quem vende em marketplace — nao da para
+afirmar com sete casos, mas e a primeira vez que o perfil aparece em volume.
