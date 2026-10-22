@@ -583,3 +583,76 @@ imprime para quem monta link a mao. Mesma quantidade de itens (41–42), valor d
 Nao sei qual dos dois esta certo e nao mexi em nenhum — mas sao a mesma cesta descrita por dois
 numeros, e o que o lojista ve e o de R$ 8.959. Se alguem internamente citar "cesta de uns R$ 4,7
 mil" para um cliente, a conta nao vai bater quando ele abrir.
+
+## 22/10 (tarde) — oito pedidos do gestor, e o que foi feito
+
+### 1. A Nina estava respondendo representante — PARADO
+
+`copiloto_config.piloto_apenas` estava em **`nao`**. Com essa chave em `nao`, o
+`copiloto-conversa` responde a **qualquer numero que case com um rep do `snap_rep`** — e foi
+exatamente o vao do incidente de 16/09 (477 mensagens de 79 numeros num dia). Ela voltou para
+**`sim`**: so os dois numeros do `copiloto_piloto` (MILTON, codvend 17) sao atendidos. 976 chamadas
+passaram pela funcao so hoje, entao isso estava valendo o dia inteiro.
+
+**O que ainda falta, e e deploy:** a trava dura em codigo e a mensagem de cortesia fora do horario
+("nao temos atendimento agora"). Hoje o comportamento fora do horario e **silencio**, que e o lado
+seguro do que o gestor pediu. E o MILTON continua sendo atendido porque e o canal de piloto e de
+treino ("modo treino" entra por ali) — se for para calar ele tambem, e so dizer.
+
+### 2, 3 e 7. As tres regras novas entraram sem deploy (`copiloto_licoes`)
+
+| # | licao | o que muda |
+|---|---|---|
+| 344 | **autoatendimento** | ela se apresenta como "a Nina, o autoatendimento da Nitron", uma vez, e diz que atendimento humano e so pedir, que a gente acompanha em tempo real |
+| 345 | **catalogo x link** | o catalogo nao tem preco; a pagina tem. Na duvida vai o LINK. Catalogo so quando ele pedir catalogo com essa palavra, e ainda assim com o link junto |
+| 346 | **nao atende representante** | nem com dias sem resposta; comunicacao em massa sai pelo painel do Gestor |
+
+### 4. A troca de instancia para o financeiro — achada, e NAO e do Renato
+
+Duas funcoes nossas mexem em dono de contato. A suspeita obvia, `crm-resposta-roteia`, esta
+**inocente**: a ultima vez que ela atribuiu alguma coisa foi **01/10**, ha tres semanas.
+
+A culpada e a **`campanha-dono`**, com um emprestimo que nunca foi devolvido:
+
+| campanha | contatos emprestados | devolvidos | ultimo |
+|---|---|---|---|
+| **cobranca** | **126** | **0** | 15/10 |
+| reativacao_180d | 9 | 2 | 26/08 |
+| clube_a_vencer | 1 | 0 | 27/08 |
+
+A funcao "empresta" o dono do contato para a instancia da campanha sair pelo numero certo, e
+`devolver` recoloca cada um no lugar — o ledger esta em `campanha_dono_emprestado`. **O devolver da
+cobranca nunca rodou.** Os 126 contatos ficaram com Bianca, Karla e Nina Financeiro, tirados de
+Nina, Monica, Camyla, Mara e Estevany. Como o numero de saida **e** o dono do contato, toda mensagem
+para essas pessoas passou a sair pelo numero do financeiro — que e o que o gestor esta vendo.
+
+Pior: as tres instancias de cobranca estao fora do ar (a propria vigia avisa que "a cobranca PAROU
+de enviar por WhatsApp — nenhum numero de pe"). Entao esses 126 contatos estao presos a numeros
+mortos.
+
+**Nao rodei o `devolver`.** Sao 126 contatos de CLIENTE, e a regra da casa e que dono de contato de
+cliente nao se mexe sem o gestor. A ordem esta pronta para disparar.
+
+### 8. A lista de leads parados — `docs/leads-parados-22-10.md`
+
+**442 leads parados ha mais de 24h. Em 437, ninguem vai falar nada.** A view `lead_parado` ficou
+criada e e consultavel a qualquer hora.
+
+### 1 (PDF). O valor ESTA no PDF — o que falta e o nome de quem pediu
+
+Gerei o PDF da pagina publicada, num iPhone 13, e extrai o texto. Ele traz R$/un e total por linha,
+e fecha com:
+
+```
+41 produtos · 47 fardos · 701 unidades
+Subtotal:  R$ 8.959,11
+Desconto 10%:  -R$ 895,91
+VALOR TOTAL:  R$ 8.063,20
+```
+
+Conferido tambem que **nenhum dos 1.861 itens das cestas esta sem preco**, entao nao e um produto
+zerado puxando a conta para baixo.
+
+O que o PDF **nao** tem e identificacao: o cabecalho e so "NITRON — Pedido / Casa de Utilidades ·
+Sudeste / Emitido em 22/10/2026". Sem loja, sem CNPJ, sem contato — `clientBlock()` sai vazio
+quando o lojista nao preencheu quem e. Um PDF desses chega na Camyla sem dizer de quem e.
