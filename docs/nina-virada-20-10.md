@@ -554,3 +554,32 @@ mandar junto nas visitas seguintes. Nao muda nada do que o lojista ve.
 
 **Nao mexi na pagina.** Ela esta sendo usada por lead de verdade agora, e as duas mudancas sao
 decisao do gestor.
+
+## 22/10 (11h30) — 30 visitas, 0 pedidos, e as cestas novas funcionando
+
+14 leads entraram hoje (478–491), **7 ja receberam link**, e 10 visitas novas so na manha — mais do
+que o dia inteiro de ontem. O funil acelerou; o fim dele continua em zero.
+
+Duas cestas novas apareceram sozinhas, e as duas estao certas:
+
+| lead | o que ele disse | cesta |
+|---|---|---|
+| Cleber (486), Campinas/SP | "ecommerce — produtos de mercado" | **Sudeste-R04** (Supermercado/Mercearia) |
+| Daniela Montino (485), Cafarnaú/BA | utilidades/variedades | **Nordeste-R01** |
+
+Ate ontem tudo era `Sudeste-R01` e nao dava para saber se a escolha de ramo funcionava ou se era
+so a cesta padrao aparecendo sempre. Agora funcionou nos dois eixos: **ramo** (R04) e **regiao**
+(Nordeste).
+
+A mais adiantada e a **Fransciele (478)**, Santa Bárbara d'Oeste/SP, loja no Mercado Livre: CNPJ
+informado, pedido minimo aceito, **abriu duas vezes** (09:36 e 09:42). Nao escreveu depois.
+
+### Um numero que nao fecha
+
+A pagina abre o `Sudeste-R01` com **subtotal R$ 8.959,11** (medido no navegador). O `pedido_base`
+descreve a mesma cesta como **~R$ 4.706** (`valor_estimado`), e e esse o numero que a `ponte.sh`
+imprime para quem monta link a mao. Mesma quantidade de itens (41–42), valor dobrado.
+
+Nao sei qual dos dois esta certo e nao mexi em nenhum — mas sao a mesma cesta descrita por dois
+numeros, e o que o lojista ve e o de R$ 8.959. Se alguem internamente citar "cesta de uns R$ 4,7
+mil" para um cliente, a conta nao vai bater quando ele abrir.
