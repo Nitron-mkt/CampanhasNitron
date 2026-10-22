@@ -497,3 +497,60 @@ A Nina mandou **6 links sozinha** no primeiro dia (mais o do Ed Carlos, que saiu
 desse tamanho ainda nao da para dizer se e a pagina ou se e so cedo — mas se amanha a conta
 continuar 0 com dez ou mais aberturas, o problema deixa de ser do funil e passa a ser da pagina: o
 passo de fechar o pedido pode nao estar obvio para quem chega nela sem ninguem explicando.
+
+## 22/10 (manha) — 20 aberturas, 0 pedidos, e o porque provavel
+
+Nada chegou durante a noite. O `pedido_recebido` continua com os quatro testes de 15–16/10.
+
+### A pagina NAO esta quebrada — isso foi o primeiro a descartar
+
+Cinco das sete aberturas foram de celular, entao antes de culpar comportamento eu abri a pagina num
+iPhone 13 de verdade (Playwright, viewport de telefone):
+
+| conferido | resultado |
+|---|---|
+| erro de JS | **nenhum** |
+| estouro horizontal | **nao** |
+| botao "Enviar" | visivel, habilitado, na barra de baixo (top 608 de 664px) |
+| minimo de R$ 2.500 | **nao trava**: e um `confirm()` que deixa mandar assim mesmo |
+
+### O que eu acho que trava: a pagina abre com o carrinho CHEIO
+
+`loadSeg()` carrega a cesta inteira no carrinho:
+
+```js
+(s.itens||[]).forEach(function(it){ if(it.fardos>0) cart[it.cod]=it.fardos; });
+```
+
+No `Sudeste-R01` isso e o que o lojista ve no primeiro segundo, sem ter tocado em nada:
+
+> **41 produtos · 47 fardos · 701 pecas · subtotal R$ 8.959,11 · desconto 10% · total R$ 8.063,20**
+
+A pagina explica ("e um ponto de partida: mude o que quiser") e a conta de onde a cesta saiu esta
+la. Mas quem ouviu "pedido minimo R$ 2.500" e abre num **pedido de R$ 8 mil que nao montou** tem
+duas saidas: aceitar o que nao escolheu, ou tirar 40 itens na mao. As duas dao trabalho, e a
+terceira — fechar a aba — nao da nenhum.
+
+Isso e **decisao de produto, nao bug**, e a pagina e sua. Tres caminhos, em ordem de esforco:
+1. Abrir com o carrinho **vazio** e a cesta como sugestao ao lado ("adicionar tudo" num botao).
+2. Abrir com uma cesta **menor**, perto do minimo, e oferecer o resto.
+3. Deixar como esta e medir mais — 20 aberturas ainda e pouco para condenar.
+
+### A atribuicao esta perdendo quem volta
+
+7 das 20 visitas vieram **sem marca**. O motivo esta no codigo, nao e misterio:
+
+```js
+try{ if(location.hash.replace(/^#/,"")!==id) history.replaceState(null,"","#"+id); }catch(e){}
+```
+
+No primeiro carregamento a pagina limpa a URL e **a marca `~L<id>` some**. Quem reabrir pelo
+historico ou pela aba recente entra sem marca, e a visita fica orfa. Os horarios e os aparelhos
+(iPhone 26_6_2 e 18_7, os mesmos das visitas marcadas) sugerem que sao os mesmos lojistas
+voltando — mas isso e leitura, nao prova.
+
+Conserto pequeno: guardar a marca no `sessionStorage`/`localStorage` no primeiro carregamento e
+mandar junto nas visitas seguintes. Nao muda nada do que o lojista ve.
+
+**Nao mexi na pagina.** Ela esta sendo usada por lead de verdade agora, e as duas mudancas sao
+decisao do gestor.
