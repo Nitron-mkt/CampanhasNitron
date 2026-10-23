@@ -763,3 +763,47 @@ Abramo (475), Gabriela Nunes (472), Gislaine (479), Brendo Santana (469) e Marco
 Gabriela receberam a versao generica. Nao e prejuizo (as mensagens estao corretas), mas nao
 carregam o argumento novo. Os tres ficaram com `toques=1`, entao o **proximo** toque deles e o
 ultimo e vai com o contorno inteiro. Luccas e Gislaine ainda nao foram tocados e pegam a v16.
+
+## 23/10 (manha) — o contorno saiu, e saiu certo
+
+Os cinco revividos foram tocados entre 08:04 e 08:31, ja com a v16. O texto real, lido no CRM:
+
+**Luccas Abramo (toque 1)** — o argumento (a), o desconto que ele ja tem:
+
+> "Luccas, oi de novo. Só um detalhe que pode ajudar: enquanto você for montando a lista na página,
+> o desconto já entra sozinho — passando de R$ 5.000 cai 10%, passando de R$ 15.000 cai 15%, sem
+> precisar negociar nada. É só ir ajustando os itens que fazem sentido pra sua loja."
+
+**Gabriela Nunes (ULTIMO toque)** — os dois argumentos juntos, como o prompt exige no ultimo:
+
+> "(…) na própria página, acima de R$ 5.000 já entram 10% de desconto e acima de R$ 15.000, 15% —
+> isso soma sozinho na tela, sem precisar pedir nada. E outra coisa: **quando você concluir o pedido
+> por lá, ele cai direto com um dos nossos vendedores, que consegue abrir outras condições que eu
+> não libero por aqui.** Monta do seu jeito, só com o que serve pra sua loja, e me manda que eu
+> acompanho daqui."
+
+**Brendo Santana (ULTIMO toque)** — mesma estrutura:
+
+> "(…) passou de R$ 5.000 entram 10%, passou de R$ 15.000 entram 15%, automático, sem precisar pedir
+> nada. E quando você concluir o pedido por lá, **eu já coloco um vendedor nosso na conversa, que
+> consegue abrir outras condições que eu sozinha não libero.**"
+
+Conferido nos tres: citam o desconto **ou** o vendedor (os dois, nos ultimos toques), **nao**
+oferecem catalogo, **nao** prometem percentual de tabela nem prazo, e nenhum se despede — todos
+terminam com a porta aberta e um motivo concreto.
+
+**A diferenca para 22/10 e o ponto:** com a licao sozinha a mensagem saia "me conta o que mais vende
+que eu te aponto o mix". Com o prompt reescrito, saiu o argumento do gestor. **Licao nao vence
+instrucao concreta do prompt quando as duas falam do mesmo assunto** — e e isso que fica registrado.
+
+### E um voltou a falar
+
+O **Marcos Santos (402)** respondeu. A Nina esta negociando o minimo com ele:
+
+> "Entendo a ideia de testar antes de ir fundo. Só que esse R$ 2.500 é o mínimo de fábrica mesmo,
+> não dá pra baixar — mas com esse valor dá pra montar um mix bem variado pra testar várias linhas
+> (…) Me passa o CNPJ da loja?"
+
+E o primeiro lead que estava morto, foi revivido e voltou a conversar.
+
+**Ainda zero pedidos montados** (42 visitas) e zero contatos pelo botao do e-mail.
