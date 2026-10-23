@@ -902,3 +902,139 @@ correcao. Cron religado (jobid 203).
 Fica a licao: **recusa em massa com um motivo so merece ser aberta antes de virar numero.** Se eu
 tivesse deixado o cron rodar, teriam sido 210 pessoas marcadas como inalcançaveis — e a conclusao
 errada de que quase metade da base nao tem WhatsApp.
+
+---
+
+## 23/10 — O PRECO DA PAGINA SAIU DA TABELA PADRAO E FOI PARA A TABELA GESTOR, +10%
+
+Ordem do gestor, no meio da tarde:
+
+> "tenho uma instrução nova para você mudar no valor dos produtos do link que estamos mandando,
+> hoje esta puxando os valores dos itens da tabela padrão, já identificamos que alguns clientes
+> perguntaram sobre isso. Então vamos mudar a tabela de valores e você vai buscar os valores dos
+> itens para mudar para a **Tabela Gestor do sanckya** e depois adicionar **+10%** no valor, dai
+> agora quando o cliente pedir no minimo os **5mil**, vai poder ter o **desconto de 10%** também,
+> **não vai ter mais desconto quando pedir acima disso**."
+
+Tres mudancas numa so: a fonte do preco, a margem, e a regua do desconto.
+
+### Qual e a "Tabela Gestor"
+
+**CODTAB 194 — "GESTOR VAREJO - ACELERA NITRON"**, 1.104 produtos com preco.
+
+Tem uma irma que engana: a **CODTAB 195, "GESTOR RED 194"**, que e exatamente **metade** da 194 em
+todo produto que conferi. E tabela derivada (reducao de 50%), nao a tabela do gestor. Usar a 195
+teria mandado a pagina inteira pela metade do preco.
+
+### O preco de hoje NAO era "a tabela padrao"
+
+O comentario do `order_app.html` dizia "Preço = tabela padrão PV-0003". **Nao era verdade.** O mesmo
+produto saia com precos diferentes em cestas diferentes — o codprod 60, por exemplo, aparecia a
+6,37 / 6,74 / 6,88 / 7,43 conforme a cesta. O que havia ali era um preco medio praticado, apurado
+por segmento quando as cestas foram montadas, e nao uma tabela. Por isso o lojista que comparava
+dois links nossos via numeros diferentes para a mesma peca — e e provavelmente parte do "alguns
+clientes perguntaram sobre isso".
+
+Agora e tabela de verdade: um produto, um preco, igual em todas as 40 cestas e no catalogo.
+
+### Cobertura: 639 de 639
+
+A pagina tem **639 produtos** — 256 dentro das 40 cestas e 383 so no catalogo, que e de onde o
+lojista acrescenta o que quiser. **Todos os 639 tem preco na 194.** Nenhum produto ficou sem preco,
+nenhum ficou com preco velho.
+
+A tabela `pedido_base_item` do banco tem **272** codprods, dois a mais do que a pagina: o **277
+(FRASQUEIRA OVAL)** e o **7628 (KIT NITRONBOX C/ 3PCS TRAVAS PRETAS)**. Esses dois **nao existem na
+194** — eles so tem preco em tabela de conta grande (Leroy, Telhanorte, Petroloucas) e em
+obsoletos. Como **nenhum dos dois esta na pagina**, ninguem ve preco errado; ficaram com o preco
+antigo no banco e estao marcados aqui para quem for regerar as cestas. Se o gestor quiser esses dois
+na pagina, o caminho e cadastrar preco deles na 194 — nao inventar um aqui.
+
+### O efeito: tudo caiu, nada subiu
+
+| | antes | agora |
+|---|---|---|
+| soma dos 639 precos do catalogo | R$ 13.337,20 | R$ 10.950,02 (−17,9%) |
+| subtotal somado das 40 cestas | R$ 529.315,79 | R$ 435.465,34 (−17,7%) |
+| produtos que **subiram** de preco | — | **0 de 639** |
+| cestas em que o cliente passaria a pagar mais | — | **0 de 40** |
+
+Conferi essa ultima linha de proposito: como a faixa de 15% sumiu, uma cesta grande perde 5 pontos
+de desconto, e era preciso saber se a queda de preco cobria isso. Cobre em todas — inclusive na
+maior, que ia a R$ 25.331 de subtotal.
+
+Exemplo no Sudeste-R01, a cesta que mais sai:
+
+| | antes | agora |
+|---|---|---|
+| subtotal | R$ 8.959,11 | R$ 7.375,26 |
+| desconto | 10% | 10% |
+| **total** | **R$ 8.063,20** | **R$ 6.637,73** |
+
+Quatro das 40 cestas agora abrem **abaixo de R$ 5.000** e por isso abrem sem desconto, mostrando
+"Compre mais R$ X e ganhe 10%". Nenhuma abre abaixo do minimo de fabrica de R$ 2.500.
+
+### O desconto virou uma faixa so
+
+```js
+// antes
+function discountRate(sub){ if(sub>15000)return .15; if(sub>5000)return .10; return 0; }
+// agora
+function discountRate(sub){ return sub>=5000 ? .10 : 0; }
+```
+
+`>=`, nao `>`: o gestor disse "**no minimo** os 5 mil", entao quem monta exatamente R$ 5.000 ganha.
+
+A barra de baixo e o PDF leem o mesmo `discountRate`, entao acompanharam sozinhos. As duas frases
+de promocao foram reescritas (sumiu "suba para 15%" e "desconto maximo de 15%").
+
+### Onde mais esse numero estava escrito — e por que isso importa
+
+O percentual nao mora so na pagina: **a Nina repete ele de boca**. Se a tela faz uma coisa e ela
+diz outra, e a doenca de 16/09 em escala menor — ela promete o que o sistema nao cumpre. Os lugares:
+
+| onde | o que dizia |
+|---|---|
+| `order_app.html` — `discountRate` + 2 frases + cabecalho | a regra em si |
+| `copiloto-lead` — `DESCONTO_PAGINA` | vai dentro do retorno do `link_pedido`, toda vez que ela manda o link |
+| `copiloto-lead` — contorno do toque de seguimento | o argumento que ela usa no lead que esta morrendo |
+| licao 326 | "aplica o desconto automatico (10% acima de R$ 5.000, 15% acima de R$ 15.000)" |
+| licao 335 | a licao que **separa** o desconto da pagina do desconto do CNPJ |
+| licao 347 | o contorno, de novo |
+
+Todos os seis corrigidos. Mais a **licao 357, nova**: o lojista que volta com um print do preco
+antigo. Ela manda confirmar que sim, os valores foram revistos e estao **menores**, convidar a abrir
+o link de novo, e **nao** inventar explicacao de custo, frete ou promocao por tempo limitado.
+
+As perguntas da pesquisa "o que faltou" nao citam percentual nenhum (conferido: 0 das 85 ja
+enviadas e das 354 na fila), entao nada do que ja saiu ficou mentindo.
+
+### O que foi conferido antes de publicar
+
+- O `pedido.html` que estava no ar era **byte a byte** o fonte antigo (md5 `ae8cfbb5…`): ninguem
+  tinha editado por fora.
+- A `copiloto-lead` publicada era **byte a byte** o fonte do repositorio menos as minhas tres
+  edicoes.
+- Depois de publicar, o Worker serve exatamente o arquivo que montei (md5 `b6a55c48…`), e a funcao
+  publicada e identica ao fonte.
+- Chromium headless em 390px: Sudeste-R01 abre em R$ 6.637,73 com "desconto 10% −R$ 737,53";
+  Sudeste-R08 (R$ 3.781) abre sem desconto e com "Compre mais R$ 1.218,96"; Nordeste-R01 em
+  R$ 10.168,99. **Zero erro de JS** nos tres.
+- `copiloto-lead` respondeu a um `?dry=1` depois do deploy: o modulo carrega e a rodada roda.
+
+### Fica como esta, e nao e descuido
+
+**`pedido_base.valor_estimado` nao bate com nada** — nem antes nem agora. No Sudeste-R01 ele diz
+R$ 4.706, a soma dos itens do banco da R$ 5.794 e a pagina abre em R$ 7.375. Sao tres numeros de
+tres geracoes diferentes (a pagina tem 41 itens nessa cesta, o banco tem outra lista). **Nenhuma
+funcao viva le essa coluna** — o `link_pedido` so le `pedido_id`, `ramo_nome` e `n_itens` — entao
+nao mexi. Mas e divergencia conhecida, e quem for regerar cesta precisa saber disso antes.
+
+### Onde a tabela ficou guardada
+
+`pedido_preco_gestor` (1.104 linhas): `codprod`, `preco_gestor` (como esta na 194), `preco_novo`
+(gestor × 1,10), `codtab`, `puxado_em`. Conferido: **0 linhas** com a margem errada. E dela que
+`pedido_base_item.preco_ref` foi atualizado (1.850 linhas).
+
+Quando a 194 mudar no Sankhya, o caminho e repuxar para essa tabela e regerar o `app_data.js` — a
+conta do +10% nao precisa ser refeita a mao.

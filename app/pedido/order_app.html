@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: carrinho ("Meu pedido") pré-preenchido pela Nina + abas de categoria onde se inclui mais.
-   Nitron navy; verde = penetração/curva A e "no pedido"; violeta = linha nova TECA/MOB. Preço = tabela padrão PV-0003; desconto 10%/15% no total. */
+   Nitron navy; verde = penetração/curva A e "no pedido"; violeta = linha nova TECA/MOB. Preço = Tabela Gestor do Sankhya (CODTAB 194) + 10%; desconto único de 10% a partir de R$ 5.000 no total. */
 /* Pedido Nitron — tela do lojista.
    Feita para celular primeiro: quem abre isto recebeu o link da Nina no WhatsApp e está num
    Android simples, muitas vezes dentro da loja. Por isso: uma coluna, foto grande, passo a passo
@@ -442,10 +442,14 @@ var NINA_WA = "5511960390203";
 // O pedido inteiro vai para ca; o WhatsApp leva so o codigo. Uma cesta de 55 itens dava uma
 // URL de wa.me com 9.802 caracteres, que o celular nao entrega.
 var PEDIDO_API = "https://bwbeieumxcuomtrvlqxs.supabase.co/functions/v1/nina-pedido-recebido";
-// Desconto por volume no total do pedido
+// Desconto por volume no total do pedido.
+// Ordem do gestor em 23/10: UMA faixa so — 10% a partir de R$ 5.000, e nada acima disso.
+// A faixa de 15% acima de R$ 15.000 foi RETIRADA. Se ela voltar, tem de voltar tambem no
+// DESCONTO_PAGINA do copiloto-lead e nas licoes: a Nina cita esse numero de boca.
+// "no minimo os 5 mil" e >=, nao >: quem monta exatamente R$ 5.000 ganha o desconto.
 // Minimo de fabrica. Nao e preferencia de tela: abaixo disto o pedido nao e faturado.
 var MINIMO=2500;
-function discountRate(sub){ if(sub>15000)return .15; if(sub>5000)return .10; return 0; }
+function discountRate(sub){ return sub>=5000 ? .10 : 0; }
 // Modo interno (vendedor): mostra seletor de segmento, curva e penetração. Cliente não vê.
 var ADMIN = (location.hash||"").toLowerCase().indexOf("adm")>=0;
 // Onde a visita e registrada. A pagina manda e esquece: se isto falhar, o lojista nao ve nada.
@@ -743,9 +747,8 @@ function recompute(){
   if(sub<=0){p.hidden=true;}
   else if(sub<MINIMO){p.hidden=false;p.className="promo falta";
     p.innerHTML="Falta <b>R$ "+fmt(MINIMO-sub)+"</b> para o pedido m\u00ednimo de <b>R$ "+fmt(MINIMO)+"</b>";}
-  else if(sub<=5000){p.hidden=false;p.className="promo go";p.innerHTML="Compre mais <b>R$ "+fmt(5000-sub)+"</b> e ganhe <b>10% de desconto</b> no pedido";}
-  else if(sub<=15000){p.hidden=false;p.className="promo go";p.innerHTML="Você já ganhou <b>10% de desconto</b>! Compre mais <b>R$ "+fmt(15000-sub)+"</b> e suba para <b>15%</b>";}
-  else {p.hidden=false;p.className="promo win";p.innerHTML="Parabéns! Seu pedido ganhou o <b>desconto máximo de 15%</b>";}
+  else if(sub<5000){p.hidden=false;p.className="promo go";p.innerHTML="Compre mais <b>R$ "+fmt(5000-sub)+"</b> e ganhe <b>10% de desconto</b> no pedido";}
+  else {p.hidden=false;p.className="promo win";p.innerHTML="Seu pedido já está com <b>10% de desconto</b>";}
 }
 function orderTotals(){var lines=orderLines(),sub=0,un=0,far=0;lines.forEach(function(l){sub+=l.tot;un+=l.un;far+=l.fardos;});var rate=discountRate(sub);return {lines:lines,sub:sub,rate:rate,disc:sub*rate,total:sub*(1-rate),un:un,far:far};}
 

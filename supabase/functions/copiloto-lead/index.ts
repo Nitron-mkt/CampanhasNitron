@@ -1,4 +1,15 @@
-// copiloto-lead (v16) — O TOQUE DE SEGUIMENTO PASSA A CONTORNAR, NAO A SE DESPEDIR. Ordem do
+// copiloto-lead (v17) — O DESCONTO VIROU UMA FAIXA SO. Ordem do gestor em 23/10, junto com a
+// virada de preco da pagina (os valores sairam da tabela padrao e passaram a sair da TABELA GESTOR
+// do Sankhya, CODTAB 194, com +10%): "quando o cliente pedir no minimo os 5 mil vai poder ter o
+// desconto de 10% tambem, nao vai ter mais desconto quando pedir acima disso".
+// A faixa de 15% acima de R$ 15.000 deixou de existir na pagina (discountRate do order_app.html).
+// Aqui ela aparecia em TRES lugares — o cabecalho, o DESCONTO_PAGINA que a ferramenta link_pedido
+// devolve, e o contorno do toque de seguimento. Deixar qualquer um deles para tras faria a Nina
+// prometer de boca um numero que a tela nao faz: e a doenca de 16/09, em escala menor.
+// As licoes 326, 335 e 347 foram corrigidas junto, e a 357 e nova (o lojista que volta com um
+// print do preco antigo).
+//
+// v16 — O TOQUE DE SEGUIMENTO PASSA A CONTORNAR, NAO A SE DESPEDIR. Ordem do
 // gestor em 22/10: "a todos os leads que morrem, precisamos contornar, ou falando do desconto que
 // ja tem, ou falando que escolhendo os itens que precisam eles podem receber uma condicao especial
 // diferente, basta concluir o pedido que a Nina passara para um dos nossos vendedores onde podem
@@ -39,7 +50,7 @@
 // Nina sabe o que ele acabou de contar que vende; o CNAE exigiria uma chamada externa que cai.
 //
 // O que a ferramenta NAO faz: nao promete prazo, frete nem tabela. O desconto que ela pode citar e
-// o POR VOLUME, que esta impresso na propria pagina (10% acima de R$ 5.000, 15% acima de R$ 15.000)
+// o POR VOLUME, que esta impresso na propria pagina (10% a partir de R$ 5.000 — faixa unica)
 // — o desconto ligado ao CNPJ continua sendo do comercial, e a licao 319 continua valendo.
 //
 // v13 — A INSTANCIA CAIU E ELA FALOU SOZINHA 200 VEZES. Em 02/10 o Zaptos da Nina
@@ -58,7 +69,7 @@
 // envio recusado por qualquer motivo poe o lead de molho por `lead_erro_espera_min` antes de tentar
 // de novo. O aviso ao gestor nao mora aqui — e do vigia-instancia, que cobre TODAS as instancias.
 // copiloto-lead (v12) — O LEAD DO GOOGLE SE IDENTIFICA SOZINHO. A landing "Acelera Nitron" (a
-// campanha de Search) nao grava NADA: nao cria contato, nao escreve `source` no CRM, nao manda
+// campanha de Search) nao grava NADA: nao cria contato, nao escreve `source` no contato e nao manda
 // gclid nem UTM. O formulario monta um texto e abre o wa.me da Nina — entao o unico lugar onde
 // existe a prova de que o lead veio do Google e a PRIMEIRA MENSAGEM dele. Ate aqui, contar lead do
 // Google era varrer conversa a mao (25, 28 e 29/09), e o nome, o CNPJ e o e-mail que ele digitou
@@ -306,7 +317,12 @@ for (const [reg, ufs] of [["Norte", "AC AP AM PA RO RR TO"], ["Nordeste", "AL BA
   ["Centro-Oeste", "DF GO MT MS"], ["Sudeste", "ES MG RJ SP"], ["Sul", "PR RS SC"]] as [string, string][]) {
   for (const u of ufs.split(" ")) UF2REG[u] = reg;
 }
-const DESCONTO_PAGINA = "automatico no total do pedido: 10% acima de R$ 5.000 e 15% acima de R$ 15.000";
+// Ordem do gestor em 23/10: faixa UNICA de 10% a partir de R$ 5.000. A de 15% acima de R$ 15.000
+// foi retirada junto com a virada de preco para a Tabela Gestor + 10% — o preco caiu ~18%, e o
+// desconto deixou de ter degrau. Este texto e o que a Nina repete de boca: se a regra mudar na
+// pagina (discountRate do order_app.html) e nao mudar aqui, ela promete um numero que a tela nao
+// faz — foi o erro de 16/09 em outra escala.
+const DESCONTO_PAGINA = "automatico no total do pedido: 10% a partir de R$ 5.000";
 
 // ---- ferramentas -----------------------------------------------------------------------------
 // Conjunto CURTO de proposito: sem codparc, as ferramentas de preco/boleto/pedido/entrega so
@@ -727,7 +743,7 @@ async function seguir(sb: any, cfg: Record<string, string>, o: any) {
       + (o.pb ? `\n\nMANUAIS DA CASA (o [LEAD] manda aqui):\n${o.pb}` : "")
       + `\n\nTOQUE DE SEGUIMENTO (toque ${toqueN} de ${o.toquesMax}): ele NAO respondeu sua ultima mensagem, mandada ha ${Math.round(minDesde / 60)}h. Mande UMA mensagem curta, leve e SEM cobranca.`
       + `\nNAO repita o que voce ja disse nem reformule a mesma pergunta: troque de angulo.`
-      + `\nO ANGULO E O CONTORNO (ordem do gestor, 22/10) — use UM dos dois, o que couber na conversa: (a) o DESCONTO QUE ELE JA TEM, sem negociar nada: acima de R$ 5.000 entram 10% e acima de R$ 15.000 entram 15%, somando sozinho na tela enquanto ele monta; (b) que montando so com os itens que ELE precisa pode haver CONDICAO ESPECIAL, porque ao concluir o pedido voce passa para um dos nossos vendedores, e e ele quem abre outras tabelas e condicoes que voce nao libera sozinha. Concluir nao obriga a nada — poe um vendedor na conversa. NUNCA prometa percentual, tabela ou prazo especifico, e nao use pressa nem escassez.`
+      + `\nO ANGULO E O CONTORNO (ordem do gestor, 22/10) — use UM dos dois, o que couber na conversa: (a) o DESCONTO QUE ELE JA TEM, sem negociar nada: a partir de R$ 5.000 entram 10%, somando sozinho na tela enquanto ele monta; (b) que montando so com os itens que ELE precisa pode haver CONDICAO ESPECIAL, porque ao concluir o pedido voce passa para um dos nossos vendedores, e e ele quem abre outras tabelas e condicoes que voce nao libera sozinha. Concluir nao obriga a nada — poe um vendedor na conversa. NUNCA prometa percentual, tabela ou prazo especifico, e nao use pressa nem escassez.`
       + `\nNAO ofereca o catalogo como saida: ele NAO tem preco, e foi essa a reclamacao que ja nos custou um lead. O que resolve e a pagina de pedido.`
       + `\nFaca no maximo UMA pergunta facil de responder.`
       + `\nNUNCA use pressa, escassez, "so hoje" nem cobranca de resposta.`

@@ -370,6 +370,19 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   venda interna, a conversa acontece nas nossas instâncias e dá para ler no CRM: perguntar ali é
   redundante e incomoda o cliente. Lead do canal nativo também fica fora — passados 3 dias a janela
   de 24h da Meta já fechou e só template passa.
+- **O preço da página de pedido vem da TABELA GESTOR do Sankhya (CODTAB 194) + 10%, e o desconto é
+  UMA faixa só: 10% a partir de R$ 5.000.** Ordem do gestor em 23/10. A faixa de 15% acima de
+  R$ 15.000 **não existe mais** — e o percentual mora em **seis lugares**, porque a Nina o repete de
+  boca: `discountRate()` e duas frases de promoção no `app/pedido/order_app.html`, o
+  `DESCONTO_PAGINA` e o contorno do toque de seguimento no `copiloto-lead`, e as lições 326, 335 e
+  347. Mudar um e esquecer os outros faz a Nina prometer o que a tela não cumpre — é o erro de 16/09
+  em escala menor. Cuidado com a **CODTAB 195 ("GESTOR RED 194")**: ela é exatamente metade da 194,
+  é tabela derivada, e usá-la publica a página inteira pela metade do preço. Os preços puxados ficam
+  em `pedido_preco_gestor` (1.104 linhas, `preco_gestor` e `preco_novo`); quando a 194 mudar, repuxe
+  para lá e regere o `app_data.js` em vez de recalcular a margem à mão. **Publicar a página:**
+  `POST host-upload?path=pedido.html` com o HTML cru no corpo — o bundle sai do
+  `app/pedido/montar.py` (order_app.html + app_data.js + app_img.js, 3,8 MB). O Worker só serve o
+  arquivo: mudar preço **não** exige deploy de Worker. Confira o md5 publicado antes de subir.
 - **Publicar o painel:** `POST host-upload?path=gestor.html` com o **HTML cru no corpo** e o caminho
   na query — não JSON. **Confira o md5 publicado antes de subir:** há outro chat editando o mesmo
   arquivo, e sobrescrever o trabalho dele já aconteceu.
