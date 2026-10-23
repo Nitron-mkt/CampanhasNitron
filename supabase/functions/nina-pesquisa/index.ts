@@ -28,6 +28,16 @@
 //
 // Uso:  ?n=2   manda ate 2 e para   |   ?status=1   quanto falta   |   ?grupo=rep   so um grupo
 //       ?liberar_espera=1   passa para a fila quem ja esfriou (24h sem a Nina falar)
+//
+// MANDA POR contact_id, NAO POR fone — e a diferenca entre 44% de recusa e zero. Na primeira
+// rodada 31 de 68 voltaram com "telefone fixo (sem WhatsApp)". Nao eram fixos: dos 212 numeros de
+// 10 digitos da fila, 210 comecam com 7, 8 ou 9 no local, ou seja sao CELULAR antigo, de antes do
+// nono digito. O `campanhas-enviar` trata todo numero de 10 digitos como fixo e recusa antes de
+// tentar — mas essa checagem so roda no ramo em que ele precisa ACHAR o contato pelo telefone.
+// Passando o contact_id, que a fila ja tem de todo mundo, ele pula a checagem e quem resolve o
+// numero e o CRM, que e onde o numero certo mora. Foi erro meu: copiei o rep-aviso-enviar, que usa
+// `fone` de proposito (la o objetivo era casar o dono do contato), para um caso onde eu ja tinha
+// o id na mao.
 // Deploy: supabase functions deploy nina-pesquisa
 
 const j = (o: unknown, s = 200) =>
@@ -91,7 +101,7 @@ Deno.serve(async (req) => {
     const g = String(u.searchParams.get("grupo") || "").trim();
     const filtro = g ? `&grupo=eq.${encodeURIComponent(g)}` : "";
     // ordem: quem clicou primeiro (tem mais a dizer), depois quem foi encaminhado, depois o resto
-    const r = await rest(`lead_pesquisa?select=id,lead_id,nome,fone,grupo,texto&situacao=eq.fila${filtro}&order=grupo.asc,dias_parado.desc&limit=${n}`);
+    const r = await rest(`lead_pesquisa?select=id,lead_id,nome,fone,contact_id,grupo,texto&situacao=eq.fila${filtro}&order=grupo.asc,dias_parado.desc&limit=${n}`);
     const fila: any[] = await r.json();
     if (!fila.length) return j({ ok: true, fim: "fila vazia", grupo: g || "todos" });
 
@@ -100,7 +110,7 @@ Deno.serve(async (req) => {
       const env = await fetch(`${URL_()}/functions/v1/campanhas-enviar`, {
         method: "POST",
         headers: { Authorization: "Bearer " + srvKey(), "Content-Type": "application/json" },
-        body: JSON.stringify({ canal: "whatsapp", fone: x.fone, texto: x.texto, instancia: "Nina", espera_ms: 45000 }),
+        body: JSON.stringify({ canal: "whatsapp", contact_id: x.contact_id, fone: x.fone, texto: x.texto, instancia: "Nina", espera_ms: 45000 }),
       });
       const d = await env.json().catch(() => ({}));
       const ok = !!d?.ok;

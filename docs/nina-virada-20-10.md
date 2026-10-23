@@ -869,3 +869,36 @@ com a resposta nem pedir para reconsiderar na mesma mensagem.
 
 A coluna `lead_pesquisa.classe` existe para classificar as respostas depois. **Ainda nao ha
 classificador**: por enquanto a leitura e manual.
+
+### 23/10 (13h30) — 44% da fila ia ser recusada por um erro meu
+
+Na primeira hora, **31 de 68 envios voltaram "telefone fixo (sem WhatsApp)"**. Olhei antes de deixar
+correr, e ainda bem: **212 dos 482 numeros da fila tem 10 digitos**, entao do jeito que estava
+**210 pessoas (44%) seriam recusadas**.
+
+Elas nao sao fixo. Separando pelo primeiro digito do numero local:
+
+| comeca com | quantos | o que e |
+|---|---|---|
+| 9 | 135 | celular antigo, de antes do nono digito |
+| 8 | 71 | celular antigo |
+| 7 | 4 | celular antigo |
+| **3** | **2** | **fixo de verdade** |
+
+Conferi primeiro se nao era o bug do `d10()` de novo: rodei `copiloto-lead?acao=fone_crm&dry=1` e
+dos 425 que deu para checar, **425 estavam "ja certo"** — o telefone gravado bate com o do CRM.
+Logo o numero curto nao e decapitado, e assim que ele existe na base.
+
+**A causa era minha.** O `campanhas-enviar` trata todo numero de 10 digitos como fixo e recusa
+antes de tentar — mas essa checagem so roda no ramo em que ele precisa **achar** o contato pelo
+telefone. Eu copiei o `rep-aviso-enviar`, que manda por `fone` de proposito (la o objetivo era
+casar o dono do contato), para um caso em que eu **ja tinha o `contact_id` na mao**. Passando o id,
+ele pula a checagem e quem resolve o numero e o CRM, que e onde o numero certo mora.
+
+Conserto: `nina-pesquisa` v2 manda por `contact_id`. Os 31 recusados voltaram para a fila e o
+**lead 5, que tinha sido recusado como "fixo", foi entregue** na primeira tentativa depois da
+correcao. Cron religado (jobid 203).
+
+Fica a licao: **recusa em massa com um motivo so merece ser aberta antes de virar numero.** Se eu
+tivesse deixado o cron rodar, teriam sido 210 pessoas marcadas como inalcançaveis — e a conclusao
+errada de que quase metade da base nao tem WhatsApp.
