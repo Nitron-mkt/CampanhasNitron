@@ -807,3 +807,65 @@ O **Marcos Santos (402)** respondeu. A Nina esta negociando o minimo com ele:
 E o primeiro lead que estava morto, foi revivido e voltou a conversar.
 
 **Ainda zero pedidos montados** (42 visitas) e zero contatos pelo botao do e-mail.
+
+## 23/10 — a pesquisa "o que faltou para concluir a compra"
+
+Ordem do gestor:
+
+> "Para toda a galera que morreu e também quem clicou e tudo, quero que volte a falar com eles
+> pedindo informação sobre o que faltou para concluir a compra conosco."
+
+### A audiencia, e por que ela e dividida em tres
+
+| grupo | quem e | na fila | em espera |
+|---|---|---|---|
+| **clicou** | abriu a pagina de pedido e nao concluiu | 1 | **18** |
+| **rep** | foi encaminhado a representante ou venda interna e morreu la | 144 | 2 |
+| **conversou** | falou com a Nina e parou antes de qualquer encaminhamento | 297 | 18 |
+
+**482 pessoas**, com tres perguntas diferentes. Perguntar "ninguem te procurou?" a quem nunca foi
+encaminhado inventaria uma falha nossa que nao houve; perguntar "o que achou da pagina?" a quem
+nunca a viu e pior. O texto de cada grupo sai **igual para todos do grupo**, montado em codigo e
+nao pelo modelo — pesquisa com pergunta variavel nao se soma depois.
+
+**Os 18 que clicaram estao em ESPERA de proposito.** A Nina falou com eles hoje de manha, com o
+contorno da v16. Mandar a pesquisa em cima disso seria duas mensagens no mesmo dia e enterraria o
+contorno antes de ele ter chance. O cron `nina-pesquisa-liberar` passa cada um para a fila quando
+completar 24h sem a Nina falar.
+
+### Quem fica de fora, por trava e nao por preferencia
+
+Representante (`snap_rep`) e numero da casa (`copiloto_responsaveis`) foram filtrados na montagem.
+E contato que hoje pertence a um humano no CRM e **pulado**, nao recusado: o `campanhas-enviar`
+recusa, e a recusa esta certa — significa que um atendente esta com a pessoa.
+
+### O primeiro lote, e o que ele ja ensinou
+
+Tres envios de teste:
+
+| lead | resultado |
+|---|---|
+| 254 — Ed Carlos, Bolsao 10 (clicou) | **enviado** |
+| 5 | recusado: telefone fixo, sem WhatsApp |
+| 6 — Eduardo | **pulado**: o contato e da Mara no CRM |
+
+Os dois que nao sairam sao exatamente os casos que a fila tem de saber distinguir, e soube.
+
+### Cadencia
+
+`nina-pesquisa-5min` (jobid 201): 2 envios a cada 5 min, das 8h as 17h de SP, dias uteis. Da ~216
+por dia, entao as 482 terminam em cerca de **dois dias uteis**. O teto do Zaptos e 2 por minuto por
+instancia; isto usa 0,4 — sobra folga para as conversas vivas da Nina, que saem pela mesma
+instancia.
+
+**Para parar:** `update cron.job set active=false where jobname='nina-pesquisa-5min';`
+
+### O que acontece com as respostas
+
+A resposta volta pela conversa normal e quem atende e a Nina, com o cerebro dela. A **licao 356**
+diz o que fazer: escutar primeiro, repetir com as palavras dele, **nao rebater**, e so depois — se
+couber — tratar o que ele falou (preco, minimo, mix, momento, ninguem me procurou). Nunca discutir
+com a resposta nem pedir para reconsiderar na mesma mensagem.
+
+A coluna `lead_pesquisa.classe` existe para classificar as respostas depois. **Ainda nao ha
+classificador**: por enquanto a leitura e manual.
