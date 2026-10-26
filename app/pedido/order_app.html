@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: carrinho ("Meu pedido") pré-preenchido pela Nina + abas de categoria onde se inclui mais.
-   Nitron navy; verde = penetração/curva A e "no pedido"; violeta = linha nova TECA/MOB. Preço = Tabela Gestor do Sankhya (CODTAB 194) + 10%; desconto único de 10% a partir de R$ 5.000 no total. */
+   Nitron navy; verde = penetração/curva A e "no pedido"; violeta = linha nova TECA/MOB. Preço = Tabela Gestor do Sankhya (CODTAB 194) dividida por 0,90; o desconto único de 10% a partir de R$ 5.000 devolve exatamente o preço da 194. */
 /* Pedido Nitron — tela do lojista.
    Feita para celular primeiro: quem abre isto recebeu o link da Nina no WhatsApp e está num
    Android simples, muitas vezes dentro da loja. Por isso: uma coluna, foto grande, passo a passo
@@ -447,6 +447,12 @@ var PEDIDO_API = "https://bwbeieumxcuomtrvlqxs.supabase.co/functions/v1/nina-ped
 // A faixa de 15% acima de R$ 15.000 foi RETIRADA. Se ela voltar, tem de voltar tambem no
 // DESCONTO_PAGINA do copiloto-lead e nas licoes: a Nina cita esse numero de boca.
 // "no minimo os 5 mil" e >=, nao >: quem monta exatamente R$ 5.000 ganha o desconto.
+//
+// A MARGEM E /0,90, NAO x1,10 — corrigido em 26/10, o gestor pegou o erro. Tirar 10% de quem
+// recebeu 10% NAO devolve o original: 100 -> 110 -> 99. Sobrava 1% A MENOS que a 194 em cada item.
+// Para o desconto pousar EXATAMENTE no preco da 194, o preco de tela e 194/0,90 (+11,11%):
+// 100 -> 111,11 -> 100,00. Conferido nos 1.104 produtos: todos voltam ao centavo.
+// Quem compra ABAIXO de R$ 5.000 nao tem desconto e paga 11,11% acima da 194 — e a regra, nao defeito.
 // Minimo de fabrica. Nao e preferencia de tela: abaixo disto o pedido nao e faturado.
 var MINIMO=2500;
 function discountRate(sub){ return sub>=5000 ? .10 : 0; }

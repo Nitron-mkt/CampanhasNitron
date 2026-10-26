@@ -370,8 +370,13 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   venda interna, a conversa acontece nas nossas instâncias e dá para ler no CRM: perguntar ali é
   redundante e incomoda o cliente. Lead do canal nativo também fica fora — passados 3 dias a janela
   de 24h da Meta já fechou e só template passa.
-- **O preço da página de pedido vem da TABELA GESTOR do Sankhya (CODTAB 194) + 10%, e o desconto é
-  UMA faixa só: 10% a partir de R$ 5.000.** Ordem do gestor em 23/10. A faixa de 15% acima de
+- **O preço da página de pedido é a TABELA GESTOR do Sankhya (CODTAB 194) DIVIDIDA POR 0,90, e o
+  desconto é UMA faixa só: 10% a partir de R$ 5.000.** Ordem do gestor em 23/10; a conta foi
+  corrigida em 26/10, por ele. **Dividir por 0,90 não é o mesmo que somar 10%** — e era isso que
+  estava no ar: x1,10 seguido de −10% devolve 99, não 100, então cada item saía **1% abaixo da 194**
+  assim que o desconto entrava. Com /0,90 (+11,11%) o desconto pousa exatamente no preço da 194:
+  100 → 111,11 → 100,00, conferido nos 1.104 produtos, todos voltando ao centavo. Quem compra abaixo
+  de R$ 5.000 paga 11,11% acima da 194 — é a regra, não defeito. A faixa de 15% acima de
   R$ 15.000 **não existe mais** — e o percentual mora em **seis lugares**, porque a Nina o repete de
   boca: `discountRate()` e duas frases de promoção no `app/pedido/order_app.html`, o
   `DESCONTO_PAGINA` e o contorno do toque de seguimento no `copiloto-lead`, e as lições 326, 335 e
@@ -386,6 +391,21 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
 - **Publicar o painel:** `POST host-upload?path=gestor.html` com o **HTML cru no corpo** e o caminho
   na query — não JSON. **Confira o md5 publicado antes de subir:** há outro chat editando o mesmo
   arquivo, e sobrescrever o trabalho dele já aconteceu.
+- **O link de pedido só sai com CNPJ E ENDEREÇO** (`copiloto-lead` v18, 26/10). Ordem do gestor, e
+  ela **inverte** a de 20/10 ("mande o link — não espere ele pedir e não espere o CNPJ"), que a Nina
+  cumpria à risca: o Luís Carlos (lead 529) pediu "catálogo com os preços", recebeu o link, abriu e
+  mandou um pedido de R$ 10.168,99 em 10 segundos — o CNPJ dele chegou 6 minutos **depois**. Cada
+  dado resolve uma coisa: o **CNPJ** escolhe o MIX (pelo CNAE) e o **ENDEREÇO** escolhe o PREÇO (há
+  tabelas CIF por região no Sankhya — 168 Nordeste, 98 Nordeste especial, 172 Sul, 30 ES, 32 MG).
+  A trava mora na **ferramenta** `link_pedido`, não no prompt: ela recusa e devolve o que pedir.
+  Texto no prompt o modelo pondera; recusa de ferramenta ele não contorna. Afrouxar é UPDATE, sem
+  deploy: `copiloto_config.link_exige_cnpj` / `link_exige_endereco`. Colunas novas em
+  `copiloto_lead`: `endereco`, `cep`, `pagamento`. **A regra do CIF ainda não existe** — o gestor
+  disse que passa a informação; por ora o endereço é só colhido.
+- **Primeira compra: à vista ou 6x no cartão sem juros** (ordem do gestor, 26/10). A Nina pergunta
+  como o lead pretende pagar e diz isso — nada além. Antes ela respondia "quem fecha forma de
+  pagamento é o vendedor que assume o pedido", que empurrava a pergunta para frente e travava o
+  lead. Nada de boleto, 30/60/90 nem condição especial pela boca dela.
 - **Contato de teste em `rep_contato_extra` sai caro.** Números e e-mails internos foram cadastrados
   a mão (`rotulo='manual'`) em 11–24/08 e ficaram ativos: toda campanha ao rep mandava também para
   eles. Em 27/08, 6 dos 10 Zaptos e 4 dos 11 e-mails do Clube a vencer foram para contato interno.

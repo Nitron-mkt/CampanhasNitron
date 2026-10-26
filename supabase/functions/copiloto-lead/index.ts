@@ -1,4 +1,31 @@
-// copiloto-lead (v17) — O DESCONTO VIROU UMA FAIXA SO. Ordem do gestor em 23/10, junto com a
+// copiloto-lead (v18) — O LINK SO SAI COM CNPJ E ENDERECO, E A MARGEM ERA DE 1% A MENOS.
+// Ordem do gestor em 26/10, duas coisas no mesmo dia.
+//
+// 1) A CONTA DA MARGEM ESTAVA ERRADA, e foi ele quem pegou: "se eu colocar 10% em um produto de
+//    100, vai dar 110. Mas se eu tirar 10% do produto de 110 o produto vai ficar 99". Exato —
+//    x1,10 seguido de -10% devolve 99, nao 100. Cada item estava saindo 1% ABAIXO da 194 quando o
+//    desconto entrava. O certo e dividir por 0,90 (+11,11%): 100 -> 111,11 -> 100,00. A pagina ja
+//    foi corrigida e republicada; conferido nos 1.104 produtos, todos voltam ao centavo.
+//
+// 2) O LINK DEIXA DE SAIR SEM CNPJ E SEM ENDERECO. Ate ontem o prompt mandava o CONTRARIO —
+//    "mande o link, nao espere ele pedir e nao espere o CNPJ" (ordem de 20/10) — e a Nina obedeceu
+//    a risca: o Luis Carlos (lead 529) pediu "catalogo com os precos", recebeu o link, abriu e
+//    mandou um pedido de R$ 10.168,99 em 10 segundos; o CNPJ dele so chegou 6 minutos DEPOIS.
+//    Agora sao dois dados obrigatorios, e cada um resolve uma coisa diferente:
+//      - CNPJ -> o CNAE escolhe o MIX (que lista de produtos abre)
+//      - ENDERECO -> a praca escolhe o PRECO (existem tabelas CIF por regiao no Sankhya: 168
+//        Nordeste, 172 Sul, 30 ES, 32 MG, 98 Nordeste especial)
+//    A trava mora na FERRAMENTA, nao no prompt: link_pedido recusa e devolve o que falta pedir.
+//    Texto no prompt o modelo pondera; recusa da ferramenta ele nao contorna — e a licao de 22/10
+//    ("licao nao vence instrucao concreta do prompt") aplicada ao contrario, a favor.
+//    Afrouxar nao exige deploy: copiloto_config.link_exige_cnpj / link_exige_endereco = 'nao'.
+//
+// 3) PAGAMENTO: a Nina passa a perguntar como ele pretende pagar e a dizer o que existe na
+//    PRIMEIRA COMPRA — a vista ou 6x no cartao sem juros. Nada alem disso.
+//
+// Colunas novas em copiloto_lead: endereco, cep, pagamento.
+//
+// v17 — O DESCONTO VIROU UMA FAIXA SO. Ordem do gestor em 23/10, junto com a
 // virada de preco da pagina (os valores sairam da tabela padrao e passaram a sair da TABELA GESTOR
 // do Sankhya, CODTAB 194, com +10%): "quando o cliente pedir no minimo os 5 mil vai poder ter o
 // desconto de 10% tambem, nao vai ter mais desconto quando pedir acima disso".
@@ -9,149 +36,11 @@
 // As licoes 326, 335 e 347 foram corrigidas junto, e a 357 e nova (o lojista que volta com um
 // print do preco antigo).
 //
-// v16 — O TOQUE DE SEGUIMENTO PASSA A CONTORNAR, NAO A SE DESPEDIR. Ordem do
-// gestor em 22/10: "a todos os leads que morrem, precisamos contornar, ou falando do desconto que
-// ja tem, ou falando que escolhendo os itens que precisam eles podem receber uma condicao especial
-// diferente, basta concluir o pedido que a Nina passara para um dos nossos vendedores onde podem
-// abrir mais opcoes de tabelas, descontos e tudo mais".
-// As licoes 347 e 348 entraram primeiro, sem deploy — e NAO bastaram. Na previa dos tres primeiros
-// toques a Nina escreveu mensagens corretas e genericas ("me conta o que mais vende que eu te
-// aponto o mix"), sem citar desconto nem vendedor. O motivo estava no proprio prompt: ele dava um
-// CARDAPIO do que oferecer ("o link do catalogo, uma sugestao pelo tipo de loja dele, dizer que
-// pode mandar so o que interessa") e ela escolhia dali. Licao nao vence instrucao concreta do
-// prompt quando as duas falam do mesmo assunto.
-// Agora o cardapio e o contorno, o catalogo saiu dele (nao tem preco) e o ultimo toque deixou de
-// ser uma despedida.
+// O historico das versoes v4 a v16 saiu daqui em 26/10 e esta em
+// docs/copiloto-lead-historico.md — inteiro, sem corte. Nao e enfeite: cada bloco explica um erro
+// que ja custou caro e a razao de uma trava que ainda esta neste arquivo (o telefone decapitado da
+// v10, a instancia caida da v13, o status que voltava atras da v5). Leia antes de desfazer algo.
 //
-// v15 — A NINA FECHA; `passar_comercial` DEIXA DE SER A SAIDA. Em 21/10 o gestor
-// repetiu a ordem olhando os leads que chegaram: "nao vai passar mais, vai fazer o combinado da
-// Nina fechar". O leak estava aqui: o `passar_comercial` continuava sendo o fim natural da
-// qualificacao, e ele fazia duas coisas ruins de uma vez — abria tarefa para o comercial E gravava
-// status='passado', que TIRA o lead da lista do seguimento (`seguir` so olha qualificando e
-// qualificado). O lead parava de ser trabalhado por todo mundo ao mesmo tempo.
-// Custou o Levi Reis (lead 466): quente, CNPJ dado, pedido minimo aceito, querendo montar pedido —
-// e as 09:03 de 21/10 ele virou a tarefa 413 ("gerar e enviar o link, urgente") porque a Nina ainda
-// nao tinha como montar link nenhum. Ele estava "cobrando retorno ha dias".
-// Agora: a ferramenta se chama a mesma coisa (para nao quebrar conversa em curso) mas e o PEDIDO DE
-// ATENDIMENTO HUMANO, nao o fim da qualificacao. Ela abre a tarefa — que e a porta que o
-// nina-passar-monica exige — e deixa o lead em 'qualificado', entao a Nina continua com ele ate
-// alguem assumir de verdade. Quem nao pode ser o destino, nunca: representante.
-//
-// v14 — A NINA MANDA O LINK DA PAGINA DE PEDIDO. Ordem do gestor em 20/10, ao
-// religar as campanhas do META: "nao passar para o representante e agora vamos testar o link com
-// todos que chegarem". Ate aqui o link so existia na mao (app/pedido/ponte.sh), montado por uma
-// pessoa, um lead por vez — e por isso so 11 lojistas tinham recebido. A ferramenta `link_pedido`
-// monta o endereco da cesta certa (regiao pela UF + ramo que a Nina escolhe pela conversa), grava
-// que o link saiu (link_em / link_seg / link_url / link_vezes) e devolve a URL ja com a marca
-// ~L<id>, que e o que torna "abriu a pagina" atribuivel A PESSOA no pedido_visita.
-//
-// Por que o RAMO vem da conversa e nao do CNAE: o CNAE e o que o contador escreveu na abertura da
-// empresa, e a propria ponte.sh ja dizia que "o que ele DISSE vence o CNAE quando discordam". A
-// Nina sabe o que ele acabou de contar que vende; o CNAE exigiria uma chamada externa que cai.
-//
-// O que a ferramenta NAO faz: nao promete prazo, frete nem tabela. O desconto que ela pode citar e
-// o POR VOLUME, que esta impresso na propria pagina (10% a partir de R$ 5.000 — faixa unica)
-// — o desconto ligado ao CNPJ continua sendo do comercial, e a licao 319 continua valendo.
-//
-// v13 — A INSTANCIA CAIU E ELA FALOU SOZINHA 200 VEZES. Em 02/10 o Zaptos da Nina
-// caiu as 08:02 e o copiloto continuou tocando de 5 em 5 minutos ate as 12:30: 200 envios recusados,
-// 8 conversas, e no lead Martins 41 mensagens DIFERENTES escritas pelo modelo, uma por passada. O
-// lead recebeu UMA e depois silencio; as outras 40 ficaram no CRM sem sair — mas quem abrisse a
-// conversa veria a Nina monologando. Tres causas, todas corrigidas aqui:
-//   1. O contador de toques so avancava DEPOIS do envio dar certo (`if (!env?.ok) continue` antes do
-//      update). Com a instancia morta ele ficava em 0 para sempre, entao "esta na hora de tocar?"
-//      dava sim em TODA passada. O teto de 2 toques nunca chegava a valer.
-//   2. Nada parava a instancia. O `pausada_em` e escrito por quem passa pela FILA (fila-processar,
-//      fila-acao, copiloto-repasse, copiloto-feedback); a resposta ao lead chama o campanhas-enviar
-//      direto e nunca encostava nessa coluna. O caminho que a Nina mais usa era o unico sem trava.
-//   3. O `pausada_em` tambem nao era LIDO aqui: o campanhas-enviar filtra por `ativa`, nao por pausa.
-// Agora: a primeira queda pausa a instancia e ABORTA a rodada; a rodada seguinte nem comeca; e um
-// envio recusado por qualquer motivo poe o lead de molho por `lead_erro_espera_min` antes de tentar
-// de novo. O aviso ao gestor nao mora aqui — e do vigia-instancia, que cobre TODAS as instancias.
-// copiloto-lead (v12) — O LEAD DO GOOGLE SE IDENTIFICA SOZINHO. A landing "Acelera Nitron" (a
-// campanha de Search) nao grava NADA: nao cria contato, nao escreve `source` no contato e nao manda
-// gclid nem UTM. O formulario monta um texto e abre o wa.me da Nina — entao o unico lugar onde
-// existe a prova de que o lead veio do Google e a PRIMEIRA MENSAGEM dele. Ate aqui, contar lead do
-// Google era varrer conversa a mao (25, 28 e 29/09), e o nome, o CNPJ e o e-mail que ele digitou
-// no formulario morriam no texto: a Nina pedia tudo de novo — o erro da Natalie, de novo. Agora a
-// assinatura da landing e reconhecida e vira origem='google-acelera' no registro, com o CNPJ e o
-// nome aproveitados. Nao muda nada para quem vem do META nem para quem chega sem assinatura.
-// copiloto-lead (v11) — NOME E SOBRENOME, confirmados com a pessoa, e gravados NO CRM. Ordem do
-// gestor em 22/09: o nome que a Nina usava vinha do perfil do WhatsApp — apelido, emoji ("🙂",
-// "😜"), versiculo ("Deus E Fiel") ou o nome da loja. O consultor recebia o lead sem saber com quem
-// ia falar. Agora ela pergunta o nome completo uma vez, cedo, e so grava como confirmado o que a
-// PESSOA escreveu (nomePlausivel: duas palavras, sem numero, sem emoji). Com o nome confirmado, o
-// contato do CRM e atualizado (firstName/lastName) — nao adianta a Nina saber e o CRM continuar
-// mostrando o apelido para quem for atender. E o nome confirmado nao e mais sobrescrito pelo do
-// perfil na rodada seguinte: era o mesmo vao que fazia o status voltar atras na v4.
-// copiloto-lead (v10) — O TELEFONE DO LEAD ERA GRAVADO DECAPITADO. d10() guardava os ultimos 10
-// digitos de um numero que vem do CRM com DDI, entao "+5511982408982" virava "1982408982": o 55 saiu
-// levando junto o primeiro digito do DDD, e o nono digito do celular tomou o lugar dele. O numero
-// gravado vira de outra praca — as vezes um numero que EXISTE, de um desconhecido. Cinco dos oito
-// leads repassados foram entregues a representante com numero inexistente, e esses leads ficaram
-// esperando. Agora grava o nacional inteiro (foneNac) e a busca aceita as duas formas, para os
-// registros antigos de 10 digitos nao virarem lead duplicado.
-// copiloto-lead (v9) — NUMERO DE CASA nunca e lead. O resumo do encerramento passou a sair pelo
-// Zaptos da Nina para o gestor, e o contato dele no CRM tem `source` preenchido ("Form 38"): sem
-// trava, a resposta dele entraria pela porta da frente e a Nina tentaria qualificar o proprio
-// gestor. Os numeros vem de copiloto_responsaveis.fone, ao lado da trava que ja existia para
-// representante.
-// copiloto-lead (v8) — o seguimento tambem pega a conversa cuja ultima mensagem e do lead mas e
-// ROBO DELE (autoresposta da propria loja). A Natalie caiu nesse vao: o inbound pulava por ruido e
-// o seguimento pulava por "ele respondeu", e ninguem falava com ela.
-// copiloto-lead (v7) — SEGUNDO TOQUE. Ate aqui a Nina so falava quando o lead falava: quem nao
-// respondia a primeira mensagem morria ali, e "aquecer" nao existia. Agora, passados
-// lead_seguir_min (180) minutos sem resposta, ela da um toque leve — de outro angulo, no maximo
-// lead_toques_max (2) vezes, so em horario comercial de SP (lead_toque_horario) — e quem nao
-// responde nem assim fica 'frio', sem virar trabalho pro comercial. No canal oficial ha uma
-// ultima chance: se a janela de 24h da Meta vai fechar dentro de lead_janela_aviso_min (90) e o
-// lead nunca foi tocado, o toque sai na hora, porque depois so template passa.
-// ?acao=inbound|seguir|tudo (padrao tudo) separa as duas passadas.
-// copiloto-lead (v6) — filtro de ruido pega tambem a autoresposta no plural ("nao estamos disponiveis", "responderemos assim que possivel", "agradecemos sua mensagem"): a loja do proprio lead tem robo, e a Nina quase respondeu ao dele. Padrao extra passa a vir de copiloto_config.lead_ruido_extra, sem deploy.
-// copiloto-lead (v5) — v4 desfazia o proprio trabalho: o upsert de depois do envio reescrevia o status com o valor lido ANTES das ferramentas rodarem, e um lead descartado (ou passado pro comercial) voltava a "qualificando". O patch de depois do envio nao toca mais em status.
-// copiloto-lead (v4) — a Nina atende o LEAD DE CAMPANHA, qualifica e passa pro comercial fechar.
-//
-// v4: DOIS CANAIS e origem lida do CRM. Os leads da landing "Atacado Nitron PRO" nao chegam pelo
-//     Zaptos: chegam pelo WhatsApp NATIVO do GHL (numero oficial da conta, type 19), sem marcador
-//     de instancia — a v3 os ignorava. Responder pelo Zaptos faria o lead receber mensagem de um
-//     numero estranho e partiria a conversa em duas, entao o envio agora sai pelo MESMO canal em
-//     que ele escreveu. Vem com tres consequencias praticas:
-//       - JANELA DE 24h DA META: no canal nativo, passadas ~24h da mensagem do lead, texto livre e
-//         recusado. A Nina nao gasta a tentativa: abre tarefa p/ o comercial (template ou ligacao).
-//       - ORIGEM: o `source` do contato (escrito pelo formulario da landing) diz de que campanha
-//         ele veio, e vale como sinal de lead tanto quanto a tag "ads". Quando a origem nao e o
-//         anuncio conhecido, o prompt PROIBE a Nina de adivinhar oferta ou valor anunciado.
-//       - CNPJ QUE ELE JA DEU: o formulario grava o CNPJ no contato. A Nina nao pede de novo (a
-//         sugestao automatica do CRM pedia, e o lead ja havia informado), e o codigo confere se
-//         esse CNPJ ja tem cadastro antes de tratar como lead novo.
-//
-// v3: o sinal de que a conversa e de anuncio passou a ser a TAG do CRM ("ads"), com o regex da
-//     primeira frase apenas como rede: o texto que o META pre-enche no clique muda no gerenciador
-//     a qualquer momento, a tag nao.
-// v2: a v1 cortava a lista em `limite` ANTES de filtrar a instancia. Num dia normal de operacao as
-//     conversas de representante enchiam a fila e o lead do anuncio nunca era olhado (as 20
-//     primeiras eram todas de outra instancia ou ja respondidas). Agora filtra pela instancia —
-//     que a propria busca devolve no rodape da ultima mensagem — e so depois corta.
-//
-// POR QUE ESTA FUNCAO EXISTE, e nao um caminho novo dentro do copiloto-conversa: o cerebro do
-// copiloto atende quem TEM cadastro — representante (carteira, meta, pedidos) ou cliente (codparc,
-// tabela de preco, boleto, entrega). O lead do anuncio nao tem nada disso: nao ha codparc, entao
-// preco/boleto/entrega nao existem, e a conversa e outra (qualificar e aquecer, nao resolver). Ate
-// 10/09/2026 esse lead nao tinha caminho nenhum: chegava na instancia da Nina, o copiloto-conversa
-// nao achava rep e devolvia "escalonar" sem responder. O primeiro lead do anuncio (10/09, 00:10 BRT)
-// ficou 12 horas sem resposta.
-//
-// COMO ELA ACHA O LEAD: nao depende de webhook. Pergunta ao GHL quais conversas tem a ULTIMA
-// mensagem inbound (`lastMessageDirection=inbound` = ninguem respondeu ainda), fica so com as que
-// chegaram pela instancia de copiloto_config.lead_inst e filtra o resto. Assim um humano que pega a
-// conversa antes ganha: com uma resposta dele, a conversa sai da lista sozinha.
-//
-// O HISTORICO E O DO GHL, nao um espelho nosso: ela le a conversa como ela esta, inclusive o que
-// pessoa de verdade escreveu no meio. Espelho proprio ja mostrou divergir do CRM.
-//
-// GATES (copiloto_config, nao constante no codigo): lead_ativo ('nao' = monta e nao manda),
-// lead_inst ('Nina'), pedido_minimo (2500), lead_espera_min (2 = da tempo de um humano pegar
-// primeiro), lead_ate_horas (48). ?dry=1 monta a resposta sem mandar e sem gravar nada.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, content-type, apikey", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };
@@ -331,12 +220,12 @@ const TOOLS = [
   { name: "buscar_cliente", description: "Confere se a loja JA tem cadastro na Nitron, por CNPJ (14 digitos) ou por nome/razao. Use assim que tiver o CNPJ.", input_schema: { type: "object", properties: { termo: { type: "string", description: "CNPJ (so digitos) ou nome da loja" } }, required: ["termo"] } },
   { name: "consultar_conhecimento", description: "Base de conhecimento da casa (produto, mercado, playbook). Use quando ele perguntar algo que voce nao sabe de cabeca.", input_schema: { type: "object", properties: { termo: { type: "string" } }, required: ["termo"] } },
   { name: "produtos", description: "Produtos por categoria/nome/ramo: devolve nome e LINK da foto. SEM preco.", input_schema: { type: "object", properties: { termo: { type: "string" } }, required: ["termo"] } },
-  { name: "salvar_lead", description: "Anota/atualiza o que voce JA apurou deste lead. Chame assim que descobrir um dado novo. Mande so o que ele disse — nao preencha por deducao.", input_schema: { type: "object", properties: { nome: { type: "string", description: "nome da pessoa COMO ELA MESMA ESCREVEU nesta conversa, com sobrenome. NUNCA o nome do perfil do WhatsApp (apelido, emoji, frase, nome da loja)." }, nome_confirmado: { type: "boolean", description: "true SOMENTE quando a propria pessoa disse o nome nesta conversa. Falso/ausente se voce pegou do perfil ou deduziu." }, empresa: { type: "string", description: "nome da loja / razao social" }, cnpj: { type: "string" }, cidade: { type: "string" }, uf: { type: "string" }, tipo_loja: { type: "string", description: "bazar, utilidades, variedades, presentes, supermercado, magazine, material de construcao..." }, ja_revende: { type: "string", description: "de quem ele compra hoje, ou que nao compra direto de fabrica" }, interesse: { type: "string", description: "linha/produto que ele quer abastecer" }, sabe_minimo: { type: "boolean", description: "true depois de VOCE dizer o pedido minimo nesta conversa" }, temperatura: { type: "string", enum: ["frio", "morno", "quente"] }, resumo: { type: "string", description: "2 a 3 frases do caso, para o comercial ler" } }, required: [] } },
+  { name: "salvar_lead", description: "Anota/atualiza o que voce JA apurou deste lead. Chame assim que descobrir um dado novo. Mande so o que ele disse — nao preencha por deducao.", input_schema: { type: "object", properties: { nome: { type: "string", description: "nome da pessoa COMO ELA MESMA ESCREVEU nesta conversa, com sobrenome. NUNCA o nome do perfil do WhatsApp (apelido, emoji, frase, nome da loja)." }, nome_confirmado: { type: "boolean", description: "true SOMENTE quando a propria pessoa disse o nome nesta conversa. Falso/ausente se voce pegou do perfil ou deduziu." }, empresa: { type: "string", description: "nome da loja / razao social" }, cnpj: { type: "string" }, cidade: { type: "string" }, uf: { type: "string" }, endereco: { type: "string", description: "endereco da loja COMO ELE ESCREVEU: rua, numero, bairro, cidade/UF. Pedido ANTES do link, porque a tabela de preco muda com a praca." }, cep: { type: "string", description: "CEP da loja, so digitos" }, pagamento: { type: "string", description: "como ele pretende pagar. Na primeira compra so existe a vista ou 6x no cartao sem juros." }, tipo_loja: { type: "string", description: "bazar, utilidades, variedades, presentes, supermercado, magazine, material de construcao..." }, ja_revende: { type: "string", description: "de quem ele compra hoje, ou que nao compra direto de fabrica" }, interesse: { type: "string", description: "linha/produto que ele quer abastecer" }, sabe_minimo: { type: "boolean", description: "true depois de VOCE dizer o pedido minimo nesta conversa" }, temperatura: { type: "string", enum: ["frio", "morno", "quente"] }, resumo: { type: "string", description: "2 a 3 frases do caso, para o comercial ler" } }, required: [] } },
   { name: "passar_comercial", description: "PEDIDO DE ATENDIMENTO HUMANO. NAO e o fim da qualificacao e NAO tira o lead de voce — quem fecha a venda e VOCE, pela pagina de pedido. Chame isto so em tres casos: (1) ele PEDIU falar com uma atendente; (2) o CNPJ dele ja tem cadastro na Nitron, entao ele ja tem consultor; (3) voce esta genuinamente travada em algo que so uma pessoa resolve. Nunca como \"ja qualifiquei, entrego pra outro\". Abre a tarefa e devolve o protocolo; voce continua na conversa.", input_schema: { type: "object", properties: { resumo: { type: "string", description: "o caso em 2 a 4 frases: quem e, o que quer, em que pe esta" }, falta: { type: "string", description: "o que o comercial ainda precisa levantar ou combinar" }, temperatura: { type: "string", enum: ["frio", "morno", "quente"] } }, required: ["resumo"] } },
-  { name: "link_pedido", description: "Monta o LINK da pagina de pedido da Nitron para ESTE lead e devolve a URL pronta. Na pagina cada produto aparece COM O PRECO, o total soma na tela e o desconto por volume entra sozinho — e por isso ela resolve a objecao de catalogo sem preco. Use assim que souber que tipo de loja ele tem; nao precisa esperar o CNPJ.", input_schema: { type: "object", properties: { ramo: { type: "string", enum: ["R01", "R02", "R03", "R04", "R05", "R06", "R07", "R08", "R09", "R10"], description: "a cesta que combina com a loja dele: R01 = casa de utilidades, variedades, bazar, 1,99, armarinho; R02 = loja de departamento, magazine, loja grande com varias secoes; R03 = joalheria, bijuteria, presentes, festa; R04 = supermercado, mercearia, mercado, atacarejo; R05 = cama, mesa, banho, tecidos, enxoval; R06 = vestuario, calcados, moda; R07 = papelaria, livraria, escritorio; R08 = material de construcao, ferragem, tintas; R09 = farmacia, perfumaria, cosmeticos, higiene; R10 = esporte, brinquedo, lazer, pet. Na duvida, R01." }, uf: { type: "string", description: "UF dele (2 letras), se voce souber e ainda nao tiver salvado com salvar_lead" } }, required: ["ramo"] } },
+  { name: "link_pedido", description: "Monta o LINK da pagina de pedido da Nitron para ESTE lead e devolve a URL pronta. Na pagina cada produto aparece COM O PRECO, o total soma na tela e o desconto por volume entra sozinho — e por isso ela resolve a objecao de catalogo sem preco. ORDEM DO GESTOR EM 26/10: esta ferramenta SO entrega o link depois que voce tiver o CNPJ E o ENDERECO da loja. O CNPJ escolhe o MIX (pelo CNAE) e o ENDERECO escolhe o PRECO (a tabela muda com a praca/CIF). Se faltar algum dos dois ela recusa e te diz o que pedir. Pergunte, salve com salvar_lead, e so entao chame aqui.", input_schema: { type: "object", properties: { ramo: { type: "string", enum: ["R01", "R02", "R03", "R04", "R05", "R06", "R07", "R08", "R09", "R10"], description: "a cesta que combina com a loja dele: R01 = casa de utilidades, variedades, bazar, 1,99, armarinho; R02 = loja de departamento, magazine, loja grande com varias secoes; R03 = joalheria, bijuteria, presentes, festa; R04 = supermercado, mercearia, mercado, atacarejo; R05 = cama, mesa, banho, tecidos, enxoval; R06 = vestuario, calcados, moda; R07 = papelaria, livraria, escritorio; R08 = material de construcao, ferragem, tintas; R09 = farmacia, perfumaria, cosmeticos, higiene; R10 = esporte, brinquedo, lazer, pet. Na duvida, R01." }, uf: { type: "string", description: "UF dele (2 letras), se voce souber e ainda nao tiver salvado com salvar_lead" } }, required: ["ramo"] } },
   { name: "descartar_lead", description: "Use quando NAO e revenda: consumidor final querendo uma peca, curriculo, fornecedor oferecendo servico, engano de numero. Marca como descartado e NAO abre tarefa pro comercial.", input_schema: { type: "object", properties: { motivo: { type: "string" } }, required: ["motivo"] } },
 ];
-const CAMPOS = ["nome", "empresa", "cnpj", "cidade", "uf", "tipo_loja", "ja_revende", "interesse", "resumo", "temperatura"];
+const CAMPOS = ["nome", "empresa", "cnpj", "cidade", "uf", "endereco", "cep", "pagamento", "tipo_loja", "ja_revende", "interesse", "resumo", "temperatura"];
 // nome do perfil do WhatsApp nao e nome de gente: emoji, frase ("Deus E Fiel"), nome da loja,
 // um primeiro nome solto. So vale como nome confirmado o que a PESSOA escreveu, com sobrenome.
 const EMOJI_RE = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{1F000}-\u{1F02F}]/u;
@@ -409,7 +298,7 @@ async function runTool(sb: any, ctx: any, name: string, input: any): Promise<any
       const ufIn = String(input?.uf || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2);
       let L: any = null;
       if (ctx.dry) {
-        const { data } = await sb.from("copiloto_lead").select("id, uf, link_vezes, link_seg")
+        const { data } = await sb.from("copiloto_lead").select("id, uf, cnpj, endereco, cep, link_vezes, link_seg")
           .or(`contact_id.eq.${ctx.contact_id || "__none__"},fone.eq.${ctx.fone || "__none__"}`)
           .order("id", { ascending: false }).limit(1).maybeSingle();
         L = data || null;
@@ -417,6 +306,21 @@ async function runTool(sb: any, ctx: any, name: string, input: any): Promise<any
         const up = await upsertLead(sb, ctx, ufIn ? { uf: ufIn } : {});
         if (up.erro) return { erro: up.erro };
         L = up.lead || null;
+      }
+      // TRAVA DE CNPJ E ENDERECO — ordem do gestor em 26/10.
+      // Nao e conselho no prompt, e recusa da ferramenta: o prompt ja mandou "nao espere o CNPJ"
+      // entre 20 e 26/10 e foi obedecido a risca (o Luis Carlos recebeu o link sem CNPJ porque a
+      // instrucao mandava). Texto no prompt o modelo pondera; recusa da ferramenta ele nao contorna.
+      // Afrouxar nao exige deploy: copiloto_config.link_exige_cnpj / link_exige_endereco = 'nao'.
+      const falta: string[] = [];
+      if (ctx.exigeCnpj && String(L?.cnpj || "").replace(/\D/g, "").length < 14) falta.push("o CNPJ da loja (14 digitos)");
+      if (ctx.exigeEndereco && !String(L?.endereco || "").trim() && !String(L?.cep || "").trim()) falta.push("o endereco da loja (rua, numero, bairro, cidade/UF — ou o CEP)");
+      if (falta.length) {
+        return {
+          ok: false, link_nao_enviado: true, falta,
+          o_que_fazer: "NAO mande link nenhum agora. Peca " + falta.join(" e ") + " na mesma mensagem, de forma leve, explicando POR QUE: com o CNPJ a gente confere o cadastro e monta a lista do ramo dele, e com o endereco a gente aplica a tabela certa da praca dele (o preco muda conforme a regiao). Quando ele responder, salve com salvar_lead e chame esta ferramenta de novo.",
+          ja_tenho: { cnpj: !!String(L?.cnpj || "").trim(), endereco: !!String(L?.endereco || "").trim(), cep: !!String(L?.cep || "").trim() },
+        };
       }
       const uf = String(L?.uf || ufIn || "").toUpperCase().slice(0, 2);
       const reg = UF2REG[uf] || "Sudeste";
@@ -479,6 +383,9 @@ async function runTool(sb: any, ctx: any, name: string, input: any): Promise<any
         ctx.fone ? "WhatsApp: " + foneFmt(ctx.fone) : null,
         docFmt(L.cnpj) || "Sem documento informado",
         (L.cidade || L.uf) ? "Praca: " + [L.cidade, L.uf].filter(Boolean).join("/") : null,
+        L.endereco ? "Endereco: " + L.endereco : null,
+        L.cep ? "CEP: " + L.cep : null,
+        L.pagamento ? "Pagamento que ele quer: " + L.pagamento : null,
         L.tipo_loja ? "Tipo de loja: " + L.tipo_loja : null,
         L.interesse ? "Quer abastecer: " + L.interesse : null,
         L.ja_revende ? "Compra hoje: " + L.ja_revende : null,
@@ -516,7 +423,7 @@ async function licoes(sb: any): Promise<string> {
 }
 
 // ---- uma conversa ----------------------------------------------------------------------------
-async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dry: boolean; ativo: boolean; pedidoMin: number; inst: string; nativoOn: boolean; janelaH: number; pb: string; lic: string; reps: Set<string>; internos: Set<string> }) {
+async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dry: boolean; ativo: boolean; pedidoMin: number; inst: string; nativoOn: boolean; janelaH: number; pb: string; lic: string; reps: Set<string>; internos: Set<string>; exigeCnpj: boolean; exigeEndereco: boolean }) {
   const contact_id = cv.contactId || cv.contact_id || null;
   const fone = String(cv.phone || "").trim();
   const nomeCrm = String(cv.fullName || cv.contactName || "").trim();
@@ -587,7 +494,7 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
     return { ...base, decisao: "janela_fechada", lead_id: up.lead?.id || null, tarefa: tfj?.id || null, motivo: "passaram " + idadeH.toFixed(1) + "h — tarefa aberta p/ o comercial (template ou ligacao)" };
   }
 
-  const ctx: any = { contact_id, fone: foneNac(fone), instancia: nativo ? "ghl-nativo" : instancia, dry: opts.dry, pedidoMin: opts.pedidoMin, source: acl?.origem || crm.source || (ehAds ? "anuncio META" : null) };
+  const ctx: any = { contact_id, fone: foneNac(fone), instancia: nativo ? "ghl-nativo" : instancia, dry: opts.dry, pedidoMin: opts.pedidoMin, exigeCnpj: opts.exigeCnpj, exigeEndereco: opts.exigeEndereco, source: acl?.origem || crm.source || (ehAds ? "anuncio META" : null) };
   // Se ele ja informou o CNPJ no formulario, a Nina NAO pede de novo — e o codigo ja confere se
   // esse CNPJ tem cadastro, para ela nao tratar cliente antigo como lead novo.
   // O CNPJ pode vir do campo do CRM (formulario que grava no contato) ou da propria assinatura da
@@ -617,7 +524,7 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
       if (cr.ok) await upsertLead(sb, ctx, { nome_crm_em: new Date().toISOString() });
     }
   }
-  const jaSei = leadRow ? [(leadRow.nome && leadRow.nome_confirmado) && "nome: " + leadRow.nome, leadRow.empresa && "loja: " + leadRow.empresa, leadRow.cnpj && "CNPJ ja informado", (leadRow.cidade || leadRow.uf) && "praca: " + [leadRow.cidade, leadRow.uf].filter(Boolean).join("/"), leadRow.tipo_loja && "tipo: " + leadRow.tipo_loja, leadRow.ja_revende && "compra hoje: " + leadRow.ja_revende, leadRow.interesse && "interesse: " + leadRow.interesse, leadRow.sabe_minimo && "JA sabe do pedido minimo", leadRow.link_seg && "JA RECEBEU o link da pagina de pedido (cesta " + leadRow.link_seg + ") — nao mande de novo", "status: " + leadRow.status].filter(Boolean).join(" | ") : "";
+  const jaSei = leadRow ? [(leadRow.nome && leadRow.nome_confirmado) && "nome: " + leadRow.nome, leadRow.empresa && "loja: " + leadRow.empresa, leadRow.cnpj && "CNPJ ja informado", (leadRow.cidade || leadRow.uf) && "praca: " + [leadRow.cidade, leadRow.uf].filter(Boolean).join("/"), leadRow.endereco && "endereco ja informado", leadRow.pagamento && "pagamento: " + leadRow.pagamento, leadRow.tipo_loja && "tipo: " + leadRow.tipo_loja, leadRow.ja_revende && "compra hoje: " + leadRow.ja_revende, leadRow.interesse && "interesse: " + leadRow.interesse, leadRow.sabe_minimo && "JA sabe do pedido minimo", leadRow.link_seg && "JA RECEBEU o link da pagina de pedido (cesta " + leadRow.link_seg + ") — nao mande de novo", "status: " + leadRow.status].filter(Boolean).join(" | ") : "";
 
   const nome = prim(cfg.nome_assistente || opts.inst || "Nina");
   const sys = `Voce e a ${nome}, do time comercial da Nitronplast (Nitron), por WhatsApp. Calorosa e natural, pessoa de verdade da equipe.` + ESTILO
@@ -630,7 +537,9 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
     + `\nPEDIDO MINIMO da Nitron: R$ ${opts.pedidoMin.toLocaleString("pt-BR")}. Diga quando a conversa chegar em volume, mix ou como comprar — nunca na abertura.`
     + (cfg.catalogo_url ? `\nCATALOGO (mande o LINK quando ele quiser ver produtos): ${cfg.catalogo_url}` : "")
     + `\nQUEM FECHA E VOCE — ordem do gestor, repetida em 21/10: "nao vai passar mais, vai fazer o combinado da Nina fechar". NENHUM lead vai para representante. Voce leva a conversa do inicio ao fim, pela pagina de pedido. So existe UMA passagem possivel, e e para a venda interna (Monica), quando ele PEDIR atendimento humano e ja estiver qualificado. Nao se despeca do lead dizendo que alguem assume daqui.`
-    + `\nPAGINA DE PEDIDO — ordem do gestor em 20/10, vale para TODO lead desta rodada: existe uma pagina com a cesta sugerida para o ramo dele, onde cada produto aparece COM O PRECO, o total soma na tela e o desconto por volume entra sozinho. Assim que voce souber que tipo de loja ele tem, chame link_pedido e mande o link — nao espere ele pedir e nao espere o CNPJ. O CNPJ voce continua pedindo cedo, porque e com ele que a gente confere o cadastro e aplica o desconto; mas o link nao depende disso. Se ele JA recebeu o link nesta conversa, nao mande de novo sem um motivo novo.`
+    + `\nPAGINA DE PEDIDO: existe uma pagina com a cesta sugerida para o ramo dele, onde cada produto aparece COM O PRECO, o total soma na tela e o desconto por volume entra sozinho. Se ele JA recebeu o link nesta conversa, nao mande de novo sem um motivo novo.`
+    + `\nANTES DO LINK, DOIS DADOS — ordem do gestor em 26/10, e isto MUDOU em relacao ao que valia ate ontem: o link SO sai depois que voce tiver (1) o CNPJ da loja e (2) o ENDERECO dela. Nao e burocracia, cada um resolve uma coisa: o CNPJ diz o ramo (CNAE) e com isso a lista certa de produtos; o ENDERECO diz a praca, e a TABELA DE PRECO MUDA conforme a regiao. Mandar link sem endereco e arriscar mostrar preco que nao vale para ele. Peca os dois de uma vez, de leve, explicando o porque — e se ele pedir o link antes, diga que ja vai mandar e aproveite para pedir os dois na mesma mensagem, sem travar a conversa. Com os dados em maos, chame salvar_lead e depois link_pedido. A ferramenta RECUSA o link enquanto faltar um deles.`
+    + `\nFORMA DE PAGAMENTO (ordem do gestor, 26/10): pergunte tambem como ele pretende pagar e ja diga o que existe NA PRIMEIRA COMPRA — a vista, ou 6x no cartao sem juros. So isso; nao invente boleto, prazo, faturamento 30/60/90 nem nada diferente, e nao prometa condicao especial. Salve a resposta em salvar_lead (campo pagamento).`
     + (cfg.site_url ? `\nSITE: ${cfg.site_url}` : "")
     + `\n${jaSei ? "JA APURADO (nao pergunte de novo): " + jaSei : "AINDA NAO SEI NADA sobre ele — comece pelo tipo de loja e o que ele precisa abastecer."}`
     + (nomeConf
@@ -737,7 +646,7 @@ async function seguir(sb: any, cfg: Record<string, string>, o: any) {
     if (!msgs.length) { feitos.push({ ...base, decisao: "pular", motivo: "sem historico legivel" }); continue; }
 
     const toqueN = Number(L.toques || 0) + 1;
-    const jaSei = [L.empresa && "loja: " + L.empresa, L.tipo_loja && "tipo: " + L.tipo_loja, (L.cidade || L.uf) && "praca: " + [L.cidade, L.uf].filter(Boolean).join("/"), L.interesse && "interesse: " + L.interesse, L.cnpj && "CNPJ ja informado", L.sabe_minimo && "ja sabe do pedido minimo"].filter(Boolean).join(" | ");
+    const jaSei = [L.empresa && "loja: " + L.empresa, L.tipo_loja && "tipo: " + L.tipo_loja, (L.cidade || L.uf) && "praca: " + [L.cidade, L.uf].filter(Boolean).join("/"), L.endereco && "endereco ja informado", L.interesse && "interesse: " + L.interesse, L.cnpj && "CNPJ ja informado", L.sabe_minimo && "ja sabe do pedido minimo"].filter(Boolean).join(" | ");
     const sys = `Voce e a ${prim(cfg.nome_assistente || o.inst || "Nina")}, do time comercial da Nitronplast (Nitron), por WhatsApp. Calorosa e natural, pessoa de verdade da equipe.` + ESTILO
       + `\n\nHOJE e ${hojeBRT()} (data atual REAL).`
       + (o.pb ? `\n\nMANUAIS DA CASA (o [LEAD] manda aqui):\n${o.pb}` : "")
@@ -751,12 +660,12 @@ async function seguir(sb: any, cfg: Record<string, string>, o: any) {
       + `\n\nQUEM E: lead de campanha, nao representante e sem cadastro de cliente. ${L.origem === ACELERA_ORIGEM ? "Veio da landing \"Acelera Nitron\", a campanha da Nitron no GOOGLE." : L.origem ? ("Origem registrada no CRM: \"" + L.origem + "\".") : "Origem nao registrada."} Nao invente oferta nem condicao que possa ter sido anunciada.`
       + `\nPEDIDO MINIMO: R$ ${o.pedidoMin.toLocaleString("pt-BR")}.`
       + (cfg.catalogo_url ? `\nCATALOGO (link): ${cfg.catalogo_url}` : "")
-      + (L.link_seg ? `\nELE JA RECEBEU O LINK da pagina de pedido (cesta ${L.link_seg}). Nao mande de novo: se for falar dele, fale do que tem dentro.` : `\nPAGINA DE PEDIDO: se voce ja souber que tipo de loja ele tem, este toque e um bom lugar para mandar o link — la cada produto aparece COM O PRECO e o total soma na tela. Chame link_pedido para pegar a URL. Se nao souber o tipo de loja, pergunte isso em vez de mandar.`)
+      + (L.link_seg ? `\nELE JA RECEBEU O LINK da pagina de pedido (cesta ${L.link_seg}). Nao mande de novo: se for falar dele, fale do que tem dentro.` : `\nPAGINA DE PEDIDO: este toque e um bom lugar para caminhar para o link — la cada produto aparece COM O PRECO e o total soma na tela. Mas desde 26/10 o link SO sai com o CNPJ E o ENDERECO da loja na mao (o CNPJ escolhe a lista, o endereco escolhe a tabela de preco da praca). Se ainda faltar algum dos dois, use o toque para pedir o que falta, explicando o porque — nao para mandar link. Com os dois, chame link_pedido.`)
       + `\n${jaSei ? "JA APURADO (nao pergunte de novo): " + jaSei : "Nao sei nada sobre a loja dele ainda."}`
       + (L.nome_confirmado ? `\nNOME JA CONFIRMADO por ele: ${L.nome}. Use esse.` : `\nVoce ainda NAO confirmou o nome dele (o que aparece e o do perfil do WhatsApp). Se couber no toque, pergunte o nome completo de leve — e chame salvar_lead com nome e nome_confirmado=true quando ele responder.`)
       + o.lic;
     const messages: any[] = [{ role: "user", content: msgs.map((m: any) => (m.direction === "inbound" ? "CONTATO: " : "VOCE (Nitron): ") + limpa(m.body).slice(0, 400)).join("\n") + "\n\n(Escreva SO o toque de seguimento, sem prefixo.)" }];
-    const ctx: any = { contact_id: L.contact_id, fone: L.fone, instancia: L.instancia, dry: o.dry, pedidoMin: o.pedidoMin, source: L.origem };
+    const ctx: any = { contact_id: L.contact_id, fone: L.fone, instancia: L.instancia, dry: o.dry, pedidoMin: o.pedidoMin, exigeCnpj: o.exigeCnpj, exigeEndereco: o.exigeEndereco, source: L.origem };
     let texto = ""; const usadas: string[] = [];
     for (let i = 0; i < 4; i++) {
       const resp = await anthropic(sys, messages, TOOLS);
@@ -841,6 +750,9 @@ Deno.serve(async (req) => {
     const soHorario = String(cfg.lead_toque_horario || "sim").toLowerCase() === "sim";
     const avisoMin = Math.max(0, parseInt(cfg.lead_janela_aviso_min || "90") || 0);
     const erroEsperaMin = Math.max(5, parseInt(cfg.lead_erro_espera_min || "120") || 120);
+    // o link so sai com CNPJ e endereco (ordem do gestor, 26/10). Afrouxar e UPDATE, sem deploy.
+    const exigeCnpj = String(cfg.link_exige_cnpj || "sim").toLowerCase() === "sim";
+    const exigeEndereco = String(cfg.link_exige_endereco || "sim").toLowerCase() === "sim";
     const acao = String(sp.get("acao") || b.acao || "tudo").toLowerCase();
     RUIDO_EXTRA = null;
     if (String(cfg.lead_ruido_extra || "").trim()) { try { RUIDO_EXTRA = new RegExp(String(cfg.lead_ruido_extra).trim(), "i"); } catch (_e) { RUIDO_EXTRA = null; } }
@@ -882,7 +794,7 @@ Deno.serve(async (req) => {
     } catch (_e) { /* sem cadastro, so a trava dos reps vale */ }
 
     const pb = await playbook(sb); const lic = await licoes(sb);
-    const opts = { dry, ativo, pedidoMin, inst, nativoOn, janelaH, pb, lic, reps: setReps, internos: setInternos };
+    const opts = { dry, ativo, pedidoMin, inst, nativoOn, janelaH, pb, lic, reps: setReps, internos: setInternos, exigeCnpj, exigeEndereco };
     const feitos: any[] = [];
     if (acao !== "seguir") for (const cv of alvos) { try { feitos.push(await atender(sb, cfg, cv, opts)); } catch (e) { feitos.push({ contato: cv.fullName || cv.phone, decisao: "erro", motivo: String(e).slice(0, 200) }); } }
 
@@ -890,7 +802,7 @@ Deno.serve(async (req) => {
     // conversa ja foi atendida acima e o seguimento a pula.
     let seg: any = null;
     if (acao !== "inbound" && toquesMax > 0) {
-      try { seg = await seguir(sb, cfg, { dry, ativo, pedidoMin, inst, janelaH, seguirMin, toquesMax, soHorario, avisoMin, erroEsperaMin, pb, lic, limite: Math.max(1, Math.min(limite, 4)) }); }
+      try { seg = await seguir(sb, cfg, { dry, ativo, pedidoMin, inst, janelaH, seguirMin, toquesMax, soHorario, avisoMin, erroEsperaMin, pb, lic, exigeCnpj, exigeEndereco, limite: Math.max(1, Math.min(limite, 4)) }); }
       catch (e) { seg = { erro: String(e).slice(0, 200) }; }
     }
 
