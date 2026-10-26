@@ -99,6 +99,71 @@ async function achaLead(lead_id: number | null, contact_id: string | null): Prom
   } catch { return null; }
 }
 
+// ---- a planilha do pedido ----------------------------------------------------------------------
+// Ordem do gestor em 26/10, com o layout que ele mandou: CNPJ, PEDIDO, EAN, QUANTIDADE, PRECO,
+// FOB, TRANSPORTADORA. Tres decisoes que ele confirmou e que NAO sao obvias:
+//   EAN        = a nossa REFERENCIA interna (163.004.002), nao o codigo de barras.
+//   QUANTIDADE = UNIDADES, nao fardos. O lojista escolhe fardos na tela; 2 fardos de 12 = 24.
+//   PRECO      = o unitario como aparece na tela, ja com a margem e com o CIF somado.
+// FOB e TRANSPORTADORA saem em branco de proposito: quem preenche e o comercial.
+// CSV com ponto-e-virgula e decimal com virgula — e o que o Excel em pt-BR abre com dois cliques.
+// O BOM no inicio e o que faz o Excel ler os acentos; sem ele vira "Concha para cereais".
+function planilhaCsv(p: any, itens: any[], codigo: string): string {
+  const q = (v: unknown) => { const t = String(v ?? ""); return /[";\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
+  const num = (v: number) => v.toFixed(2).replace(".", ",");
+  const L = ["CNPJ;PEDIDO;EAN;QUANTIDADE;PRECO;FOB;TRANSPORTADORA"];
+  for (const it of itens) {
+    const un = n(it.fardos) * (n(it.emb) || 1);
+    L.push([q(p.cnpj || ""), q(codigo), q(it.ref), String(Math.round(un)), num(n(it.preco)), "", ""].join(";"));
+  }
+  return "\uFEFF" + L.join("\r\n") + "\r\n";
+}
+
+// Sobe a planilha no mesmo bucket publico que serve as paginas e devolve a URL. O GHL so aceita
+// anexo por URL — nao da para mandar o arquivo no corpo.
+async function subirPlanilha(codigo: string, csv: string): Promise<string | null> {
+  try {
+    const caminho = `pedidos/${codigo}.csv`;
+    const k = srvKey();
+    const r = await fetch(`${URL_()}/storage/v1/object/app/${caminho}`, {
+      method: "POST",
+      headers: { apikey: k, Authorization: "Bearer " + k, "Content-Type": "text/csv; charset=utf-8",
+                 "x-upsert": "true" },
+      body: csv,
+    });
+    if (!r.ok) return null;
+    return `${URL_()}/storage/v1/object/public/app/${caminho}`;
+  } catch { return null; }
+}
+
+// ---- o pedido abaixo do minimo nao pode chegar calado -------------------------------------------
+// A pagina NAO bloqueia: ela pergunta "quer enviar assim mesmo?" e o lojista pode confirmar. Em
+// 26/10 entrou um pedido de R$ 705,60 com minimo de R$ 3.500 e o e-mail dizia "PEDIDO NOVO" como
+// qualquer outro — o gestor abriu achando que era pedido para faturar. Agora o aviso vem no
+// assunto, no corpo e no Zaptos.
+function faltaMinimo(total: number, minimo: number): number {
+  return (minimo > 0 && total > 0 && total < minimo) ? (minimo - total) : 0;
+}
+
+// ---- quando a marca do lead nao chega ------------------------------------------------------------
+// O lojista pode estar com a pagina ANTIGA em cache no celular (a pagina tem 3,8 MB e o Safari
+// segura), e a versao antiga nao mandava lead_id. Foi o que aconteceu no PED-0009 e no PED-0011.
+// O `pedido-visita` grava a marca na hora em que a pagina abre, entao o pedido ainda pode ser
+// identificado por ela: mesma cesta, na janela de poucas horas, visita mais recente primeiro.
+// O retorno diz COMO foi identificado — "visita" nunca e apresentado como certeza.
+async function leadPelaVisita(segmento: string): Promise<{ lead_id: number; quando: string } | null> {
+  if (!segmento) return null;
+  try {
+    const desde = new Date(Date.now() - 6 * 3600 * 1000).toISOString();
+    const r = await rest(`pedido_visita?select=lead_id,em&segmento=eq.${encodeURIComponent(segmento)}` +
+                         `&lead_id=not.is.null&em=gte.${desde}&order=em.desc&limit=1`);
+    if (!r.ok) return null;
+    const rows = await r.json().catch(() => []);
+    if (!Array.isArray(rows) || !rows.length) return null;
+    return { lead_id: Number(rows[0].lead_id), quando: String(rows[0].em) };
+  } catch { return null; }
+}
+
 // O bloco que o gestor pediu. Tudo que existe de real sobre o lojista, e quando NAO existe o
 // e-mail diz isso com todas as letras — "(nao informada)" caladamente ja nos custou tres pedidos
 // que ninguem sabia de quem eram.
@@ -159,11 +224,22 @@ async function cfg(): Promise<Record<string, string>> {
 // O corpo do e-mail. Texto puro com quebra de linha: o campanhas-enviar embrulha em <div> com
 // <br>, entao o que a Camyla ve e exatamente isto. De proposito nao e tabela HTML — ela copia
 // e cola no Forca de Vendas, e tabela atrapalha.
-function corpoEmail(p: any, itens: any[], codigo: string, lead: any, crm: any) {
+function corpoEmail(p: any, itens: any[], codigo: string, lead: any, crm: any, extra: any) {
   const L: string[] = [];
   L.push(`PEDIDO ${codigo}`);
+  if (extra?.falta > 0) {
+    L.push("");
+    L.push(`*** ABAIXO DO PEDIDO MINIMO *** faltam R$ ${brl(extra.falta)} para os R$ ${brl(extra.minimo)}.`);
+    L.push("A pagina avisa o lojista e ele escolheu enviar assim mesmo. NAO e pedido para faturar como esta:");
+    L.push("alguem precisa falar com ele para completar.");
+  }
   L.push("");
   for (const l of blocoCliente(lead, crm, p)) L.push(l);
+  if (extra?.identificado_por === "visita") {
+    L.push(`(Identificado pela visita a pagina, nao pela marca do link — o pedido chegou sem ela.`);
+    L.push(` Confira o CNPJ antes de faturar.)`);
+    L.push("");
+  }
   L.push(`Segmento da cesta: ${p.segmento || "-"}`);
   L.push(`Recebido em: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}`);
   L.push("");
@@ -184,6 +260,11 @@ function corpoEmail(p: any, itens: any[], codigo: string, lead: any, crm: any) {
   L.push("");
   L.push("O cliente montou este pedido na pagina que a Nina mandou. Ele NAO combinou preco, prazo,");
   L.push("condicao de pagamento nem frete com ninguem — isso e com voce.");
+  if (extra?.planilha) {
+    L.push("");
+    L.push("A planilha vai em anexo (CSV, abre no Excel). Na coluna PRECO esta o unitario de tela,");
+    L.push("com a margem e o CIF ja somados; o desconto de 10% esta no TOTAL acima, nao na linha.");
+  }
   return L.join("\n");
 }
 
@@ -223,7 +304,13 @@ Deno.serve(async (req) => {
     // a marca ~L<id> do link chega em b.lead_id desde 26/10. A linha gravada passa a levar o que
     // se descobriu — ate aqui loja, cnpj, cidade e fone ficavam em branco no banco tambem.
     const leadId = Number(b.lead_id) > 0 ? Number(b.lead_id) : null;
-    const lead = await achaLead(leadId, txt(b.contact_id, 40) || null);
+    let lead = await achaLead(leadId, txt(b.contact_id, 40) || null);
+    // Sem marca no link, tenta a visita. Ver leadPelaVisita: e o caso da pagina velha em cache.
+    let identificadoPor = lead ? "marca" : "";
+    if (!lead) {
+      const v = await leadPelaVisita(txt(b.segmento, 60));
+      if (v) { lead = await achaLead(v.lead_id, null); if (lead) identificadoPor = "visita"; }
+    }
     const crm = await contatoCrm(lead?.contact_id || txt(b.contact_id, 40) || null);
 
     const reg = {
@@ -246,14 +333,25 @@ Deno.serve(async (req) => {
     const codigo = "PED-" + String(row.id).padStart(4, "0");
     await rest(`pedido_recebido?id=eq.${row.id}`, { method: "PATCH", body: JSON.stringify({ codigo }) });
 
+    // A planilha que o comercial digita, e o aviso de pedido abaixo do minimo.
+    const minimo = n(conf.pedido_minimo) || 0;
+    const planilhaUrl = await subirPlanilha(codigo, planilhaCsv(reg, itens, codigo));
+    const extra = {
+      falta: faltaMinimo(reg.total, minimo),
+      minimo,
+      planilha: planilhaUrl,
+      identificado_por: identificadoPor,
+    };
+
     // ---- aviso por e-mail com o pedido COMPLETO, para cada destino ----
     // email_ok so e true quando TODOS receberam: se o do marketing sair e o de quem fecha nao, o
     // pedido esta perdido do mesmo jeito e a linha nao pode dizer que deu certo.
     let email_ok: boolean | null = null, email_erro: string | null = null;
     if ((conf.pedido_aviso_ativo || "sim").toLowerCase() === "sim" && destinos.length) {
-      const corpo = corpoEmail(reg, itens, codigo, lead, crm);
+      const corpo = corpoEmail(reg, itens, codigo, lead, crm, extra);
       const quem = reg.loja || lead?.nome || "";
-      const assunto = `${codigo} — pedido novo${quem ? " de " + quem : " (cliente NAO identificado)"} (R$ ${brl(reg.total)})`;
+      const alerta = extra.falta > 0 ? "[ABAIXO DO MINIMO] " : "";
+      const assunto = `${alerta}${codigo} — pedido novo${quem ? " de " + quem : " (cliente NAO identificado)"} (R$ ${brl(reg.total)})`;
       const falhas: string[] = [];
       for (const d0 of destinos) {
         try {
@@ -263,6 +361,7 @@ Deno.serve(async (req) => {
             body: JSON.stringify({
               canal: "email", email: d0, nome: d0 === para ? (dono || undefined) : undefined,
               assunto, texto: corpo,
+              anexos: planilhaUrl ? [planilhaUrl] : undefined,
             }),
           });
           const d = await r.json().catch(() => ({}));
@@ -287,7 +386,9 @@ Deno.serve(async (req) => {
     if (avisoFones.length && (conf.pedido_aviso_ativo || "sim").toLowerCase() === "sim") {
       // o reg ja vem enriquecido pelo lead, entao este aviso tambem deixou de sair anonimo
       const curto = [
-        `PEDIDO NOVO — ${codigo}`,
+        extra.falta > 0 ? `PEDIDO ABAIXO DO MINIMO — ${codigo}` : `PEDIDO NOVO — ${codigo}`,
+        extra.falta > 0 ? `Faltam R$ ${brl(extra.falta)} para os R$ ${brl(extra.minimo)}. Nao e para faturar como esta.` : "",
+        extra.identificado_por === "visita" ? "(identificado pela visita a pagina, nao pela marca do link — confira o CNPJ)" : "",
         lead?.nome ? `Contato: ${lead.nome}` : "",
         reg.loja ? `Loja: ${reg.loja}` : "",
         reg.cnpj ? `CNPJ ${fmtDoc(reg.cnpj)}` : "",
@@ -317,9 +418,39 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ---- e agora o CLIENTE sabe que o pedido chegou ---------------------------------------------
+    // Ordem do gestor em 26/10. Ate aqui ninguem respondia a quem mandava pedido: o Luis Carlos
+    // concluiu as 08:33 e as 08:44 a Nina pediu que ele "concluisse o pedido" — ela nao sabia. O
+    // aviso sai pela instancia da Nina, para o contato do lead, e diz o valor que ele mandou.
+    let aviso_cliente: any = null;
+    if (lead?.contact_id && (conf.pedido_aviso_cliente || "sim").toLowerCase() === "sim") {
+      const nomeC = String(lead?.nome || "").trim().split(/\s+/)[0] || "";
+      const linhas = [
+        (nomeC ? nomeC + ", s" : "S") + `eu pedido chegou certinho aqui: ${codigo}, no valor de R$ ${brl(reg.total)}.`,
+        "",
+        extra.falta > 0
+          ? `Só um detalhe: o mínimo de fábrica é R$ ${brl(extra.minimo)} e o seu ficou em R$ ${brl(reg.total)}, então faltam R$ ${brl(extra.falta)} para a gente conseguir faturar. Posso te ajudar a completar com o que faz sentido pra sua loja?`
+          : "Já passei para a nossa equipe comercial dar sequência com você.",
+        "",
+        "Na primeira compra a gente trabalha à vista ou em 6x no cartão sem juros.",
+      ].filter((x) => x !== null).join("\n");
+      try {
+        const r = await fetch(`${URL_()}/functions/v1/campanhas-enviar`, {
+          method: "POST",
+          headers: { Authorization: "Bearer " + srvKey(), "Content-Type": "application/json" },
+          body: JSON.stringify({ canal: "whatsapp", contact_id: lead.contact_id, texto: linhas,
+                                 instancia: conf.lead_inst || "Nina" }),
+        });
+        const d = await r.json().catch(() => ({}));
+        aviso_cliente = { ok: !!d?.ok, motivo: d?.ok ? undefined : String(d?.motivo || "recusado").slice(0, 140) };
+      } catch (e) { aviso_cliente = { ok: false, motivo: String(e).slice(0, 140) }; }
+    }
+
     // A pagina so precisa do codigo e do resumo para montar a mensagem curta do WhatsApp.
     return j({
-      ok: true, codigo, id: row.id, email_ok, aviso_zap,
+      ok: true, codigo, id: row.id, email_ok, aviso_zap, aviso_cliente,
+      planilha: planilhaUrl, abaixo_do_minimo: extra.falta > 0 || undefined,
+      lead_id: lead?.id ?? null, identificado_por: identificadoPor || undefined,
       resumo: { produtos: itens.length, fardos, pecas, total: reg.total },
     });
   } catch (e) {

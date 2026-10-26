@@ -1,4 +1,4 @@
-// campanhas-enviar (v29) — email com ARTE + {{...}}. Garante contato. WhatsApp via SMS+#contact_instance. Recusa WhatsApp para telefone FIXO (10 digitos). ?diag mostra rate-limit.
+// campanhas-enviar (v30) — email com ARTE + {{...}}. Garante contato. WhatsApp via SMS+#contact_instance. Recusa WhatsApp para telefone FIXO (10 digitos). ?diag mostra rate-limit.
 // v22: TRAVA DE INSTANCIA. Antes, sem instancia ele mandava o texto SEM amarrar — a mensagem saia pela ultima instancia
 //      a que aquele contato ficou preso (de outro assunto, de outro mes), e o cliente recebia algo desconexo.
 //      Agora WhatsApp sem instancia e RECUSADO, e o token e conferido contra o cadastro instancia_ghl (cache de 5 min).
@@ -54,6 +54,9 @@
 //      com "reconectar e reenviar" como acao.
 //      Custa 12s por mensagem. A 2 por minuto isso nao aperta a vazao, e o preco de nao ter era um
 //      lote inteiro marcado como entregue sem ter saido.
+// v30: ANEXO NO E-MAIL (26/10). Opcional, por `anexos` no corpo — uma lista de URLs publicas. Entrou
+//      para o pedido do lojista sair com a planilha junto (ordem do gestor). Campanha que nao manda
+//      `anexos` continua montando exatamente o mesmo corpo de antes.
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, content-type, apikey", "Access-Control-Allow-Methods": "POST, OPTIONS" };
 const j = (o: unknown, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -256,8 +259,16 @@ async function enviarMsg(contactId: string, canal: string, texto: string, assunt
     if (templateId) { const raw = await arteHtml(templateId); if (raw) { html = preencher(raw, nome, texto, merge, opts?.campos); arte_ok = true; } }
     if (!html) html = "<div>" + String(texto).replace(/\n/g, "<br>") + "</div>";
     const subj = preencher(assunto || "Nitron", nome, texto, merge, opts?.campos);
-    const r = await ghl("POST", "/conversations/messages", { type: "Email", contactId, subject: subj, html }, "2021-04-15");
-    return { status: r.status, body: (await r.text()).slice(0, 400), bind: null as any, arte_ok };
+    // ANEXO (26/10): o GHL aceita `attachments` como lista de URLs publicas no envio de e-mail.
+    // Entrou para o pedido sair com a planilha junto; e opcional e nenhuma campanha antiga manda
+    // isso, entao o corpo da chamada continua identico para todas elas.
+    const anexos = Array.isArray(opts?.anexos)
+      ? opts.anexos.map((x: any) => String(x || "").trim()).filter((x: string) => /^https?:\/\//i.test(x)).slice(0, 10)
+      : [];
+    const corpo: any = { type: "Email", contactId, subject: subj, html };
+    if (anexos.length) corpo.attachments = anexos;
+    const r = await ghl("POST", "/conversations/messages", corpo, "2021-04-15");
+    return { status: r.status, body: (await r.text()).slice(0, 400), bind: null as any, arte_ok, anexos: anexos.length || undefined };
   }
   const to = fone ? e164(fone) : undefined;
   const janela = Number(opts?.espera_ms) > 0 ? Number(opts.espera_ms) : BIND_ESPERA_MS;
@@ -374,7 +385,7 @@ Deno.serve(async (req) => {
       if (re.test(texto)) { textoUsado = texto.replace(re, instUsada); textoAjustado = true; }
     }
     const mergeUsado = (instUsada !== instancia && b.merge && typeof b.merge === "object") ? { ...b.merge, instancia: instUsada, assistente: instUsada } : b.merge;
-    const res: any = await enviarMsg(contactId, canal, textoUsado, b.assunto, b.templateId, instUsada || undefined, b.fone, b.nome, mergeUsado, { espera_ms: b.espera_ms, margem_ms: b.margem_ms, exigir_confirmacao: b.exigir_confirmacao, campos: b.campos, checar_entrega: b.checar_entrega, checar_ms: b.checar_ms });
+    const res: any = await enviarMsg(contactId, canal, textoUsado, b.assunto, b.templateId, instUsada || undefined, b.fone, b.nome, mergeUsado, { espera_ms: b.espera_ms, margem_ms: b.margem_ms, exigir_confirmacao: b.exigir_confirmacao, campos: b.campos, checar_entrega: b.checar_entrega, checar_ms: b.checar_ms, anexos: b.anexos });
     const ok = res.status >= 200 && res.status < 300;
     return j({ ok, contactId, via, criado, canal, instancia: instUsada || null, instancia_pedida: instUsada !== instancia ? instancia : undefined, texto_ajustado: textoAjustado || undefined, campos_gravados: camposGravados || undefined, dono_crm: dono, arte: !!b.templateId, arte_ok: res.arte_ok, motivo: ok ? undefined : (res.recusado || ("GHL " + res.status + ": " + res.body)), bind_nao_confirmado: res.recusado ? true : undefined, instancia_caiu: res.instancia_caiu || undefined, resultado: res, teste: !!b.test });
   } catch (e) { return j({ ok: false, erro: String(e) }, 500); }

@@ -432,6 +432,33 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   `194 / 0,90 x (1 + perc)`, e so assim o desconto de 10% devolve `194 x (1 + perc)` — ou seja, o
   frete chega INTEIRO e quem leva o desconto e o produto. Multiplicar a 194 por (1+perc) e depois
   tirar 10% direto comeria o frete.
+- **Dois numeros de minimo, com papeis diferentes** (26/10). `MINIMO` (R$ 3.500) e o que a Nina
+  anuncia e o que a tela cobra; `PISO` (R$ 2.500) e o que a tela RECUSA. Entre os dois o pedido
+  passa com a confirmacao de sempre, de proposito — ordem do gestor: "sei que e 1000 reais a menos,
+  mas dependendo do caso podemos fazer ele comprar 1000 reais a mais". Abaixo do PISO nao ha
+  confirmacao: o envio nao acontece. O que fez a regra foi o PED-0011, de R$ 705,60, que passou
+  porque a tela so perguntava "quer enviar assim mesmo?" e o lojista disse que sim.
+- **O pedido abaixo do minimo avisa em tres lugares** (`nina-pedido-recebido` v4): `[ABAIXO DO
+  MINIMO]` no assunto, um bloco no corpo do e-mail e o titulo do Zaptos trocado. Antes chegava
+  escrito "PEDIDO NOVO" como qualquer outro e o gestor abriu achando que era pedido para faturar.
+- **A planilha do pedido vai ANEXA no e-mail** (`nina-pedido-recebido` v4, ordem do gestor em
+  26/10). CSV com `;` e decimal com virgula mais BOM — e o que o Excel em pt-BR abre com dois
+  cliques e com os acentos certos. Colunas: CNPJ, PEDIDO, **EAN** (a nossa referencia interna, nao
+  codigo de barras), **QUANTIDADE** (em UNIDADES: 2 fardos de 12 = 24), **PRECO** (unitario de tela,
+  com margem e CIF), FOB e TRANSPORTADORA em branco para o comercial preencher. O arquivo sobe em
+  `storage/app/pedidos/<codigo>.csv` e vai como URL: o GHL so aceita anexo por URL, nunca no corpo.
+  Quem repassa e o `campanhas-enviar` v30, por um `anexos` **opcional** — campanha que nao manda
+  esse campo monta exatamente o mesmo corpo de antes.
+- **O cliente agora sabe que o pedido chegou** (`pedido_aviso_cliente`). Ate 26/10 ninguem respondia
+  a quem mandava pedido: o Luis Carlos concluiu as 08:33 e as 08:44 a Nina pediu que ele
+  "concluisse o pedido" — ela nao sabia que ja tinha chegado. A confirmacao sai pela instancia da
+  Nina, diz o codigo e o valor, e quando o pedido esta abaixo do minimo oferece ajuda para completar.
+- **Pedido sem a marca do lead ainda pode ser identificado pela VISITA.** A pagina tem 3,8 MB e o
+  celular guarda a versao antiga em cache — foi o que fez o PED-0009 e o PED-0011 chegarem anonimos
+  mesmo depois de a marca passar a ser enviada. O `pedido-visita` grava a marca quando a pagina
+  abre, entao o `nina-pedido-recebido` procura ali: mesma cesta, janela de 6h, visita mais recente.
+  O e-mail **diz** que foi identificado assim e pede conferir o CNPJ — adivinhacao apresentada como
+  certeza seria pior do que o anonimato.
 - **Publicar o painel:** `POST host-upload?path=gestor.html` com o **HTML cru no corpo** e o caminho
   na query — não JSON. **Confira o md5 publicado antes de subir:** há outro chat editando o mesmo
   arquivo, e sobrescrever o trabalho dele já aconteceu.
