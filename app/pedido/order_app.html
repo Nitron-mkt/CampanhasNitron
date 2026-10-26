@@ -779,9 +779,16 @@ function dadosLoja(){
   var g=function(id){var e=els.whoBox.querySelector(id); return e?e.value.trim():"";};
   return {loja:g("#f_loja"), cnpj:g("#f_cnpj"), cidade:g("#f_cidade"), fone:g("#f_fone")};
 }
+// O id do lead que veio na marca ~L<id> do link. A marca JA estava lida em MARCA, no topo, antes
+// de o loadSeg reescrever o hash — ela so nunca tinha sido posta no pedido. Por isso os seis
+// primeiros pedidos chegaram anonimos (lead_id nulo) e o e-mail saiu sem dizer de quem era: o
+// formulario da loja (dadosLoja) quase sempre vem vazio, porque o lojista nao preenche nada antes
+// de concluir. Ordem do gestor em 26/10 — o e-mail tem de levar a informacao real do cliente, e e
+// este numero que deixa o nina-pedido-recebido ir busca-la em copiloto_lead e no CRM.
+function leadIdDaMarca(){ var m=/^L(\d+)$/i.exec(MARCA||""); return m?Number(m[1]):null; }
 function pedidoJSON(){
   var t=orderTotals();
-  return { segmento: curSeg, origem: "pagina", cliente: dadosLoja(),
+  return { segmento: curSeg, origem: "pagina", cliente: dadosLoja(), lead_id: leadIdDaMarca(),
     itens: t.lines.map(function(l){ return {cod:l.it.cod, ref:l.it.ref, desc:l.it.desc,
       linha:l.it.linha, emb:l.it.emb, preco:l.it.preco, fardos:l.fardos}; }),
     qtd_fardos: t.far, qtd_pecas: t.un, subtotal: t.sub, desconto: t.disc, total: t.total };

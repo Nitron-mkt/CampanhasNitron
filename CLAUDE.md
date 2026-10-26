@@ -388,6 +388,30 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   `POST host-upload?path=pedido.html` com o HTML cru no corpo — o bundle sai do
   `app/pedido/montar.py` (order_app.html + app_data.js + app_img.js, 3,8 MB). O Worker só serve o
   arquivo: mudar preço **não** exige deploy de Worker. Confira o md5 publicado antes de subir.
+- **O e-mail do pedido leva o LEAD INTEIRO, nao so o pedido** (26/10, ordem do gestor: "no email
+  nao devia vir apenas a informacao do pedido, devia vir o resumo e as informacoes reais do
+  cliente"). Os seis primeiros pedidos sairam anonimos porque o corpo so tinha o que o lojista
+  digitasse no formulario da pagina — e ele nao digita nada: loja, CNPJ, cidade e telefone vieram
+  VAZIOS nos seis. **A causa nao era o `replaceState` apagando a marca:** `MARCA` ja era lida no
+  topo do `order_app.html`, antes dele (o `pedido-visita` sempre usou). Ela so nunca tinha entrado
+  no `pedidoJSON()`. Com `leadIdDaMarca()` o POST passou a levar `lead_id`, e o
+  `nina-pedido-recebido` busca o resto em `copiloto_lead` + contato do CRM: nome (marcado quando e
+  so o do perfil do WhatsApp), loja, CNPJ, e-mail, telefone, cidade/UF, endereco, CEP, forma de
+  pagamento, tipo de loja, interesse, origem, numero do lead, link da conversa e o resumo da Nina.
+  O que falta aparece como **"NAO INFORMADO ainda"**, e pedido sem marca diz **"CLIENTE NAO
+  IDENTIFICADO"** — "(nao informada)" calado foi o que deixou tres pedidos sem dono. O mesmo
+  enriquecimento entra na linha gravada e no aviso por Zaptos. Conferido em 26/10 com dois pedidos
+  de teste (leads 529 e 345), e as linhas de teste foram apagadas depois.
+- **`nina-pedido-recebido` sobe com `verify_jwt: false`, e a ferramenta de deploy assume `true`.**
+  A pagina de pedido e publica e nao carrega chave: publicar essa funcao sem passar `verify_jwt`
+  explicitamente como `false` derruba TODO pedido que entrar. Conferir no retorno do deploy.
+- **O aviso de pedido por Zaptos existia no repositorio e NUNCA tinha sido publicado.** O que estava
+  no ar era a versao 2, sem o bloco inteiro — os numeros de `pedido_avisar_fones` nunca tinham
+  recebido nada. Subiu em 26/10. Desligar: esvaziar `copiloto_config.pedido_avisar_fones` (a chave
+  `pedido_aviso_ativo` derruba o e-mail junto, entao nao serve para isso).
+- **Quem recebe o pedido por e-mail mora em `copiloto_config.pedido_email_para`**, separado por
+  virgula: Camyla, marketing e, desde 26/10, `leonardo.lucas@hyakgroup.com.br`. Um e-mail por
+  destino, porque o `campanhas-enviar` resolve um contato do CRM por endereco e nao tem copia.
 - **Publicar o painel:** `POST host-upload?path=gestor.html` com o **HTML cru no corpo** e o caminho
   na query — não JSON. **Confira o md5 publicado antes de subir:** há outro chat editando o mesmo
   arquivo, e sobrescrever o trabalho dele já aconteceu.

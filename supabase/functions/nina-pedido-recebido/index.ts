@@ -47,6 +47,105 @@ async function rest(path: string, init: RequestInit = {}) {
   });
 }
 
+// ---- quem e o lojista -------------------------------------------------------------------------
+// Ordem do gestor em 26/10: "no email nao devia vir apenas a informacao do pedido, devia vir o
+// resumo e as informacoes reais do cliente". Ate aqui o e-mail so tinha o que o lojista digitasse
+// no formulario da pagina — e ele quase nunca digita: nos seis primeiros pedidos, loja, CNPJ,
+// cidade e telefone vieram VAZIOS. Quem sabe quem e o lojista e a Nina, em copiloto_lead, e o CRM.
+// A ponte entre as duas coisas e o lead_id, que a pagina passou a mandar na mesma data.
+const GHL = (Deno.env.get("GHL_TOKEN") || "").trim();
+const LOC = "rZ8y7lzqV7fzxsartaX2";
+
+function foneFmt(v: unknown): string {
+  let d = String(v ?? "").replace(/\D/g, "");
+  if (d.length >= 12 && d.startsWith("55")) d = d.slice(2);
+  if (d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+  if (d.length === 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+  return String(v ?? "");
+}
+
+// O CRM guarda o que a tabela do lead nao tem: e-mail, e as vezes o endereco que alguem digitou
+// no cadastro. Falha em silencio de proposito — pedido que entra nao pode travar porque o GHL
+// demorou a responder.
+async function contatoCrm(contact_id: string | null): Promise<any> {
+  if (!contact_id || !GHL) return {};
+  try {
+    const r = await fetch(`https://services.leadconnectorhq.com/contacts/${contact_id}`, {
+      headers: { Authorization: "Bearer " + GHL, Version: "2021-07-28", Accept: "application/json" },
+    });
+    if (!r.ok) return {};
+    const c = (await r.json().catch(() => ({})))?.contact || {};
+    return {
+      email: c.email || null,
+      fone: c.phone || null,
+      empresa: c.companyName || null,
+      endereco: [c.address1, c.city, c.state].filter(Boolean).join(", ") || null,
+      cep: c.postalCode || null,
+      dono: c.assignedTo || null,
+    };
+  } catch { return {}; }
+}
+
+async function achaLead(lead_id: number | null, contact_id: string | null): Promise<any> {
+  try {
+    let q = "";
+    if (lead_id) q = `id=eq.${lead_id}`;
+    else if (contact_id) q = `contact_id=eq.${encodeURIComponent(contact_id)}&order=id.desc&limit=1`;
+    else return null;
+    const r = await rest(`copiloto_lead?${q}&select=*`);
+    if (!r.ok) return null;
+    const rows = await r.json().catch(() => []);
+    return Array.isArray(rows) && rows.length ? rows[0] : null;
+  } catch { return null; }
+}
+
+// O bloco que o gestor pediu. Tudo que existe de real sobre o lojista, e quando NAO existe o
+// e-mail diz isso com todas as letras — "(nao informada)" caladamente ja nos custou tres pedidos
+// que ninguem sabia de quem eram.
+function blocoCliente(L: any, crm: any, p: any): string[] {
+  const out: string[] = ["CLIENTE"];
+  if (!L && !crm?.email) {
+    out.push("NAO IDENTIFICADO — este pedido chegou sem a marca do lead no link.");
+    if (p.loja || p.cnpj || p.cidade || p.fone) {
+      if (p.loja) out.push(`Loja (digitada na pagina): ${p.loja}`);
+      if (p.cnpj) out.push(`CNPJ ${fmtDoc(p.cnpj)}`);
+      if (p.cidade) out.push(`Cidade: ${p.cidade}`);
+      if (p.fone) out.push(`WhatsApp: ${foneFmt(p.fone)}`);
+    } else {
+      out.push("O lojista tambem nao preencheu nada no formulario da pagina.");
+    }
+    out.push("");
+    return out;
+  }
+  const nome = L?.nome || "";
+  if (nome) out.push(`Nome: ${nome}${L?.nome_confirmado ? "" : " (nome do perfil do WhatsApp — nao confirmado com ele)"}`);
+  const loja = L?.empresa || crm?.empresa || p.loja;
+  if (loja) out.push(`Loja: ${loja}`);
+  const cnpj = L?.cnpj || p.cnpj;
+  out.push(cnpj ? `CNPJ ${fmtDoc(cnpj)}` : "CNPJ: NAO INFORMADO ainda");
+  const mail = crm?.email || null;
+  if (mail) out.push(`E-mail: ${mail}`);
+  const fone = L?.fone || crm?.fone || p.fone;
+  if (fone) out.push(`WhatsApp: ${foneFmt(fone)}`);
+  const praca = [L?.cidade, L?.uf].filter(Boolean).join("/") || p.cidade;
+  if (praca) out.push(`Cidade: ${praca}`);
+  const end = L?.endereco || crm?.endereco;
+  out.push(end ? `Endereco: ${end}` : "Endereco: NAO INFORMADO ainda");
+  const cep = L?.cep || crm?.cep;
+  if (cep) out.push(`CEP: ${cep}`);
+  out.push(L?.pagamento ? `Pagamento que ele quer: ${L.pagamento}` : "Forma de pagamento: NAO INFORMADA ainda");
+  if (L?.tipo_loja) out.push(`Tipo de loja: ${L.tipo_loja}`);
+  if (L?.interesse) out.push(`Quer abastecer: ${L.interesse}`);
+  if (L?.ja_revende) out.push(`Compra hoje: ${L.ja_revende}`);
+  if (L?.origem) out.push(`Origem: ${L.origem}`);
+  if (L?.id) out.push(`Lead #${L.id}${L?.status ? " (" + L.status + ")" : ""}`);
+  const cid = L?.contact_id || p.contact_id;
+  if (cid) out.push(`Conversa no CRM: https://app.gohighlevel.com/v2/location/${LOC}/contacts/detail/${cid}`);
+  if (L?.resumo) { out.push(""); out.push(`Resumo da Nina: ${L.resumo}`); }
+  out.push("");
+  return out;
+}
+
 async function cfg(): Promise<Record<string, string>> {
   try {
     const r = await rest("copiloto_config?select=chave,valor");
@@ -60,14 +159,11 @@ async function cfg(): Promise<Record<string, string>> {
 // O corpo do e-mail. Texto puro com quebra de linha: o campanhas-enviar embrulha em <div> com
 // <br>, entao o que a Camyla ve e exatamente isto. De proposito nao e tabela HTML — ela copia
 // e cola no Forca de Vendas, e tabela atrapalha.
-function corpoEmail(p: any, itens: any[], codigo: string) {
+function corpoEmail(p: any, itens: any[], codigo: string, lead: any, crm: any) {
   const L: string[] = [];
   L.push(`PEDIDO ${codigo}`);
   L.push("");
-  L.push(`Loja: ${p.loja || "(nao informada)"}`);
-  if (p.cnpj) L.push(`CNPJ ${fmtDoc(p.cnpj)}`);
-  if (p.cidade) L.push(`Cidade: ${p.cidade}`);
-  if (p.fone) L.push(`WhatsApp: ${p.fone}`);
+  for (const l of blocoCliente(lead, crm, p)) L.push(l);
   L.push(`Segmento da cesta: ${p.segmento || "-"}`);
   L.push(`Recebido em: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}`);
   L.push("");
@@ -123,9 +219,21 @@ Deno.serve(async (req) => {
     const para = destinos[0] || "";
     const dono = conf.pedido_dono || "";
 
+    // Quem e o lojista. O formulario da pagina quase sempre vem vazio, entao o que vale e o lead:
+    // a marca ~L<id> do link chega em b.lead_id desde 26/10. A linha gravada passa a levar o que
+    // se descobriu — ate aqui loja, cnpj, cidade e fone ficavam em branco no banco tambem.
+    const leadId = Number(b.lead_id) > 0 ? Number(b.lead_id) : null;
+    const lead = await achaLead(leadId, txt(b.contact_id, 40) || null);
+    const crm = await contatoCrm(lead?.contact_id || txt(b.contact_id, 40) || null);
+
     const reg = {
-      segmento: txt(b.segmento, 60), loja: txt(c.loja, 120), cnpj: txt(c.cnpj, 20).replace(/\D/g, ""),
-      cidade: txt(c.cidade, 80), fone: txt(c.fone, 30), contact_id: txt(b.contact_id, 40) || null,
+      segmento: txt(b.segmento, 60),
+      loja: txt(c.loja, 120) || txt(lead?.empresa, 120) || txt(crm?.empresa, 120),
+      cnpj: (txt(c.cnpj, 20) || txt(lead?.cnpj, 20)).replace(/\D/g, ""),
+      cidade: txt(c.cidade, 80) || [lead?.cidade, lead?.uf].filter(Boolean).join("/").slice(0, 80),
+      fone: txt(c.fone, 30) || txt(lead?.fone, 30) || txt(crm?.fone, 30),
+      contact_id: txt(b.contact_id, 40) || txt(lead?.contact_id, 40) || null,
+      lead_id: lead?.id ?? leadId,
       itens, qtd_itens: itens.length, qtd_fardos: fardos, qtd_pecas: pecas,
       subtotal, desconto: n(b.desconto), total: n(b.total) || subtotal - n(b.desconto),
       origem: txt(b.origem, 30) || "pagina", dono: dono || null, email_para: destinos.join(", ") || null,
@@ -143,8 +251,9 @@ Deno.serve(async (req) => {
     // pedido esta perdido do mesmo jeito e a linha nao pode dizer que deu certo.
     let email_ok: boolean | null = null, email_erro: string | null = null;
     if ((conf.pedido_aviso_ativo || "sim").toLowerCase() === "sim" && destinos.length) {
-      const corpo = corpoEmail(reg, itens, codigo);
-      const assunto = `${codigo} — pedido novo${reg.loja ? " de " + reg.loja : ""} (R$ ${brl(reg.total)})`;
+      const corpo = corpoEmail(reg, itens, codigo, lead, crm);
+      const quem = reg.loja || lead?.nome || "";
+      const assunto = `${codigo} — pedido novo${quem ? " de " + quem : " (cliente NAO identificado)"} (R$ ${brl(reg.total)})`;
       const falhas: string[] = [];
       for (const d0 of destinos) {
         try {
@@ -176,12 +285,14 @@ Deno.serve(async (req) => {
       .map((x) => x.replace(/\D/g, "")).filter((x) => x.length >= 10);
     let aviso_zap: any = null;
     if (avisoFones.length && (conf.pedido_aviso_ativo || "sim").toLowerCase() === "sim") {
+      // o reg ja vem enriquecido pelo lead, entao este aviso tambem deixou de sair anonimo
       const curto = [
         `PEDIDO NOVO — ${codigo}`,
+        lead?.nome ? `Contato: ${lead.nome}` : "",
         reg.loja ? `Loja: ${reg.loja}` : "",
         reg.cnpj ? `CNPJ ${fmtDoc(reg.cnpj)}` : "",
         reg.cidade ? `Cidade: ${reg.cidade}` : "",
-        reg.fone ? `WhatsApp: ${reg.fone}` : "",
+        reg.fone ? `WhatsApp: ${foneFmt(reg.fone)}` : "",
         "",
         `${itens.length} produtos | ${int(fardos)} fardos | ${int(pecas)} pecas`,
         `TOTAL: R$ ${brl(reg.total)}`,
