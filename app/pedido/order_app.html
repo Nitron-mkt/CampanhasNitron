@@ -474,10 +474,40 @@ var VISITA_API = "https://bwbeieumxcuomtrvlqxs.supabase.co/functions/v1/pedido-v
 // segmento (history.replaceState), entao quem for ler depois ja nao a encontra. Medido — a
 // primeira versao deste ping mandava marca vazia exatamente por isso.
 var MARCA = (function(){var h=(location.hash||"").replace(/^#/,"");var i=h.indexOf("~");return i<0?"":h.slice(i+1);})();
+// A marca pode trazer MAIS DE UM pedaco, separados por ~:  #Sudeste-R01~L123~F8.9
+//   L<id>   = o lead, para o pedido chegar identificado
+//   F<perc> = o percentual de frete CIF da praca dele (tabela de Regioes do Sankhya)
+// O `pedido-visita` so entende a marca quando ela e exatamente L<id>, entao e o pedaco do lead que
+// vai para la — nao a marca inteira. Sem isso a visita passaria a chegar com lead_id vazio, e era
+// justamente ela que resgatava o pedido de quem esta com a pagina velha em cache.
+var MARCAS = MARCA ? MARCA.split("~") : [];
+function pedacoMarca(re){ for(var i=0;i<MARCAS.length;i++){ var m=re.exec(MARCAS[i]); if(m) return m; } return null; }
+var MARCA_LEAD = (function(){ var m=pedacoMarca(/^L(\d{1,9})$/i); return m?m[0]:""; })();
+// aceita 8.9 e 8,9 — o link e escrito por gente e por codigo
+var FRETE = (function(){ var m=pedacoMarca(/^F(\d{1,2}(?:[.,]\d{1,2})?)$/i); if(!m) return 0;
+  var v=Number(String(m[1]).replace(",",".")); return (isFinite(v)&&v>=0&&v<=50)?v:0; })();
 function openLink(url){ var a=document.createElement("a"); a.href=url; a.target="_blank"; a.rel="noopener noreferrer"; document.body.appendChild(a); a.click(); setTimeout(function(){a.remove();},0); }
 
 var D = window.DATA || {segs:{},catalogo:[]};
 var IMG = window.IMG || {};
+
+// ---- FRETE CIF -------------------------------------------------------------------------------
+// Ordem do gestor em 26/10: o lojista tem de ver na tela o valor que ele vai pagar, com o frete JA
+// DENTRO — nao um preco com "mais frete depois". Entao o percentual da praca dele entra no preco de
+// CADA item, uma vez so, aqui no carregamento, mexendo no dado e nao em cada lugar que soma. E isso
+// que garante que o total, o PDF, o texto do WhatsApp, o pedido que chega para o comercial e a
+// planilha anexa digam todos a mesma coisa.
+// A CONTA: o preco que ja esta no app_data e a tabela 194 dividida por 0,90. Multiplicar por
+// (1 + perc/100) faz o desconto de 10% pousar em 194 x (1 + perc) — ou seja, o frete chega INTEIRO
+// e quem leva o desconto e o produto. Multiplicar a 194 por (1+perc) e so entao tirar 10% comeria
+// o frete. Ja erramos essa conta uma vez (o x1,10 de 23/10); ver o CLAUDE.md antes de mexer.
+(function aplicaFreteCIF(){
+  if(!(FRETE>0)) return;
+  var f=1+FRETE/100;
+  var r2=function(v){ return Math.round((Number(v)||0)*f*100)/100; };
+  (D.catalogo||[]).forEach(function(it){ it.preco=r2(it.preco); });
+  Object.keys(D.segs||{}).forEach(function(k){ (D.segs[k].itens||[]).forEach(function(it){ it.preco=r2(it.preco); }); });
+})();
 var REGORD={Sudeste:1,Nordeste:2,Sul:3,"Centro-Oeste":4,Norte:5};
 var fmt=function(n){return (n||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});};
 var fmtI=function(n){return (n||0).toLocaleString("pt-BR");};
@@ -797,7 +827,7 @@ function dadosLoja(){
 // formulario da loja (dadosLoja) quase sempre vem vazio, porque o lojista nao preenche nada antes
 // de concluir. Ordem do gestor em 26/10 — o e-mail tem de levar a informacao real do cliente, e e
 // este numero que deixa o nina-pedido-recebido ir busca-la em copiloto_lead e no CRM.
-function leadIdDaMarca(){ var m=/^L(\d+)$/i.exec(MARCA||""); return m?Number(m[1]):null; }
+function leadIdDaMarca(){ var m=/^L(\d+)$/i.exec(MARCA_LEAD||""); return m?Number(m[1]):null; }
 function pedidoJSON(){
   var t=orderTotals();
   return { segmento: curSeg, origem: "pagina", cliente: dadosLoja(), lead_id: leadIdDaMarca(),
@@ -931,7 +961,7 @@ loadSeg(pickSeg());
   catch(e){ ss=Date.now().toString(36)+Math.random().toString(36).slice(2,10); }  // aba anonima: conta como visita, so nao deduplica
   try{
     fetch(VISITA_API,{method:"POST",keepalive:true,headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({segmento:curSeg,marca:MARCA,sessao:ss,referrer:document.referrer||""})}).catch(function(){});
+      body:JSON.stringify({segmento:curSeg,marca:MARCA_LEAD||MARCA,sessao:ss,referrer:document.referrer||""})}).catch(function(){});
   }catch(e){}
 })();
 

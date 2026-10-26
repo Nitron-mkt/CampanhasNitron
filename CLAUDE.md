@@ -459,6 +459,18 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   abre, entao o `nina-pedido-recebido` procura ali: mesma cesta, janela de 6h, visita mais recente.
   O e-mail **diz** que foi identificado assim e pede conferir o CNPJ — adivinhacao apresentada como
   certeza seria pior do que o anonimato.
+- **O frete CIF entra no PRECO DE CADA ITEM, na pagina, pela marca `~F<perc>` do link** (26/10,
+  ordem do gestor: "tinha que mostrar ja no valor final"). O link passou a aceitar mais de um
+  pedaco: `#Sudeste-R01~L123~F8.9`. O `aplicaFreteCIF()` multiplica `preco` de todo item de
+  `D.catalogo` e de `D.segs[*].itens` uma vez so, no carregamento — mexer no DADO e nao em cada
+  lugar que soma e o que faz tela, PDF, texto do WhatsApp, pedido gravado e planilha anexa dizerem
+  o mesmo numero. **Cuidado com o `pedido-visita`:** ele so reconhece a marca quando ela e
+  exatamente `L<id>`, entao a pagina manda `MARCA_LEAD` (so o pedaco do lead) e nao a marca
+  inteira; sem isso a visita passaria a gravar `lead_id` vazio e perderia o resgate do pedido de
+  quem esta com a pagina velha em cache.
+  **A conta arredonda POR ITEM, nao no subtotal.** A cesta Sudeste-R01 com 8,9%: subtotal
+  R$ 8.111,06 e total R$ 7.299,95 — quem calcula pelo subtotal (7.448,63 x 1,089) chega a
+  R$ 7.300,40, 45 centavos a mais. O certo e o da tela, que e o que o lojista paga linha a linha.
 - **Publicar o painel:** `POST host-upload?path=gestor.html` com o **HTML cru no corpo** e o caminho
   na query — não JSON. **Confira o md5 publicado antes de subir:** há outro chat editando o mesmo
   arquivo, e sobrescrever o trabalho dele já aconteceu.
