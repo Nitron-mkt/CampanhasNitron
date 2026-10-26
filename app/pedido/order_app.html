@@ -365,7 +365,7 @@ main{max-width:1180px;margin:0 auto;padding:14px 12px}
 
 <main>
   <div class="regras" id="regras" hidden>
-    <div class="regra min"><span class="ic">R$</span><span class="t"><b>Pedido m&iacute;nimo de R$ 2.500.</b> &Eacute; o m&iacute;nimo de f&aacute;brica &mdash; abaixo disso n&atilde;o conseguimos faturar.</span></div>
+    <div class="regra min"><span class="ic">R$</span><span class="t"><b>Pedido m&iacute;nimo de R$ 3.500.</b> &Eacute; o m&iacute;nimo de f&aacute;brica &mdash; abaixo disso n&atilde;o conseguimos faturar.</span></div>
     <div class="regra med"><span class="ic">&#9679;</span><span class="t" id="regraMedia"></span></div>
     <div class="regra como"><span class="ic">&#9998;</span><span class="t">Use o <b>+</b> e o <b>&minus;</b> para a quantidade, <b>tirar do pedido</b> para remover, e as <b>categorias</b> ali em cima para incluir mais. No fim, bot&atilde;o verde <b>Enviar</b>.</span></div>
   </div>
@@ -454,7 +454,10 @@ var PEDIDO_API = "https://bwbeieumxcuomtrvlqxs.supabase.co/functions/v1/nina-ped
 // 100 -> 111,11 -> 100,00. Conferido nos 1.104 produtos: todos voltam ao centavo.
 // Quem compra ABAIXO de R$ 5.000 nao tem desconto e paga 11,11% acima da 194 — e a regra, nao defeito.
 // Minimo de fabrica. Nao e preferencia de tela: abaixo disto o pedido nao e faturado.
-var MINIMO=2500;
+// Subiu de 2.500 para 3.500 em 26/10, ordem do gestor. O mesmo numero vive em
+// copiloto_config.pedido_minimo (que e de onde a Nina le) e nas licoes 280, 281, 316, 320, 323 e
+// 356 — os tres lugares tem de mudar juntos, senao a Nina promete um numero que a tela nao faz.
+var MINIMO=3500;
 function discountRate(sub){ return sub>=5000 ? .10 : 0; }
 // Modo interno (vendedor): mostra seletor de segmento, curva e penetração. Cliente não vê.
 var ADMIN = (location.hash||"").toLowerCase().indexOf("adm")>=0;

@@ -412,6 +412,26 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
 - **Quem recebe o pedido por e-mail mora em `copiloto_config.pedido_email_para`**, separado por
   virgula: Camyla, marketing e, desde 26/10, `leonardo.lucas@hyakgroup.com.br`. Um e-mail por
   destino, porque o `campanhas-enviar` resolve um contato do CRM por endereco e nao tem copia.
+- **Pedido minimo = R$ 3.500 desde 26/10** (era 2.500). Ordem do gestor. O numero vive em TRES
+  lugares e os tres tem de mudar juntos, senao a Nina promete o que a tela nao faz: a chave
+  `copiloto_config.pedido_minimo` (de onde a Nina, o `copiloto-feedback` e o `copiloto-repasse`
+  leem), o `MINIMO` e o texto visivel do `app/pedido/order_app.html` (exige republicar a pagina), e
+  as licoes **280, 281, 316, 320, 323 e 356**. Os `app/pedido/*-1X-10.py` sao scripts de uma vez so,
+  ja executados, e ficam como registro — nao sao lidos por nada.
+- **O frete CIF tem tabela propria no Sankhya, e o percentual VARIA de 0% a 17%.** Views
+  `AD_VW_COM_REGIOES` e `AD_VW_COM_REGIOES_CIDADES`, liberadas pelo TI em 26/10 (a `TGFREG` e a
+  tabela de regras, nao serve). Copia em `pedido_frete_regiao` (94 regioes com %, conferida contra a
+  origem por seis somatorios) e `pedido_frete_cidade` (chave **COD_IBGE**, que vem do CEP — nome de
+  cidade NAO serve de chave: a base tem "Guarulhoss" sem IBGE e nomes com e sem acento). SP
+  metropolitano, capital, litoral, Campinas, ABC, Sorocaba e S.J. Campos sao **0%**; o interior
+  profundo de SP e 8%; MG 6,8–8,9; RJ 7–11; Sul 8–11; Centro-Oeste 9–17; Nordeste 14,3–15; Norte
+  15–17. Cada regiao traz tambem uma `venda_min_cif` propria (2.500 em SP, 3.570 no interior
+  paulista, 5.000 no resto) — **o gestor decidiu em 26/10 que o minimo que a Nina fala e 3.500 para
+  todo mundo**, entao a `venda_min_cif` fica como dado, nao como regra de conversa.
+  **A conta do CIF nao e ambigua, e e o mesmo erro de 23/10 esperando acontecer:** o preco de tela e
+  `194 / 0,90 x (1 + perc)`, e so assim o desconto de 10% devolve `194 x (1 + perc)` — ou seja, o
+  frete chega INTEIRO e quem leva o desconto e o produto. Multiplicar a 194 por (1+perc) e depois
+  tirar 10% direto comeria o frete.
 - **Publicar o painel:** `POST host-upload?path=gestor.html` com o **HTML cru no corpo** e o caminho
   na query — não JSON. **Confira o md5 publicado antes de subir:** há outro chat editando o mesmo
   arquivo, e sobrescrever o trabalho dele já aconteceu.
