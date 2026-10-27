@@ -153,3 +153,90 @@ pessoa de verdade escreveu no meio. Espelho proprio ja mostrou divergir do CRM.
 GATES (copiloto_config, nao constante no codigo): lead_ativo ('nao' = monta e nao manda),
 lead_inst ('Nina'), pedido_minimo (2500), lead_espera_min (2 = da tempo de um humano pegar
 primeiro), lead_ate_horas (48). ?dry=1 monta a resposta sem mandar e sem gravar nada.
+
+---
+
+## v18 e v17 (movidas do cabecalho em 27/10, quando a v20 entrou)
+
+O cabecalho do `index.ts` so cabe as versoes recentes — publicar a funcao exige passar o arquivo
+inteiro numa chamada, e ele ja estava no limite. A regra do arquivo e a mesma de 26/10: o historico
+vem para ca, inteiro, sem corte.
+
+```
+// v18 — O LINK SO SAI COM CNPJ E ENDERECO, E A MARGEM ERA DE 1% A MENOS.
+// Ordem do gestor em 26/10, duas coisas no mesmo dia.
+//
+// 1) A CONTA DA MARGEM ESTAVA ERRADA, e foi ele quem pegou: "se eu colocar 10% em um produto de
+//    100, vai dar 110. Mas se eu tirar 10% do produto de 110 o produto vai ficar 99". Exato —
+//    x1,10 seguido de -10% devolve 99, nao 100. Cada item estava saindo 1% ABAIXO da 194 quando o
+//    desconto entrava. O certo e dividir por 0,90 (+11,11%): 100 -> 111,11 -> 100,00. A pagina ja
+//    foi corrigida e republicada; conferido nos 1.104 produtos, todos voltam ao centavo.
+//
+// 2) O LINK DEIXA DE SAIR SEM CNPJ E SEM ENDERECO. Ate ontem o prompt mandava o CONTRARIO —
+//    "mande o link, nao espere ele pedir e nao espere o CNPJ" (ordem de 20/10) — e a Nina obedeceu
+//    a risca: o Luis Carlos (lead 529) pediu "catalogo com os precos", recebeu o link, abriu e
+//    mandou um pedido de R$ 10.168,99 em 10 segundos; o CNPJ dele so chegou 6 minutos DEPOIS.
+//    Agora sao dois dados obrigatorios, e cada um resolve uma coisa diferente:
+//      - CNPJ -> o CNAE escolhe o MIX (que lista de produtos abre)
+//      - ENDERECO -> a praca escolhe o PRECO (existem tabelas CIF por regiao no Sankhya: 168
+//        Nordeste, 172 Sul, 30 ES, 32 MG, 98 Nordeste especial)
+//    A trava mora na FERRAMENTA, nao no prompt: link_pedido recusa e devolve o que falta pedir.
+//    Texto no prompt o modelo pondera; recusa da ferramenta ele nao contorna — e a licao de 22/10
+//    ("licao nao vence instrucao concreta do prompt") aplicada ao contrario, a favor.
+//    Afrouxar nao exige deploy: copiloto_config.link_exige_cnpj / link_exige_endereco = 'nao'.
+//
+// 3) PAGAMENTO: a Nina passa a perguntar como ele pretende pagar e a dizer o que existe na
+//    PRIMEIRA COMPRA — a vista ou 6x no cartao sem juros. Nada alem disso.
+//
+// Colunas novas em copiloto_lead: endereco, cep, pagamento.
+//
+// v17 — O DESCONTO VIROU UMA FAIXA SO. Ordem do gestor em 23/10, junto com a
+// virada de preco da pagina (os valores sairam da tabela padrao e passaram a sair da TABELA GESTOR
+// do Sankhya, CODTAB 194, com +10%): "quando o cliente pedir no minimo os 5 mil vai poder ter o
+// desconto de 10% tambem, nao vai ter mais desconto quando pedir acima disso".
+// A faixa de 15% acima de R$ 15.000 deixou de existir na pagina (discountRate do order_app.html).
+// Aqui ela aparecia em TRES lugares — o cabecalho, o DESCONTO_PAGINA que a ferramenta link_pedido
+// devolve, e o contorno do toque de seguimento. Deixar qualquer um deles para tras faria a Nina
+// prometer de boca um numero que a tela nao faz: e a doenca de 16/09, em escala menor.
+// As licoes 326, 335 e 347 foram corrigidas junto, e a 357 e nova (o lojista que volta com um
+// print do preco antigo).
+//
+```
+
+---
+
+## v19 (movida do cabecalho em 27/10, no mesmo dia em que entrou)
+
+```
+// v19 — O FRETE CIF ENTRA NO PRECO DA PAGINA, E QUEM DIZ A PRACA E O CEP.
+// Fecha a ordem do gestor de 26/10: "tinha que mostrar ja no valor final".
+//
+// A pagina ja sabia fazer isso desde 26/10: a marca ~F<perc> no link multiplica o preco de CADA
+// item uma vez so, no carregamento, e por isso tela, PDF, texto do WhatsApp, pedido gravado e
+// planilha anexa dizem o mesmo numero. So que NINGUEM punha a marca no link — a Nina mandava
+// `#Sudeste-R01~L562` e o lojista via o preco SEM frete, que nao e o que a gente fatura. A ordem
+// estava meio cumprida: a metade que aparecia na tela do gestor funcionava, a metade que chega ao
+// cliente nao existia.
+//
+// COMO A PRACA VIRA PERCENTUAL (freteCIF): CEP -> ViaCEP -> COD_IBGE -> pedido_frete_cidade, que
+// tem as 5.569 cidades, cada uma ja com o perc_cif da regiao. A CHAVE E O IBGE, nunca o nome: a
+// base do Sankhya tem "Guarulhoss" sem IBGE e nomes com e sem acento, e casar por nome erra calado
+// — e erra no preco. O nome da cidade e so a segunda opcao, e vale apenas quando devolve UMA linha
+// na UF; duas linhas e ambiguidade, e ambiguidade nao vira preco.
+//
+// SEM PRACA RESOLVIDA, O LINK NAO SAI (link_exige_frete='sim'). Pedir o CEP custa uma mensagem;
+// mandar um preco que a gente nao cumpre custa o pedido e a confianca — e o erro so aparece no
+// faturamento, quando ja e tarde. Afrouxar e UPDATE, sem deploy.
+//
+// perc 0 nao leva marca: SP capital, metropolitano, litoral, Campinas, ABC, Sorocaba e S.J. Campos
+// sao 0%, e a pagina ja trata F0 como "sem frete".
+//
+// O QUE A NINA PODE DIZER: que o preco da tela ja e o final para a cidade dele, com entrega.
+// O QUE ELA NAO DIZ NUNCA: o percentual, quanto do preco e frete, ou prazo de entrega. E a mesma
+// regra do CNPJ e do preco — ela REFLETE o que o sistema calculou, nao abre a conta.
+//
+// De brinde, o ViaCEP devolve cidade e UF: quando o lead nao as tinha ditas, sao gravadas. O
+// repasse precisa da praca para sortear o representante, e ate aqui ela so existia se o lead
+// tivesse escrito a cidade com todas as letras.
+//
+```

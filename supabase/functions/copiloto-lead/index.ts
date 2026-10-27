@@ -1,71 +1,23 @@
-// copiloto-lead (v19) — O FRETE CIF ENTRA NO PRECO DA PAGINA, E QUEM DIZ A PRACA E O CEP.
-// Fecha a ordem do gestor de 26/10: "tinha que mostrar ja no valor final".
+// copiloto-lead (v20) — A PRACA DECIDE A CESTA E O FRETE, E NESSA ORDEM.
+// Erro que o gestor pegou em 27/10: a Alexa (lead 523) tem DDD 81, Pernambuco, e recebeu a cesta
+// Sudeste-R01. A causa era o `UF2REG[uf] || "Sudeste"`: quando ninguem sabia a UF, o codigo
+// escolhia o Sudeste CALADO. Sete leads sairam assim. E havia um segundo vao, aberto pela propria
+// v19: a cesta era escolhida ANTES do freteCIF, entao um lead com CEP de PE podia levar o
+// percentual certo numa cesta do Sudeste.
+// Agora o freteCIF roda primeiro e a UF que ele resolveu manda nas duas decisoes; sem ele, a
+// ordem das pistas e L.uf > o que a Nina mandou > o DDD do telefone. O DDD serve so para a CESTA:
+// o percentual muda dentro do mesmo estado, entao ele nao substitui a trava do CEP.
+// Quando nem assim da para saber, a resposta DIZ que a praca nao foi apurada em vez de fingir.
 //
-// A pagina ja sabia fazer isso desde 26/10: a marca ~F<perc> no link multiplica o preco de CADA
-// item uma vez so, no carregamento, e por isso tela, PDF, texto do WhatsApp, pedido gravado e
-// planilha anexa dizem o mesmo numero. So que NINGUEM punha a marca no link — a Nina mandava
-// `#Sudeste-R01~L562` e o lojista via o preco SEM frete, que nao e o que a gente fatura. A ordem
-// estava meio cumprida: a metade que aparecia na tela do gestor funcionava, a metade que chega ao
-// cliente nao existia.
+// Tambem nesta versao: a Nina de lead PULA quem tem a tag `raspagem`/`raspagem-onda1` — essa acao
+// tem funcao e roteiro proprios (`nina-raspagem`), e o publico e distribuidor, nao lojista.
 //
-// COMO A PRACA VIRA PERCENTUAL (freteCIF): CEP -> ViaCEP -> COD_IBGE -> pedido_frete_cidade, que
-// tem as 5.569 cidades, cada uma ja com o perc_cif da regiao. A CHAVE E O IBGE, nunca o nome: a
-// base do Sankhya tem "Guarulhoss" sem IBGE e nomes com e sem acento, e casar por nome erra calado
-// — e erra no preco. O nome da cidade e so a segunda opcao, e vale apenas quando devolve UMA linha
-// na UF; duas linhas e ambiguidade, e ambiguidade nao vira preco.
+// A v19 (o frete CIF entrando no link pelo CEP) tambem esta no historico — ela e a base desta:
+// o freteCIF() e dela, e aqui ele so mudou de LUGAR, passando a rodar antes da escolha da cesta.
 //
-// SEM PRACA RESOLVIDA, O LINK NAO SAI (link_exige_frete='sim'). Pedir o CEP custa uma mensagem;
-// mandar um preco que a gente nao cumpre custa o pedido e a confianca — e o erro so aparece no
-// faturamento, quando ja e tarde. Afrouxar e UPDATE, sem deploy.
-//
-// perc 0 nao leva marca: SP capital, metropolitano, litoral, Campinas, ABC, Sorocaba e S.J. Campos
-// sao 0%, e a pagina ja trata F0 como "sem frete".
-//
-// O QUE A NINA PODE DIZER: que o preco da tela ja e o final para a cidade dele, com entrega.
-// O QUE ELA NAO DIZ NUNCA: o percentual, quanto do preco e frete, ou prazo de entrega. E a mesma
-// regra do CNPJ e do preco — ela REFLETE o que o sistema calculou, nao abre a conta.
-//
-// De brinde, o ViaCEP devolve cidade e UF: quando o lead nao as tinha ditas, sao gravadas. O
-// repasse precisa da praca para sortear o representante, e ate aqui ela so existia se o lead
-// tivesse escrito a cidade com todas as letras.
-//
-// v18 — O LINK SO SAI COM CNPJ E ENDERECO, E A MARGEM ERA DE 1% A MENOS.
-// Ordem do gestor em 26/10, duas coisas no mesmo dia.
-//
-// 1) A CONTA DA MARGEM ESTAVA ERRADA, e foi ele quem pegou: "se eu colocar 10% em um produto de
-//    100, vai dar 110. Mas se eu tirar 10% do produto de 110 o produto vai ficar 99". Exato —
-//    x1,10 seguido de -10% devolve 99, nao 100. Cada item estava saindo 1% ABAIXO da 194 quando o
-//    desconto entrava. O certo e dividir por 0,90 (+11,11%): 100 -> 111,11 -> 100,00. A pagina ja
-//    foi corrigida e republicada; conferido nos 1.104 produtos, todos voltam ao centavo.
-//
-// 2) O LINK DEIXA DE SAIR SEM CNPJ E SEM ENDERECO. Ate ontem o prompt mandava o CONTRARIO —
-//    "mande o link, nao espere ele pedir e nao espere o CNPJ" (ordem de 20/10) — e a Nina obedeceu
-//    a risca: o Luis Carlos (lead 529) pediu "catalogo com os precos", recebeu o link, abriu e
-//    mandou um pedido de R$ 10.168,99 em 10 segundos; o CNPJ dele so chegou 6 minutos DEPOIS.
-//    Agora sao dois dados obrigatorios, e cada um resolve uma coisa diferente:
-//      - CNPJ -> o CNAE escolhe o MIX (que lista de produtos abre)
-//      - ENDERECO -> a praca escolhe o PRECO (existem tabelas CIF por regiao no Sankhya: 168
-//        Nordeste, 172 Sul, 30 ES, 32 MG, 98 Nordeste especial)
-//    A trava mora na FERRAMENTA, nao no prompt: link_pedido recusa e devolve o que falta pedir.
-//    Texto no prompt o modelo pondera; recusa da ferramenta ele nao contorna — e a licao de 22/10
-//    ("licao nao vence instrucao concreta do prompt") aplicada ao contrario, a favor.
-//    Afrouxar nao exige deploy: copiloto_config.link_exige_cnpj / link_exige_endereco = 'nao'.
-//
-// 3) PAGAMENTO: a Nina passa a perguntar como ele pretende pagar e a dizer o que existe na
-//    PRIMEIRA COMPRA — a vista ou 6x no cartao sem juros. Nada alem disso.
-//
-// Colunas novas em copiloto_lead: endereco, cep, pagamento.
-//
-// v17 — O DESCONTO VIROU UMA FAIXA SO. Ordem do gestor em 23/10, junto com a
-// virada de preco da pagina (os valores sairam da tabela padrao e passaram a sair da TABELA GESTOR
-// do Sankhya, CODTAB 194, com +10%): "quando o cliente pedir no minimo os 5 mil vai poder ter o
-// desconto de 10% tambem, nao vai ter mais desconto quando pedir acima disso".
-// A faixa de 15% acima de R$ 15.000 deixou de existir na pagina (discountRate do order_app.html).
-// Aqui ela aparecia em TRES lugares — o cabecalho, o DESCONTO_PAGINA que a ferramenta link_pedido
-// devolve, e o contorno do toque de seguimento. Deixar qualquer um deles para tras faria a Nina
-// prometer de boca um numero que a tela nao faz: e a doenca de 16/09, em escala menor.
-// As licoes 326, 335 e 347 foram corrigidas junto, e a 357 e nova (o lojista que volta com um
-// print do preco antigo).
+// As versoes v18 e v17 sairam deste cabecalho em 27/10 e estao em docs/copiloto-lead-historico.md
+// junto com as v4 a v16. A v18 e a trava de CNPJ+endereco e a conta /0,90; a v17 e a faixa unica
+// de desconto. Leia la antes de desfazer qualquer uma das duas.
 //
 // O historico das versoes v4 a v16 saiu daqui em 26/10 e esta em
 // docs/copiloto-lead-historico.md — inteiro, sem corte. Nao e enfeite: cada bloco explica um erro
@@ -237,6 +189,22 @@ for (const [reg, ufs] of [["Norte", "AC AP AM PA RO RR TO"], ["Nordeste", "AL BA
   ["Centro-Oeste", "DF GO MT MS"], ["Sudeste", "ES MG RJ SP"], ["Sul", "PR RS SC"]] as [string, string][]) {
   for (const u of ufs.split(" ")) UF2REG[u] = reg;
 }
+// O DDD DO TELEFONE E A ULTIMA PISTA DA PRACA, e e melhor que o silencio. Ate a v19, quando
+// ninguem sabia a UF do lead o codigo caia em "Sudeste" CALADO — a Alexa (lead 523) tem DDD 81,
+// Pernambuco, e recebeu cesta Sudeste-R01 em 24/10; outros seis leads sairam do mesmo jeito.
+// SERVE SO PARA ESCOLHER A CESTA. Nao serve para frete: o percentual muda DENTRO do mesmo estado
+// (SP capital e 0%, interior e 8%), entao o DDD nao substitui a trava do CEP.
+const DDD2UF: Record<string, string> = {};
+for (const [uf, ds] of [["SP", "11 12 13 14 15 16 17 18 19"], ["RJ", "21 22 24"], ["ES", "27 28"],
+  ["MG", "31 32 33 34 35 37 38"], ["PR", "41 42 43 44 45 46"], ["SC", "47 48 49"],
+  ["RS", "51 53 54 55"], ["DF", "61"], ["GO", "62 64"], ["TO", "63"], ["MT", "65 66"], ["MS", "67"],
+  ["AC", "68"], ["RO", "69"], ["BA", "71 73 74 75 77"], ["SE", "79"], ["PE", "81 87"], ["AL", "82"],
+  ["PB", "83"], ["RN", "84"], ["CE", "85 88"], ["PI", "86 89"], ["PA", "91 93 94"], ["AM", "92 97"],
+  ["RR", "95"], ["AP", "96"], ["MA", "98 99"]] as [string, string][]) {
+  for (const d of ds.split(" ")) DDD2UF[d] = uf;
+}
+const ufDoDdd = (fone: any) => { const d = foneNac(fone); return d.length >= 10 ? (DDD2UF[d.slice(0, 2)] || "") : ""; };
+
 // Ordem do gestor em 23/10: faixa UNICA de 10% a partir de R$ 5.000. A de 15% acima de R$ 15.000
 // foi retirada junto com a virada de preco para a Tabela Gestor + 10% — o preco caiu ~18%, e o
 // desconto deixou de ter degrau. Este texto e o que a Nina repete de boca: se a regra mudar na
@@ -388,7 +356,7 @@ async function runTool(sb: any, ctx: any, name: string, input: any): Promise<any
       const ufIn = String(input?.uf || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2);
       let L: any = null;
       if (ctx.dry) {
-        const { data } = await sb.from("copiloto_lead").select("id, uf, cidade, cnpj, endereco, cep, link_vezes, link_seg")
+        const { data } = await sb.from("copiloto_lead").select("id, uf, cidade, cnpj, endereco, cep, fone, link_vezes, link_seg")
           .or(`contact_id.eq.${ctx.contact_id || "__none__"},fone.eq.${ctx.fone || "__none__"}`)
           .order("id", { ascending: false }).limit(1).maybeSingle();
         L = data || null;
@@ -412,8 +380,23 @@ async function runTool(sb: any, ctx: any, name: string, input: any): Promise<any
           ja_tenho: { cnpj: !!String(L?.cnpj || "").trim(), endereco: !!String(L?.endereco || "").trim(), cep: !!String(L?.cep || "").trim() },
         };
       }
-      const uf = String(L?.uf || ufIn || "").toUpperCase().slice(0, 2);
+      // A PRACA VEM PRIMEIRO, E ELA DECIDE AS DUAS COISAS: a cesta e o frete.
+      // Ate a v19 a cesta era escolhida antes, so com L.uf, e o frete vinha depois — entao um lead
+      // com CEP de Pernambuco podia levar o percentual certo numa cesta do Sudeste. E quando a UF
+      // era desconhecida o `|| "Sudeste"` resolvia calado: foi o que deu cesta Sudeste a sete
+      // leads, a Alexa (523, DDD 81) entre eles.
+      const f: any = await freteCIF(sb, L);
+      if (f?.erro && ctx.exigeFrete) {
+        return {
+          ok: false, link_nao_enviado: true, falta: ["o CEP da loja"],
+          por_que: f.erro,
+          o_que_fazer: "NAO mande link agora. Peca o CEP da loja, de leve, explicando que e com ele que o sistema aplica a tabela certa da praca dele — assim o preco que ele ve na tela ja e o preco final, sem surpresa depois. Salve com salvar_lead e chame esta ferramenta de novo.",
+        };
+      }
+      // ordem das pistas: o que o CEP resolveu > o que esta salvo > o que a Nina mandou > o DDD.
+      const uf = String((!f?.erro && f.uf) || L?.uf || ufIn || ufDoDdd(L?.fone) || "").toUpperCase().slice(0, 2);
       const reg = UF2REG[uf] || "Sudeste";
+      const pracaAdivinhada = !UF2REG[uf];
       let ramo = String(input?.ramo || "").toUpperCase().trim();
       if (!/^R\d{2}$/.test(ramo)) ramo = "R01";
       const { data: segs } = await sb.from("pedido_base").select("pedido_id, ramo_nome, n_itens");
@@ -427,18 +410,8 @@ async function runTool(sb: any, ctx: any, name: string, input: any): Promise<any
       const seg: any = por.get(alvo);
       if (!seg) return { erro: "nenhuma cesta montada no pedido_base — nao mande link nenhum" };
 
-      // FRETE CIF NO PRECO DE CADA ITEM. Sem a marca ~F<perc> a pagina mostra o preco SEM frete —
-      // que e o que todo lojista viu ate 27/10 e nao e o que a gente fatura. Por isso, quando a
-      // praca nao se resolve, o link NAO sai: pedir o CEP custa uma mensagem, mandar preco que a
-      // gente nao cumpre custa o pedido. Afrouxar e UPDATE: copiloto_config.link_exige_frete='nao'.
-      const f: any = await freteCIF(sb, L);
-      if (f?.erro && ctx.exigeFrete) {
-        return {
-          ok: false, link_nao_enviado: true, falta: ["o CEP da loja"],
-          por_que: f.erro,
-          o_que_fazer: "NAO mande link agora. Peca o CEP da loja, de leve, explicando que e com ele que o sistema aplica a tabela certa da praca dele — assim o preco que ele ve na tela ja e o preco final, sem surpresa depois. Salve com salvar_lead e chame esta ferramenta de novo.",
-        };
-      }
+      // Sem a marca ~F<perc> a pagina mostra o preco SEM frete, que nao e o que a gente fatura.
+      // Afrouxar e UPDATE: copiloto_config.link_exige_frete='nao'.
       const perc = f?.erro ? 0 : Math.max(0, Math.min(50, Number(f.perc) || 0));
       // perc 0 (SP capital, metropolitano, litoral, Campinas, ABC, Sorocaba, S.J. Campos) nao
       // precisa de marca: a pagina trata F0 como "sem frete" e pula a multiplicacao.
@@ -456,6 +429,7 @@ async function runTool(sb: any, ctx: any, name: string, input: any): Promise<any
       return {
         ok: true, link: url, segmento: alvo, cesta: seg.ramo_nome, itens: seg.n_itens,
         escolha: como, ja_mandei_antes: !!L?.link_seg,
+        praca: pracaAdivinhada ? "NAO APURADA — a cesta caiu no Sudeste por falta de UF. Confirme a cidade dele antes de falar de mix." : (uf + " (" + reg + ")"),
         desconto_da_pagina: DESCONTO_PAGINA,
         frete_cif: f?.erro ? "nao aplicado (" + f.erro + ")" : "ja embutido no preco de cada item, pela praca " + f.regiao + " (" + f.via + ")",
         pedido_minimo: "R$ " + Number(ctx.pedidoMin || 2500).toLocaleString("pt-BR"),
@@ -580,6 +554,10 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
   // qualquer momento no gerenciador, a tag nao. O regex fica como rede, para o caso de o contato
   // chegar sem tag.
   const tags = (Array.isArray(cv.tags) ? cv.tags : []).map((x: any) => norm(x));
+  // A ACAO DE RASPAGEM TEM ROTEIRO PROPRIO (`nina-raspagem`), e publico oposto: distribuidor, nao
+  // lojista. Se a Nina de lead pegar essa conversa primeiro, ela aplica o roteiro de loja em quem
+  // compra para revender. Ordem do gestor em 27/10: "nao e para confundir com as outras".
+  if (tags.includes("raspagem") || tags.includes("raspagem-onda1")) return { ...base, decisao: "pular", motivo: "contato da acao raspagem — quem atende e o nina-raspagem" };
   const ehAds = tags.includes("ads") || tags.includes("lead") || tags.includes("anuncio");
   // A busca aceita as DUAS formas de proposito: a nova (numero inteiro) e a antiga (10 digitos).
   // Os registros gravados ate a v9 tem 10 digitos; se a busca so procurasse a forma nova, o mesmo
