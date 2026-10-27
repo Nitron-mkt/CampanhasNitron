@@ -487,6 +487,39 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   **A Nina pode dizer que o preco da tela ja e o final, com entrega. NAO diz o percentual, nem
   quanto do preco e frete, nem prazo** — mesma regra do CNPJ e do preco: ela reflete, nao abre a
   conta.
+## Acao "raspagem onda 1" — prospeccao de distribuidoras (27/10)
+
+Acao NOVA, pedida pelo Dan em `docs/` e autorizada pelo gestor no mesmo dia. **Nao se mistura com
+o fluxo de lead do anuncio** — ordem explicita: "e como se fosse uma campanha nova (...) nao e para
+confundir com as outras, inclusive porque estamos mandando apenas para a galera que tem a TAG".
+
+- **Publico:** 29 contatos com a tag `raspagem-onda1`, raspados da base publica da Receita. Sao
+  **distribuidores/atacadistas**, nao lojistas — o roteiro de loja ("sua loja esta preparada...")
+  esta proibido. Nunca compraram da Nitron.
+- **Funcao `nina-raspagem`** (`?acao=enviar|responder|tarefas|relatorio`, `&dry=1` em tudo),
+  tabelas `raspagem_contato` e `raspagem_evento`. **Nasce desligada e sem cron**
+  (`raspagem_ativo='nao'`): a licao de 16/09 vale aqui igual.
+- **Canal pela secao 3 do documento**, conferido contra o CRM: 4 WhatsApp, 18 e-mail, 7 so ligacao.
+  Nunca mandar WhatsApp para o campo Telefone — sao fixos.
+- **3 em espera** (Favorito, Prado, J.J.), todos `Regiao Central SP` = area da Modenuti: so saem
+  com liberacao do Sebastiao. A regra e pela PRACA, nao por nome na lista.
+- **O MINIMO AQUI E OUTRO: 2.500, ou 3.570 em Extremo de Campinas e Extremo de Sorocaba.** E a
+  `venda_min_cif` do Sankhya, e **nao** os R$ 3.500 que a Nina fala ao LOJISTA. Publico diferente,
+  regua diferente — o gestor confirmou em 27/10 que o documento manda nesta acao. Se um dia tiver
+  de ser igual, muda nos dois lugares juntos.
+- **"Frete CIF sem adicional" e verdade**: as 22 cidades da lista estao com `perc_cif` 0,00.
+- **O e-mail NAO SAI com `raspagem_assinatura_fone` vazia.** O modelo do documento tem
+  "[WhatsApp comercial]" como placeholder; manda-lo para 17 empresas seria pior que nao mandar, e
+  inventar um numero e pior ainda. O numero da Nina nao esta gravado em lugar nenhum do projeto.
+- **O nome na mensagem e o de FANTASIA, nao a razao social.** "a LAR UTENSILIOS COMERCIO DE
+  UTILIDADES LTDA chamou nossa atencao" grita robo e e a primeira frase que a empresa le. A coluna
+  `empresa` guarda o nome curto (os da secao 9 do documento) e `razao_social` guarda o legal.
+- **Os dois seguimentos (dia 3 e dia 7 uteis) sao TEXTO FIXO**, nao passam pelo modelo: ninguem
+  deve acordar com a Nina reescrevendo a cadencia de uma acao fria. Dia util conta dia UTIL —
+  seguimento no sabado e toque queimado.
+- **`copiloto-lead` tem de pular quem tem a tag `raspagem`/`raspagem-onda1`.** Sem esse desvio as
+  duas IAs disputam a mesma conversa e a de lead aplica o roteiro de lojista num distribuidor.
+
 - **Publicar o painel:** `POST host-upload?path=gestor.html` com o **HTML cru no corpo** e o caminho
   na query — não JSON. **Confira o md5 publicado antes de subir:** há outro chat editando o mesmo
   arquivo, e sobrescrever o trabalho dele já aconteceu.
