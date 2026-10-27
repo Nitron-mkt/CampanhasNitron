@@ -471,6 +471,22 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   **A conta arredonda POR ITEM, nao no subtotal.** A cesta Sudeste-R01 com 8,9%: subtotal
   R$ 8.111,06 e total R$ 7.299,95 — quem calcula pelo subtotal (7.448,63 x 1,089) chega a
   R$ 7.300,40, 45 centavos a mais. O certo e o da tela, que e o que o lojista paga linha a linha.
+- **Quem poe o frete CIF no link e a NINA, e a chave e o CEP** (`copiloto-lead` v19, 27/10). A
+  pagina sabia aplicar `~F<perc>` desde 26/10, mas ninguem punha a marca no link: a Nina mandava
+  `#Sudeste-R01~L562` e o lojista via o preco SEM frete — a ordem do gestor ("tinha que mostrar ja
+  no valor final") estava cumprida so na metade que aparecia na tela dele. Agora `freteCIF()` faz
+  CEP → ViaCEP → **COD_IBGE** → `pedido_frete_cidade` → `perc_cif`, e o link sai
+  `#Sudeste-R01~L562~F6.8`. A chave e o IBGE, nunca o nome: o nome da cidade e so a segunda opcao e
+  vale apenas quando devolve UMA linha na UF (o ViaCEP sai do ar e limita chamada — a queda dele e
+  o motivo de a segunda opcao existir). **perc 0 nao leva marca** (SP capital, metropolitano,
+  litoral, Campinas, ABC, Sorocaba, S.J. Campos): a pagina ja trata `F0` como "sem frete".
+  **Sem praca resolvida o link NAO sai** (`link_exige_frete='sim'`, afrouxar e UPDATE): pedir o CEP
+  custa uma mensagem, mandar preco que a gente nao cumpre custa o pedido, e o erro so aparece no
+  faturamento. De brinde o ViaCEP devolve cidade e UF, que passam a ser gravadas — o repasse precisa
+  da praca e ate aqui ela so existia se o lead a tivesse escrito.
+  **A Nina pode dizer que o preco da tela ja e o final, com entrega. NAO diz o percentual, nem
+  quanto do preco e frete, nem prazo** — mesma regra do CNPJ e do preco: ela reflete, nao abre a
+  conta.
 - **Publicar o painel:** `POST host-upload?path=gestor.html` com o **HTML cru no corpo** e o caminho
   na query — não JSON. **Confira o md5 publicado antes de subir:** há outro chat editando o mesmo
   arquivo, e sobrescrever o trabalho dele já aconteceu.

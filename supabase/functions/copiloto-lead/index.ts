@@ -1,4 +1,35 @@
-// copiloto-lead (v18) — O LINK SO SAI COM CNPJ E ENDERECO, E A MARGEM ERA DE 1% A MENOS.
+// copiloto-lead (v19) — O FRETE CIF ENTRA NO PRECO DA PAGINA, E QUEM DIZ A PRACA E O CEP.
+// Fecha a ordem do gestor de 26/10: "tinha que mostrar ja no valor final".
+//
+// A pagina ja sabia fazer isso desde 26/10: a marca ~F<perc> no link multiplica o preco de CADA
+// item uma vez so, no carregamento, e por isso tela, PDF, texto do WhatsApp, pedido gravado e
+// planilha anexa dizem o mesmo numero. So que NINGUEM punha a marca no link — a Nina mandava
+// `#Sudeste-R01~L562` e o lojista via o preco SEM frete, que nao e o que a gente fatura. A ordem
+// estava meio cumprida: a metade que aparecia na tela do gestor funcionava, a metade que chega ao
+// cliente nao existia.
+//
+// COMO A PRACA VIRA PERCENTUAL (freteCIF): CEP -> ViaCEP -> COD_IBGE -> pedido_frete_cidade, que
+// tem as 5.569 cidades, cada uma ja com o perc_cif da regiao. A CHAVE E O IBGE, nunca o nome: a
+// base do Sankhya tem "Guarulhoss" sem IBGE e nomes com e sem acento, e casar por nome erra calado
+// — e erra no preco. O nome da cidade e so a segunda opcao, e vale apenas quando devolve UMA linha
+// na UF; duas linhas e ambiguidade, e ambiguidade nao vira preco.
+//
+// SEM PRACA RESOLVIDA, O LINK NAO SAI (link_exige_frete='sim'). Pedir o CEP custa uma mensagem;
+// mandar um preco que a gente nao cumpre custa o pedido e a confianca — e o erro so aparece no
+// faturamento, quando ja e tarde. Afrouxar e UPDATE, sem deploy.
+//
+// perc 0 nao leva marca: SP capital, metropolitano, litoral, Campinas, ABC, Sorocaba e S.J. Campos
+// sao 0%, e a pagina ja trata F0 como "sem frete".
+//
+// O QUE A NINA PODE DIZER: que o preco da tela ja e o final para a cidade dele, com entrega.
+// O QUE ELA NAO DIZ NUNCA: o percentual, quanto do preco e frete, ou prazo de entrega. E a mesma
+// regra do CNPJ e do preco — ela REFLETE o que o sistema calculou, nao abre a conta.
+//
+// De brinde, o ViaCEP devolve cidade e UF: quando o lead nao as tinha ditas, sao gravadas. O
+// repasse precisa da praca para sortear o representante, e ate aqui ela so existia se o lead
+// tivesse escrito a cidade com todas as letras.
+//
+// v18 — O LINK SO SAI COM CNPJ E ENDERECO, E A MARGEM ERA DE 1% A MENOS.
 // Ordem do gestor em 26/10, duas coisas no mesmo dia.
 //
 // 1) A CONTA DA MARGEM ESTAVA ERRADA, e foi ele quem pegou: "se eu colocar 10% em um produto de
@@ -213,6 +244,65 @@ for (const [reg, ufs] of [["Norte", "AC AP AM PA RO RR TO"], ["Nordeste", "AL BA
 // faz — foi o erro de 16/09 em outra escala.
 const DESCONTO_PAGINA = "automatico no total do pedido: 10% a partir de R$ 5.000";
 
+// ---- frete CIF: a praca do lead vira percentual, e o percentual vira preco de tela -------------
+// Ordem do gestor em 26/10: "tinha que mostrar ja no valor final". A pagina sabe fazer isso desde
+// 26/10 — a marca ~F<perc> no link multiplica o preco de CADA item uma vez so, no carregamento, e
+// por isso tela, PDF, texto do WhatsApp, pedido gravado e planilha anexa dizem o mesmo numero.
+// Faltava quem pusesse a marca no link: e esta funcao.
+//
+// A CHAVE E O COD_IBGE, nunca o nome da cidade. A base do Sankhya tem "Guarulhoss" sem IBGE e
+// nomes com e sem acento; casar por nome erra calado e erra no preco. O CEP resolve o IBGE pelo
+// ViaCEP, e o IBGE acha a linha em pedido_frete_cidade (5.569 cidades, cada uma ja com o perc_cif
+// da regiao dela).
+//
+// O NOME DA CIDADE SO ENTRA COMO SEGUNDA OPCAO, e so quando a busca normalizada devolve UMA linha
+// na UF. Duas linhas = ambiguidade = nao resolve. Melhor nao mandar link do que mandar preco de
+// outra praca: um link com o frete errado e preco que a gente nao cumpre, e o erro so aparece no
+// faturamento.
+const cepDigits = (s: any) => {
+  const d = String(s || "").replace(/\D/g, "");
+  return d.length === 8 ? d : "";
+};
+// o lojista costuma mandar o CEP dentro do endereco, nao no campo dele
+function cepDoTexto(s: any): string {
+  const m = /(\d{5})[-.\s]?(\d{3})(?!\d)/.exec(String(s || ""));
+  return m ? m[1] + m[2] : "";
+}
+// pedido_frete_cidade.cidade_busca e MINUSCULA e sem acento ("sao paulo", "mogi guacu"): esta
+// funcao tem de devolver exatamente esse formato, senao o desempate por nome nunca casa.
+const semAcento = (s: any) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+
+async function freteCIF(sb: any, L: any): Promise<{ perc: number; regiao: string; cidade: string; uf: string; via: string } | { erro: string }> {
+  const cep = cepDigits(L?.cep) || cepDoTexto(L?.cep) || cepDoTexto(L?.endereco);
+  // 1) CEP -> IBGE -> linha da cidade. O caminho certo.
+  if (cep) {
+    try {
+      const r = await fetch("https://viacep.com.br/ws/" + cep + "/json/", { signal: AbortSignal.timeout(6000) });
+      if (r.ok) {
+        const v = await r.json();
+        const ibge = Number(String(v?.ibge || "").replace(/\D/g, ""));
+        if (ibge) {
+          const { data } = await sb.from("pedido_frete_cidade").select("cidade, uf, regiao, perc_cif").eq("cod_ibge", ibge).maybeSingle();
+          if (data) return { perc: Number(data.perc_cif) || 0, regiao: data.regiao, cidade: data.cidade, uf: data.uf, via: "CEP " + cep };
+          return { erro: "o CEP " + cep + " aponta a cidade " + (v?.localidade || "?") + "/" + (v?.uf || "?") + ", que nao esta na tabela de frete do Sankhya" };
+        }
+      }
+    } catch (_e) { /* ViaCEP fora do ar: cai para o nome da cidade */ }
+  }
+  // 2) nome da cidade + UF, so se for UNICO na UF
+  const cid = semAcento(L?.cidade); const uf = String(L?.uf || "").toUpperCase().slice(0, 2);
+  if (cid && uf) {
+    const { data } = await sb.from("pedido_frete_cidade").select("cidade, uf, regiao, perc_cif").eq("uf", uf).eq("cidade_busca", cid).limit(2);
+    const achou: any[] = data || [];
+    if (achou.length === 1) {
+      const d: any = achou[0];
+      return { perc: Number(d.perc_cif) || 0, regiao: d.regiao, cidade: d.cidade, uf: d.uf, via: "cidade " + d.cidade + "/" + d.uf };
+    }
+    if (achou.length > 1) return { erro: "existe mais de uma " + L.cidade + " em " + uf + " na tabela de frete — so o CEP desempata" };
+  }
+  return { erro: cep ? "nao consegui resolver o CEP " + cep + " agora" : "sem CEP para achar a praca" };
+}
+
 // ---- ferramentas -----------------------------------------------------------------------------
 // Conjunto CURTO de proposito: sem codparc, as ferramentas de preco/boleto/pedido/entrega so
 // responderiam "codparc invalido" e convidariam a IA a inventar.
@@ -220,9 +310,9 @@ const TOOLS = [
   { name: "buscar_cliente", description: "Confere se a loja JA tem cadastro na Nitron, por CNPJ (14 digitos) ou por nome/razao. Use assim que tiver o CNPJ.", input_schema: { type: "object", properties: { termo: { type: "string", description: "CNPJ (so digitos) ou nome da loja" } }, required: ["termo"] } },
   { name: "consultar_conhecimento", description: "Base de conhecimento da casa (produto, mercado, playbook). Use quando ele perguntar algo que voce nao sabe de cabeca.", input_schema: { type: "object", properties: { termo: { type: "string" } }, required: ["termo"] } },
   { name: "produtos", description: "Produtos por categoria/nome/ramo: devolve nome e LINK da foto. SEM preco.", input_schema: { type: "object", properties: { termo: { type: "string" } }, required: ["termo"] } },
-  { name: "salvar_lead", description: "Anota/atualiza o que voce JA apurou deste lead. Chame assim que descobrir um dado novo. Mande so o que ele disse — nao preencha por deducao.", input_schema: { type: "object", properties: { nome: { type: "string", description: "nome da pessoa COMO ELA MESMA ESCREVEU nesta conversa, com sobrenome. NUNCA o nome do perfil do WhatsApp (apelido, emoji, frase, nome da loja)." }, nome_confirmado: { type: "boolean", description: "true SOMENTE quando a propria pessoa disse o nome nesta conversa. Falso/ausente se voce pegou do perfil ou deduziu." }, empresa: { type: "string", description: "nome da loja / razao social" }, cnpj: { type: "string" }, cidade: { type: "string" }, uf: { type: "string" }, endereco: { type: "string", description: "endereco da loja COMO ELE ESCREVEU: rua, numero, bairro, cidade/UF. Pedido ANTES do link, porque a tabela de preco muda com a praca." }, cep: { type: "string", description: "CEP da loja, so digitos" }, pagamento: { type: "string", description: "como ele pretende pagar. Na primeira compra so existe a vista ou 6x no cartao sem juros." }, tipo_loja: { type: "string", description: "bazar, utilidades, variedades, presentes, supermercado, magazine, material de construcao..." }, ja_revende: { type: "string", description: "de quem ele compra hoje, ou que nao compra direto de fabrica" }, interesse: { type: "string", description: "linha/produto que ele quer abastecer" }, sabe_minimo: { type: "boolean", description: "true depois de VOCE dizer o pedido minimo nesta conversa" }, temperatura: { type: "string", enum: ["frio", "morno", "quente"] }, resumo: { type: "string", description: "2 a 3 frases do caso, para o comercial ler" } }, required: [] } },
+  { name: "salvar_lead", description: "Anota/atualiza o que voce JA apurou deste lead. Chame assim que descobrir um dado novo. Mande so o que ele disse — nao preencha por deducao.", input_schema: { type: "object", properties: { nome: { type: "string", description: "nome da pessoa COMO ELA MESMA ESCREVEU nesta conversa, com sobrenome. NUNCA o nome do perfil do WhatsApp (apelido, emoji, frase, nome da loja)." }, nome_confirmado: { type: "boolean", description: "true SOMENTE quando a propria pessoa disse o nome nesta conversa. Falso/ausente se voce pegou do perfil ou deduziu." }, empresa: { type: "string", description: "nome da loja / razao social" }, cnpj: { type: "string" }, cidade: { type: "string" }, uf: { type: "string" }, endereco: { type: "string", description: "endereco da loja COMO ELE ESCREVEU: rua, numero, bairro, cidade/UF. Pedido ANTES do link, porque a tabela de preco muda com a praca." }, cep: { type: "string", description: "CEP da loja, so digitos. E o dado que define o PRECO: e por ele que o frete CIF da praca entra no valor de cada produto da pagina." }, pagamento: { type: "string", description: "como ele pretende pagar. Na primeira compra so existe a vista ou 6x no cartao sem juros." }, tipo_loja: { type: "string", description: "bazar, utilidades, variedades, presentes, supermercado, magazine, material de construcao..." }, ja_revende: { type: "string", description: "de quem ele compra hoje, ou que nao compra direto de fabrica" }, interesse: { type: "string", description: "linha/produto que ele quer abastecer" }, sabe_minimo: { type: "boolean", description: "true depois de VOCE dizer o pedido minimo nesta conversa" }, temperatura: { type: "string", enum: ["frio", "morno", "quente"] }, resumo: { type: "string", description: "2 a 3 frases do caso, para o comercial ler" } }, required: [] } },
   { name: "passar_comercial", description: "PEDIDO DE ATENDIMENTO HUMANO. NAO e o fim da qualificacao e NAO tira o lead de voce — quem fecha a venda e VOCE, pela pagina de pedido. Chame isto so em tres casos: (1) ele PEDIU falar com uma atendente; (2) o CNPJ dele ja tem cadastro na Nitron, entao ele ja tem consultor; (3) voce esta genuinamente travada em algo que so uma pessoa resolve. Nunca como \"ja qualifiquei, entrego pra outro\". Abre a tarefa e devolve o protocolo; voce continua na conversa.", input_schema: { type: "object", properties: { resumo: { type: "string", description: "o caso em 2 a 4 frases: quem e, o que quer, em que pe esta" }, falta: { type: "string", description: "o que o comercial ainda precisa levantar ou combinar" }, temperatura: { type: "string", enum: ["frio", "morno", "quente"] } }, required: ["resumo"] } },
-  { name: "link_pedido", description: "Monta o LINK da pagina de pedido da Nitron para ESTE lead e devolve a URL pronta. Na pagina cada produto aparece COM O PRECO, o total soma na tela e o desconto por volume entra sozinho — e por isso ela resolve a objecao de catalogo sem preco. ORDEM DO GESTOR EM 26/10: esta ferramenta SO entrega o link depois que voce tiver o CNPJ E o ENDERECO da loja. O CNPJ escolhe o MIX (pelo CNAE) e o ENDERECO escolhe o PRECO (a tabela muda com a praca/CIF). Se faltar algum dos dois ela recusa e te diz o que pedir. Pergunte, salve com salvar_lead, e so entao chame aqui.", input_schema: { type: "object", properties: { ramo: { type: "string", enum: ["R01", "R02", "R03", "R04", "R05", "R06", "R07", "R08", "R09", "R10"], description: "a cesta que combina com a loja dele: R01 = casa de utilidades, variedades, bazar, 1,99, armarinho; R02 = loja de departamento, magazine, loja grande com varias secoes; R03 = joalheria, bijuteria, presentes, festa; R04 = supermercado, mercearia, mercado, atacarejo; R05 = cama, mesa, banho, tecidos, enxoval; R06 = vestuario, calcados, moda; R07 = papelaria, livraria, escritorio; R08 = material de construcao, ferragem, tintas; R09 = farmacia, perfumaria, cosmeticos, higiene; R10 = esporte, brinquedo, lazer, pet. Na duvida, R01." }, uf: { type: "string", description: "UF dele (2 letras), se voce souber e ainda nao tiver salvado com salvar_lead" } }, required: ["ramo"] } },
+  { name: "link_pedido", description: "Monta o LINK da pagina de pedido da Nitron para ESTE lead e devolve a URL pronta. Na pagina cada produto aparece COM O PRECO, o total soma na tela e o desconto por volume entra sozinho — e por isso ela resolve a objecao de catalogo sem preco. ORDEM DO GESTOR EM 26/10: esta ferramenta SO entrega o link depois que voce tiver o CNPJ E o ENDERECO da loja. O CNPJ escolhe o MIX (pelo CNAE) e o ENDERECO escolhe o PRECO: desde 27/10 o frete CIF da praca dele entra no preco de CADA item da pagina, e quem diz a praca e o CEP. Se faltar o CNPJ, o endereco ou o CEP, ela recusa e te diz o que pedir. Pergunte, salve com salvar_lead, e so entao chame aqui.", input_schema: { type: "object", properties: { ramo: { type: "string", enum: ["R01", "R02", "R03", "R04", "R05", "R06", "R07", "R08", "R09", "R10"], description: "a cesta que combina com a loja dele: R01 = casa de utilidades, variedades, bazar, 1,99, armarinho; R02 = loja de departamento, magazine, loja grande com varias secoes; R03 = joalheria, bijuteria, presentes, festa; R04 = supermercado, mercearia, mercado, atacarejo; R05 = cama, mesa, banho, tecidos, enxoval; R06 = vestuario, calcados, moda; R07 = papelaria, livraria, escritorio; R08 = material de construcao, ferragem, tintas; R09 = farmacia, perfumaria, cosmeticos, higiene; R10 = esporte, brinquedo, lazer, pet. Na duvida, R01." }, uf: { type: "string", description: "UF dele (2 letras), se voce souber e ainda nao tiver salvado com salvar_lead" } }, required: ["ramo"] } },
   { name: "descartar_lead", description: "Use quando NAO e revenda: consumidor final querendo uma peca, curriculo, fornecedor oferecendo servico, engano de numero. Marca como descartado e NAO abre tarefa pro comercial.", input_schema: { type: "object", properties: { motivo: { type: "string" } }, required: ["motivo"] } },
 ];
 const CAMPOS = ["nome", "empresa", "cnpj", "cidade", "uf", "endereco", "cep", "pagamento", "tipo_loja", "ja_revende", "interesse", "resumo", "temperatura"];
@@ -298,7 +388,7 @@ async function runTool(sb: any, ctx: any, name: string, input: any): Promise<any
       const ufIn = String(input?.uf || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2);
       let L: any = null;
       if (ctx.dry) {
-        const { data } = await sb.from("copiloto_lead").select("id, uf, cnpj, endereco, cep, link_vezes, link_seg")
+        const { data } = await sb.from("copiloto_lead").select("id, uf, cidade, cnpj, endereco, cep, link_vezes, link_seg")
           .or(`contact_id.eq.${ctx.contact_id || "__none__"},fone.eq.${ctx.fone || "__none__"}`)
           .order("id", { ascending: false }).limit(1).maybeSingle();
         L = data || null;
@@ -314,11 +404,11 @@ async function runTool(sb: any, ctx: any, name: string, input: any): Promise<any
       // Afrouxar nao exige deploy: copiloto_config.link_exige_cnpj / link_exige_endereco = 'nao'.
       const falta: string[] = [];
       if (ctx.exigeCnpj && String(L?.cnpj || "").replace(/\D/g, "").length < 14) falta.push("o CNPJ da loja (14 digitos)");
-      if (ctx.exigeEndereco && !String(L?.endereco || "").trim() && !String(L?.cep || "").trim()) falta.push("o endereco da loja (rua, numero, bairro, cidade/UF — ou o CEP)");
+      if (ctx.exigeEndereco && !String(L?.endereco || "").trim() && !String(L?.cep || "").trim()) falta.push("o endereco da loja COM O CEP (o CEP e o que resolve a tabela da praca)");
       if (falta.length) {
         return {
           ok: false, link_nao_enviado: true, falta,
-          o_que_fazer: "NAO mande link nenhum agora. Peca " + falta.join(" e ") + " na mesma mensagem, de forma leve, explicando POR QUE: com o CNPJ a gente confere o cadastro e monta a lista do ramo dele, e com o endereco a gente aplica a tabela certa da praca dele (o preco muda conforme a regiao). Quando ele responder, salve com salvar_lead e chame esta ferramenta de novo.",
+          o_que_fazer: "NAO mande link nenhum agora. Peca " + falta.join(" e ") + " na mesma mensagem, de forma leve, explicando POR QUE: com o CNPJ a gente confere o cadastro e monta a lista do ramo dele, e com o endereco — principalmente com o CEP — a gente aplica a tabela certa da praca dele, de modo que o preco que ele ve na tela ja seja o final, com a entrega inclusa. Quando ele responder, salve com salvar_lead e chame esta ferramenta de novo.",
           ja_tenho: { cnpj: !!String(L?.cnpj || "").trim(), endereco: !!String(L?.endereco || "").trim(), cep: !!String(L?.cep || "").trim() },
         };
       }
@@ -336,19 +426,40 @@ async function runTool(sb: any, ctx: any, name: string, input: any): Promise<any
       }
       const seg: any = por.get(alvo);
       if (!seg) return { erro: "nenhuma cesta montada no pedido_base — nao mande link nenhum" };
-      const url = PEDIDO_URL + "/#" + alvo + (L?.id ? "~L" + L.id : "");
+
+      // FRETE CIF NO PRECO DE CADA ITEM. Sem a marca ~F<perc> a pagina mostra o preco SEM frete —
+      // que e o que todo lojista viu ate 27/10 e nao e o que a gente fatura. Por isso, quando a
+      // praca nao se resolve, o link NAO sai: pedir o CEP custa uma mensagem, mandar preco que a
+      // gente nao cumpre custa o pedido. Afrouxar e UPDATE: copiloto_config.link_exige_frete='nao'.
+      const f: any = await freteCIF(sb, L);
+      if (f?.erro && ctx.exigeFrete) {
+        return {
+          ok: false, link_nao_enviado: true, falta: ["o CEP da loja"],
+          por_que: f.erro,
+          o_que_fazer: "NAO mande link agora. Peca o CEP da loja, de leve, explicando que e com ele que o sistema aplica a tabela certa da praca dele — assim o preco que ele ve na tela ja e o preco final, sem surpresa depois. Salve com salvar_lead e chame esta ferramenta de novo.",
+        };
+      }
+      const perc = f?.erro ? 0 : Math.max(0, Math.min(50, Number(f.perc) || 0));
+      // perc 0 (SP capital, metropolitano, litoral, Campinas, ABC, Sorocaba, S.J. Campos) nao
+      // precisa de marca: a pagina trata F0 como "sem frete" e pula a multiplicacao.
+      const url = PEDIDO_URL + "/#" + alvo + (L?.id ? "~L" + L.id : "") + (perc > 0 ? "~F" + String(perc) : "");
       if (!ctx.dry && L?.id) {
-        await sb.from("copiloto_lead").update({
+        const patch: any = {
           link_em: new Date().toISOString(), link_seg: alvo, link_url: url,
           link_vezes: (Number(L.link_vezes) || 0) + 1, atualizado: new Date().toISOString(),
-        }).eq("id", L.id);
+        };
+        // o ViaCEP devolve cidade e UF de brinde: aproveitar, porque o repasse precisa da praca e
+        // ate aqui ela so existia se o lead a tivesse dito com todas as letras.
+        if (!f?.erro) { if (!String(L.cidade || "").trim() && f.cidade) patch.cidade = f.cidade; if (!String(L.uf || "").trim() && f.uf) patch.uf = f.uf; }
+        await sb.from("copiloto_lead").update(patch).eq("id", L.id);
       }
       return {
         ok: true, link: url, segmento: alvo, cesta: seg.ramo_nome, itens: seg.n_itens,
         escolha: como, ja_mandei_antes: !!L?.link_seg,
         desconto_da_pagina: DESCONTO_PAGINA,
+        frete_cif: f?.erro ? "nao aplicado (" + f.erro + ")" : "ja embutido no preco de cada item, pela praca " + f.regiao + " (" + f.via + ")",
         pedido_minimo: "R$ " + Number(ctx.pedidoMin || 2500).toLocaleString("pt-BR"),
-        como_mandar: "Mande a URL EXATAMENTE como esta, sozinha numa linha, sem encurtar e sem colar texto nela. Diga que cada produto aparece COM O PRECO e que o total soma na tela — ele nao fecha nada sem ver o valor. Pode citar o desconto por volume, que esta impresso na propria pagina. NAO prometa prazo de entrega, frete nem percentual de tabela: isso e do comercial.",
+        como_mandar: "Mande a URL EXATAMENTE como esta, sozinha numa linha, sem encurtar e sem colar texto nela. Diga que cada produto aparece COM O PRECO e que o total soma na tela — ele nao fecha nada sem ver o valor. Pode citar o desconto por volume, que esta impresso na propria pagina. O preco da tela JA E o preco final para a praca dele, com a entrega inclusa — pode dizer isso, e e uma boa noticia. O que voce NAO faz e abrir a conta: nunca diga o percentual do frete, nem quanto dele e frete, nem prometa prazo de entrega. Se ele perguntar o valor do frete, diga que ja esta no preco e que o detalhamento quem faz e o comercial.",
       };
     }
     if (["salvar_lead", "passar_comercial", "descartar_lead"].includes(name)) {
@@ -423,7 +534,7 @@ async function licoes(sb: any): Promise<string> {
 }
 
 // ---- uma conversa ----------------------------------------------------------------------------
-async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dry: boolean; ativo: boolean; pedidoMin: number; inst: string; nativoOn: boolean; janelaH: number; pb: string; lic: string; reps: Set<string>; internos: Set<string>; exigeCnpj: boolean; exigeEndereco: boolean }) {
+async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dry: boolean; ativo: boolean; pedidoMin: number; inst: string; nativoOn: boolean; janelaH: number; pb: string; lic: string; reps: Set<string>; internos: Set<string>; exigeCnpj: boolean; exigeEndereco: boolean; exigeFrete: boolean }) {
   const contact_id = cv.contactId || cv.contact_id || null;
   const fone = String(cv.phone || "").trim();
   const nomeCrm = String(cv.fullName || cv.contactName || "").trim();
@@ -494,7 +605,7 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
     return { ...base, decisao: "janela_fechada", lead_id: up.lead?.id || null, tarefa: tfj?.id || null, motivo: "passaram " + idadeH.toFixed(1) + "h — tarefa aberta p/ o comercial (template ou ligacao)" };
   }
 
-  const ctx: any = { contact_id, fone: foneNac(fone), instancia: nativo ? "ghl-nativo" : instancia, dry: opts.dry, pedidoMin: opts.pedidoMin, exigeCnpj: opts.exigeCnpj, exigeEndereco: opts.exigeEndereco, source: acl?.origem || crm.source || (ehAds ? "anuncio META" : null) };
+  const ctx: any = { contact_id, fone: foneNac(fone), instancia: nativo ? "ghl-nativo" : instancia, dry: opts.dry, pedidoMin: opts.pedidoMin, exigeCnpj: opts.exigeCnpj, exigeEndereco: opts.exigeEndereco, exigeFrete: opts.exigeFrete, source: acl?.origem || crm.source || (ehAds ? "anuncio META" : null) };
   // Se ele ja informou o CNPJ no formulario, a Nina NAO pede de novo — e o codigo ja confere se
   // esse CNPJ tem cadastro, para ela nao tratar cliente antigo como lead novo.
   // O CNPJ pode vir do campo do CRM (formulario que grava no contato) ou da propria assinatura da
@@ -539,6 +650,7 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
     + `\nQUEM FECHA E VOCE — ordem do gestor, repetida em 21/10: "nao vai passar mais, vai fazer o combinado da Nina fechar". NENHUM lead vai para representante. Voce leva a conversa do inicio ao fim, pela pagina de pedido. So existe UMA passagem possivel, e e para a venda interna (Monica), quando ele PEDIR atendimento humano e ja estiver qualificado. Nao se despeca do lead dizendo que alguem assume daqui.`
     + `\nPAGINA DE PEDIDO: existe uma pagina com a cesta sugerida para o ramo dele, onde cada produto aparece COM O PRECO, o total soma na tela e o desconto por volume entra sozinho. Se ele JA recebeu o link nesta conversa, nao mande de novo sem um motivo novo.`
     + `\nANTES DO LINK, DOIS DADOS — ordem do gestor em 26/10, e isto MUDOU em relacao ao que valia ate ontem: o link SO sai depois que voce tiver (1) o CNPJ da loja e (2) o ENDERECO dela. Nao e burocracia, cada um resolve uma coisa: o CNPJ diz o ramo (CNAE) e com isso a lista certa de produtos; o ENDERECO diz a praca, e a TABELA DE PRECO MUDA conforme a regiao. Mandar link sem endereco e arriscar mostrar preco que nao vale para ele. Peca os dois de uma vez, de leve, explicando o porque — e se ele pedir o link antes, diga que ja vai mandar e aproveite para pedir os dois na mesma mensagem, sem travar a conversa. Com os dados em maos, chame salvar_lead e depois link_pedido. A ferramenta RECUSA o link enquanto faltar um deles.`
+    + `\nO CEP E O QUE DEFINE O PRECO. Desde 27/10 a pagina ja mostra o valor COM A ENTREGA INCLUSA, item a item, e o percentual vem da praca dele — que sai do CEP. Entao peca o CEP junto com o endereco, sempre. O que voce pode dizer: que o preco da tela ja e o final para a cidade dele, com entrega, sem surpresa depois. O que voce NAO diz, nunca: o percentual do frete, quanto do preco e frete, ou prazo de entrega. Se ele perguntar quanto fica o frete, a resposta e que ja esta no preco e que o detalhamento quem faz e o comercial.`
     + `\nFORMA DE PAGAMENTO (ordem do gestor, 26/10): pergunte tambem como ele pretende pagar e ja diga o que existe NA PRIMEIRA COMPRA — a vista, ou 6x no cartao sem juros. So isso; nao invente boleto, prazo, faturamento 30/60/90 nem nada diferente, e nao prometa condicao especial. Salve a resposta em salvar_lead (campo pagamento).`
     + (cfg.site_url ? `\nSITE: ${cfg.site_url}` : "")
     + `\n${jaSei ? "JA APURADO (nao pergunte de novo): " + jaSei : "AINDA NAO SEI NADA sobre ele — comece pelo tipo de loja e o que ele precisa abastecer."}`
@@ -665,7 +777,7 @@ async function seguir(sb: any, cfg: Record<string, string>, o: any) {
       + (L.nome_confirmado ? `\nNOME JA CONFIRMADO por ele: ${L.nome}. Use esse.` : `\nVoce ainda NAO confirmou o nome dele (o que aparece e o do perfil do WhatsApp). Se couber no toque, pergunte o nome completo de leve — e chame salvar_lead com nome e nome_confirmado=true quando ele responder.`)
       + o.lic;
     const messages: any[] = [{ role: "user", content: msgs.map((m: any) => (m.direction === "inbound" ? "CONTATO: " : "VOCE (Nitron): ") + limpa(m.body).slice(0, 400)).join("\n") + "\n\n(Escreva SO o toque de seguimento, sem prefixo.)" }];
-    const ctx: any = { contact_id: L.contact_id, fone: L.fone, instancia: L.instancia, dry: o.dry, pedidoMin: o.pedidoMin, exigeCnpj: o.exigeCnpj, exigeEndereco: o.exigeEndereco, source: L.origem };
+    const ctx: any = { contact_id: L.contact_id, fone: L.fone, instancia: L.instancia, dry: o.dry, pedidoMin: o.pedidoMin, exigeCnpj: o.exigeCnpj, exigeEndereco: o.exigeEndereco, exigeFrete: o.exigeFrete, source: L.origem };
     let texto = ""; const usadas: string[] = [];
     for (let i = 0; i < 4; i++) {
       const resp = await anthropic(sys, messages, TOOLS);
@@ -753,6 +865,8 @@ Deno.serve(async (req) => {
     // o link so sai com CNPJ e endereco (ordem do gestor, 26/10). Afrouxar e UPDATE, sem deploy.
     const exigeCnpj = String(cfg.link_exige_cnpj || "sim").toLowerCase() === "sim";
     const exigeEndereco = String(cfg.link_exige_endereco || "sim").toLowerCase() === "sim";
+    // o link so sai com a praca resolvida, porque sem ela o preco da tela sai SEM o frete CIF.
+    const exigeFrete = String(cfg.link_exige_frete || "sim").toLowerCase() === "sim";
     const acao = String(sp.get("acao") || b.acao || "tudo").toLowerCase();
     RUIDO_EXTRA = null;
     if (String(cfg.lead_ruido_extra || "").trim()) { try { RUIDO_EXTRA = new RegExp(String(cfg.lead_ruido_extra).trim(), "i"); } catch (_e) { RUIDO_EXTRA = null; } }
@@ -794,7 +908,7 @@ Deno.serve(async (req) => {
     } catch (_e) { /* sem cadastro, so a trava dos reps vale */ }
 
     const pb = await playbook(sb); const lic = await licoes(sb);
-    const opts = { dry, ativo, pedidoMin, inst, nativoOn, janelaH, pb, lic, reps: setReps, internos: setInternos, exigeCnpj, exigeEndereco };
+    const opts = { dry, ativo, pedidoMin, inst, nativoOn, janelaH, pb, lic, reps: setReps, internos: setInternos, exigeCnpj, exigeEndereco, exigeFrete };
     const feitos: any[] = [];
     if (acao !== "seguir") for (const cv of alvos) { try { feitos.push(await atender(sb, cfg, cv, opts)); } catch (e) { feitos.push({ contato: cv.fullName || cv.phone, decisao: "erro", motivo: String(e).slice(0, 200) }); } }
 
@@ -802,7 +916,7 @@ Deno.serve(async (req) => {
     // conversa ja foi atendida acima e o seguimento a pula.
     let seg: any = null;
     if (acao !== "inbound" && toquesMax > 0) {
-      try { seg = await seguir(sb, cfg, { dry, ativo, pedidoMin, inst, janelaH, seguirMin, toquesMax, soHorario, avisoMin, erroEsperaMin, pb, lic, exigeCnpj, exigeEndereco, limite: Math.max(1, Math.min(limite, 4)) }); }
+      try { seg = await seguir(sb, cfg, { dry, ativo, pedidoMin, inst, janelaH, seguirMin, toquesMax, soHorario, avisoMin, erroEsperaMin, pb, lic, exigeCnpj, exigeEndereco, exigeFrete, limite: Math.max(1, Math.min(limite, 4)) }); }
       catch (e) { seg = { erro: String(e).slice(0, 200) }; }
     }
 
