@@ -500,6 +500,11 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   qualificacao, entao nao tem como inventar preco, praca nem compromisso. Ele sabe se o lead abriu
   a pagina e esta **proibido de dizer isso** — serve so para escolher entre "ficou alguma duvida no
   que voce viu" e "conseguiu abrir o link".
+- **O lote do pos-link e 3, e e limite de INFRAESTRUTURA.** Cada lead custa duas chamadas ao GHL,
+  uma ao modelo e um envio com 12s de checagem de entrega — uns 30s. Com lote 5 a primeira rodada
+  real (28/10, 16h) mandou 3 e morreu em `IDLE_TIMEOUT` aos 150s. Nao se perdeu nada porque cada
+  lead e gravado logo depois do proprio envio, nao no fim da rodada — mas e a mesma lição do lote
+  de 12 da reativacao: o corte de 150s manda no tamanho do lote, nao o gosto.
 - **O teto do pos-link conta mensagem ESPONTANEA, nao toda mensagem nossa.** A primeira versao
   contava tudo e calou 8 dos 10 candidatos da previa: lead em conversa viva acumula 5 ou 6
   mensagens nossas por dia que sao RESPOSTAS. **Responder nao e insistir.** Espontanea e a mensagem
