@@ -28,6 +28,13 @@
 //   - A ULTIMA MENSAGEM NAO PODE SER DELE. Se ele escreveu e ninguem respondeu ainda, quem atende
 //     e o caminho normal do copiloto-lead. Entrar por cima seria atropelar a conversa — foi o que
 //     a Nina fez com o representante em 16/09.
+//   - TETO DE MENSAGENS NOSSAS EM 24h (`poslink_max_dia`, 2). Esta trava nasceu da conversa da
+//     StarLuz (lead 564), conferida em 28/10 antes de ligar a regra: a Nina ja tinha mandado TRES
+//     mensagens para a Ana Luiza em 24h — uma as 21h10 e DUAS quase identicas as 08h23 e 08h26,
+//     com 3 minutos de diferenca — e a lead ainda tinha escrito "estou finalizando os ultimos
+//     ajustes com minha socia e em breve retornarei". Sem este teto, este toque seria a QUARTA.
+//     O teto conta as mensagens que estao na propria conversa do CRM, nao um contador nosso: e a
+//     unica contagem que nao mente quando outra rotina tambem falou.
 //
 // O MODELO AQUI NAO TEM FERRAMENTA. De proposito: este toque e uma pergunta, nao uma rodada de
 // qualificacao. Sem ferramenta ele nao reescreve lead, nao abre tarefa e nao monta link novo —
@@ -135,6 +142,7 @@ Deno.serve(async (req) => {
     const maxVezes = Math.max(1, Math.min(3, parseInt(cfg.poslink_max || "1") || 1));
     const lote = Math.max(1, Math.min(15, parseInt(cfg.poslink_lote || "5") || 5));
     const silencioMin = Math.max(0, parseInt(cfg.poslink_silencio_min || "90") || 0);
+    const maxDia = Math.max(1, parseInt(cfg.poslink_max_dia || "2") || 2);
     const pedidoMin = parseInt(digits(cfg.pedido_minimo || "3500")) || 3500;
     const erroEsperaMin = Math.max(5, parseInt(cfg.lead_erro_espera_min || "120") || 120);
 
@@ -193,6 +201,13 @@ Deno.serve(async (req) => {
       const arr = (((await rm.json().catch(() => ({})))?.messages?.messages) || []) as any[];
       const msgs = arr.slice().reverse().filter((m: any) => String(m?.body || "").trim() && !/^#contact_instance|^\[System\]/i.test(String(m.body)));
       if (!msgs.length) { feitos.push({ ...base, decisao: "pular", motivo: "sem historico legivel" }); continue; }
+
+      // TETO DE 24h, contado NA CONVERSA e nao num contador nosso. O `toques` do copiloto_lead ja
+      // mentiu: na StarLuz ele marcava 2 enquanto a conversa tinha 3 mensagens nossas em 24h (duas
+      // delas com 3 minutos de diferenca, texto quase igual). Contador proprio so sabe o que a
+      // propria rotina fez; a conversa sabe o que o lead de fato RECEBEU.
+      const nossas24h = msgs.filter((m: any) => String(m.direction) === "outbound" && (agora - new Date(m.dateAdded || 0).getTime()) < 24 * 3600000).length;
+      if (nossas24h >= maxDia) { feitos.push({ ...base, decisao: "pular", motivo: "ja mandamos " + nossas24h + " mensagens a ele nas ultimas 24h (teto " + maxDia + ")" }); continue; }
 
       // Abriu a pagina depois de receber o link? Informacao INTERNA: escolhe o angulo, nunca e dita.
       const { count: aberturas } = await sb.from("pedido_visita").select("id", { count: "exact", head: true }).eq("lead_id", L.id).gt("em", L.link_em);
