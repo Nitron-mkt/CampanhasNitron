@@ -28,13 +28,16 @@
 //   - A ULTIMA MENSAGEM NAO PODE SER DELE. Se ele escreveu e ninguem respondeu ainda, quem atende
 //     e o caminho normal do copiloto-lead. Entrar por cima seria atropelar a conversa — foi o que
 //     a Nina fez com o representante em 16/09.
-//   - TETO DE MENSAGENS NOSSAS EM 24h (`poslink_max_dia`, 2). Esta trava nasceu da conversa da
-//     StarLuz (lead 564), conferida em 28/10 antes de ligar a regra: a Nina ja tinha mandado TRES
-//     mensagens para a Ana Luiza em 24h — uma as 21h10 e DUAS quase identicas as 08h23 e 08h26,
-//     com 3 minutos de diferenca — e a lead ainda tinha escrito "estou finalizando os ultimos
-//     ajustes com minha socia e em breve retornarei". Sem este teto, este toque seria a QUARTA.
-//     O teto conta as mensagens que estao na propria conversa do CRM, nao um contador nosso: e a
-//     unica contagem que nao mente quando outra rotina tambem falou.
+//   - TETO DE MENSAGENS ESPONTANEAS EM 24h (`poslink_max_dia`, 2). Esta trava nasceu da conversa
+//     da StarLuz (lead 564), conferida em 28/10 antes de ligar a regra: a Nina ja tinha mandado
+//     TRES mensagens espontaneas para a Ana Luiza em 12h — uma as 21h10 e DUAS quase identicas as
+//     08h23 e 08h26, com 3 minutos de diferenca — enquanto o `toques` do lead marcava 2. E a lead
+//     ainda tinha escrito "estou finalizando os ultimos ajustes com minha socia e em breve
+//     retornarei". Sem este teto, o toque pos-link seria a QUARTA.
+//     Conta na propria conversa do CRM, nao num contador nosso, e conta SO O QUE E ESPONTANEO:
+//     a primeira versao contava toda mensagem nossa e calou 8 dos 10 candidatos da previa, porque
+//     lead em conversa viva acumula 5 ou 6 mensagens nossas por dia que sao RESPOSTAS. Responder
+//     nao e insistir.
 //
 // O MODELO AQUI NAO TEM FERRAMENTA. De proposito: este toque e uma pergunta, nao uma rodada de
 // qualificacao. Sem ferramenta ele nao reescreve lead, nao abre tarefa e nao monta link novo —
@@ -203,11 +206,25 @@ Deno.serve(async (req) => {
       if (!msgs.length) { feitos.push({ ...base, decisao: "pular", motivo: "sem historico legivel" }); continue; }
 
       // TETO DE 24h, contado NA CONVERSA e nao num contador nosso. O `toques` do copiloto_lead ja
-      // mentiu: na StarLuz ele marcava 2 enquanto a conversa tinha 3 mensagens nossas em 24h (duas
-      // delas com 3 minutos de diferenca, texto quase igual). Contador proprio so sabe o que a
-      // propria rotina fez; a conversa sabe o que o lead de fato RECEBEU.
-      const nossas24h = msgs.filter((m: any) => String(m.direction) === "outbound" && (agora - new Date(m.dateAdded || 0).getTime()) < 24 * 3600000).length;
-      if (nossas24h >= maxDia) { feitos.push({ ...base, decisao: "pular", motivo: "ja mandamos " + nossas24h + " mensagens a ele nas ultimas 24h (teto " + maxDia + ")" }); continue; }
+      // mentiu: na StarLuz ele marcava 2 enquanto a conversa tinha TRES mensagens espontaneas em
+      // 12h (duas delas com 3 minutos de diferenca, texto quase igual). Contador proprio so sabe o
+      // que a propria rotina fez; a conversa sabe o que o lead de fato RECEBEU.
+      //
+      // CONTA SO MENSAGEM ESPONTANEA, nao toda mensagem nossa. A primeira versao desta trava
+      // contava tudo e, na previa de 28/10, calou 8 dos 10 candidatos: leads no meio de uma
+      // conversa viva (Villa Nova, Loja GV) apareciam com 5 e 6 mensagens nossas em 24h, que eram
+      // RESPOSTAS ao que eles escreveram. Responder nao e insistir. Espontanea e a mensagem cuja
+      // anterior na conversa tambem e nossa — ou seja, falamos duas vezes sem ele falar no meio.
+      let espontaneas = 0; let nossas24h = 0;
+      for (let i = 0; i < msgs.length; i++) {
+        const m: any = msgs[i];
+        if (String(m.direction) !== "outbound") continue;
+        if ((agora - new Date(m.dateAdded || 0).getTime()) >= 24 * 3600000) continue;
+        nossas24h++;
+        const ant: any = msgs[i - 1];
+        if (!ant || String(ant.direction) === "outbound") espontaneas++;
+      }
+      if (espontaneas >= maxDia) { feitos.push({ ...base, decisao: "pular", motivo: "ja mandamos " + espontaneas + " mensagens espontaneas a ele nas ultimas 24h (teto " + maxDia + "; " + nossas24h + " no total, o resto foi resposta)" }); continue; }
 
       // Abriu a pagina depois de receber o link? Informacao INTERNA: escolhe o angulo, nunca e dita.
       const { count: aberturas } = await sb.from("pedido_visita").select("id", { count: "exact", head: true }).eq("lead_id", L.id).gt("em", L.link_em);
@@ -243,7 +260,7 @@ Deno.serve(async (req) => {
       if (!texto) { feitos.push({ ...base, decisao: "erro", motivo: "o modelo nao devolveu texto" }); continue; }
 
       if (dry || !ativo) {
-        feitos.push({ ...base, decisao: "previa", vez, horas_desde_o_link: Number((desdeLink / 3600000).toFixed(1)), abriu_a_pagina: abriu > 0, cesta: L.link_seg, rascunho: texto });
+        feitos.push({ ...base, decisao: "previa", vez, horas_desde_o_link: Number((desdeLink / 3600000).toFixed(1)), abriu_a_pagina: abriu > 0, espontaneas_24h: espontaneas, nossas_24h: nossas24h, cesta: L.link_seg, rascunho: texto });
         mandados++; continue;
       }
 
@@ -271,7 +288,7 @@ Deno.serve(async (req) => {
     const conta = (k: string) => feitos.filter((x) => x.decisao === k).length;
     return j({
       ok: true, instancia: inst, poslink_ativo: ativo, modo: dry ? "previa" : (ativo ? "perguntando" : "so rascunho (poslink_ativo=nao)"),
-      regra: "link mandado ha mais de " + horas + "h, sem pedido, dentro de " + janelaH + "h, no maximo " + maxVezes + " toque(s)",
+      regra: "link mandado ha mais de " + horas + "h, sem pedido, dentro de " + janelaH + "h, no maximo " + maxVezes + " toque(s), teto de " + maxDia + " mensagens espontaneas em 24h",
       fora_da_janela: fora, candidatos: (cands || []).length,
       perguntou: conta("perguntou"), previa: conta("previa"), pulou: conta("pular"), falhou: conta("falhou"), erro: conta("erro"),
       resultado: feitos,
