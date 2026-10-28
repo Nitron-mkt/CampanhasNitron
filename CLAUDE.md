@@ -487,6 +487,36 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   **A Nina pode dizer que o preco da tela ja e o final, com entrega. NAO diz o percentual, nem
   quanto do preco e frete, nem prazo** — mesma regra do CNPJ e do preco: ela reflete, nao abre a
   conta.
+- **Mandou o link e nao pediu em 3h, a Nina pergunta** (`nina-poslink`, cron `nina-poslink-30min`,
+  28/10). Ordem do gestor. O que a motivou: em 28/10, ate as 15h30, **9 leads abriram a pagina de
+  pedido e nenhum concluiu** — e **seis nao receberam mensagem nenhuma depois de abrir**. O Erick
+  abriu as 08h39 com a ultima fala da Nina das 06h02; o Janjao abriu as 12h59 com a ultima das
+  08h50. Abrir a pagina e o sinal mais quente que existe aqui, e **nada lia isso**: o `seguir` do
+  `copiloto-lead` conta tempo desde a ULTIMA MENSAGEM, nao desde o link nem desde a visita, entao
+  quem abriu ha quatro horas era tratado igual a quem nunca clicou. Funcao SEPARADA de proposito:
+  o `copiloto-lead` ja esta no limite de tamanho que o deploy aceita, e regra nova que fala sozinha
+  tem de poder ser desligada (`poslink_ativo`, mais o cron) sem publicar por cima da funcao que
+  esta atendendo. O modelo roda **sem ferramenta**: produz uma frase, nao uma rodada de
+  qualificacao, entao nao tem como inventar preco, praca nem compromisso. Ele sabe se o lead abriu
+  a pagina e esta **proibido de dizer isso** — serve so para escolher entre "ficou alguma duvida no
+  que voce viu" e "conseguiu abrir o link".
+- **O teto do pos-link conta mensagem ESPONTANEA, nao toda mensagem nossa.** A primeira versao
+  contava tudo e calou 8 dos 10 candidatos da previa: lead em conversa viva acumula 5 ou 6
+  mensagens nossas por dia que sao RESPOSTAS. **Responder nao e insistir.** Espontanea e a mensagem
+  cuja anterior na conversa tambem e nossa. O Erick tinha 4 mensagens nossas em 24h e **zero**
+  espontaneas — e exatamente quem a regra deve procurar; o teto errado o calaria.
+- **O `toques` do `copiloto_lead` MENTE, e o `seguir` manda mensagem repetida.** Na StarLuz (lead
+  564) a coluna marcava 2 enquanto a conversa tinha **tres** mensagens espontaneas em 12h — duas
+  delas as 08h23 e 08h26, com 3 minutos de diferenca e texto quase igual ("a partir de R$ 5.000 os
+  10% ja entram sozinhos"). E corrida entre duas rodadas do cron de 5 em 5 min: uma le o contador
+  antes de a outra gravar, porque o `toques` so e escrito DEPOIS do envio (que leva 12s de checagem
+  de entrega). **Continua em aberto** — o conserto e gravar antes de mandar, e mexe em funcao que
+  esta atendendo. Por isso todo teto novo conta **na conversa do CRM**, nao num contador nosso.
+- **`lastOutboundMessageAction` do GHL NAO distingue humano de IA.** Vem `manual` em tudo, inclusive
+  no que a Nina escreveu pela API. Nao serve de trava de "tem humano na conversa" — conferido em
+  28/10, em 20 conversas seguidas. Quem protege disso continua sendo o dono do contato: quando
+  alguem do time assume, o `campanhas-enviar` recusa o envio da Nina.
+
 ## Acao "raspagem onda 1" — prospeccao de distribuidoras (27/10)
 
 Acao NOVA, pedida pelo Dan em `docs/` e autorizada pelo gestor no mesmo dia. **Nao se mistura com
