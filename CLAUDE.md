@@ -648,6 +648,18 @@ confundir com as outras, inclusive porque estamos mandando apenas para a galera 
   cadastro: a **MIRAIYAA** (codparc 171123, com a Mônica) e a **Casa Útil** (codparc 196774,
   situação "Reativação") estavam marcadas como lead. Mexer no dono desses contatos está **proibido**
   — é contato de cliente, e trocar o dono tira o cliente da vista de quem o atende.
+- **A onda sai POR FAIXA, e o teto é trava dura** (`reativa_max_dias`). Em 03/11 o gestor liberou
+  *"os 96 mais quentes primeiro"* — os parados até 7 dias. Sem teto a fila escorregaria sozinha para
+  os **444 leads mais velhos** assim que os 100 da faixa acabassem: a ordenação é "mais recente
+  primeiro", mas ela **não pára onde a autorização pára**. Alargar a faixa é UPDATE nessa chave, e é
+  decisão do gestor. Medido na largada: 100 elegíveis (2 a 7 dias), 48 fora por conversa viva,
+  nenhum deles já cliente.
+- **O cron `nina-reativa-onda1` (jobid 241) é TEMPORÁRIO e tem de ser removido quando a faixa
+  zerar.** `*/3 12-21 * * 1-6` (9h–18h SP), lote 3, ~60 leads/hora. Ele existe só para a onda andar
+  sem alguém disparando lote a lote — e é exatamente o tipo de coisa que a lição de 16/09 manda não
+  esquecer ligada. Duas travas independentes o seguram enquanto existe: `reativa_max_dias=7` (não
+  transborda para os velhos) e `reativa_ativo` (desliga tudo). Remover:
+  `select cron.unschedule('nina-reativa-onda1');`
 - **A fila da reativação precisa ANDAR, e isso é filtro de SQL.** Na primeira prévia real a função
   leu 24 candidatos e **pulou os 24**: a ordem é "mais recente primeiro" e os mais recentes estão
   todos em conversa viva, mas o corte de silêncio só era aplicado depois, em código. Todo lote relia
