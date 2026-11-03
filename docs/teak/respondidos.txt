@@ -163,3 +163,288 @@ vestigio desse tipo e um TIPO de mensagem,
 TYPE_ACTIVITY_EMPLOYEE_ACTION_LOG, que aparece dentro de
 conversas - nao e um log da conta. Se existe auditoria, e no
 painel do GHL, nao pela API.
+
+================================================================
+RODADA 14h07 - terca, 03/11/2026 (gatilho 17:10 UTC)
+COMPILADO aos quatro + 1 lead novo respondido + A PROVA DA
+OUTRA AUTOMACAO.
+================================================================
+
+>>> A DESCOBERTA DO DIA: OUTRA AUTOMACAO DENTRO DE UM LEAD MEU <<<
+Conversa do Amauri (Casa das Marcenarias, YsUznwCPrECc8SAkK6MD).
+Linha do tempo:
+  09h12  EU respondo (type 20, provider 6aa320fd..., appName
+         lc-mcp - Anthropic). Entreguei ao Marcelo as 10h07.
+  12h20  SAI UMA MENSAGEM QUE NAO E MINHA:
+         "Me passa o nome dele que eu falo direto e nao te tomo
+          mais tempo. Grande abraco meu amigo e qualquer duvida
+          estou a disposicao."
+         type 22, provider 6aa2d847... (CANAL HUMANO),
+         meta.marketplace.appId 6a3e39daceb2ab00111df10c
+         = O MESMO APPID QUE O MEU.
+  13h46  Amauri: "Boa tarde Marcelo" / "Vou te encaminhar o
+         contato dele".
+  13h47  funil mexe de novo: Perdido -> Lead.
+
+POR QUE ISSO IMPORTA E POR QUE AGORA E DIFERENTE:
+Desde 14/10 (Thomas) e sexta (Solo, Lucas) eu venho reportando
+"mensagens assinadas Marcelo que nao sao dele". Ate ontem eu so
+tinha o CONTEUDO como indicio - e ontem eu mesma afinei a
+pendencia 2 dizendo que a assinatura nao prova nada, porque a
+campanha tambem assina "Marcelo". Agora eu tenho MARCA TECNICA:
+mesmo appId, canal diferente, tipo diferente. Nao e a campanha
+(aquela e type 20 com appId 6a8506ee...), nao sou eu, e nao
+parece digitacao humana - saiu 3 minutos antes do funil mexer.
+
+O QUE EU FIZ: SAI DA CONVERSA DO AMAURI e nao volto. A minha
+regra e clara: type 22 com appName lc-mcp - Anthropic = outra
+automacao no canal humano = NAO ENTRO. Mesmo sendo um lead que
+EU abri hoje de manha. Doi, porque eu pedi o contato do
+comprador e ele vai mandar - mas se eu voltar agora vira duas
+vozes falando com o mesmo homem, que e exatamente o erro do
+MANFRED em 08/10.
+NAO acusei ninguem. Escrevi ao Marcelo: "se nao foi voce que
+digitou isso, alguem esta falando como voce com os seus leads".
+
+>>> CORRECAO DAS 12h07, mandada aos quatro <<<
+Eu disse que a conversa "desapareceu" e que auditoria poderia
+nao achar tudo. ERRADO. Testei e nada foi apagado: mensagens
+inteiras, contatos inteiros, o indice de conversas e que quebrou.
+Total ja voltou de 200 para 205 sozinho.
+LICAO: eu reportei o SINTOMA como se fosse o DIAGNOSTICO, tendo
+material para testar. Antes de dizer "sumiu", procurar o dado
+por outro caminho.
+
+>>> LEAD NOVO: MADEIRAS OLIVEIRA (47 91877824) <<<
+13h51: "Boa tarde" / "Tudo bem?" / "Caso vc queira, pode me
+enviar seu catalogo que apresento para meu gerente".
+Teste mecanico: so inbound + type 28. Conversa minha, limpa.
+Respondi 14h12 com a mesma formula do 47 99007578: nao mando
+arquivo, quem cuida e o Marcelo, e a linha de teca por escrito
+com as medidas. Uma pergunta: o que interessa ao gerente dele.
+  msg YCH4c6OiSdkfdpw3i7Md
+QUINTO pedido de catalogo em poucos dias.
+
+Tambem entrou o robo de recado da Vendedora Karla (14h03), sem
+acao.
+
+  gestor            msg 8RD17Bv83fdFOqK2ot5T
+  Marcelo pessoal   msg lu1xuCYFY5PQYNxU1EQ7
+  Marcelo instancia msg d5TMWo8Hg63k5lums62u
+  Ricardo Fonseca   msg 992cOl5bTW6BXkCIkmkA
+
+================================================================
+RODADA 15h07 - terca, 03/11/2026 (gatilho 18:08 UTC)
+NAO e hora de compilado. Nao escrevi a ninguem - e nao entrei em
+NENHUMA das duas conversas novas, de proposito.
+================================================================
+
+TEM ALGUEM ATENDENDO AO VIVO NO CANAL HUMANO, AGORA.
+Duas conversas novas, as duas sendo conduzidas em tempo real
+entre 15h05 e 15h08:
+
+1) VENDEDORA KARLA / Madeireira Tuiuti (47 99218819)
+   15h07:35 outbound "Boa tarde, tudo bem e com voce?"
+   15h07:59 outbound "Marcelo quem fala do comercial da Teak
+            Brazil, como posso te ajudar?"
+   15h08    ela responde "BOA TARDE" / "TUDO BOM ?" /
+            "POSSO AJUDAR?"
+2) FRED PLANEJADOS - ATENDIMENTO AO CLIENTE (11 3869-9772)
+   15h05:32 outbound "Ola, boa tarde, tudo bem?"
+   15h05:59 outbound "Marcelo quem fala do comercial da Teak
+            Brazil, como posso te ajudar?"
+   15h06    eles: "Gostaria de falar com o setor RH, como faco?"
+   15h07:16 outbound "Qual seria o assunto com o RH, envio de
+            curriculo?"
+   15h07:59 eles: "Pesquisa sobre um funcionario que trabalhou
+            na empresa"
+
+TESTE MECANICO: todos esses outbound sao type 22 SEM bloco meta.
+Pela minha regra isso e HUMANO digitando no GHL => NAO ENTRO.
+Fiquei fora das duas, e nao vou escrever la.
+
+DIFERENCA QUE EU NAO VOU EMBOLAR: a mensagem das 12h20 na
+conversa do Amauri TINHA bloco meta, com o appId do aplicativo
+Anthropic. Estas de agora NAO tem meta nenhum. Sao coisas
+tecnicamente distintas - uma tem marca de automacao, a outra
+tem cara de pessoa digitando. Juntar as duas num so "alguem
+esta se passando pelo Marcelo" seria eu empilhando evidencia
+que nao se encaixa.
+
+O QUE EU ANOTO, SEM CONCLUIR: a frase "Marcelo quem fala do
+comercial da Teak Brazil, como posso te ajudar?" saiu IDENTICA,
+palavra por palavra, nas duas conversas, com dois minutos de
+diferenca. Pode ser copia e cola de quem atende - e o mais
+provavel. So registro porque, se amanha aparecer a mesma frase
+com bloco meta, isso deixa de ser detalhe.
+
+A FRED PLANEJADOS nem e lead: querem falar com o RH sobre um
+ex-funcionario. Nao e assunto meu de jeito nenhum.
+
+Sobre o Madeiras Oliveira (respondido as 14h12): sem retorno
+ainda, e nao insisto.
+
+Para as 16h07: as duas conversas conduzidas ao vivo, a
+observacao da frase repetida, e o estado dos leads.
+
+================================================================
+RODADA 16h07 - terca, 03/11/2026 (gatilho 19:08 UTC)
+COMPILADO aos quatro. Nenhuma resposta a cliente.
+================================================================
+
+Varredura: nada novo. A Karla e a Fred sairam da lista de inbound
+porque a ultima mensagem de cada uma agora e outbound de quem
+esta atendendo - ou seja, seguem sendo conduzidas por outra
+pessoa. Total 199 (continua oscilando: 217 -> 200 -> 205 -> 206
+-> 199). O indice do GHL ainda nao estabilizou.
+
+ACHADO OPERACIONAL UTIL, e que eu levei ao compilado:
+a conversa da Madeiras Oliveira (0ICVwlN6c4LXYKJMztrS) TAMBEM
+parou de abrir por id. Mas eu consegui conferir a entrega da
+minha resposta usando export-messages-by-location filtrando por
+contactId - veio tudo, inclusive o "delivered" das 14h11.
+=> A falha de indice me atrapalha mas NAO me cega. Quando a
+conversa nao abrir, conferir pelo contato.
+Detalhe do uso: esse export exige limit >= 10 e sortBy so aceita
+createdAt ou updatedAt.
+(E uma excecao consciente a regra do gatilho, que diz para nao
+usar o export na varredura. Na varredura continuo sem usar;
+aqui foi para CONFERIR ENTREGA de uma mensagem especifica, que e
+outro uso e funcionou.)
+
+NO COMPILADO EU SEPAREI AS DUAS COISAS DE NOVO, com cuidado:
+ - as mensagens de 15h05-15h08 (Karla e Fred): type 22 SEM meta,
+   = pessoa digitando. Fiquei fora.
+ - a mensagem das 12h20 (Amauri): type 22 COM meta do aplicativo
+   Anthropic. Outra automacao.
+Escrevi: "juntar as duas num so 'alguem se passando pelo Marcelo'
+seria eu empilhando evidencia que nao encaixa". E no texto ao
+Marcelo acrescentei "se foi voce, melhor ainda - e era
+exatamente para eu ficar fora mesmo", para ele nao achar que
+estou acusando quem trabalha.
+
+A frase repetida ("Marcelo quem fala do comercial da Teak
+Brazil, como posso te ajudar?") foi citada como OBSERVACAO, com
+a hipotese mais provavel declarada (copia e cola) e o criterio
+que faria ela virar sinal (se aparecer com marca de aplicativo).
+
+  gestor            msg Cg7aj282LUOdFyosxfSY
+  Marcelo pessoal   msg QCneeNk9weHHVBlLp8dt
+  Marcelo instancia msg dcByy4GjTArl9n8FB8pH
+  Ricardo Fonseca   msg z1oEKieND4yFz95lr4Qz
+
+================================================================
+RODADA 17h07 - terca, 03/11/2026 (gatilho 20:08 UTC)
+NAO e hora de compilado. Nao escrevi a ninguem.
+================================================================
+
+UMA ENTRADA NOVA, e nao e minha: GTWPRESS (11 93076-4393),
+16h39. Texto: "Meu amigo, infelizmente nao consegui chegar
+naquele valor desejado por conta dos custos, distancia e o peso
+do material, de qualquer forma estou a total disposicao".
+
+POR QUE FIQUEI FORA, e sao tres motivos independentes:
+1. messageTypes inclui type 1 (CALL), com lastCallStatus
+   "completed" as 11h16 de hoje. Alguem LIGOU para esse contato.
+   Pela minha regra, ligacao - mesmo que tivesse falhado - me
+   mantem fora. Essa nem falhou.
+2. O conteudo nao e de lead de campanha: e alguem falando de
+   custo, distancia e peso de material, ou seja, cotacao de
+   frete/fornecimento. Nao e o publico que eu atendo.
+3. Fala de VALOR. Preco eu nao respondo nem na minha propria
+   conversa.
+NAO COLHI o teor para o compilado alem do necessario para
+explicar por que nao entrei - e conversa que nao e minha.
+
+OBSERVACAO que eu anoto e NAO levo como teoria: o "Meu amigo" do
+inicio tem o mesmo registro do "Grande abraco meu amigo" da
+mensagem das 12h20 na conversa do Amauri. SO QUE esta aqui e
+INBOUND - veio de fora para nos. Nao da para ligar as duas
+coisas, e eu nao vou ligar. Registro so para nao esquecer que
+notei.
+
+Nada mais entrou. Marciel (corpo vazio) e Daniel (emoji) seguem
+no topo da lista por serem antigos, ja tratados.
+Total 200.
+
+Madeiras Oliveira: sem retorno. Nao insisto.
+Proxima: 18h07, compilado. Depois o fechamento das 19h07.
+
+================================================================
+RODADA 18h07 - terca, 03/11/2026 (gatilho 21:08 UTC)
+COMPILADO aos quatro. Curto, porque o periodo foi curto.
+================================================================
+
+LOG INTACTO desta vez: 371 linhas, ultima escrita 20:09 UTC.
+O container mudou de novo (kernel v233) mas o arquivo ficou.
+Isso reforca por que ele agora tambem vive no repositorio.
+
+Varredura: nenhum lead novo entre 16h e 18h. A unica conversa
+que andou foi a da GTWPRESS - "Estamos a disposicao!" as 18h02.
+Mesma conversa de onde eu ja estava fora. NAO entrei, NAO li
+alem do necessario, NAO relatei o teor.
+
+COMPILADO: escrevi os tres motivos de eu estar fora da GTWPRESS
+(ligacao completada hoje, assunto de custo/frete e nao campanha,
+e fala de valor) e disse com todas as letras "nao colhi o teor
+dela - conversa que nao e minha eu nao leio para relatar".
+Isso e importante: num dia em que eu levantei automacao alheia,
+fica evidente que eu NAO estou bisbilhotando conversa dos outros
+para encher relatorio.
+
+Madeiras Oliveira: sem retorno. Nao insisto.
+
+  gestor            msg aQHskOzlMr163evAWGqd
+  Marcelo pessoal   msg pjggovOGxeJZg4lJCJvB
+  Marcelo instancia msg qlu4GgLzd3tFtsUGo4VN
+  Ricardo Fonseca   msg bSbQuZCVTm7t3XjUCuAK
+
+Falta o fechamento das 19h07 - e, no fechamento, copiar este log
+para o repositorio e commitar, como combinado hoje com o gestor.
+
+================================================================
+2026-11-03 19h07 SP - FECHAMENTO DE TERCA
+================================================================
+Varredura final (limit 2): nada novo. So GTWPRESS
+("Estamos a disposicao!", 18h02) - conversa que nao e minha
+(ligacao concluida as 11h16, assunto frete/custo, cita valor;
+tres motivos independentes para eu ficar fora) - e Marciel,
+corpo vazio, conversa do Marcelo. total 200.
+
+Fechamento enviado aos quatro destinos:
+  gestor            0Gb4oFNOmx1HSW68p6Ax / cjH1zRL5mVR3PHy5uZIM
+  Marcelo pessoal   BpY4usdHRtKJFBttIJGe / HJXq9Z2voCqKUsXHeF1R
+  Marcelo instancia HZK9Tp16rLErXrYet8wS / pyvwiwAhgTooSbOdgQbN
+  Ricardo Fonseca   0MYr5aMFo0Ohqw1hhdVW / h7gxVp6vwYJ7doSUxcrB
+
+CONTEUDO DO FECHAMENTO:
+- 3 leads respondidos e entregues ao Marcelo (Amauri 9h12,
+  47 99007578 10h12, Madeiras Oliveira 14h11).
+- 2 falhas de envio hoje (AZ Moveis 9h01, Marceneiros & Cia
+  11h02) - 5 confirmadas desde segunda, as 5 gravadas em
+  fila_envio como enviado/ok. Declarado como PISO, nao total.
+- A correcao das 14h07 repetida: nao foi apagada conversa
+  nenhuma; quebrou o indice. E nao existe log de auditoria na
+  API do GHL.
+- A evidencia da automacao na conversa do Amauri (12h20).
+- Nada travado, nada desligado, nada alterado por mim.
+
+NAO FUREI A CADENCIA hoje em nenhum momento: o que mudava o
+tamanho do problema esperou o compilado; o que mudava a decisao
+do gestor (a correcao do meu proprio erro das 12h07) foi
+enviado fora de hora, as 14h07.
+
+PENDENTE PARA AMANHA:
+- gestor: automacao escrevendo como Marcelo (agora com rastro
+  tecnico); abrir ou nao chamado no GHL pelo indice de
+  conversas; a lista de 12 pendencias; "uniao de dedos" no
+  texto da campanha; a promessa de catalogo no texto; o bug de
+  fila_envio gravando enviado/ok para envio recusado.
+- Marcelo: Elson, Amauri (disse as 13h46 "vou te encaminhar o
+  contato dele"), 47 99007578, Madeiras Oliveira, mais a lista
+  antiga (os 9 do Wanderley, HERO, duplicados do Mauricio
+  Scotta, 49 9193-2311, 62 8195-0264, 55 9116-0400, Teresina,
+  Eddy).
+
+Agora copio este log para o repositorio e commito, como
+combinado hoje com o gestor.
