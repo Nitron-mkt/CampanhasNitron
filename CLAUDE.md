@@ -634,6 +634,27 @@ confundir com as outras, inclusive porque estamos mandando apenas para a galera 
   rodadas se cruzam: foi o que deu duas mensagens quase iguais à StarLuz com 3 minutos de
   diferença. O lead sai da fila no instante em que é escolhido; se o envio falhar, o motivo fica em
   `reativa_erro` e quem decide tentar de novo é uma pessoa.
+- **A BrasilAPI LIMITA CHAMADA, e um 429 não é resposta** (`copiloto-lead` v22). Medido em 03/11:
+  25 CNPJs em sequência e os últimos vieram **HTTP 429**. A v21 gravava `cnae_em` em qualquer falha,
+  então um 429 marcava o lead como consultado **para sempre** e a cesta dele voltava ao palpite — o
+  inverso do que a versão veio consertar. Hoje `ramoDoCnpj()` tem **três** retornos: objeto (a
+  Receita respondeu), `{fim:true}` (404 ou sem CNAE — encerra) e `null` (429/5xx/timeout — **não**
+  encerra, pergunta de novo na rodada seguinte). Como a consulta só roda no lead que está sendo
+  atendido naquela passada, isso não vira martelada na API pública.
+- **Contato com DONO não recebe reativação, e quem já é CLIENTE não é lead.** As duas travas vêm
+  **antes** da chamada ao modelo e antes de gravar `reativa_em` — se viessem depois, o lead gastaria
+  a única tentativa dele numa recusa, e os travados por dono estão todos **na frente da fila** por
+  serem os mais recentes. São 7 com dono (Mara 3, Mônica 2, Camyla 1, Valeria 1) e 7 que já têm
+  cadastro: a **MIRAIYAA** (codparc 171123, com a Mônica) e a **Casa Útil** (codparc 196774,
+  situação "Reativação") estavam marcadas como lead. Mexer no dono desses contatos está **proibido**
+  — é contato de cliente, e trocar o dono tira o cliente da vista de quem o atende.
+- **A fila da reativação precisa ANDAR, e isso é filtro de SQL.** Na primeira prévia real a função
+  leu 24 candidatos e **pulou os 24**: a ordem é "mais recente primeiro" e os mais recentes estão
+  todos em conversa viva, mas o corte de silêncio só era aplicado depois, em código. Todo lote relia
+  os mesmos 24 e nenhum lead antigo era alcançado. Hoje o silêncio é `.lt("atualizado", …)` na
+  própria consulta, e quem é pulado por motivo **estrutural** fica marcado 24h em
+  `reativa_pulado_em` — não em `reativa_em`, de propósito: o dono pode sair do contato, e aí o lead
+  volta a ser avaliado amanhã em vez de ter queimado a tentativa.
 - **Primeira compra: à vista ou 6x no cartão sem juros** (ordem do gestor, 26/10). A Nina pergunta
   como o lead pretende pagar e diz isso — nada além. Antes ela respondia "quem fecha forma de
   pagamento é o vendedor que assume o pedido", que empurrava a pergunta para frente e travava o
