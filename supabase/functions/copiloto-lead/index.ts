@@ -927,7 +927,7 @@ Deno.serve(async (req) => {
     const soHorario = String(cfg.lead_toque_horario || "sim").toLowerCase() === "sim";
     const avisoMin = Math.max(0, parseInt(cfg.lead_janela_aviso_min || "90") || 0);
     const erroEsperaMin = Math.max(5, parseInt(cfg.lead_erro_espera_min || "120") || 120);
-    // o link so sai com CNPJ e endereco (ordem do gestor, 26/10). Afrouxar e UPDATE, sem deploy.
+    // o link so sai com CNPJ e CEP. Afrouxar e UPDATE, sem deploy.
     const exigeCnpj = String(cfg.link_exige_cnpj || "sim").toLowerCase() === "sim";
     const exigeEndereco = String(cfg.link_exige_endereco || "sim").toLowerCase() === "sim";
     // o link so sai com a praca resolvida, porque sem ela o preco da tela sai SEM o frete CIF.
