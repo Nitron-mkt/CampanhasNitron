@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nitron Direto | Lista do que vende no seu ramo</title>
+<meta name="description" content="Diga o ramo e o CEP da sua loja e receba a lista de produtos Nitron que mais vendem no seu segmento, com o preço final para a sua cidade. Pedido mínimo R$ 3.500.">
+<meta property="og:title" content="Nitron Direto | Prateleira vazia é venda que foi embora">
+<meta property="og:description" content="A lista de produtos Nitron que mais vende no seu ramo, com o preço da sua cidade e a entrega incluída.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0B1E3D">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;800&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: bandas largas alternando marinho e claro, cards de borda preta grossa e sombra dura (a linguagem das campanhas Nitron); o miolo e um seletor de ramo que mostra a lista real. */
+:root{
+  --navy:#0B1E3D; --navy-2:#132B55; --teal:#12B5AE; --teal-d:#0C8B86;
+  --yellow:#FFD23F; --red:#E5383B; --paper:#F3F7F8; --white:#FFFFFF; --ink:#0A0F1A; --muted:#4B5A6E; --line:#0A0F1A;
+  --f-display:"Anton","Impact","Arial Narrow",sans-serif;
+  --f-body:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --shadow:6px 6px 0 var(--line); --shadow-s:4px 4px 0 var(--line);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0}
+img,video{max-width:100%}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--navy)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;text-transform:uppercase;line-height:1.02;letter-spacing:.01em;text-wrap:balance;margin:0}
+h2{font-size:clamp(34px,5.4vw,56px)}
+p{margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:var(--f-body);font-weight:800;font-size:17px;text-transform:uppercase;letter-spacing:.03em;padding:16px 26px;border:3px solid var(--line);background:var(--yellow);color:var(--ink);box-shadow:var(--shadow-s);text-decoration:none;cursor:pointer;transition:transform .12s,box-shadow .12s}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--line)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--line)}
+.btn:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+.btn.ghost{background:var(--white)}
+
+/* topo */
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--navy);color:var(--white);border-bottom:3px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px}
+.logo{font-family:var(--f-display);font-size:28px;letter-spacing:.04em;color:var(--white);text-decoration:none}
+.logo span{color:var(--teal)}
+.online{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:14px}
+.online i{width:10px;height:10px;border-radius:50%;background:#2BD96B;box-shadow:0 0 0 0 rgba(43,217,107,.6);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 9px rgba(43,217,107,0)}100%{box-shadow:0 0 0 0 rgba(43,217,107,0)}}
+
+/* hero */
+.hero{background:var(--navy);color:var(--white);border-bottom:3px solid var(--line);overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center;padding-block:48px 56px}
+.hero h1{font-size:clamp(46px,7.6vw,92px)}
+.hero h1 em{font-style:normal;color:var(--yellow)}
+.hero h1 s{text-decoration-thickness:6px;text-decoration-color:var(--red)}
+.hero .lead{font-size:clamp(18px,2.1vw,21px);max-width:34em;margin-top:18px;color:#D9E4F2}
+.hero .lead strong{color:var(--white)}
+.hero .ctas{display:flex;flex-wrap:wrap;gap:14px;margin-top:28px}
+.offer{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}
+.offer span{font-family:var(--f-mono);font-size:13px;font-weight:600;border:2px solid var(--teal);color:var(--white);padding:6px 10px}
+.offer span b{color:var(--yellow);font-weight:600}
+.video{position:relative;aspect-ratio:9/16;max-height:560px;max-width:100%;margin-inline:auto;background:linear-gradient(160deg,#1C3A6E 0%,#0E2348 55%,#0B1E3D 100%);border:3px solid var(--line);box-shadow:10px 10px 0 var(--teal);display:flex;flex-direction:column;justify-content:space-between;padding:18px}
+.video .shelf{position:absolute;inset:auto 18px 32% 18px;display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.video .shelf i{height:44px;background:var(--teal);border:2px solid var(--line)}
+.video .shelf i.gap{background:transparent;border:2px dashed #6E86AD}
+.video .shelf::after{content:"";position:absolute;left:-6px;right:-6px;bottom:-8px;height:6px;background:#D9E4F2}
+.video .cap{position:relative;font-family:var(--f-display);font-size:24px;line-height:1.08;text-transform:uppercase;text-align:center}
+.video .cap em{font-style:normal;color:var(--yellow)}
+.video .play{align-self:center;width:72px;height:72px;border-radius:50%;background:var(--yellow);border:3px solid var(--line);display:grid;place-items:center;position:relative}
+.video .play::before{content:"";border-left:22px solid var(--ink);border-top:14px solid transparent;border-bottom:14px solid transparent;margin-left:6px}
+.video.has-video{padding:0;display:block}
+.video.has-video video{width:100%;height:100%;object-fit:cover;display:block}
+.video .meta{position:relative;font-family:var(--f-mono);font-size:11.5px;color:#9FB3D1;text-align:center}
+
+/* faixa de numeros */
+.proof{background:var(--yellow);border-bottom:3px solid var(--line)}
+.proof .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:0;padding-block:0}
+.proof div{padding:22px 16px;border-right:3px solid var(--line);min-width:0}
+.proof div:last-child{border-right:0}
+.proof strong{display:block;font-family:var(--f-display);font-size:clamp(34px,4.6vw,50px);line-height:1;font-variant-numeric:tabular-nums}
+.proof span{display:block;font-weight:600;font-size:14.5px;margin-top:6px}
+
+section.band{padding-block:72px}
+.sec-head{display:grid;gap:14px;max-width:760px;margin-bottom:36px}
+.sec-head p{font-size:18px;color:var(--muted)}
+
+/* ruptura */
+.ruptura{background:var(--white);border-bottom:3px solid var(--line)}
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.trio article{border:3px solid var(--line);box-shadow:var(--shadow);background:var(--paper);padding:24px;display:grid;gap:10px;align-content:start;min-width:0}
+.trio article .tag{font-family:var(--f-mono);font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border:2px solid var(--line);justify-self:start}
+.trio article:nth-child(1) .tag{background:#C8F2EF}
+.trio article:nth-child(2) .tag{background:#FFD6D6}
+.trio article:nth-child(3) .tag{background:var(--yellow)}
+.trio h3{font-size:28px}
+.trio p{color:var(--muted)}
+
+/* seletor de ramo */
+.ramo{background:var(--paper);border-bottom:3px solid var(--line)}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px}
+.chip{font-family:var(--f-body);font-weight:600;font-size:15px;padding:10px 14px;border:2px solid var(--line);background:var(--white);color:var(--ink);cursor:pointer;box-shadow:3px 3px 0 var(--line)}
+.chip[aria-pressed="true"]{background:var(--navy);color:var(--white);box-shadow:3px 3px 0 var(--teal)}
+.lista{display:grid;grid-template-columns:.9fr 1.1fr;gap:28px;align-items:start}
+.lista-resumo{background:var(--navy);color:var(--white);border:3px solid var(--line);box-shadow:var(--shadow);padding:28px;display:grid;gap:14px}
+.lista-resumo .big{font-family:var(--f-display);font-size:clamp(56px,8vw,84px);line-height:.95;color:var(--yellow);font-variant-numeric:tabular-nums}
+.lista-resumo p{color:#D9E4F2}
+.lista-resumo p strong{color:var(--white)}
+.prods{display:grid;gap:14px}
+.prod{display:grid;grid-template-columns:76px 1fr;gap:16px;align-items:center;background:var(--white);border:3px solid var(--line);box-shadow:var(--shadow-s);padding:14px}
+.prod .thumb{width:76px;height:76px;border:2px solid var(--line);background:#E2F6F5;display:grid;place-items:center}
+.prod .thumb svg{width:44px;height:44px}
+.prod .info{min-width:0;display:grid;gap:6px}
+.prod .ref{font-family:var(--f-mono);font-size:12.5px;color:var(--muted)}
+.prod .nome{font-weight:800;font-size:15.5px;line-height:1.25}
+.bar{height:12px;border:2px solid var(--line);background:var(--paper);position:relative}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--teal);transition:width .5s ease}
+.prod .pct{font-size:13.5px;color:var(--muted)}
+.prod .pct b{color:var(--ink);font-variant-numeric:tabular-nums}
+.foot-note{font-size:13.5px;color:var(--muted);margin-top:14px}
+
+/* como funciona */
+.como{background:var(--navy);color:var(--white);border-bottom:3px solid var(--line)}
+.como .sec-head p{color:#B9C9DF}
+.passos{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;counter-reset:p}
+.passo{border:3px solid var(--line);background:var(--navy-2);box-shadow:6px 6px 0 var(--teal);padding:22px;display:grid;gap:10px;align-content:start;min-width:0}
+.passo::before{counter-increment:p;content:counter(p);font-family:var(--f-display);font-size:44px;line-height:1;color:var(--yellow)}
+.passo h3{font-size:24px}
+.passo p{color:#C9D6E8;font-size:15.5px}
+
+/* pagina de pedido (mock) */
+.pedido{background:var(--white);border-bottom:3px solid var(--line)}
+.pedido .wrap{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.phone{max-width:360px;width:100%;margin-inline:auto;border:3px solid var(--line);box-shadow:10px 10px 0 var(--navy);background:var(--paper);padding:14px;display:grid;gap:10px}
+.phone .ph-top{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+.phone h4{margin:0;font-family:var(--f-display);font-weight:400;font-size:22px;text-transform:uppercase}
+.row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;background:var(--white);border:2px solid var(--line);padding:9px 10px;font-size:13.5px}
+.row .q{font-family:var(--f-mono);font-size:12.5px;border:2px solid var(--line);padding:2px 8px;font-variant-numeric:tabular-nums}
+.total{background:var(--navy);color:var(--white);border:2px solid var(--line);padding:12px;display:grid;gap:8px}
+.total .t{display:flex;justify-content:space-between;align-items:baseline;font-weight:800}
+.total .t span:last-child{font-family:var(--f-display);font-size:26px;font-weight:400;color:var(--yellow);font-variant-numeric:tabular-nums}
+.meter{height:12px;border:2px solid var(--line);background:var(--navy-2);position:relative}
+.meter i{position:absolute;inset:0 auto 0 0;width:78%;background:var(--yellow)}
+.meter b{position:absolute;left:70%;top:-6px;bottom:-6px;width:3px;background:var(--white)}
+.total small{font-size:12.5px;color:#C9D6E8}
+.phone .send{font-weight:800;text-transform:uppercase;text-align:center;background:var(--teal);border:2px solid var(--line);padding:11px;font-size:14px}
+.checks{display:grid;gap:14px;margin-top:22px}
+.checks li{display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start;font-size:17px}
+.checks li::before{content:"";width:26px;height:26px;border:2px solid var(--line);background:var(--yellow) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.2 4.2L19 7' fill='none' stroke='%230A0F1A' stroke-width='3.2'/%3E%3C/svg%3E") center/18px no-repeat}
+.checks{list-style:none;padding:0}
+
+/* condicoes */
+.cond{background:var(--paper);border-bottom:3px solid var(--line)}
+.cards4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.cond-card{border:3px solid var(--line);box-shadow:var(--shadow);background:var(--white);padding:22px;display:grid;gap:8px;align-content:start;min-width:0}
+.cond-card .k{font-family:var(--f-mono);font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.cond-card .v{font-family:var(--f-display);font-size:clamp(34px,4vw,44px);line-height:1;font-variant-numeric:tabular-nums}
+.cond-card:nth-child(2){background:var(--yellow)}
+.cond-card p{color:var(--muted);font-size:15px}
+.cond-card:nth-child(2) p{color:var(--ink)}
+
+/* formulario */
+.form-sec{background:var(--teal);border-bottom:3px solid var(--line)}
+.form-sec .wrap{display:grid;grid-template-columns:.9fr 1.1fr;gap:44px;align-items:start}
+.form-sec h2{color:var(--ink)}
+.form-sec .why{display:grid;gap:16px;margin-top:22px}
+.why div{background:var(--white);border:3px solid var(--line);padding:14px 16px;box-shadow:var(--shadow-s)}
+.why b{display:block;font-family:var(--f-mono);font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.why p{font-size:15px;color:var(--muted)}
+form.card{background:var(--white);border:3px solid var(--line);box-shadow:10px 10px 0 var(--navy);padding:26px;display:grid;gap:16px}
+.steps{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.steps .eyebrow{color:var(--muted)}
+.dots{display:flex;gap:6px}
+.dots i{width:34px;height:8px;border:2px solid var(--line);background:var(--paper)}
+.dots i.on{background:var(--navy)}
+.field{display:grid;gap:6px}
+.field label,.legend{font-weight:800;font-size:14.5px}
+.field input,.field select{font:inherit;font-size:17px;padding:13px 14px;border:2px solid var(--line);background:var(--paper);color:var(--ink);width:100%;min-width:0}
+.field .hint{font-size:13px;color:var(--muted)}
+.field.err input{border-color:var(--red);background:#FFF1F1}
+.field .msg{font-size:13px;color:var(--red);font-weight:600}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ramos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ramos label{display:flex;align-items:center;gap:8px;border:2px solid var(--line);padding:10px;font-size:14px;font-weight:600;cursor:pointer;background:var(--paper);min-width:0}
+.ramos input,.pag input{accent-color:var(--navy);width:18px;height:18px;flex:none}
+.ramos label:has(input:checked),.pag label:has(input:checked){background:var(--navy);color:var(--white)}
+.pag{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pag label{display:flex;align-items:center;gap:8px;border:2px solid var(--line);padding:12px;font-weight:600;cursor:pointer;background:var(--paper)}
+.form-actions{display:flex;gap:10px;flex-wrap:wrap}
+.form-actions .btn{flex:1 1 200px}
+.small{font-size:13.5px;color:var(--muted)}
+.done{display:grid;gap:14px}
+.wa-preview{background:#E7F8E9;border:2px solid var(--line);padding:14px;font-size:14.5px;white-space:pre-wrap;font-family:var(--f-body)}
+.wa-num{font-family:var(--f-mono);font-weight:600;user-select:all}
+
+/* fabrica */
+.fab{background:var(--navy);color:var(--white);border-bottom:3px solid var(--line)}
+.fab .wrap{display:grid;grid-template-columns:1.2fr .8fr;gap:36px;align-items:center}
+.fab p{color:#C9D6E8;font-size:18px;margin-top:14px;max-width:36em}
+.addr{border:3px solid var(--line);background:var(--yellow);color:var(--ink);box-shadow:6px 6px 0 var(--teal);padding:22px;display:grid;gap:6px}
+.addr strong{font-family:var(--f-display);font-size:28px;font-weight:400;text-transform:uppercase;line-height:1.05}
+.addr span{font-weight:600}
+
+/* faq */
+.faq{background:var(--white);border-bottom:3px solid var(--line)}
+.faq details{border:3px solid var(--line);background:var(--paper);margin-bottom:12px}
+.faq summary{cursor:pointer;font-weight:800;font-size:17px;padding:16px 18px;list-style:none;display:flex;justify-content:space-between;gap:12px}
+.faq summary::after{content:"+";font-family:var(--f-display);font-size:24px;line-height:1}
+.faq details[open] summary::after{content:"–"}
+.faq details p{padding:0 18px 18px;color:var(--muted)}
+
+/* final */
+.final{background:var(--yellow);border-bottom:3px solid var(--line);text-align:center}
+.final .wrap{display:grid;justify-items:center;gap:22px}
+.final h2{font-size:clamp(38px,6vw,68px)}
+footer{background:var(--ink);color:#B9C3D1;padding-block:34px calc(34px + 72px)}
+footer .wrap{display:grid;gap:8px;font-size:14px}
+footer .logo{font-size:24px}
+@media(min-width:800px){footer{padding-block:34px}}
+
+/* barra fixa mobile */
+.sticky{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--navy);border-top:3px solid var(--line);padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));transform:translateY(110%);transition:transform .25s}
+.sticky.show{transform:none}
+.sticky .btn{width:100%}
+@media(min-width:800px){.sticky{display:none}}
+
+@media(max-width:900px){
+  .hero .wrap,.lista,.pedido .wrap,.form-sec .wrap,.fab .wrap{grid-template-columns:1fr}
+  .video{max-height:440px;width:min(300px,100%)}
+  .passos,.cards4{grid-template-columns:1fr 1fr}
+  .trio{grid-template-columns:1fr}
+  .proof .wrap{grid-template-columns:1fr 1fr}
+  .proof div:nth-child(2){border-right:0}
+  .proof div:nth-child(-n+2){border-bottom:3px solid var(--line)}
+}
+@media(max-width:560px){
+  .passos,.cards4,.ramos,.grid2{grid-template-columns:1fr}
+  section.band{padding-block:52px}
+  .online span{display:none}
+  form.card{padding:18px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#topo">NITRON<span>.</span></a>
+    <div class="online"><i aria-hidden="true"></i><span>Time comercial online agora</span></div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="topo">
+  <div class="wrap">
+    <div>
+      <h1 style="margin-top:14px">Prateleira vazia é <em>venda que foi embora.</em></h1>
+      <p class="lead">Você não precisa de muitos produtos. <strong>Precisa dos que vendem.</strong> Diga o ramo da sua loja e onde ela fica: a Nitron monta a lista do que mais gira no seu segmento, com o preço final para a sua cidade.</p>
+      <div class="ctas">
+        <a class="btn" href="#form">Quero a lista do meu ramo</a>
+        <a class="btn ghost" href="#ramo">Ver o que vende no meu ramo</a>
+      </div>
+      <div class="offer">
+        <span>Pedido mínimo <b>R$ 3.500</b></span>
+        <span><b>10% off</b> acima de R$ 5.000</span>
+        <span><b>6x sem juros</b> no cartão</span>
+        <span>Entrega <b>no preço</b></span>
+      </div>
+    </div>
+    <div class="video" id="videoBox" role="img" aria-label="Vídeo da Nitron com o Satoshi">
+      <div class="shelf" aria-hidden="true"><i></i><i class="gap"></i><i></i><i class="gap"></i><i></i></div>
+      <div class="play" aria-hidden="true"></div>
+      <div>
+        <p class="cap">Entrou na sua loja, <em>não achou</em> e foi embora.</p>
+        <p class="meta">Satoshi · Nitron</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROVA -->
+<section class="proof" aria-label="Números da Nitron">
+  <div class="wrap">
+    <div><strong>40 anos</strong><span>fabricando em Guarulhos/SP</span></div>
+    <div><strong>27 mil</strong><span>lojistas abastecidos</span></div>
+    <div><strong>10 ramos</strong><span>com lista própria de produtos</span></div>
+    <div><strong>3.244</strong><span>lojas do Sudeste na base das listas</span></div>
+  </div>
+</section>
+
+<!-- RUPTURA / DIAGNOSTICO -->
+<section class="band ruptura">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow" style="color:var(--teal-d)">Ruptura de estoque</span>
+      <h2>A margem some em silêncio, todo santo dia.</h2>
+      <p>O cliente não reclama do produto que faltou. Ele só não volta. A Nitron olha o que lojas do seu ramo compram e repetem, e transforma isso em uma lista pronta.</p>
+    </div>
+    <div class="trio">
+      <article>
+        <span class="tag">O que funciona</span>
+        <h3>O que gira no seu ramo</h3>
+        <p>Itens que a maioria das lojas do mesmo segmento compra e volta a comprar. É por eles que a lista começa.</p>
+      </article>
+      <article>
+        <span class="tag">O que não funciona</span>
+        <h3>Catálogo inteiro para garimpar</h3>
+        <p>Comprar por foto, sem saber o que sai, deixa dinheiro parado na prateleira e falta no que o cliente procura.</p>
+      </article>
+      <article>
+        <span class="tag">O que fazer</span>
+        <h3>Abastecer com a lista certa</h3>
+        <p>Você recebe a lista do seu ramo com preço e quantidade, ajusta o que quiser e envia o pedido.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- SELETOR DE RAMO -->
+<section class="band ramo" id="ramo">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow" style="color:var(--teal-d)">Inteligência de dados</span>
+      <h2>O que vende no seu ramo</h2>
+      <p>Toque no seu tipo de loja. Estes são os primeiros itens da lista que a Nina manda, e quantas lojas do ramo compram cada um.</p>
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="Escolha o ramo da sua loja"></div>
+    <div class="lista">
+      <div class="lista-resumo" aria-live="polite">
+        <span class="eyebrow" style="color:var(--teal)" id="lr-ramo">Utilidades / Variedades</span>
+        <span class="big" id="lr-n">41 itens</span>
+        <p>Lista montada a partir do que <strong id="lr-base">871 lojas</strong> desse ramo compram da Nitron no Sudeste.</p>
+        <p>Na página de pedido cada item já vem com <strong>preço da sua cidade</strong> e <strong>quantidade sugerida</strong>.</p>
+        <a class="btn" href="#form" id="lr-cta" style="justify-self:start">Quero esta lista</a>
+      </div>
+      <div>
+        <div class="prods" id="prods"></div>
+        <p class="foot-note">Exemplo da região Sudeste. A sua lista sai pela região da sua loja, que vem do CEP.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMO FUNCIONA -->
+<section class="band como">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow" style="color:var(--teal)">Como funciona</span>
+      <h2>Da lista ao pedido em 4 passos</h2>
+      <p>Sem visita, sem catálogo em PDF, sem esperar tabela.</p>
+    </div>
+    <div class="passos">
+      <div class="passo"><h3>Conte sobre a loja</h3><p>CNPJ, CEP e ramo. Menos de um minuto.</p></div>
+      <div class="passo"><h3>Fale com a Nina</h3><p>O WhatsApp abre com sua mensagem pronta. É só tocar em enviar.</p></div>
+      <div class="passo"><h3>Receba sua lista</h3><p>A Nina manda a página de pedido do seu ramo, com o preço da sua cidade.</p></div>
+      <div class="passo"><h3>Envie o pedido</h3><p>Ajuste as quantidades, veja o total somar e envie. A Nina acompanha.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- MOCK DA PAGINA DE PEDIDO -->
+<section class="band pedido">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow" style="color:var(--teal-d);display:block;margin-top:14px">A página de pedido</span>
+      <h2 style="margin-top:10px">Você vê o preço antes de falar de preço.</h2>
+      <ul class="checks">
+        <li>Cada produto com preço final para a sua cidade, entrega incluída.</li>
+        <li>O total soma na tela enquanto você ajusta.</li>
+        <li>Passou de R$ 5.000, os 10% entram sozinhos.</li>
+        <li>Dúvida no meio do caminho? A Nina responde no mesmo WhatsApp.</li>
+      </ul>
+    </div>
+    <div class="phone" aria-label="Ilustração da página de pedido">
+      <div class="ph-top"><span>pedido-nitron</span><span>Supermercado · SP</span></div>
+      <h4>Sua lista: 56 itens</h4>
+      <div class="row"><span>Lixeira Rattan c/ pedal 6L</span><span class="q">6</span></div>
+      <div class="row"><span>Porta óleo Itália</span><span class="q">12</span></div>
+      <div class="row"><span>Organizador multiuso Rattan 3 div.</span><span class="q">12</span></div>
+      <div class="row"><span>Porta detergente Rattan c/ base</span><span class="q">12</span></div>
+      <div class="total">
+        <div class="t"><span>Total</span><span>R$ 4.180</span></div>
+        <div class="meter" aria-hidden="true"><i></i><b></b></div>
+        <small>Mínimo atingido · faltam R$ 820 para 10% off</small>
+      </div>
+      <div class="send">Enviar pedido</div>
+      </div>
+  </div>
+</section>
+
+<!-- CONDICOES -->
+<section class="band cond">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow" style="color:var(--teal-d)">Condições</span>
+      <h2>O que vale para a sua primeira compra</h2>
+    </div>
+    <div class="cards4">
+      <div class="cond-card"><span class="k">Pedido mínimo</span><span class="v">R$ 3.500</span><p>Para abrir o pedido na página.</p></div>
+      <div class="cond-card"><span class="k">Desconto</span><span class="v">10% off</span><p>Automático no total, a partir de R$ 5.000.</p></div>
+      <div class="cond-card"><span class="k">Pagamento</span><span class="v">6x</span><p>Sem juros no cartão, ou à vista.</p></div>
+      <div class="cond-card"><span class="k">Entrega</span><span class="v">No preço</span><p>O valor da tela já é o final para a sua cidade.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FORMULARIO -->
+<section class="band form-sec" id="form">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow" style="display:block;margin-top:14px">Monte sua lista</span>
+      <h2 style="margin-top:10px">Três dados e a Nina já manda sua página de pedido.</h2>
+      <div class="why">
+        <div><b>CNPJ</b><p>Vendemos para revenda. Com ele conferimos o cadastro da loja.</p></div>
+        <div><b>CEP</b><p>A tabela muda por região. Com o CEP, o preço da tela já é o da sua cidade, com entrega.</p></div>
+        <div><b>Ramo</b><p>Papelaria não compra igual a supermercado. O ramo escolhe a sua lista.</p></div>
+      </div>
+    </div>
+
+    <form class="card" id="leadForm" novalidate>
+      <div class="steps">
+        <span class="eyebrow" id="stepLabel">Etapa 1 de 2</span>
+        <div class="dots" aria-hidden="true"><i class="on" id="d1"></i><i id="d2"></i></div>
+      </div>
+
+      <div id="step1" class="done" style="gap:14px">
+        <div class="field" id="f-nome"><label for="nome">Nome completo</label><input id="nome" autocomplete="name" placeholder="Nome e sobrenome"><span class="msg" hidden>Escreva nome e sobrenome.</span></div>
+        <div class="field" id="f-fone"><label for="fone">WhatsApp</label><input id="fone" inputmode="tel" autocomplete="tel" placeholder="(11) 90000-0000"><span class="msg" hidden>Confira o número com DDD.</span></div>
+        <div class="field" id="f-cnpj"><label for="cnpj">CNPJ da loja</label><input id="cnpj" inputmode="numeric" placeholder="00.000.000/0000-00"><span class="msg" hidden>O CNPJ tem 14 números.</span></div>
+        <div class="form-actions"><button class="btn" type="button" id="next">Continuar</button></div>
+        <p class="small">Venda só para lojas e revendas com CNPJ.</p>
+      </div>
+
+      <div id="step2" class="done" style="gap:14px" hidden>
+        <div class="grid2">
+          <div class="field" id="f-cep"><label for="cep">CEP da loja</label><input id="cep" inputmode="numeric" placeholder="00000-000"><span class="msg" hidden>O CEP tem 8 números.</span></div>
+          <div class="field"><label for="num">Número</label><input id="num" inputmode="numeric" placeholder="600"></div>
+        </div>
+        <p class="small" id="cepInfo" aria-live="polite">A cidade e a rua aparecem quando o CEP é preenchido.</p>
+        <div class="field" id="f-ramo">
+          <span class="legend">Ramo da loja</span>
+          <div class="ramos" id="ramosForm"></div>
+          <span class="msg" hidden>Escolha o ramo da sua loja.</span>
+        </div>
+        <div class="field">
+          <span class="legend">Como pretende pagar</span>
+          <div class="pag">
+            <label><input type="radio" name="pag" id="pag-cartao" value="6x sem juros no cartão" checked> 6x no cartão</label>
+            <label><input type="radio" name="pag" id="pag-vista" value="à vista"> À vista</label>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn ghost" type="button" id="back">Voltar</button>
+          <button class="btn" type="submit" id="enviarBtn">Receber minha lista</button>
+        </div>
+        <p class="small">O WhatsApp abre com a mensagem pronta. Toque em enviar para a Nina receber seus dados.</p>
+        <p class="msg-erro small" id="envioErro" hidden></p>
+      </div>
+
+      <div id="step3" class="done" hidden>
+        <span class="eyebrow" style="color:var(--teal-d)">Pronto</span>
+        <h3 style="font-size:32px">Agora é só enviar para a Nina</h3>
+        <p>Esta é a mensagem que vai abrir no seu WhatsApp:</p>
+        <div class="wa-preview" id="waText"></div>
+        <a class="btn" id="waBtn" href="#" target="_blank" rel="noopener">Abrir WhatsApp da Nina</a>
+        <p class="small">Se o WhatsApp não abrir, mande a mensagem para <span class="wa-num" id="waNum"></span>.</p>
+        <a class="btn ghost" id="listaBtn" href="#" target="_blank" rel="noopener" hidden>Ver minha lista com preços</a>
+        </div>
+    </form>
+  </div>
+</section>
+
+<!-- FABRICA -->
+<section class="band fab">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow" style="color:var(--teal);display:block;margin-top:14px">Direto da fábrica</span>
+      <h2 style="margin-top:10px">Quem compra com a gente compra de quem produz.</h2>
+      <p>A Nitron fabrica utilidades domésticas em Guarulhos há 40 anos. Prefere ver de perto antes do primeiro pedido? Peça para a Nina agendar um café na fábrica.</p>
+    </div>
+    <div class="addr">
+      <span class="eyebrow">Fábrica Nitron</span>
+      <strong>R. Urucuí, 600</strong>
+      <span>Cidade Aracília, Guarulhos/SP · 07250-150</span>
+      <span>Perto da Dutra, do aeroporto e do Expo Center Norte</span>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="band faq">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Perguntas de lojista</h2>
+    </div>
+    <details><summary>Qual o pedido mínimo?</summary><p>R$ 3.500.</p></details>
+    <details><summary>Tem desconto?</summary><p>Sim. A partir de R$ 5.000 o desconto de 10% entra sozinho no total da página.</p></details>
+    <details><summary>Como posso pagar?</summary><p>Na primeira compra, à vista ou em 6x sem juros no cartão.</p></details>
+    <details><summary>O frete é cobrado à parte?</summary><p>Não. O preço da página já é o final para a sua cidade, com a entrega incluída.</p></details>
+    <details><summary>Posso pedir produtos fora da lista?</summary><p>A lista é o ponto de partida do seu ramo. Se quiser outro item, peça para a Nina.</p></details>
+    <details><summary>Vendem para pessoa física?</summary><p>Não. A venda é para lojas e revendas com CNPJ.</p></details>
+  </div>
+</section>
+
+<!-- FINAL -->
+<section class="band final">
+  <div class="wrap">
+    <h2>Abasteça com o que vende. Pare de perder venda.</h2>
+    <a class="btn" href="#form" style="background:var(--navy);color:var(--white)">Quero a lista do meu ramo</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span class="logo">NITRON<span style="color:var(--teal)">.</span></span>
+    <span>Nitron. Toda casa tem.</span>
+    <span>Condições para revenda com CNPJ. Preço e pedido confirmados na página de pedido enviada pela Nitron.</span>
+    <span>Nitron © 2026. Todos os direitos reservados.</span>
+  </div>
+</footer>
+
+<div class="sticky" id="sticky"><a class="btn" href="#form">Quero a lista do meu ramo</a></div>
+
+<script>
+// ============================================================================
+// CONFIGURACAO: preencha antes de publicar.
+// ============================================================================
+const CONFIG = {
+  // WhatsApp da Nina, so numeros, com 55 e DDD. Ex.: "5511912345678"
+  WHATSAPP_NINA: "5511000000000",
+  // Endereco da funcao que grava o lead (GHL + copiloto_lead) e devolve o link da lista.
+  // Enquanto estiver vazio, a pagina so abre o WhatsApp com a mensagem pronta.
+  LEAD_ENDPOINT: "",
+  // Video do anuncio (mp4). Vazio = mostra a ilustracao no lugar.
+  VIDEO_URL: "",
+  VIDEO_POSTER: "",
+  // ID do Pixel da Meta. Vazio = nao carrega o pixel.
+  META_PIXEL_ID: "",
+  ORIGEM: "nitron-direto"
+};
+// Cestas reais (vw_pedido_base, Sudeste): lojas na base, itens na lista e os 3 primeiros com a % de lojas que compram.
+const RAMOS = [
+  {id:"R01",nome:"Utilidades / Variedades",base:871,n:41,icon:"org",itens:[["041.012.003","Organizador multiuso Rattan 3 div. preto",63],["133.012.003","Porta detergente Rattan c/ base preto",60],["060.012.003","Porta talheres Paris 4 div. c/ tampa",39]]},
+  {id:"R02",nome:"Magazine / Departamento",base:556,n:53,icon:"org",itens:[["133.012.003","Porta detergente Rattan c/ base preto",64],["041.012.003","Organizador multiuso Rattan 3 div. preto",62],["046.012.003","Porta óleo Itália preto",58]]},
+  {id:"R03",nome:"Presentes e Bijuteria",base:108,n:56,icon:"org",itens:[["041.012.003","Organizador multiuso Rattan 3 div. preto",59],["133.012.003","Porta detergente Rattan c/ base preto",52],["046.012.003","Porta óleo Itália preto",51]]},
+  {id:"R04",nome:"Supermercado / Mercearia",base:777,n:56,icon:"lix",itens:[["052.006.003","Lixeira Rattan c/ pedal preta 6L",66],["041.012.003","Organizador multiuso Rattan 3 div. preto",62],["046.012.003","Porta óleo Itália preto",61]]},
+  {id:"R05",nome:"Cama, Mesa e Banho",base:372,n:42,icon:"lix",itens:[["052.006.003","Lixeira Rattan c/ pedal preta 6L",62],["041.012.003","Organizador multiuso Rattan 3 div. preto",58],["052.006.002","Lixeira Rattan c/ pedal branca 6L",51]]},
+  {id:"R06",nome:"Vestuário e Calçados",base:101,n:18,icon:"gav",itens:[["027.012.001","Porta pão armazena e conserva 2,7L",33],["004.006.003","Gaveteiro c/ 4 gavetas preto",28],["142.006.002","Frasqueira medicamentos branca 6,2L",27]]},
+  {id:"R07",nome:"Papelaria",base:106,n:28,icon:"org",itens:[["041.012.003","Organizador multiuso Rattan 3 div. preto",48],["041.012.002","Organizador multiuso Rattan 3 div. branco",44],["137.012.002","Frasqueira medicamentos branca 2,8L",43]]},
+  {id:"R08",nome:"Material de Construção",base:122,n:14,icon:"gav",itens:[["185.012.002","Porta vassouras 4 encaixes branco",61],["013.050.004","Suporte para botijão areia",48],["500.002.001","Kit NitronBox c/ 3 peças",29]]},
+  {id:"R09",nome:"Farmácia e Perfumaria",base:134,n:26,icon:"gav",itens:[["043.012.002","Frasqueira medicamentos branca 1,4L",52],["193.024.001","Saboneteira com telinha transparente",42],["041.012.003","Organizador multiuso Rattan 3 div. preto",37]]},
+  {id:"R10",nome:"Esporte e Brinquedos",base:97,n:15,icon:"org",itens:[["041.012.003","Organizador multiuso Rattan 3 div. preto",69],["052.006.002","Lixeira Rattan c/ pedal branca 6L",59],["041.012.002","Organizador multiuso Rattan 3 div. branco",55]]}
+];
+const ICONS = {
+  org:'<svg viewBox="0 0 48 48"><rect x="5" y="16" width="38" height="24" fill="#12B5AE" stroke="#0A0F1A" stroke-width="3"/><path d="M17.7 16v24M30.3 16v24" stroke="#0A0F1A" stroke-width="3"/><path d="M5 16l4-7h30l4 7" fill="#FFD23F" stroke="#0A0F1A" stroke-width="3"/></svg>',
+  lix:'<svg viewBox="0 0 48 48"><path d="M12 14h24l-3 28H15z" fill="#12B5AE" stroke="#0A0F1A" stroke-width="3"/><rect x="9" y="8" width="30" height="6" fill="#FFD23F" stroke="#0A0F1A" stroke-width="3"/><path d="M20 20v16M28 20v16" stroke="#0A0F1A" stroke-width="2.5"/></svg>',
+  gav:'<svg viewBox="0 0 48 48"><rect x="10" y="5" width="28" height="38" fill="#12B5AE" stroke="#0A0F1A" stroke-width="3"/><path d="M10 14.5h28M10 24h28M10 33.5h28" stroke="#0A0F1A" stroke-width="3"/><path d="M21 9.5h6M21 19h6M21 28.5h6M21 38h6" stroke="#FFD23F" stroke-width="3"/></svg>'
+};
+const $ = s => document.querySelector(s);
+const fmt = n => n.toLocaleString("pt-BR");
+let ramoSel = "R01";
+
+function renderChips(){
+  $("#chips").innerHTML = RAMOS.map(r => `<button type="button" class="chip" data-r="${r.id}" aria-pressed="${r.id===ramoSel}">${r.nome}</button>`).join("");
+}
+function renderLista(){
+  const r = RAMOS.find(x => x.id===ramoSel);
+  $("#lr-ramo").textContent = r.nome;
+  $("#lr-n").textContent = r.n + " itens";
+  $("#lr-base").textContent = fmt(r.base) + " lojas";
+  $("#prods").innerHTML = r.itens.map(([ref,nome,p]) => `
+    <div class="prod"><div class="thumb">${ICONS[r.icon]}</div>
+      <div class="info"><span class="ref">${ref}</span><span class="nome">${nome}</span>
+        <div class="bar"><i style="width:${p}%"></i></div>
+        <span class="pct"><b>${p}%</b> das lojas do ramo compram</span></div></div>`).join("");
+  document.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c.dataset.r===ramoSel));
+  const radio = document.getElementById("ramo-"+ramoSel); if(radio) radio.checked = true;
+}
+$("#chips").addEventListener("click", e => { const b = e.target.closest(".chip"); if(!b) return; ramoSel = b.dataset.r; renderLista(); });
+$("#ramosForm").innerHTML = RAMOS.map(r => `<label><input type="radio" name="ramo" id="ramo-${r.id}" value="${r.id}">${r.nome}</label>`).join("");
+$("#ramosForm").addEventListener("change", e => { ramoSel = e.target.value; renderLista(); });
+renderChips(); renderLista();
+
+// ---- pixel da Meta (opcional) ----
+if (CONFIG.META_PIXEL_ID) {
+  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', CONFIG.META_PIXEL_ID); fbq('track', 'PageView');
+}
+const track = (ev, data) => { try { if (window.fbq) fbq('track', ev, data || {}); } catch (_e) {} };
+
+// ---- video ----
+if (CONFIG.VIDEO_URL) {
+  const box = $("#videoBox");
+  box.classList.add("has-video");
+  box.removeAttribute("role");
+  box.innerHTML = `<video src="${CONFIG.VIDEO_URL}" ${CONFIG.VIDEO_POSTER ? `poster="${CONFIG.VIDEO_POSTER}"` : ""} controls playsinline muted preload="metadata"></video>`;
+}
+
+// ---- origem da visita (UTM do anuncio) ----
+const qs = new URLSearchParams(location.search);
+const UTM = {};
+["utm_source","utm_medium","utm_campaign","utm_content","utm_term","fbclid","gclid"].forEach(k => { if (qs.get(k)) UTM[k] = qs.get(k); });
+
+// ---- mascaras ----
+const dg = s => s.replace(/\D/g,"");
+$("#fone").addEventListener("input", e => { let d = dg(e.target.value).slice(0,11); e.target.value = d.length>10 ? `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}` : d.length>6 ? `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}` : d.length>2 ? `(${d.slice(0,2)}) ${d.slice(2)}` : d; });
+$("#cnpj").addEventListener("input", e => { const d = dg(e.target.value).slice(0,14); e.target.value = d.replace(/^(\d{2})(\d)/,"$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/,"$1.$2.$3").replace(/\.(\d{3})(\d)/,".$1/$2").replace(/(\d{4})(\d)/,"$1-$2"); });
+
+// CNPJ: confere os digitos verificadores, para nao gravar numero digitado errado
+function cnpjValido(c){
+  c = dg(c); if (c.length !== 14 || /^(\d)\1+$/.test(c)) return false;
+  const calc = n => { let s = 0, p = n - 7; for (let i = 0; i < n; i++) { s += +c[i] * p--; if (p < 2) p = 9; } const r = s % 11; return r < 2 ? 0 : 11 - r; };
+  return calc(12) === +c[12] && calc(13) === +c[13];
+}
+
+// ---- CEP -> cidade/UF/rua (ViaCEP) ----
+let ENDERECO = null;
+$("#cep").addEventListener("input", async e => {
+  const d = dg(e.target.value).slice(0,8); e.target.value = d.length>5 ? d.slice(0,5)+"-"+d.slice(5) : d;
+  ENDERECO = null;
+  if (d.length !== 8) { $("#cepInfo").textContent = "A cidade e a rua aparecem quando o CEP é preenchido."; return; }
+  $("#cepInfo").textContent = "Buscando o CEP...";
+  try {
+    const r = await fetch("https://viacep.com.br/ws/" + d + "/json/");
+    const v = await r.json();
+    if (v.erro) { $("#cepInfo").textContent = "Não achamos esse CEP. Confira os números."; return; }
+    ENDERECO = { cidade: v.localidade, uf: v.uf, rua: v.logradouro, bairro: v.bairro, ibge: v.ibge };
+    $("#cepInfo").textContent = [v.logradouro, v.bairro, v.localidade + "/" + v.uf].filter(Boolean).join(" · ");
+  } catch (_e) {
+    $("#cepInfo").textContent = "Não conseguimos consultar o CEP agora. Pode seguir: a Nina confirma sua cidade.";
+  }
+});
+
+function check(id, ok){ const f = document.getElementById(id); f.classList.toggle("err", !ok); f.querySelector(".msg").hidden = ok; return ok; }
+function go(step){
+  $("#step1").hidden = step!==1; $("#step2").hidden = step!==2; $("#step3").hidden = step!==3;
+  $("#stepLabel").textContent = step===3 ? "Enviado" : "Etapa "+step+" de 2";
+  $("#d1").classList.toggle("on", step>=1); $("#d2").classList.toggle("on", step>=2);
+  if (step === 3) $("#leadForm").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+$("#next").addEventListener("click", () => {
+  const a = check("f-nome", $("#nome").value.trim().split(/\s+/).length>=2);
+  const b = check("f-fone", dg($("#fone").value).length>=10);
+  const c = check("f-cnpj", cnpjValido($("#cnpj").value));
+  if(a&&b&&c) { go(2); track("InitiateCheckout"); }
+});
+$("#back").addEventListener("click", () => go(1));
+
+const foneFmt = n => { const d = dg(n).replace(/^55/,""); return d.length===11 ? `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}` : d.length===10 ? `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}` : n; };
+$("#waNum").textContent = foneFmt(CONFIG.WHATSAPP_NINA);
+
+$("#leadForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const okCep = check("f-cep", dg($("#cep").value).length===8);
+  const ramo = document.querySelector('input[name="ramo"]:checked');
+  const okRamo = check("f-ramo", !!ramo);
+  if(!okCep || !okRamo) return;
+  const r = RAMOS.find(x => x.id===ramo.value);
+  const pag = document.querySelector('input[name="pag"]:checked').value;
+  const lead = {
+    nome: $("#nome").value.trim(),
+    fone: "55" + dg($("#fone").value),
+    cnpj: dg($("#cnpj").value),
+    cep: dg($("#cep").value),
+    numero: $("#num").value.trim(),
+    cidade: ENDERECO?.cidade || "", uf: ENDERECO?.uf || "", rua: ENDERECO?.rua || "", bairro: ENDERECO?.bairro || "",
+    ramo: r.id, ramo_nome: r.nome, pagamento: pag,
+    origem: CONFIG.ORIGEM, pagina: location.href, ...UTM
+  };
+
+  const txt = `Olá, Nina! Sou ${lead.nome} e quero receber a lista de produtos Nitron para a minha loja.\n\nOrigem: Nitron Direto\nCNPJ: ${$("#cnpj").value}\nCEP: ${$("#cep").value}${lead.numero ? ", nº "+lead.numero : ""}${lead.cidade ? " (" + lead.cidade + "/" + lead.uf + ")" : ""}\nRamo: ${r.nome}\nPagamento: ${pag}`;
+  $("#waText").textContent = txt;
+  $("#waBtn").href = "https://wa.me/" + dg(CONFIG.WHATSAPP_NINA) + "?text=" + encodeURIComponent(txt);
+
+  // grava o lead e pega o link da lista, quando a funcao estiver configurada
+  $("#listaBtn").hidden = true; $("#envioErro").hidden = true;
+  if (CONFIG.LEAD_ENDPOINT) {
+    const btn = $("#enviarBtn"); btn.disabled = true; btn.textContent = "Enviando...";
+    try {
+      const resp = await fetch(CONFIG.LEAD_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(lead) });
+      const out = await resp.json().catch(() => ({}));
+      if (out && out.link) { $("#listaBtn").href = out.link; $("#listaBtn").hidden = false; }
+    } catch (_e) {
+      // falha na gravacao nao trava o lojista: o WhatsApp segue com todos os dados
+    } finally { btn.disabled = false; btn.textContent = "Receber minha lista"; }
+  }
+  track("Lead", { content_category: r.nome });
+  go(3);
+});
+$("#waBtn").addEventListener("click", () => track("Contact"));
+
+// ---- barra fixa no celular depois do hero ----
+const sticky = $("#sticky");
+const io = new IntersectionObserver(([en]) => sticky.classList.toggle("show", !en.isIntersecting), {threshold:0});
+io.observe($(".hero"));
+const formIo = new IntersectionObserver(([en]) => { if(en.isIntersecting) sticky.classList.remove("show"); }, {threshold:.2});
+formIo.observe($("#form"));
+</script>
+</body>
+</html>
