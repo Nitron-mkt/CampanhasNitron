@@ -315,6 +315,28 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   (`vigia_inst_ativo='nao'`).
   **Tirar a pausa é ato de quem religou a sessão** — o vigia não tira sozinho, senão volta a bater
   numa sessão morta.
+- **`instancia_ghl.pausada_em` E UMA TRAVA MANUAL, NAO O ESTADO DE HOJE.** Ela e escrita na
+  PRIMEIRA recusa e **nunca se solta sozinha** — a sessao volta no app e a coluna continua dizendo
+  que a instancia esta morta. Em 03/11 o gestor desconfiou ("essas instancias estao conectadas sim,
+  verifique novamente") e mandou testar; das CINCO pausadas, **tres estavam no ar**: Bianca (parada
+  no papel havia 15 dias), Karla (19 dias) e Estevany (6 dias). Eu tinha reportado as cinco como
+  "fora" lendo so a coluna. **Nao afirme que uma instancia esta fora sem mandar uma mensagem por
+  ela.**
+  **Como testar** (foi o que ele pediu e o que funcionou): o numero de saida e o `assignedTo` do
+  contato, entao troca-se o dono do contato INTERNO para o usuario daquela instancia, chama-se o
+  `campanhas-enviar` com `instancia` igual, e le-se a conversa. Sao tres respostas possiveis, e elas
+  querem dizer coisas diferentes:
+  | o que aparece | significa | conserto |
+  |---|---|---|
+  | `[System]: Contact Instance Updated!` e a mensagem entregue | sessao viva | limpar `pausada_em` |
+  | `[System]: <inst> - The instance is disconnected.` | sessao caiu de verdade | religar no app |
+  | `[System]: The specified instance does not exist.` | o NOME mudou no app | renomear em `instancia_ghl` |
+  No fim, **devolver o dono do contato**. Em 03/11: Bianca, Karla e Estevany liberadas; Nina
+  Financeiro confirmada caida (desde 25/09); Campanhas Nitron e nome inexistente, nao restricao.
+- **O vigia so sabe PAUSAR, ninguem sabe DESPAUSAR.** E por isso que a coluna vira cemiterio: o
+  `copiloto-lead` e o `vigia-instancia` escrevem a pausa, e tirar e ato humano. Proposto ao gestor
+  em 03/11 um ping diario que solta a pausa sozinho quando a sessao responde — **aguardando ordem**.
+
 - **Contato de lead SEM DONO recebe Zaptos normalmente; com dono de outra instância, não.** Os
   contatos que a Nina atende nascem sem `assignedTo` (quem cria é o inbound do ZaptosWPP) e o
   `#contact_instance` resolve a saída. Mas quando alguém do time **assume** o contato (o dono passa
@@ -699,9 +721,12 @@ confundir com as outras, inclusive porque estamos mandando apenas para a galera 
 
 ## Estado conhecido (28/08/2026)
 
-- **Zaptos da instância "Campanhas Nitron" está RESTRINGIDO pelo WhatsApp.** Sem previsão. A fila
-  segue LIGADA; a restrição está registrada como pausa dessa instância (`instancia_ghl.pausada_em`).
-  As outras seis instâncias trabalham normalmente.
+- **"Campanhas Nitron" NÃO está restringida pelo WhatsApp — o NOME não existe mais no ZaptosWPP.**
+  Esta linha dizia "RESTRINGIDO pelo WhatsApp, sem previsão" desde 28/08 e ninguém reconferiu por
+  **dois meses**. No teste de 03/11 o app respondeu `[System]: The specified instance does not
+  exist.` — é o caso da Isadora→Mara outra vez: renomearam o aparelho e o cadastro daqui ficou para
+  trás. Conserto é descobrir o token atual no app e renomear em `instancia_ghl`, não esperar
+  restrição cair. A fila segue LIGADA.
 - **Clube a vencer / distrato está em STAND BY** (`ativa=false`) desde 28/08, por decisão do gestor.
 - **Reativação 180 dias** só volta quando o gestor mandar; as 43 linhas restantes estão canceladas.
 - 9 das 13 campanhas ativas são só Zaptos; 4 aceitam e-mail. 77 de 79 representantes têm e-mail,
