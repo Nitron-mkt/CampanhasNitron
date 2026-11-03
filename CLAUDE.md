@@ -591,6 +591,49 @@ confundir com as outras, inclusive porque estamos mandando apenas para a galera 
   deploy: `copiloto_config.link_exige_cnpj` / `link_exige_endereco`. Colunas novas em
   `copiloto_lead`: `endereco`, `cep`, `pagamento`. **A regra do CIF ainda não existe** — o gestor
   disse que passa a informação; por ora o endereço é só colhido.
+- **O CNAE DO CNPJ DECIDE A CESTA, e os dois dados são pedidos JUNTOS** (`copiloto-lead` v21,
+  03/11). Ordem do gestor depois de ler a conversa do Cassio (lead 617) inteira: *"o CNPJ tem que
+  ser pedido para consultar o tipo de empresa que é e depois passar o mix correto, depois disso o
+  CEP você pode consultar apenas a cidade/estado (…) não precisa ficar fazendo volta para mandar o
+  link pra ele, basta colher os dois em uma mensagem só."* Três defeitos, cada um medido:
+  1. **O CNPJ era pedido e jogado fora para esse fim.** Servia só para ver se já havia cadastro; a
+     cesta saía do **palpite da Nina na conversa**. A Villa Nova recebeu `Sudeste-R01` tendo CNAE
+     4713-0/02 (magazine, R02); o Cassio teria recebido R01 por ter dito "variedades", tendo CNAE
+     4729-6/99 (mercearia, R04). Pedir o dado e não usar é o pior dos mundos — tem o custo da
+     pergunta e nenhum benefício. Hoje a cadeia é CNPJ → **BrasilAPI** → `cnae_fiscal` →
+     `cnae_ramo` (258 linhas, montada da base real de clientes) → R01..R10, consultada **uma vez
+     por lead** (`cnae_em` marca que já foi, inclusive quando a Receita não respondeu). Conferida
+     em 8 CNPJs reais de leads parados: 8 resolveram. Só **R01..R10** têm cesta em `pedido_base`:
+     CNAE que cai noutro ramo devolve vazio e a cesta geral vale.
+  2. **O código não gravava o que o lead escreveu.** A Nina respondeu *"Peguei seu CEP aí!"* e a
+     coluna ficou VAZIA — e a trava lê a **coluna**, então ela pediria o mesmo dado para sempre.
+     Agora `cepDoTexto()` e `cnpjDoTexto()` varrem o que o lead escreveu na conversa inteira e
+     gravam sozinhos, sem depender de o modelo lembrar de chamar `salvar_lead`.
+  3. **A volta do endereço não existe mais.** O CEP já traz rua, bairro, cidade e UF: pedir os três
+     de novo foi o que fez o Cassio ir embora (*"Meu Deus / pode deixa / obrigado"*) depois de ter
+     entregado quatro dados. A trava aceita **CEP sozinho**, o prompt manda pedir os dois numa
+     mensagem só e mandar o link na sequência, e proíbe perguntar o que ele já disse ("variedades"
+     está respondido — não se pergunta de qual linha ele precisa).
+  Custo da trava, medido antes: link em **49%** dos leads sem trava, **40%** com CNPJ+endereço,
+  **22%** com CEP junto; dos 33 leads sem link, **28 travados no CNPJ**.
+- **A reativação dos leads em aberto é função PRÓPRIA** (`nina-reativa`, 03/11). Ordem do gestor:
+  *"Os leads que estão em aberto preciso que reativem os mesmos falando do desconto disponível e
+  falando para passarem o restante dos dados para definir o melhor mix pra eles."* Separada do
+  `copiloto-lead` pelas duas razões da `nina-poslink` — a função de lead já está no limite de
+  tamanho que o deploy aceita, e regra nova que fala sozinha com **~590 leads** tem de poder ser
+  desligada sem publicar por cima da função que está atendendo. **Nasce desligada e sem cron**
+  (`reativa_ativo='nao'`): quem dispara é uma pessoa, lote a lote. O modelo roda **sem ferramenta**
+  — escreve uma frase de reabertura, não uma rodada de qualificação, então não tem como inventar
+  preço, praça nem compromisso. **O que falta (CNPJ/CEP) é conta de código**, não palpite do
+  modelo. Três travas de respeito: pula quem tem a **última mensagem inbound** (quem escreveu e
+  não foi respondido é trabalho do `copiloto-lead`, não de campanha), pula conversa viva
+  (`reativa_silencio_h`, 48h) e só sai entre 9h e 19h de SP, sem domingo. `?acao=fila` mostra o
+  público sem mandar nada.
+- **`reativa_em` é gravado ANTES do envio** — é o conserto da corrida do `toques`, aplicado aqui.
+  Contador escrito **depois** do envio (que leva 12s de checagem de entrega) mente quando duas
+  rodadas se cruzam: foi o que deu duas mensagens quase iguais à StarLuz com 3 minutos de
+  diferença. O lead sai da fila no instante em que é escolhido; se o envio falhar, o motivo fica em
+  `reativa_erro` e quem decide tentar de novo é uma pessoa.
 - **Primeira compra: à vista ou 6x no cartão sem juros** (ordem do gestor, 26/10). A Nina pergunta
   como o lead pretende pagar e diz isso — nada além. Antes ela respondia "quem fecha forma de
   pagamento é o vendedor que assume o pedido", que empurrava a pergunta para frente e travava o
