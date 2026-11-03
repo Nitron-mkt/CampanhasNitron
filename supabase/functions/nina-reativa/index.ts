@@ -1,4 +1,4 @@
-// nina-reativa (v1) — reativa os leads em aberto: o desconto que ele JA tem, e o que falta para
+// nina-reativa (v2) — reativa os leads em aberto: o desconto que ele JA tem, e o que falta para
 // montar o mix dele.
 //
 // Ordem do gestor em 03/11: "Os leads que estao em aberto preciso que reativem os mesmos falando
@@ -60,6 +60,25 @@ async function pausarInstancia(sb: any, instancia: string, motivo: string) {
   } catch (_e) { return { ok: false }; }
 }
 
+// O DONO DO CONTATO E QUEM DECIDE SE A MENSAGEM SAI — o numero de saida e o `assignedTo`. Contato
+// de lead que a Nina atende nasce SEM dono (quem cria e o inbound do ZaptosWPP) e o
+// `#contact_instance` resolve a saida. Quando alguem do time ASSUME o contato, o campanhas-enviar
+// recusa o envio da Nina, e isso e bom: significa que um humano esta na conversa.
+// Aqui essa checagem vem ANTES da chamada ao modelo e ANTES de gravar `reativa_em`. Se viesse
+// depois, o lead gastaria a unica tentativa dele numa recusa: dos 591 da fila, 7 estao assim e
+// todos eles estavam na frente, porque sao os mais recentes.
+// De quebra ela protege de um caso pior: o MIRAIYAA (lead 230) esta com a Monica E tem tag
+// `sankhya-cliente` com codparc 171123 — e CLIENTE da casa, nao lead. Mandar roteiro de lead novo
+// para cliente com consultor e o erro que a trava `buscar_cliente` ja evita na conversa.
+async function donoDoContato(contact_id: string): Promise<{ ok: boolean; dono?: string; erro?: string }> {
+  try {
+    const r = await ghl("GET", `/contacts/${contact_id}`);
+    if (!r.ok) return { ok: false, erro: "GHL " + r.status };
+    const c = (await r.json().catch(() => ({})))?.contact || {};
+    return { ok: true, dono: String(c.assignedTo || "").trim() };
+  } catch (e) { return { ok: false, erro: String(e).slice(0, 120) }; }
+}
+
 const horaBRT = () => new Date(Date.now() - 3 * 3600 * 1000).getUTCHours();
 const diaBRT = () => new Date(Date.now() - 3 * 3600 * 1000).getUTCDay();
 function haDias(iso: any): number { const t = new Date(iso || 0).getTime(); return t ? Math.floor((Date.now() - t) / 86400000) : 0; }
@@ -84,6 +103,9 @@ Deno.serve(async (req) => {
     const hFim = parseInt(cfg.reativa_hora_fim || "19") || 19;
     const silencioH = Math.max(1, parseInt(cfg.reativa_silencio_h || "48") || 48);
     const pedidoMin = parseInt(digits(cfg.pedido_minimo || "3500")) || 3500;
+    // Lista de `assignedTo` que ainda assim podem receber (o proprio usuario da Nina, se um dia o
+    // contato for atribuido a ela). Vazia por padrao: contato com dono nao recebe.
+    const donosOk = new Set(String(cfg.reativa_dono_ok || "").split(",").map((x) => x.trim()).filter(Boolean));
     const nome = prim(cfg.nome_assistente || inst || "Nina");
 
     // ---- relatorio: quem esta na fila, sem mandar nada -----------------------------------------
@@ -133,6 +155,23 @@ Deno.serve(async (req) => {
     for (const L of (cands || [])) {
       if (mandados >= lote) break;
       const base = { lead_id: L.id, contato: L.empresa || L.nome || L.fone, status: L.status, parado_ha_dias: haDias(L.ultima_resposta_em || L.atualizado) };
+
+      // ---- quem ja e CLIENTE nao e lead -------------------------------------------------------
+      // `codparc` preenchido, ou o CNPJ dele achado em ghl_cliente, quer dizer que a loja tem
+      // cadastro e consultor. Reabrir com roteiro de lead novo seria atropelar quem a atende.
+      if (L.codparc) { feitos.push({ ...base, decisao: "pular", motivo: "ja e CLIENTE da Nitron (codparc " + L.codparc + ") — quem fala com ele e o consultor dele" }); continue; }
+      if (digits(L.cnpj).length === 14) {
+        const { data: cli } = await sb.from("ghl_cliente").select("codparc, razao, situacao").ilike("cnpj", "%" + digits(L.cnpj) + "%").limit(1).maybeSingle();
+        if (cli) { feitos.push({ ...base, decisao: "pular", motivo: "o CNPJ dele ja tem cadastro na Nitron (" + cli.razao + ", codparc " + cli.codparc + ", " + cli.situacao + ") — quem fala com ele e o consultor dele" }); continue; }
+      }
+
+      // ---- contato com DONO nao recebe pela Nina ----------------------------------------------
+      const dn = await donoDoContato(String(L.contact_id));
+      if (!dn.ok) { feitos.push({ ...base, decisao: "erro", motivo: "nao consegui ler o contato no CRM: " + dn.erro }); continue; }
+      if (dn.dono && !donosOk.has(dn.dono)) {
+        feitos.push({ ...base, decisao: "pular", motivo: "o contato tem dono no CRM (" + dn.dono + "), entao o Zaptos sairia pelo numero dele e nao pelo da Nina — e um humano ja esta na conversa" });
+        continue;
+      }
 
       // ---- a conversa no CRM manda, nao a nossa tabela ----------------------------------------
       const rc = await ghl("GET", `/conversations/search?locationId=${LOC}&contactId=${L.contact_id}&limit=1`);

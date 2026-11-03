@@ -1,4 +1,4 @@
-// copiloto-lead (v21) — O CNPJ DECIDE O MIX, O CEP DECIDE O PRECO, E OS DOIS SAO PEDIDOS JUNTOS.
+// copiloto-lead (v22) — O CNPJ DECIDE O MIX, O CEP DECIDE O PRECO, E OS DOIS SAO PEDIDOS JUNTOS.
 //
 // Ordem do gestor em 03/11, depois de ler a conversa do Cassio (lead 617) inteira:
 //   "o CNPJ tem que ser pedido para consultar o tipo de empresa que e e depois passar o mix
@@ -291,15 +291,26 @@ function cnpjDoTexto(s: any): string {
 // so R01..R10 tem cesta montada em pedido_base. CNAE que cai noutro ramo (R22, R25...) devolve
 // vazio de proposito: melhor a cesta geral do que uma cesta que nao existe.
 const TEM_CESTA = /^R(0[1-9]|10)$/;
-async function ramoDoCnpj(sb: any, cnpj: string): Promise<{ ramo: string; cnae: string; desc: string; razao: string; cidade: string; uf: string } | null> {
+// A BrasilAPI LIMITA CHAMADA, e isso muda o que fazer com a falha. Medido em 03/11: 25 CNPJs em
+// sequencia e os ultimos vieram HTTP 429 "Too Many Requests". Um 429 nao quer dizer "este CNPJ nao
+// tem CNAE" — quer dizer "pergunte de novo depois". Se a falha transitoria contar como resposta, o
+// lead fica marcado como consultado para sempre e a cesta dele volta a sair do palpite, que e
+// exatamente o defeito que esta versao veio consertar.
+// Por isso ha TRES retornos, e eles sao diferentes:
+//   objeto          -> a Receita respondeu (com ou sem ramo que tenha cesta): assunto encerrado.
+//   { fim: true }   -> CNPJ que a Receita nao conhece (404) ou sem CNAE: tambem encerrado.
+//   null            -> falha transitoria (429, 5xx, timeout, rede): NAO encerra, tenta na proxima.
+type Ramo = { ramo: string; cnae: string; desc: string; razao: string; cidade: string; uf: string };
+async function ramoDoCnpj(sb: any, cnpj: string): Promise<Ramo | { fim: true } | null> {
   const d = digits(cnpj);
-  if (d.length !== 14) return null;
+  if (d.length !== 14) return { fim: true };
   try {
     const r = await fetch("https://brasilapi.com.br/api/cnpj/v1/" + d, { signal: AbortSignal.timeout(9000) });
-    if (!r.ok) return null;
+    if (r.status === 404) return { fim: true };
+    if (!r.ok) return null; // 429 e 5xx sao "pergunte de novo", nao "nao existe"
     const v = await r.json();
     const cnae = String(v?.cnae_fiscal || "").replace(/\D/g, "");
-    if (!cnae) return null;
+    if (!cnae) return { fim: true };
     const { data } = await sb.from("cnae_ramo").select("ramo_sigla").eq("cnae7", cnae).maybeSingle();
     const sig = String(data?.ramo_sigla || "").toUpperCase();
     return {
@@ -653,14 +664,16 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
   let cadastro: any = null;
   if (cnpjForm && cnpjForm.length >= 11) { const { data } = await sb.from("ghl_cliente").select("codparc, razao, situacao, dias").ilike("cnpj", "%" + cnpjForm + "%").limit(1).maybeSingle(); cadastro = data || null; }
 
-  // CNPJ -> CNAE -> RAMO, uma vez por lead (`cnae_em` marca que ja foi consultado, inclusive
-  // quando a Receita nao respondeu — senao a cada 5 min bate de novo na API publica).
+  // CNPJ -> CNAE -> RAMO, uma vez por lead. `cnae_em` marca que a pergunta foi RESPONDIDA — nunca
+  // que ela falhou: falha transitoria (429 da BrasilAPI, timeout) deixa a coluna vazia de
+  // proposito, para a proxima rodada perguntar de novo. Como a consulta so acontece no lead que
+  // esta sendo atendido naquela passada, isso nao vira martelada na API publica.
   const cnpjVal = digits(auto.cnpj || leadRow?.cnpj || cnpjForm || "");
   let ramoCnae = String(leadRow?.ramo_cnae || "").toUpperCase();
   let cnaeDesc = String(leadRow?.cnae_desc || "");
   if (!opts.dry && cnpjVal.length === 14 && !leadRow?.cnae_em) {
-    const rc = await ramoDoCnpj(sb, cnpjVal);
-    if (rc) {
+    const rc: any = await ramoDoCnpj(sb, cnpjVal);
+    if (rc && !rc.fim) {
       ramoCnae = rc.ramo; cnaeDesc = rc.desc;
       await upsertLead(sb, ctx, {
         cnae: rc.cnae, cnae_desc: rc.desc, ramo_cnae: rc.ramo || null, razao_social: rc.razao || null,
@@ -671,9 +684,11 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
         cidade: String(leadRow?.cidade || "").trim() ? null : (rc.cidade || null),
         uf: String(leadRow?.uf || "").trim() ? null : (rc.uf || null),
       });
-    } else {
+    } else if (rc && rc.fim) {
+      // a Receita respondeu que nao tem o que dizer: encerra, para nao perguntar de novo a toa.
       await upsertLead(sb, ctx, { cnae_em: new Date().toISOString() });
     }
+    // rc === null: falha transitoria. Nao grava nada, tenta na proxima passada.
   }
   // nome do CRM entra so como provisorio: se a Nina JA confirmou o nome com a pessoa, esta linha
   // nao pode reescrever com o apelido do perfil (era o mesmo vao que fazia o status voltar na v4).
