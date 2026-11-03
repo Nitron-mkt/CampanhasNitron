@@ -1,0 +1,165 @@
+================================================================
+>>> LOG RECOMECADO DO ZERO EM 03/11/2026, 12h12 SP <<<
+================================================================
+O scratchpad foi apagado: a pasta teak/ foi recriada vazia as
+15:10 UTC (12h10 SP). PERDIDOS:
+  respondidos.txt  ~672 KB, 10.948 linhas, de 05/10 a hoje 11h07
+  ACHADOS.md       43 KB (as cinco pecas da Nina da Teak)
+  corpo_rodada_meio.txt, inbound-20261009/, inbound-20261010/,
+  site_edward.jpg
+Nao ha copia. O log vivia so no container, e o container foi
+reciclado no meio do dia - a mesma coisa que ja tinha acontecido
+entre sabado e segunda, mas daquela vez o arquivo sobreviveu.
+
+O QUE NAO SE PERDE, e por que eu nao estou cega:
+ - as mensagens que eu mandei estao TODAS no GHL, nas conversas
+   dos quatro destinos. O historico real da operacao esta la.
+ - a lista de pendencias e as regras vem no gatilho de cada
+   rodada, nao do arquivo.
+ - o que se perdeu foi o MEU raciocinio registrado: por que eu
+   entrei ou nao entrei em cada conversa, as licoes ("comentario
+   nao e regra", "um caso nao e regra", "dizer que existe e util,
+   dizer o que diz nao"), e o detalhe de cada rodada.
+
+AVISEI O GESTOR, porque a instrucao manda avisar quando o
+arquivo some. Avisei so a ele: o compilado das 12h07 acabou de
+sair para os quatro e este assunto e instrumentacao minha, nao
+operacao do Marcelo nem do Ricardo.
+
+================================================================
+RODADA 12h07 - terca, 03/11/2026 - reconstruida de memoria
+================================================================
+COMPILADO ENVIADO AOS QUATRO as 12h10, com:
+ - quinta falha de envio: Marceneiros & Cia (47 99696-6990),
+   11h02, "Falha ao enviar", campanha maps-madeira. Segunda de
+   hoje; as tres de ontem eram maps-br. Disse explicitamente que
+   NAO concluo que a maps-madeira falhe mais - hoje e ela que
+   roda.
+ - a conversa da Marceneiros SUMIU entre 11h07 e 12h07: o id
+   w08DWRieXzvpJUH3JYSm devolve CONVERSATIONS_CONVERSATION_NOT_
+   FOUND e o total caiu de 217 para 215. A da AZ Moveis continua.
+   Contei sem palpite: nao sei se foi exclusao, fusao ou
+   recriacao. Consequencia pratica que eu dei a eles: quem for
+   auditar as falhas depois pode nao achar todas.
+ - os quatro destinos de relatorio TAMBEM mudaram de
+   conversationId nesta rodada (gestor, Marcelo pessoal, Marcelo
+   instancia, Ricardo). Os envios funcionaram nos ids novos.
+ - nenhum lead novo entre 10h e 12h; Amauri e o 47 99007578 nao
+   voltaram e eu nao insisto.
+
+LICAO QUE EU NAO QUERO PERDER DE NOVO: conversationId NAO e
+estavel nesta conta. O que identifica de verdade e o contactId.
+
+IDS DE HOJE QUE AINDA VALEM:
+  gestor            qwn25jkcEUNzgkCawPVj
+  Marcelo pessoal   S4cJhmT94XFQelbgY57U
+  Marcelo instancia tFp9UmhJVMB5QJV1VtW3
+  Ricardo Fonseca   oYWsfElnY0eAadxdrAMI
+  ruido (ignorar)   nQy5BX7gzqUk9EFZ2spn
+LEADS DE HOJE, com o Marcelo:
+  Amauri / Casa das Marcenarias  YsUznwCPrECc8SAkK6MD  47 99681421
+  sem nome                       ltMR6BUToxF7EsM8qCso  47 99007578
+LEAD DE ONTEM, com o Marcelo:
+  Elson Carpinteiro              4ocjbPBSPbLq7eIe0nMq  47 91923036
+FALHAS DE ENVIO ate agora: Eduardo Marcenaria (02/11 11h32),
+Willki (02/11 12h34), Innova (02/11 13h12), AZ Moveis (03/11
+9h01), Marceneiros & Cia (03/11 11h02 - conversa sumiu).
+
+AVISO AO GESTOR ENVIADO as 12h12 - msg ibvpXnFOuYkVEx40Par3,
+contato qwn25jkcEUNzgkCawPVj.
+Texto: disse que foi fora de hora e que e sobre mim, nao sobre a
+operacao; o que se perdeu e o que NAO se perdeu; que o plantao
+segue normal; e que eu nao estou pedindo nada - so nao quero que
+ele descubra depois que o historico sumiu sem eu ter falado.
+NAO mandei aos outros tres: o compilado das 12h07 tinha acabado
+de sair para os quatro, e instrumentacao minha nao e assunto do
+Marcelo nem do Ricardo. A propria instrucao diz "avisar o
+gestor".
+
+================================================================
+RODADA 13h07 - terca, 03/11/2026 (gatilho 16:07 UTC)
+NAO e hora de compilado. Nao escrevi a ninguem - e segurei de
+proposito uma coisa grande. Explico.
+================================================================
+
+O SUMICO DE CONVERSAS CRESCEU, E MUITO:
+  sabado           200 conversas
+  ontem/hoje cedo  216-217 (a campanha foi criando)
+  12h07            215
+  13h07            200  <- de volta ao numero de sabado
+Quinze conversas sumiram em uma hora. Na varredura de inbound
+sobrou coisa velha: Marciel (hoje 9h55), Solo (30/10), Daniel
+(29/10). Todas as conversas de campanha de ontem e de hoje
+sumiram da lista.
+
+CONFERI EM VEZ DE SUPOR, e o resultado MUDA a gravidade:
+ - a conversa do Elson (A75kr5s5y4YDZgxpoaag) devolve
+   CONVERSATIONS_CONVERSATION_NOT_FOUND, igual a da Marceneiros.
+ - MAS o CONTATO do Elson (4ocjbPBSPbLq7eIe0nMq) EXISTE,
+   completo: nome, telefone, tag aguardando-nossa-resposta,
+   assignedTo, e ate uma nota de qualificacao automatica
+   ("[Qualificado] ... demonstrou interesse no catalogo. Aguarda
+   envio do material pelo Marcelo").
+=> O QUE SUMIU FOI O REGISTRO DA CONVERSA, NAO O LEAD. O Marcelo
+   continua achando as pessoas pelo contato. O que ele nao
+   encontra mais e o fio da conversa.
+
+POR QUE EU NAO MANDEI AVISO AGORA:
+1. Eu JA contei o fenomeno as 12h07, com um caso. O que mudou e
+   tamanho (1 -> 15) e, principalmente, a checagem que DIMINUI o
+   susto: o lead nao se perdeu, so a thread.
+2. Mandar "sumiram 15 conversas" sem a segunda metade da frase
+   faria o gestor achar que perdeu os leads de dois dias. Seria
+   alarme falso meu, e alarme falso custa mais caro que atraso.
+3. Falta 55 minutos para o compilado das 14h07. Vai inteiro ali,
+   com as duas metades juntas.
+Ontem eu segurei por motivo parecido e deu certo. A regra que eu
+venho usando: fato novo que MUDA a decisao dele fura a cadencia;
+fato que so muda o tamanho, nao fura.
+
+NADA DE LEAD NESTA RODADA. Nenhuma entrada nova. Amauri e o
+47 99007578 seguem sem responder - nao insisto.
+
+PARA AS 14h07: o sumico com os dois lados (15 conversas, mas
+contatos intactos), e so.
+
+================================================================
+INVESTIGACAO DAS CONVERSAS "APAGADAS" - 03/11, 13h20
+Pedida pelo gestor. RESULTADO: NADA FOI APAGADO.
+================================================================
+
+O QUE EU TESTEI, na ordem:
+1. get-messages na conversa do Elson (A75kr5s5y4YDZgxpoaag)
+   -> 400 CONVERSATIONS_CONVERSATION_NOT_FOUND.
+2. get-contact do Elson (4ocjbPBSPbLq7eIe0nMq)
+   -> EXISTE, completo, com tag e nota de qualificacao.
+3. search-conversation filtrando por contactId do Elson
+   -> total 0. Ele nao tem conversa nenhuma indexada.
+4. export-messages-by-location filtrando por contactId do Elson
+   -> AS DEZ MENSAGENS ESTAO LA, todas, com o campo
+      conversationId = A75kr5s5y4YDZgxpoaag dentro de cada uma.
+
+CONCLUSAO, agora com prova e nao com palpite:
+As MENSAGENS nao foram apagadas. Os CONTATOS nao foram apagados.
+O que quebrou e a camada de indice de conversas: o registro da
+conversa nao resolve mais por id nem aparece na busca, mas as
+mensagens continuam gravadas e continuam apontando para ele.
+Isso e reindexacao/corrupcao de indice, nao exclusao.
+
+ISSO ME OBRIGA A CORRIGIR O QUE EU MANDEI AS 12h07. La eu
+escrevi "a conversa DESAPARECEU" e "quem for auditar as falhas
+depois pode nao achar todas". A primeira frase passa ideia de
+perda; a segunda esta errada - o dado esta inteiro, so nao esta
+na busca. Vou corrigir no compilado das 14h07.
+Licao: "nao aparece na busca" nao e "nao existe". Eu tinha
+material para testar isso as 12h07 e nao testei - reportei o
+sintoma como se fosse o diagnostico.
+
+LOG DE AUDITORIA NO GHL: procurei. Na superficie da API que eu
+alcanco NAO existe operacao de audit log / histor1co de
+exclusao. A busca por "audit log activity history deleted"
+devolveu 3 operacoes uteis, nenhuma delas de auditoria. O unico
+vestigio desse tipo e um TIPO de mensagem,
+TYPE_ACTIVITY_EMPLOYEE_ACTION_LOG, que aparece dentro de
+conversas - nao e um log da conta. Se existe auditoria, e no
+painel do GHL, nao pela API.
