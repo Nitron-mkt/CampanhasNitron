@@ -1,4 +1,4 @@
-// nina-reativa (v3) — reativa os leads em aberto: o desconto que ele JA tem, e o que falta para
+// nina-reativa (v4) — reativa os leads em aberto: o desconto que ele JA tem, e o que falta para
 // montar o mix dele.
 //
 // Ordem do gestor em 03/11: "Os leads que estao em aberto preciso que reativem os mesmos falando
@@ -102,6 +102,13 @@ Deno.serve(async (req) => {
     const hIni = parseInt(cfg.reativa_hora_ini || "9") || 9;
     const hFim = parseInt(cfg.reativa_hora_fim || "19") || 19;
     const silencioH = Math.max(1, parseInt(cfg.reativa_silencio_h || "48") || 48);
+    // TETO DE IDADE — a onda sai POR FAIXA, e a faixa e ordem do gestor, nao preferencia minha.
+    // Em 03/11 ele liberou "os 96 mais quentes" (ate 7 dias) e nada alem disso. Sem este corte a
+    // fila escorregaria sozinha para os 444 leads mais velhos assim que os 100 da faixa acabassem
+    // — a ordenacao e "mais recente primeiro", entao ela NAO para onde a autorizacao para.
+    // Vazio = sem teto. Mudar e UPDATE em `reativa_max_dias`, ou `?max_dias=` na chamada.
+    const maxDiasRaw = String(sp.get("max_dias") || b.max_dias || cfg.reativa_max_dias || "").trim();
+    const maxDias = maxDiasRaw ? Math.max(1, parseInt(maxDiasRaw) || 0) : 0;
     const pedidoMin = parseInt(digits(cfg.pedido_minimo || "3500")) || 3500;
     // Lista de `assignedTo` que ainda assim podem receber (o proprio usuario da Nina, se um dia o
     // contato for atribuido a ela). Vazia por padrao: contato com dono nao recebe.
@@ -130,7 +137,7 @@ Deno.serve(async (req) => {
         else agg[k].falta_os_dois++;
       }
       const fora = ls.filter((x: any) => x.reativa_pulado).length;
-      return j({ ok: true, acao: "fila", instancia: inst, na_fila: ls.length, ja_pulados_por_motivo_estrutural: fora, por_faixa: agg });
+      return j({ ok: true, acao: "fila", instancia: inst, na_fila: ls.length, ja_pulados_por_motivo_estrutural: fora, teto_de_idade: maxDias ? (maxDias + " dias") : "sem teto", por_faixa: agg });
     }
 
     // Instancia pausada nao tenta NADA. A pausa e trava manual: a coluna nao se solta sozinha, e
@@ -160,9 +167,12 @@ Deno.serve(async (req) => {
       .lt("atualizado", limiteSilencio)
       .or(`reativa_pulado_em.is.null,reativa_pulado_em.lt.${reavaliarApos}`)
       .order("atualizado", { ascending: false }).limit(lote * 8);
+    const fila = maxDias
+      ? (cands || []).filter((x: any) => (Date.now() - new Date(x.atualizado || 0).getTime()) <= maxDias * 86400000)
+      : (cands || []);
 
     const feitos: any[] = []; let mandados = 0;
-    for (const L of (cands || [])) {
+    for (const L of fila) {
       if (mandados >= lote) break;
       const base = { lead_id: L.id, contato: L.empresa || L.nome || L.fone, status: L.status, parado_ha_dias: haDias(L.ultima_resposta_em || L.atualizado) };
 
@@ -282,6 +292,7 @@ Deno.serve(async (req) => {
     return j({
       ok: true, instancia: inst, reativa_ativo: ativo, modo: dry ? "previa" : (ativo ? "enviando" : "so rascunho (reativa_ativo=nao)"),
       hora_sp: h, lote, candidatos_lidos: (cands || []).length,
+      teto_de_idade: maxDias ? (maxDias + " dias") : "sem teto", na_faixa: fila.length,
       reativou: conta("reativou"), previa: conta("previa"), pulou: conta("pular"), falhou: conta("falhou"), erro: conta("erro"),
       ainda_na_fila: restam ?? null,
       resultado: feitos,
