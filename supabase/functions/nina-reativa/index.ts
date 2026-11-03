@@ -1,4 +1,4 @@
-// nina-reativa (v2) — reativa os leads em aberto: o desconto que ele JA tem, e o que falta para
+// nina-reativa (v3) — reativa os leads em aberto: o desconto que ele JA tem, e o que falta para
 // montar o mix dele.
 //
 // Ordem do gestor em 03/11: "Os leads que estao em aberto preciso que reativem os mesmos falando
@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
     // ---- relatorio: quem esta na fila, sem mandar nada -----------------------------------------
     if (String(sp.get("acao") || b.acao || "").toLowerCase() === "fila") {
       const { data } = await sb.from("copiloto_lead")
-        .select("status, cnpj, cep, link_seg, atualizado, ultima_resposta_em")
+        .select("status, cnpj, cep, link_seg, atualizado, ultima_resposta_em, reativa_pulado")
         .in("status", ["frio", "passado", "qualificando", "qualificado"])
         .eq("instancia", inst).not("contact_id", "is", null).is("reativa_em", null);
       const ls = data || [];
@@ -129,7 +129,8 @@ Deno.serve(async (req) => {
         else if (temCep(x)) agg[k].falta_so_cnpj++;
         else agg[k].falta_os_dois++;
       }
-      return j({ ok: true, acao: "fila", instancia: inst, na_fila: ls.length, por_faixa: agg });
+      const fora = ls.filter((x: any) => x.reativa_pulado).length;
+      return j({ ok: true, acao: "fila", instancia: inst, na_fila: ls.length, ja_pulados_por_motivo_estrutural: fora, por_faixa: agg });
     }
 
     // Instancia pausada nao tenta NADA. A pausa e trava manual: a coluna nao se solta sozinha, e
@@ -144,11 +145,20 @@ Deno.serve(async (req) => {
     if (foraDeHora && !dry) return j({ ok: true, parado: "fora da janela", hora_sp: h, dia_semana: dow, janela: hIni + "h-" + hFim + "h, sem domingo" });
 
     // ---- a fila -------------------------------------------------------------------------------
-    // Mais recente primeiro: quem parou ha uma semana responde melhor do que quem parou ha dois
-    // meses, e se a onda for interrompida o que sobra e o mais frio, nao o mais quente.
+    // Mais recente primeiro ENTRE OS ELEGIVEIS: quem parou ha uma semana responde melhor do que
+    // quem parou ha dois meses, e se a onda for interrompida o que sobra e o mais frio.
+    //
+    // O CORTE DE SILENCIO E FILTRO DE SQL, nao de codigo. Na primeira previa real (03/11) ele so
+    // existia depois da leitura: a funcao trouxe os 24 mais recentes, TODOS em conversa viva, e
+    // pulou os 24. Cada lote relia os mesmos 24 e nenhum lead antigo era alcancado — a fila
+    // simplesmente nao andava. Com o corte aqui, quem ainda esta conversando nem entra na lista.
+    const limiteSilencio = new Date(Date.now() - silencioH * 3600000).toISOString();
+    const reavaliarApos = new Date(Date.now() - 24 * 3600000).toISOString();
     const { data: cands } = await sb.from("copiloto_lead").select("*")
       .in("status", ["frio", "passado", "qualificando", "qualificado"])
       .eq("instancia", inst).not("contact_id", "is", null).is("reativa_em", null)
+      .lt("atualizado", limiteSilencio)
+      .or(`reativa_pulado_em.is.null,reativa_pulado_em.lt.${reavaliarApos}`)
       .order("atualizado", { ascending: false }).limit(lote * 8);
 
     const feitos: any[] = []; let mandados = 0;
@@ -159,17 +169,25 @@ Deno.serve(async (req) => {
       // ---- quem ja e CLIENTE nao e lead -------------------------------------------------------
       // `codparc` preenchido, ou o CNPJ dele achado em ghl_cliente, quer dizer que a loja tem
       // cadastro e consultor. Reabrir com roteiro de lead novo seria atropelar quem a atende.
-      if (L.codparc) { feitos.push({ ...base, decisao: "pular", motivo: "ja e CLIENTE da Nitron (codparc " + L.codparc + ") — quem fala com ele e o consultor dele" }); continue; }
+      // Motivo ESTRUTURAL fica marcado por 24h (reativa_pulado_em): nao muda de uma rodada para a
+      // outra, e sem a marca cada lote gastaria as mesmas chamadas de GHL com os mesmos leads.
+      // Nao e `reativa_em` de proposito — o dono pode sair do contato, e ai o lead volta a ser
+      // avaliado amanha em vez de ter queimado a unica tentativa dele.
+      const pular = async (motivo: string) => {
+        if (!dry) await sb.from("copiloto_lead").update({ reativa_pulado_em: new Date().toISOString(), reativa_pulado: motivo.slice(0, 300) }).eq("id", L.id);
+        feitos.push({ ...base, decisao: "pular", motivo });
+      };
+      if (L.codparc) { await pular("ja e CLIENTE da Nitron (codparc " + L.codparc + ") — quem fala com ele e o consultor dele"); continue; }
       if (digits(L.cnpj).length === 14) {
         const { data: cli } = await sb.from("ghl_cliente").select("codparc, razao, situacao").ilike("cnpj", "%" + digits(L.cnpj) + "%").limit(1).maybeSingle();
-        if (cli) { feitos.push({ ...base, decisao: "pular", motivo: "o CNPJ dele ja tem cadastro na Nitron (" + cli.razao + ", codparc " + cli.codparc + ", " + cli.situacao + ") — quem fala com ele e o consultor dele" }); continue; }
+        if (cli) { await pular("o CNPJ dele ja tem cadastro na Nitron (" + cli.razao + ", codparc " + cli.codparc + ", " + cli.situacao + ") — quem fala com ele e o consultor dele"); continue; }
       }
 
       // ---- contato com DONO nao recebe pela Nina ----------------------------------------------
       const dn = await donoDoContato(String(L.contact_id));
       if (!dn.ok) { feitos.push({ ...base, decisao: "erro", motivo: "nao consegui ler o contato no CRM: " + dn.erro }); continue; }
       if (dn.dono && !donosOk.has(dn.dono)) {
-        feitos.push({ ...base, decisao: "pular", motivo: "o contato tem dono no CRM (" + dn.dono + "), entao o Zaptos sairia pelo numero dele e nao pelo da Nina — e um humano ja esta na conversa" });
+        await pular("o contato tem dono no CRM (" + dn.dono + "), entao o Zaptos sairia pelo numero dele e nao pelo da Nina — e um humano ja esta na conversa");
         continue;
       }
 
