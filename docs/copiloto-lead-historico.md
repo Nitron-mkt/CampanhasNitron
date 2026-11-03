@@ -240,3 +240,25 @@ vem para ca, inteiro, sem corte.
 // tivesse escrito a cidade com todas as letras.
 //
 ```
+
+## v20 (27/10) — A PRAÇA DECIDE A CESTA E O FRETE, E NESSA ORDEM
+
+Erro que o gestor pegou em 27/10: a Alexa (lead 523) tem DDD 81, Pernambuco, e recebeu a cesta
+Sudeste-R01. A causa era o `UF2REG[uf] || "Sudeste"`: quando ninguém sabia a UF, o código escolhia
+o Sudeste CALADO. Sete leads saíram assim. E havia um segundo vão, aberto pela própria v19: a
+cesta era escolhida ANTES do freteCIF, então um lead com CEP de PE podia levar o percentual certo
+numa cesta do Sudeste.
+
+Na v20 o `freteCIF` roda primeiro e a UF que ele resolveu manda nas duas decisões; sem ele, a ordem
+das pistas é `L.uf` > o que a Nina mandou > o **DDD do telefone**. O DDD serve só para a CESTA: o
+percentual muda dentro do mesmo estado, então ele não substitui a trava do CEP. Quando nem assim dá
+para saber, a resposta DIZ que a praça não foi apurada em vez de fingir.
+
+Também na v20: a Nina de lead PULA quem tem a tag `raspagem`/`raspagem-onda1` — essa ação tem
+função e roteiro próprios (`nina-raspagem`), e o público é distribuidor, não lojista.
+
+## v19 (27/10) — o frete CIF entra no link, resolvido pelo CEP
+
+É a base da v20: o `freteCIF()` nasceu aqui (CEP → ViaCEP → COD_IBGE → `pedido_frete_cidade` →
+`perc_cif`), e na v20 ele só mudou de LUGAR, passando a rodar antes da escolha da cesta. A trava
+`link_exige_frete` também é desta versão.
