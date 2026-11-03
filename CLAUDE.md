@@ -654,12 +654,22 @@ confundir com as outras, inclusive porque estamos mandando apenas para a galera 
   primeiro", mas ela **não pára onde a autorização pára**. Alargar a faixa é UPDATE nessa chave, e é
   decisão do gestor. Medido na largada: 100 elegíveis (2 a 7 dias), 48 fora por conversa viva,
   nenhum deles já cliente.
-- **O cron `nina-reativa-onda1` (jobid 241) é TEMPORÁRIO e tem de ser removido quando a faixa
-  zerar.** `*/3 12-21 * * 1-6` (9h–18h SP), lote 3, ~60 leads/hora. Ele existe só para a onda andar
-  sem alguém disparando lote a lote — e é exatamente o tipo de coisa que a lição de 16/09 manda não
-  esquecer ligada. Duas travas independentes o seguram enquanto existe: `reativa_max_dias=7` (não
-  transborda para os velhos) e `reativa_ativo` (desliga tudo). Remover:
-  `select cron.unschedule('nina-reativa-onda1');`
+- **O cron `nina-reativa-onda1` existiu por 1 hora em 03/11 e JÁ FOI REMOVIDO.** `*/3 12-21 * * 1-6`,
+  lote 3. Ele entregou **13 leads das 17:32 às 17:48 e parou sozinho** — nada nos 45 minutos
+  seguintes, sem erro gravado em `reativa_erro`. Não consegui diagnosticar porque o banco começou a
+  recusar conexões na mesma janela. Removido com `select cron.unschedule('nina-reativa-onda1');`.
+  **Não recriar sem entender a parada de 17:48**: enquanto a causa for desconhecida, a onda anda com
+  lotes manuais, que é lento mas observável. `reativa_ativo` continua `sim` e a fila está íntegra.
+- **O BANCO ESTÁ INTERMITENTE, e não é carga** (03/11, 18h30 SP). `select 1` falhou com
+  `Connection terminated due to connection timeout` quatro vezes, com **18 conexões e 2 ativas** —
+  `pg_stat_activity` não mostra pressão nenhuma. As tabelas de histórico são pequenas
+  (`cron.job_run_details` 57 MB, `net._http_response` 8,7 MB) e não explicam. **Isto afeta a
+  operação inteira, não só a reativação** — toda função que fala com o PostgREST passa por aqui.
+  Investigar antes de ligar automação nova.
+- **NUNCA consultar `cron.job_run_details` sem filtro indexado.** Em 03/11 eu disparei três
+  varreduras completas nela para diagnosticar o cron da reativação; cada uma segurou uma conexão
+  por 60s e o pool esgotou — e eu passei a atribuir ao cron uma lentidão que **eu** tinha causado.
+  Diagnóstico que derruba o que ele está medindo não é diagnóstico.
 - **A fila da reativação precisa ANDAR, e isso é filtro de SQL.** Na primeira prévia real a função
   leu 24 candidatos e **pulou os 24**: a ordem é "mais recente primeiro" e os mais recentes estão
   todos em conversa viva, mas o corte de silêncio só era aplicado depois, em código. Todo lote relia
