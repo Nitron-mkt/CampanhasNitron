@@ -660,6 +660,19 @@ confundir com as outras, inclusive porque estamos mandando apenas para a galera 
   recusar conexões na mesma janela. Removido com `select cron.unschedule('nina-reativa-onda1');`.
   **Não recriar sem entender a parada de 17:48**: enquanto a causa for desconhecida, a onda anda com
   lotes manuais, que é lento mas observável. `reativa_ativo` continua `sim` e a fila está íntegra.
+- **ONDA 1 DA REATIVAÇÃO: ENTREGUE em 04/11, e o número que importa não é quantas saíram.**
+  49 leads reativados, **zero erros de envio**, faixa de 2 a 7 dias zerada. Resultado em menos de
+  24h: **5 responderam e 3 já receberam o link** da página de pedido — Aelda (Vianópolis/GO, R01),
+  Agrocamp (S. Sebastião da Grama/SP, R10) e Murilo Barizon (Campinas/SP, R10). Nos três a cadeia
+  inteira da v21/v22 funcionou sozinha: resposta → CEP → ViaCEP → IBGE → frete CIF → CNAE → cesta →
+  link com preço final. A Aelda recebeu `#Centro-Oeste-R01~L596~F13`.
+  **O contraste é a prova da janela:** 13 envios em 16 min na tarde de 03/11 (e aí a janela abriu e
+  matou o cron), contra **36 envios em 33 min na manhã de 04/11, sem uma falha**. Mesma função,
+  mesmo lote, mesma instância — só mudou a hora.
+  **Como foi tocada:** lotes manuais de 4–5 por chamada, `nina-reativa?limite=N`, das 9h30 às 10h,
+  sem cron. `reativa_ativo` segue `sim` e **sem cron nada sai sozinho** — é seguro deixar assim.
+  A fila é dinâmica (lead entra e sai da faixa conforme `atualizado`), então sobra sempre um resto
+  pequeno; tocar é repetir a chamada dentro de 9h–16h.
 - **A INTERMITÊNCIA É UMA JANELA DIÁRIA, das 17h à 1h20 de São Paulo** (medido em 04/11). Esta é a
   terceira versão desta linha e as duas primeiras estavam erradas — registro as duas porque o erro
   é instrutivo:
