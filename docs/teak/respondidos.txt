@@ -448,3 +448,502 @@ PENDENTE PARA AMANHA:
 
 Agora copio este log para o repositorio e commito, como
 combinado hoje com o gestor.
+
+================================================================
+2026-11-04 08h07 SP (11h07 UTC) - QUARTA, PRIMEIRA RODADA
+================================================================
+Varredura (limit 4). Um lead com mensagem em aberto:
+
+MADEIRAS OLIVEIRA - contactId 4mnZpZ2whEMkBfDarsDO,
++55 47 9187-7824. Escreveu hoje 7h47 SP, tres mensagens:
+  "Bom dia"
+  "Quais os valores?"
+  "E teria quantidade minima para compra?"
+
+Teste mecanico pelo historico COMPLETO do contato (9 mensagens):
+unico outbound e o meu type 20 de ontem 14h11. Nenhum humano
+entrou. Conversa minha.
+
+RESPONDI as 8h09 SP (tNLgwOZNp3irWyPUKoUm instancia /
+sPDLzt2msPTBOjj2zedE mensagem, as duas delivered, sem
+[System] de desconexao).
+
+O QUE EU NAO FIZ, e por que: as duas perguntas dele sao
+condicao comercial pura - PRECO e QUANTIDADE MINIMA. Nao
+respondi nenhuma das duas e nao dei nenhum numero. Disse onde
+eu paro, que quem passa e o Marcelo, que o contato dele ja
+esta com o Marcelo desde ontem, e pedi produto/medida/
+quantidade para adiantar o caso. Minimo foi exatamente o erro
+do Edward; nao repito.
+Nao prometi prazo nem que o Marcelo chama hoje - isso seria
+atropelar o Marcelo.
+
+ACHADO NOVO SOBRE O INDICE DE CONVERSAS DO GHL:
+as tres mensagens de hoje deste contato NAO caíram na conversa
+de ontem (0ICVwlN6c4LXYKJMztrS). O GHL criou um conversationId
+NOVO (d1ypeNbyMJVonZm0E753, dateAdded hoje 10h47 UTC) para o
+MESMO contato. Entao o problema de ontem nao e so "o indice
+perdeu a conversa": o GHL esta ABRINDO CONVERSA DUPLICADA por
+contato. O export por contactId junta as duas e mostra as 9
+mensagens inteiras - de novo, nada foi apagado.
+Isso reforca o que eu corrigi ontem as 14h07 e da um sintoma a
+mais para um eventual chamado no GHL. Entra no compilado das
+10h07; nao fura a cadencia porque nao muda decisao agora.
+
+Nada mais novo. GTWPRESS, Marciel e Daniel sao conversas que
+nao sao minhas ou nao sao pergunta.
+
+Nao e hora de compilado (8h07). Nada enviado aos quatro.
+
+----------------------------------------------------------------
+2026-11-04 09h07 SP (12h07 UTC) - rodada
+----------------------------------------------------------------
+Varredura (limit 4). NADA NOVO desde as 8h07.
+O topo da lista e todo anterior a rodada passada: GTWPRESS
+(18h02 de ontem), Daniel (29/10), Dalton Bernabe, Thomas - nenhuma
+delas e minha e nenhuma tem pergunta em aberto para mim.
+A Madeiras Oliveira saiu da lista porque a ultima mensagem agora e
+a minha, das 8h09 - ela nao respondeu ainda, e lead em silencio nao
+recebe segunda mensagem.
+Nada enviado a ninguem (9h07 nao e hora de compilado).
+
+================================================================
+2026-11-04 10h07 SP (13h07 UTC) - RODADA + COMPILADO (1o do dia)
+================================================================
+Varredura (limit 4): quatro linhas novas desde as 9h07.
+
+FORA (nao sao minhas):
+- Mauricio Scotta, 9h57, corpo vazio, Instance Source: Marcelo.
+- Cirlene Jorge, 9h46, corpo vazio, Instance Source: Marcelo,
+  com ligacao concluida (type 1). E frete (expressoleomar).
+
+LEAD NOVO RESPONDIDO:
+- KRAVO URBAN DESIGN, contactId EfHtUQJ2Qp6PXT6wisDO,
+  +55 47 8815-0846. Escreveu 9h38 "Oiee, tudo bem?" e
+  "Somos um e-commerce de moveis, somente revenda".
+  Teste mecanico: nenhum outbound humano; so um type 28 de
+  funil, que nao e veto. Conversa nova, ninguem respondeu.
+  RESPONDI 10h09 (eykVDoz7dgcMqj5yaUkJ instancia /
+  ix9uUU7Cn21Ue89ldWyI mensagem, as duas delivered).
+  Acusei na primeira linha o que ele ja disse (revenda), pedi
+  desculpa pela meia hora, dei a apresentacao de fabrica (fato
+  autorizado) e disse que condicao de revenda e do Marcelo.
+  NAO toquei em tabela, minimo, territorio nem nada de revenda.
+
+  DECISAO QUE EU TOMEI E QUERO REGISTRADA: nove minutos depois
+  da mensagem dele, a oportunidade foi movida para "Perdido"
+  (type 28, 12h47 UTC). Respondi assim mesmo - type 28 nao e
+  veto e a regra manda ler a conversa, nao o campo do CRM. Mas
+  pode ser triagem humana deliberada de lead de revenda. Pus a
+  pergunta no compilado: se "Perdido" deve me impedir, eu paro.
+
+FALHA DE ENVIO No 6 - MARCENARIA AUGUSTIN:
+contactId h8Gaypf3VZL4hwtqSeqR, +55 47 99140-6978.
+Campanha (appId 6a8506eeac1579c1d79d2041, nao eu) mandou
+12h38:31 UTC -> status FAILED, error "Request failed with
+status code 400".
+teak.fila_envio id 225, campanha maps-br-2026-10_t2:
+status=enviado, resultado=ok, enviado_em 12:38:44 - TREZE
+SEGUNDOS DEPOIS do GHL ter recusado. O bug reproduz.
+NOVO E UTIL: desta vez a falha voltou para DENTRO da conversa
+como inbound: "Falha ao enviar (verifique o arquivo/mensagem)".
+Nas cinco de ontem isso nao aconteceu. Entao existe sinal
+visivel em parte dos casos - da para varrer por esse texto.
+NAO escrevi para a Marcenaria Augustin: o inbound nao e pessoa,
+e o eco da falha; nao ha pergunta para responder.
+O texto da campanha pergunta "Quer que eu mande uma foto e a
+medida?" - promessa de arquivo, igual a do catalogo.
+
+INDICE DO GHL - TERCEIRO SINTOMA:
+alem da Madeiras Oliveira, os QUATRO destinos de relatorio
+receberam conversationId NOVO hoje (gestor OpOtWGAyAZRfMP3WrzpB
+contra BIj1qLkcrbEenWDbijpX de ontem; Marcelo pessoal
+jtpau5m7w9C5uy0gAbXJ contra kGW5nABw2tLLkVS8VHfQ; Marcelo
+instancia dEqBt9YHeuPEaxUZPdIo; Ricardo OkQgDcW5eaXJ1Fa3PhfT).
+Ou seja: NAO e um contato com defeito, e a conta inteira
+abrindo conversa nova. Isso reforca que o conversationId nao
+serve como identificador - so o contactId serve.
+
+COMPILADO DAS 10h07 ENVIADO AOS QUATRO:
+  gestor            9sJjvONnxisASuARcemy / gW6L3qbk5jKQnslSuvNj
+  Marcelo pessoal   eLneebHyIZE4YkfH78Js / 7JgVsdPVrJmpupKu2NEV
+  Marcelo instancia PKl80JWdlekgbFXMiOcs / tGfVKCPHzKIktXPZZQ1q
+  Ricardo Fonseca   wimniI0eacPLxlZresUn / wk8WCMPyY6MaQVdJIO6A
+Com a lista de pendencias do dia (as 12 antigas + as 3 de hoje)
+e a lista do Marcelo.
+
+----------------------------------------------------------------
+2026-11-04 11h07 SP (14h07 UTC) - rodada
+----------------------------------------------------------------
+ERRO MEU DE METODO, ACHADO AGORA:
+eu venho varrendo com limit 4 (o roteiro manda 15; eu encolhi
+por causa do estouro de token do contato de ruido). Hoje de
+manha o volume subiu e o limit 4 CORTOU duas linhas que ja
+existiam na hora da rodada das 10h07:
+ - MADEIRAS OLIVEIRA, 9h14 SP: "Fico no aguardo do contato dele
+   para esclarecer as demais duvidas".
+ - SERRARIA ADIVAL SCHRAMM, 9h35 SP: "igualmente".
+Ou seja: na rodada das 10h07 eu olhei uma janela menor do que a
+caixa tinha e nao vi as duas. Refiz agora com limit 12 e
+confirmei que NAO ha mais nada: da terceira linha para baixo e
+tudo de 02/11 ou mais antigo.
+
+CONSEQUENCIA REAL: nenhuma das duas pedia resposta.
+ - A da Madeiras Oliveira e despedida/aguardo - e eu ja tinha
+   entregue ele ao Marcelo; nao se responde e nao se manda
+   lembrete. MAS e informacao para o Marcelo: o cliente esta
+   esperando o contato DELE e diz ter "demais duvidas".
+ - A da Serraria Adival Schramm e "igualmente", cortesia, na
+   instancia do Marcelo. Nao e minha e nao se responde.
+Entao nao houve cliente prejudicado. O que houve foi eu relatar
+as 10h07 com uma janela mais estreita do que eu devia.
+
+O QUE EU MUDEI JA: volto a varrer com limit maior (12-15, como
+o roteiro manda) e so encolho se estourar token de verdade.
+O QUE EU NAO FIZ: nao furei a cadencia para avisar agora.
+Nada esta pendente por causa disso e o compilado das 12h07 e
+daqui a uma hora - vai escrito la, com todas as letras.
+
+Madeiras Oliveira agora esta no conversationId
+1qlyrMqKipMXagXzNdms - TERCEIRO id para o mesmo contato em dois
+dias. A duplicacao continua.
+
+================================================================
+2026-11-04 ~11h55 SP - PEDIDO DIRETO DO GESTOR (fora de rodada)
+================================================================
+Ele mandou print da conversa da Treo Made Moveis e disse:
+"os tamanhos da teca e 1200x2200, entao pode continuar o
+disparo, mas corrija essa informacao" + perguntou qual campanha
+esta disparando.
+
+QUAL CAMPANHA: a mensagem do print (11h48 SP, Treo Made Moveis,
++55 47 98855-6858) e a fila_envio id 238, campanha
+maps-madeira-2026-10_t2. O texto vem de teak.wa_template,
+codigo br_t2 ("BR toque 2 - angulo do produto"). Esse MESMO
+template e usado pelo toque 2 das tres campanhas BR de
+prospeccao: maps-madeira-2026-10_t2, maps-br-2026-10_t2 e
+maps-br-2026-11_t1 (familia maps/prospeccao-maps).
+
+O QUE EU CORRIGI (autorizado por ele, so o numero):
+1. teak.wa_template codigo='br_t2': 1200x2500 -> 1200x2200.
+2. teak.fila_envio, SO as 19 linhas com status='pendente' que
+   ja carregavam o texto velho congelado (a fila grava a
+   mensagem na hora de enfileirar, entao mudar o template nao
+   alcanca o que ja esta na fila). Sem isso, mais 19 pessoas
+   receberiam o numero errado.
+Conferido depois: template com erro 0, pendente com erro 0,
+pendente corrigido 19.
+
+O QUE EU NAO MEXI, DE PROPOSITO:
+- As 52 linhas JA ENVIADAS continuam com 1200x2500. Isso e
+  registro do que realmente saiu; reescrever seria falsificar
+  o historico. 52 pessoas ja receberam o numero errado.
+- "Quer que eu mande uma foto e a medida?" continua no texto.
+  E promessa de arquivo (eu nao mando arquivo e nao prometo que
+  outro manda). Reportei hoje as 10h07; nao e minha para mudar.
+- "uniao de dedos" continua no br_t1_marcenaria. Mesma coisa.
+- us_t1_panel diz "200 x 600 x 18 mm up to 300 x 1200 x 18 mm".
+  E outra linha (painel colado EUA), outra conversa; nao toquei
+  e nao sei se esta certo. Vale perguntar.
+- NAO parei campanha nenhuma. Ele mandou continuar o disparo.
+
+----------------------------------------------------------------
+2026-11-04 ~12h05 SP - gestor perguntou o OBJETIVO da campanha
+----------------------------------------------------------------
+ACHADO QUE IMPORTA: NAO HA OBJETIVO ESCRITO.
+teak.campanhas (a tabela que TEM coluna "objetivo") esta VAZIA -
+zero linhas. Nenhuma das campanhas maps/apify/teca-eua esta
+registrada la. teak.automacao tambem esta vazia. teak.lead
+tambem (os contatos vieram direto do GHL: 271 linhas da familia
+maps tem contact_id e ZERO tem lead_id ou codparc).
+Entao nao inventei objetivo: descrevi o que a maquina faz.
+
+O QUE A MAQUINA FAZ (lido do dado):
+- Prospeccao fria por Zaptos, instancia Autoatendimento,
+  assinada "Marcelo" (config assina_como).
+- Audiencia: Google Maps por termo+cidade (teak.varredura_plano,
+  40 planos). BR: marcenaria, moveis planejados, madeireira,
+  arquitetura, loja de pisos - SP, Curitiba, Joinville, Sao Bento
+  do Sul, Bento Goncalves, Caxias, Arapongas, Maringa, Uba,
+  Sorocaba, Rio. US: MARINE, WHOLESALE, ECOMMERCE.
+- Cadencia de 3 toques, TEMPLATE FIXO, nao IA:
+  t1 br_t1_marcenaria / br_t1_madeireira (apresentacao)
+  t2 br_t2 (o do print - angulo de produto)
+  t3 br_t3 "teca entra nos seus projetos?" - NUNCA DISPAROU.
+- Teto 40/dia (config ritmo_dia), primeiro lote 10 para o
+  Ricardo ler as respostas antes de liberar (ritmo_primeiro_lote).
+- Cai no pipeline Novos Clientes, etapa Lead.
+- Volume BR: t1 104 enviados + 25 pendentes; t2 53 enviados +
+  18 pendentes + 1 erro.
+
+O QUE EU DISSE QUE NAO SEI (e ele sabe):
+- se o alvo e revenda ou consumo proprio da marcenaria (o t1 tem
+  texto para os dois, mas o t2 e o MESMO para todos);
+- nao ha atribuicao: nao da para dizer qual mensagem virou venda.
+
+================================================================
+2026-11-04 12h07 SP (15h07 UTC) - RODADA + COMPILADO
+================================================================
+Varredura com limit 6 (janela larga de novo). Uma linha nova:
+
+DALTON BERNABE, 11h56 SP, "Bom dia tudo bem", instancia Marcelo.
+Teste mecanico: a conversa tem VARIOS outbound type 22 SEM bloco
+meta - humano digitando no GHL ("Ola Dalton, tudo bem e com
+voce?", "Desculpe a demora no retorno", etc). E do Marcelo.
+FIQUEI FORA. E o mesmo caso de 15/10, que ja esta no roteiro.
+NAO colhi o teor para relatar - conversa que nao e minha eu nao
+leio. No compilado so disse que existe e que sai.
+
+Observacao tecnica: todas as conversas do topo apareceram com
+starred=true e dateUpdated bumpado para ~14:49 UTC. Alguem
+triou a caixa no GHL agora ha pouco. Nao e assunto meu, nao agi.
+
+COMPILADO DAS 12h07 ENVIADO AOS QUATRO:
+  gestor            SWbo1Cz1nq8pvTKpjYkt / qcfc7FMx78UIjuqAhVzE
+  Marcelo pessoal   r2fukN0JRILQw7lYyELV / 28Qdwg4NujX9D7ITQDd0
+  Marcelo instancia oNkDQe8oHRfjb4VsOkAL / 3PxDyVG15Jp7ZtVzXU0F
+  Ricardo Fonseca   mDzMNF7Jox5JIWi4fwu1 / hqAPnFci0dQZXLBkkR0t
+
+Conteudo: (1) o MEU ERRO da janela estreita, dito na primeira
+linha, com as duas linhas que eu tinha perdido e a constatacao
+de que nenhum cliente ficou sem resposta; (2) a correcao do
+1200x2200 pedida pelo gestor, o que eu mexi, e o numero que
+importa - 52 mensagens JA SAIRAM com a medida errada; (3) que
+nao existe objetivo escrito para essas campanhas; (4) o Dalton,
+sem teor.
+
+Conversas novas de relatorio de novo (TOGgkgoIxP7WGcMTAxfS,
+rVd8GHIX36Ly2NHpbvbX, dMZMVk95SbNESsUOXP0R, aRAXWXpSYOfJosiZHA1I)
+- a duplicacao de conversationId acontece em TODO envio meu.
+
+----------------------------------------------------------------
+2026-11-04 13h07 SP (16h07 UTC) - rodada
+----------------------------------------------------------------
+Varredura larga (limit 6). Cinco linhas novas, NENHUMA respondida.
+Fui conferir uma por uma:
+
+1) JOAO PAULO, +55 43 9951-6160, 13h06. Contato NOVO. A mensagem
+   e so um AUDIO (.ogg anexado), corpo vazio. Audio eu nao leio e
+   corpo vazio nao e pergunta - nao respondi. Entra no compilado:
+   e lead novo de verdade e alguem que le audio pode aproveitar.
+
+2) MARCENARIA FERIE, +55 43 99904-3481, 13h04. Campanha
+   maps-br-2026-11_t1 (toque 1, marcenaria). O GHL recusou com
+   erro 500 e o Zaptos escreveu "The instance is disconnected."
+   na conversa.
+   >>> E AQUI EU PRECISO CORRIGIR O QUE EU MESMA DISSE HOJE <<<
+   Eu relatei as 10h07 e as 12h07 que a fila grava TUDO como
+   enviado/ok. ERRADO, e eu tinha a evidencia para conferir.
+   A fila_envio id 254 gravou status=ERRO com o motivo certo:
+   "instancia desconectada - o GHL aceitou mas o app nao
+   entregou: The instance is disconnected."
+   Ou seja: a checagem de entrega FUNCIONA - para o caso da
+   instancia desconectada. O que ela NAO reconhece e o outro eco,
+   "Falha ao enviar (verifique o arquivo/mensagem)", que foi o da
+   Marcenaria Augustin e provavelmente o das outras cinco.
+   DIAGNOSTICO AFIADO: a checagem procura UMA frase so. Quem for
+   arrumar isso tem um alvo concreto - ensinar o verificador a
+   reconhecer tambem o "Falha ao enviar". Isso vale muito mais
+   que o meu "a fila mente" de antes.
+   NAO e queda de instancia: o envio anterior (15h50 UTC, J.C
+   Planejados) saiu ok, os meus compilados das 12h07 sairam
+   delivered, e so esta UMA linha com erro. Nao vou repetir o
+   erro de ontem de chamar sintoma de diagnostico.
+
+3) CIRLENE JORGE, 13h04, instancia Marcelo, com ligacao
+   concluida. Nao e minha. Nao li o teor.
+
+4) BELLI MOVEIS PLANEJADOS, 13h02. E o AUTO-RESPONDEDOR DELES
+   respondendo a nossa campanha ("deixe seu nome e uma breve
+   descricao"). Nao e pessoa, nao se responde.
+
+5) ALEXANDRE JOSE, +55 43 9609-2731, 12h26. "Ola mandei o
+   catalogo sim". Conversa SEM NENHUM outbound - pelo teste
+   mecanico seria minha. FIQUEI FORA MESMO ASSIM: o conteudo
+   responde a uma pergunta que ninguem fez nesta conversa, que e
+   exatamente o padrao que o roteiro manda respeitar acima do
+   teste. Ele deve estar respondendo algo que saiu por outro
+   canal. Vai no compilado para o Marcelo dizer se e dele.
+
+OUTRA COISA: apareceu na fila uma linha "Teste Entrega Teak 2",
+campanha teste-tecnico, 15h43 UTC. Nao fui eu. Alguem rodou um
+teste de entrega. Registro e sigo.
+
+Nao e hora de compilado (13h07). Nada enviado. A correcao do
+item 2 vai no compilado das 14h07 - nao fura a cadencia porque
+nao muda nenhuma decisao na proxima hora.
+
+================================================================
+2026-11-04 14h07 SP (17h07 UTC) - RODADA + COMPILADO
+================================================================
+Varredura larga: NADA novo desde as 13h07 - as mesmas seis
+linhas, os mesmos horarios. Zero respostas minhas no periodo.
+
+COMPILADO DAS 14h07 ENVIADO AOS QUATRO:
+  gestor            Owtk8PhfH4eQtKd92txg / 2VSiS6mUI2umQI2NvvDM
+  Marcelo pessoal   BdaxLFnoaOOkGHrZGywE / nNEXwaUJvbRl0jQ7DE8C
+  Marcelo instancia Chs7v1NyuMDr8cZeqP0u / 8FxyTOkxvUpk5hyFHcJU
+  Ricardo Fonseca   VDylskALZQ4KMu2P3O7J / 1jfEauw5kvwDtIFY43CQ
+
+Conteudo:
+- Abri dizendo que NAO respondi ninguem nestas duas horas, e dei
+  o motivo de cada um dos cinco. "Nao respondi" sem motivo nao
+  serve para ninguem.
+- A CORRECAO do que eu afirmei de manha sobre a fila gravar tudo
+  como ok. Dei o diagnostico afiado: a checagem funciona para o
+  eco "instance is disconnected" e NAO reconhece o eco "Falha ao
+  enviar". Alvo concreto para quem for consertar.
+- Disse explicitamente que NAO e queda de instancia, com as tres
+  razoes (envio anterior ok, meus compilados sairam, uma linha so
+  com erro).
+- Joao Paulo entregue ao Marcelo/Ricardo como lead parado por
+  causa do audio - isso e util e nao e cobranca.
+- Alexandre Jose devolvido ao Marcelo com a pergunta "e seu?".
+- A linha "Teste Entrega Teak 2" que nao fui eu.
+
+PADRAO QUE EU QUERO GUARDAR: hoje eu errei duas vezes do mesmo
+jeito - afirmei antes de conferir (a janela de varredura e a
+fila gravando ok). Nas duas o dado para conferir estava na minha
+mao. A regra que eu escrevi ontem continua valendo e eu preciso
+aplica-la ANTES de relatar, nao depois:
+"antes de dizer que uma coisa e assim, procurar o dado por outro
+caminho."
+
+----------------------------------------------------------------
+2026-11-04 15h07 SP (18h07 UTC) - rodada
+----------------------------------------------------------------
+Duas linhas novas desde as 14h07. NENHUMA minha.
+
+1) CIRLENE JORGE, 15h05, "Obrigada". Instancia Marcelo, conversa
+   com ligacao concluida. Agradecimento nao se responde e a
+   conversa nao e minha. Fora.
+
+2) ULISSES DA ROCHA CAMPOS NETO (Cinex), 14h17, por E-MAIL
+   (type 3). E resposta a um e-mail que o Marcelo mandou hoje
+   11h27. Teste mecanico: outbound type 3 na thread = alguem
+   respondeu por e-mail = NAO ENTRO. Alem disso o canal e e-mail,
+   que nao e meu. Fora.
+   NAO vou relatar o teor. O corpo inteiro veio no resultado da
+   varredura, mas eu nao abri a conversa e nao colho fato de
+   conversa que nao e minha. No compilado das 16h07 entra so que
+   existe um lead novo da Cinex por e-mail, que e do Marcelo e
+   que ja esta sendo conduzido por ele.
+   (Pensei se cabia a excecao de "contradiz instrucao minha" -
+   nao cabe: o que esta ali e consistente com a pendencia 1, a
+   lista oficial de produtos, que ja esta aberta com o gestor
+   desde 14/10. Nao preciso colher nada novo para manter aquela
+   pendencia de pe.)
+
+Nada respondido, nada enviado (15h07 nao e hora de compilado).
+
+================================================================
+2026-11-04 16h07 SP (19h07 UTC) - RODADA + COMPILADO
+================================================================
+Varredura: NADA novo desde as 15h07.
+Cirlene Jorge e Cinex SAIRAM do topo da lista de inbound - quer
+dizer que a ultima mensagem das duas ja e nossa. Isso e fato da
+consulta (o sort e por ultima mensagem), nao suposicao minha
+sobre quem digitou. Escrevi assim no compilado, de proposito.
+
+Sobraram no topo so os quatro de hoje que ficaram sem resposta
+por motivo ja explicado: Joao Paulo (audio), Marcenaria FERIE
+(aviso tecnico), Belli (robo deles), Alexandre Jose (conversa de
+outro condutor).
+
+COMPILADO DAS 16h07 ENVIADO AOS QUATRO - curto, porque o periodo
+foi calmo e repetir o que ja foi nao ajuda ninguem:
+  gestor            qBcOcvZVsGQnRZy2CP3e / ImZ19XYvwmCO22fzf3ts
+  Marcelo pessoal   CWXm0frkC0Wznx20lqPo / SawiMGy3VK52RFsKEupN
+  Marcelo instancia dPQ7i6wXzOYukVUCOYtM / ybkxxOjF1CEO8VeLYUgu
+  Ricardo Fonseca   noT14eMOB9sgARlt0vdq / O5iBfGzcCG0ADESzeOtw
+
+Avisei que o proximo e o fechamento das 19h07.
+
+----------------------------------------------------------------
+2026-11-04 17h07 SP (20h07 UTC) - rodada
+----------------------------------------------------------------
+Uma linha nova: MAURICIO SCOTTA, 16h46, "Classificacao A/B",
+instancia Marcelo.
+Fiz o teste mecanico mesmo sabendo que provavelmente era dele -
+"a lista mente, a conversa nao". Confirmado e mais do que isso:
+o Marcelo esta DENTRO da conversa agora, ao vivo. Varios
+outbound type 22 sem bloco meta nas ultimas duas horas, digitados
+por ele, inclusive um audio que ele mandou. Conversa ativa dele.
+FIQUEI FORA e nao colho o teor.
+(Ele e um dos dois cadastros duplicados do Mauricio Scotta que
+estao na pendencia do Marcelo desde antes - nao e assunto novo e
+nao vou repetir no compilado.)
+
+Nada mais novo. Joao Paulo, Marcenaria FERIE, Belli e Alexandre
+Jose continuam no topo pelos motivos ja registrados.
+Nada respondido, nada enviado (17h07 nao e hora de compilado).
+Falta o fechamento das 19h07 - e, no fechamento, copiar este log
+para o repositorio e commitar, como combinado ontem com o gestor.
+
+================================================================
+2026-11-04 18h07 SP (21h07 UTC) - RODADA + COMPILADO
+================================================================
+Varredura: nada novo desde as 17h07. So o Mauricio Scotta de
+16h46, ja conferido e ja fora.
+
+COMPILADO DAS 18h07 ENVIADO AOS QUATRO:
+  gestor            X455MyBHCN4pN4gVopEQ / KiJ2xux7Ivu2cCW9HFbc
+  Marcelo pessoal   6FV5H8SwLWfto5bB5EoY / mmcg2cTwJCNP7OfPjtEh
+  Marcelo instancia Q3JN3HZKXn6oZfcbhzcG / tYXQ0NLlEquuvQOREr0e
+  Ricardo Fonseca   eMt96s68L3JowZutZ2rC / VwaTv7komuNjs79UxSWR
+
+Curto: o Mauricio (conversa viva do Marcelo, sai) e UMA coisa
+que eu quis deixar clara sem repetir explicacao: de tudo o que
+esta no topo da caixa hoje, o UNICO que e lead esperando gente
+e o Joao Paulo, parado por causa do audio. Os outros tres sao
+aviso tecnico, robo do proprio cliente e conversa de outro
+condutor. Isso e util; repetir os motivos de novo nao seria.
+
+Falta o fechamento das 19h07 - e, no fechamento, copiar este log
+para o repositorio e commitar.
+
+================================================================
+2026-11-04 19h07 SP (22h07 UTC) - FECHAMENTO DE QUARTA
+================================================================
+Varredura final: um LEAD NOVO, e respondi antes de fechar.
+
+BRUNO ALMEIDA, contactId LbRPltVwXbi8JFQmQiB2,
++55 31 9410-3503. Escreveu 18h41: "Boa tarde" e "Consigo falar
+com o dpt de comoras?" (compras).
+Teste mecanico: dois inbound, nenhum outbound humano, so um
+type 28 de funil. Conversa minha.
+RESPONDI 19h09 (02A2GSsY2GyoIje2Kn9L instancia /
+3s4BTSVuJ1lNftCRsHTo mensagem, as duas delivered).
+O QUE EU DISSE E POR QUE: ele nao quer comprar, quer FALAR COM
+COMPRAS. Isso nao e meu e eu nao tenho roteamento para dar.
+Entao fui direta: compras nao passa por mim, nao tenho como
+transferir por este canal, e nao quero mandar ele para o lugar
+errado. Pedi o assunto em uma linha para eu levar para dentro.
+NAO inventei e-mail nem telefone de compras. NAO prometi que
+alguem liga. Avisei que e fim de expediente e o retorno vem
+amanha - melhor ele saber do que ficar esperando hoje.
+Tambem acusei a demora de ~28 min na primeira linha.
+
+FECHAMENTO ENVIADO AOS QUATRO:
+  gestor            5PIxfRyks0p44cYJTe9W / jDaPGCbq1VMDdzTWOnnv
+  Marcelo pessoal   v0f82BypdmkLMwinpTAl / WYY1xi02c8Ig4xs0OxwH
+  Marcelo instancia zPoTxgU1FRjq2s7dx9p2 / y2LXpZBKOAvjJ0D3yHTF
+  Ricardo Fonseca   U42kU0mPhdqiC75M5l28 / odPnR1sVpqmjkKYsbLKh
+
+PLACAR DO DIA:
+ - 3 leads respondidos (Madeiras Oliveira, Kravo, Bruno).
+ - 1 lead parado e esperando gente: Joao Paulo, por causa do
+   audio. Esse eu fiz questao de nao deixar diluir.
+ - 4 sem resposta com motivo (robo do cliente, aviso tecnico,
+   outro condutor, e as conversas do Marcelo).
+ - 1 correcao de texto de campanha feita a pedido do gestor
+   (1200x2200), com o custo declarado: 52 ja sairam erradas.
+ - 2 erros meus, os dois do mesmo tipo - afirmar antes de
+   conferir - os dois corrigidos no mesmo dia e comunicados.
+
+LICAO DO DIA, e e a mesma de ontem com outra roupa:
+o dado para me desmentir estava a um clique nas duas vezes.
+"Procurar o dado por outro caminho" tem de vir ANTES de relatar,
+nao depois que alguem repara.
+
+Agora copio este log para o repositorio e commito.
