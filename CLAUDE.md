@@ -544,6 +544,50 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   28/10, em 20 conversas seguidas. Quem protege disso continua sendo o dono do contato: quando
   alguem do time assume, o `campanhas-enviar` recusa o envio da Nina.
 
+## Cadencia Nitron-Mob por e-mail — o 2o e-mail (04/11)
+
+- **Os 5.511 e-mails da onda 1 NAO EXISTEM em nenhum relatorio do GHL.** Sairam pela API, um a um
+  (`nitronmob-disparar`), entao vivem so na conversa de cada contato e na tabela
+  `nitronmob_envio`. As campanhas `Lançamento NitronMob` e `Lançamento NitronMob Att` continuam
+  em **rascunho** no GHL ate hoje: foram usadas como modelo do texto, nunca disparadas por la.
+  Quem procurar abertura/clique na tela de campanhas nao acha nada — foi o que o gestor procurou
+  em 04/11. **Campanha do GHL tem relatorio; envio por API nao tem** — e por isso que a onda 2
+  roda com `?status=1` e `?entrega=1` em vez de uma tela.
+- **A onda 1 fechou em 4,15% de rejeicao, que e zona de atencao.** 5.032 aceitos, **209 `failed`**
+  de verdade, mais 479 que o GHL recusou no envio (348 e-mail invalido, 87 DND, 44 avulsos).
+  Acima de 5% o provedor pune o dominio. O teto por dia continua **500**, e so sobe se a rejeicao
+  do dia ficar abaixo de 2% — em 04/11 o gestor entendeu o contrario ("agora podemos mandar
+  mais"), e a correcao importa: o que derrubou a cadencia foi o 4o dia, que saltou de 507 para
+  **4.240 de uma vez**.
+- **O 2o e-mail e funcao SEPARADA** (`nitronmob-disparar2`, tabela `nitronmob_envio2`, view
+  `nitronmob_apto2`). Nao e parametro dentro da `nitronmob-disparar`: aquela funcao tem indice
+  unico em `lower(email)` e e **ele** que impede reenvio dentro da onda 1. Mexer nele para caber
+  a onda 2 tiraria a trava da onda 1.
+- **A audiencia da onda 2 exclui quem ja voltou.** 4.823 = os aceitos da onda 1 menos os 209
+  bounces; os 479 recusados nunca chegaram a ser destino valido. Insistir em endereco que voltou
+  e o jeito mais rapido de queimar `crm.nitron.com.br`, que continua sendo dominio novo.
+- **A ordem e por ENGAJAMENTO MEDIDO, nao por faturamento**: clicou (6) > abriu (662) > entregue
+  (4.110) > resto (45). Quem abriu o primeiro abre o segundo, e abertura e o que constroi
+  reputacao. Faturamento so desempata dentro da mesma faixa.
+- **Dois tetos, e o que manda e o do dia.** `TETO`=40 por chamada (a edge function corta em 150s
+  de ociosidade, e cada envio custa ~2,5s) e `nitronmob2_dia_max`=500 por dia, contado na propria
+  tabela, em dia de **Sao Paulo**. O cron pode ter mais disparos agendados do que o necessario:
+  passado o teto, cada chamada devolve "teto do dia atingido" e nao manda nada.
+- **O modelo do GHL deixou o descadastro como TEXTO CRU** (`...essas mensagens:
+  {{email.unsubscribe_link}}`). Na onda 1 ele era `<a href="{{email.unsubscribe_link}}">clique
+  aqui</a>` e funcionou. Texto cru vira uma URL de 400 caracteres escrita no meio da frase do
+  rodape. A arte guardada em `nitronmob_arte` tem o conserto; **o modelo no GHL continua como
+  estava** — disparar por la traz o defeito de volta. Conferido em 04/11 mandando um e-mail de
+  teste de verdade e lendo o corpo entregue (`get-email-by-id`): `status: delivered`, remetente
+  `comercial@crm.nitron.com.br`, descadastro resolvido em URL real.
+- **A arte mora no BANCO** (`nitronmob_arte`, nome `email2`), nao no fonte: trocar o HTML e um
+  UPDATE, sem deploy. A onda 1 guardava em storage pela mesma razao; a tabela so evita precisar
+  de chave de servico para publicar o arquivo.
+- **Teste de arte se faz pelo caminho real.** Para conferir antes dos 500, a linha de teste entra
+  em `nitronmob_envio` com `entrega='clicked'` e o codparc de maior faturamento (assim ela sai
+  primeiro na ordem da view), roda-se `?n=1`, le-se o corpo entregue pelo GHL — e **apagam-se as
+  duas linhas depois**, a de `nitronmob_envio` e a de `nitronmob_envio2`.
+
 ## Acao "raspagem onda 1" — prospeccao de distribuidoras (27/10)
 
 Acao NOVA, pedida pelo Dan em `docs/` e autorizada pelo gestor no mesmo dia. **Nao se mistura com
