@@ -583,6 +583,23 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
 - **A arte mora no BANCO** (`nitronmob_arte`, nome `email2`), nao no fonte: trocar o HTML e um
   UPDATE, sem deploy. A onda 1 guardava em storage pela mesma razao; a tabela so evita precisar
   de chave de servico para publicar o arquivo.
+- **ONDA 1 DO 2o E-MAIL: 500 enviados em 04/11, e o numero que decide o proximo dia e a
+  REJEICAO.** 14h31 as 15h10, 497 aceitos pelo GHL, 3 recusados (endereco que ele nao aceita mais).
+  Entrega conferida nos 497: **2 `failed` = 0,40%** — contra os 4,15% da onda 1 do 1o e-mail. E
+  **88 aberturas/cliques em 1h20 (17,7%)**. A diferenca nao e sorte: a onda 1 mandava para a base
+  bruta, e esta manda so para quem o GHL ja entregou antes, com os 209 bounces e os 479 recusados
+  fora. **Limpar a lista vale mais do que qualquer ajuste de texto.**
+  Com 0,40% o teto de 500 pode dobrar; a regra e so subir enquanto a rejeicao do dia ficar abaixo
+  de 2%, e o que derrubou a cadencia anterior foi pular de 507 para 4.240 de uma vez.
+  **Como foi tocada:** dois crons temporarios (`nitronmob2-rampa` e `-rampa-b`), 40 a cada 3 min,
+  **removidos assim que o teto fechou**. O teto de `nitronmob2_dia_max` e que parou o envio, nao o
+  cron — e por isso o cron pode ser mais largo do que o necessario.
+- **O ritmo real e ~9 e-mails/min, nao 13.** Entre o cron disparar e a funcao comecar passa ate
+  1 minuto: a fila do `pg_net` tem atraso proprio, e ele e maior que o tempo da propria funcao.
+  Quem planejar lote por "40 a cada 3 min" tem de contar com isso — os 500 levaram 39 min, nao 30.
+- **O MCP do Supabase corta comando em 60s, entao nao da para encadear chamadas com `pg_sleep`.**
+  Para as ~8 leituras de entrega (60 por chamada) o caminho que funcionou foi um **cron temporario
+  de 1 em 1 minuto** so com `?entrega=1` — que nao manda e-mail, so le status — removido no fim.
 - **Teste de arte se faz pelo caminho real.** Para conferir antes dos 500, a linha de teste entra
   em `nitronmob_envio` com `entrega='clicked'` e o codparc de maior faturamento (assim ela sai
   primeiro na ordem da view), roda-se `?n=1`, le-se o corpo entregue pelo GHL — e **apagam-se as
