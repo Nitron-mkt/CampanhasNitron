@@ -764,6 +764,15 @@ confundir com as outras, inclusive porque estamos mandando apenas para a galera 
   Consequência prática: **a janela 17h–01h20 é terra de ninguém.** Foi ela que matou o
   `nina-reativa-onda1` às 17:48 de 03/11 — não havia defeito na função, e não havia defeito no cron.
 
+  **Em 04/11 ela abriu às 16h08, quase uma hora mais cedo** — o horário NÃO é fixo. Medido no
+  `nina-reativa-onda2` (jobid 248): rodadas de 16h00 e 16h04 `succeeded`, as de 16h08, 16h12,
+  16h16 e 16h20 `failed`. Do lado de fora deu para ver o mesmo pela porta do MCP: **leitura
+  continuava respondendo e ESCRITA estourava** em `Connection terminated due to connection
+  timeout`, inclusive num `update` de uma linha só em `copiloto_config` — seis tentativas
+  seguidas, e a sétima, 70 s depois, passou. Quem for planejar automação pela borda da janela
+  **conte com 16h, não com 17h**, e saiba que o sintoma pode ser escrita falhando sozinha, com
+  leitura intacta — o que é fácil confundir com lock.
+
 - **O que a Nitron perde nessa janela** (24h): `fila-processar-1min` 402 rodadas de 1.440,
   `copiloto-lead-5min` 49 de 192, `copiloto-entrega-5min` 81 de 288, `copiloto-feedback-perguntar`
   1 de 2, `nina-relatorio-diario` 1 de 1. **Nada avisa** — o cron marca `failed` numa tabela que
