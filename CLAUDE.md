@@ -660,36 +660,50 @@ confundir com as outras, inclusive porque estamos mandando apenas para a galera 
   recusar conexões na mesma janela. Removido com `select cron.unschedule('nina-reativa-onda1');`.
   **Não recriar sem entender a parada de 17:48**: enquanto a causa for desconhecida, a onda anda com
   lotes manuais, que é lento mas observável. `reativa_ativo` continua `sim` e a fila está íntegra.
-- **A INTERMITÊNCIA TEM CAUSA MEDIDA: a soma dos limites configurados não cabe em
-  `max_connections`** (diagnosticado em 04/11). Em 03/11 eu disse que "não era carga" porque vi 18
-  conexões — **eu estava errado por não saber o teto**. Os números:
+- **A INTERMITÊNCIA É UMA JANELA DIÁRIA, das 17h à 1h20 de São Paulo** (medido em 04/11). Esta é a
+  terceira versão desta linha e as duas primeiras estavam erradas — registro as duas porque o erro
+  é instrutivo:
+  1. Em 03/11 escrevi "não é carga, só há 18 conexões". **Errado**: eu não sabia que o teto era 60.
+  2. Em 04/11 de manhã escrevi que a causa era `29 + cron.max_running_jobs(32) > max_connections(60)`.
+     **Era hipótese, não medida** — e cai por terra com o dado abaixo.
 
-  | parâmetro | valor | o que significa |
-  |---|---|---|
-  | `max_connections` | **60** | o teto físico |
-  | `cron.max_running_jobs` | **32** (default) | o pg_cron sozinho pode pedir 32 |
-  | conexões em repouso | **~29** | PostgREST 10 + postgres.js 8 + internos |
-  | `work_mem` | 2,1 MB | por isso há **17 GB** em `temp_files` |
-  | `shared_buffers` | 224 MB | instância pequena |
+  O que a medição mostra: nas últimas 6 horas houve **ZERO falhas**, inclusive em minutos com
+  **64 jobs disparando juntos**. O limite de conexões, portanto, não é o que morde. O que existe é
+  uma janela:
 
-  29 + 32 = **61 > 60**. Literalmente não cabe, e o resultado aparece em
-  `cron.job_run_details.return_message` como **`job startup timeout`**: o pg_cron não consegue abrir
-  conexão e desiste do disparo.
+  | hora SP | falhas |
+  |---|---|
+  | 09h–16h | 0 a 2% |
+  | **17h** | 18% (a janela abre) |
+  | **18h–00h** | **87% a 95%** |
+  | 01h20 | fecha |
 
-- **UM QUARTO DOS CRONS NÃO RODA, e isso é silencioso.** 9.317 falhas em 48h (**28%**), uniformes em
-  todos os jobs e em todos os projetos. O que a Nitron perde em 24h:
+  Começa cravado às **17:00:01** e termina **01:20**, todo dia, atingindo **115 jobs** e ~5.000
+  disparos por noite. O erro é sempre `job startup timeout`, que no pg_cron significa que o
+  background worker não subiu — e `max_worker_processes` é **6**, teto apertado para 157 crons.
 
-  | cron | rodadas perdidas | % |
-  |---|---|---|
-  | `fila-processar-1min` | 402 de 1.440 | 27,9% |
-  | `copiloto-entrega-5min` | 81 de 288 | 28,1% |
-  | `copiloto-lead-5min` (a Nina atendendo lead) | 49 de 192 | **25,5%** |
-  | `copiloto-feedback-perguntar` | 1 de 2 | 50% |
-  | `nina-relatorio-diario` | 1 de 1 | **100%** |
+  **A causa última da janela continua DESCONHECIDA.** Não é job pesado dos projetos: nenhum cron do
+  banco passa de 30 s de execução. Sobram hipóteses que só se conferem no painel do Supabase
+  (Reports → Database): CPU/IO saturados por esgotamento de burst do tier, ou rotina da plataforma
+  nesse horário. **Não ligar automação nova nem concluir nada sobre a causa antes disso.**
 
-  **Nada avisa.** O cron marca `failed` numa tabela que ninguém abre, e a operação segue parecendo
-  normal rodando a ~72%. Foi isso que matou o `nina-reativa-onda1` às 17:48 de 03/11 — não havia
-  defeito na função.
+  Consequência prática: **a janela 17h–01h20 é terra de ninguém.** Foi ela que matou o
+  `nina-reativa-onda1` às 17:48 de 03/11 — não havia defeito na função, e não havia defeito no cron.
+
+- **O que a Nitron perde nessa janela** (24h): `fila-processar-1min` 402 rodadas de 1.440,
+  `copiloto-lead-5min` 49 de 192, `copiloto-entrega-5min` 81 de 288, `copiloto-feedback-perguntar`
+  1 de 2, `nina-relatorio-diario` 1 de 1. **Nada avisa** — o cron marca `failed` numa tabela que
+  ninguém abre.
+
+- **Afeta TODOS os projetos, proporcionalmente ao número de crons**: Nitron 2.413 rodadas perdidas
+  por dia (27,6%), roga 1.246 (28,9%), constelação 447 (29,5%), teak 59 (13,9%).
+
+- **A perda de histórico do TEAK não vem daqui** (conferido em 04/11, a pedido do gestor).
+  `teak.conversa_evento` tem série **contínua** de 14/10 a 04/11, com vales só em fim de semana. E
+  os três crons do Teak são **idempotentes**: `teak-conversas-10min` e `teak-fila-2min` processam
+  FILA com lote (rodada perdida atrasa, não apaga) e `teak.sincronizar_contatos()` é um UPSERT
+  completo de `public.snap_lead` (a rodada seguinte refaz tudo). Rodada perdida no Teak **não
+  apaga histórico**. Se houver perda real lá, a causa é outra e precisa ser dita qual tabela.
 
 - **O BANCO É COMPARTILHADO, e o maior consumidor não é a Nitron.** Schemas: `public` (Nitron,
   339 MB), `roga` (106 MB), `seguranca_bkp` (76 MB), `cron` (66 MB), `constelacao`, `teak`,
