@@ -660,12 +660,47 @@ confundir com as outras, inclusive porque estamos mandando apenas para a galera 
   recusar conexões na mesma janela. Removido com `select cron.unschedule('nina-reativa-onda1');`.
   **Não recriar sem entender a parada de 17:48**: enquanto a causa for desconhecida, a onda anda com
   lotes manuais, que é lento mas observável. `reativa_ativo` continua `sim` e a fila está íntegra.
-- **O BANCO ESTÁ INTERMITENTE, e não é carga** (03/11, 18h30 SP). `select 1` falhou com
-  `Connection terminated due to connection timeout` quatro vezes, com **18 conexões e 2 ativas** —
-  `pg_stat_activity` não mostra pressão nenhuma. As tabelas de histórico são pequenas
-  (`cron.job_run_details` 57 MB, `net._http_response` 8,7 MB) e não explicam. **Isto afeta a
-  operação inteira, não só a reativação** — toda função que fala com o PostgREST passa por aqui.
-  Investigar antes de ligar automação nova.
+- **A INTERMITÊNCIA TEM CAUSA MEDIDA: a soma dos limites configurados não cabe em
+  `max_connections`** (diagnosticado em 04/11). Em 03/11 eu disse que "não era carga" porque vi 18
+  conexões — **eu estava errado por não saber o teto**. Os números:
+
+  | parâmetro | valor | o que significa |
+  |---|---|---|
+  | `max_connections` | **60** | o teto físico |
+  | `cron.max_running_jobs` | **32** (default) | o pg_cron sozinho pode pedir 32 |
+  | conexões em repouso | **~29** | PostgREST 10 + postgres.js 8 + internos |
+  | `work_mem` | 2,1 MB | por isso há **17 GB** em `temp_files` |
+  | `shared_buffers` | 224 MB | instância pequena |
+
+  29 + 32 = **61 > 60**. Literalmente não cabe, e o resultado aparece em
+  `cron.job_run_details.return_message` como **`job startup timeout`**: o pg_cron não consegue abrir
+  conexão e desiste do disparo.
+
+- **UM QUARTO DOS CRONS NÃO RODA, e isso é silencioso.** 9.317 falhas em 48h (**28%**), uniformes em
+  todos os jobs e em todos os projetos. O que a Nitron perde em 24h:
+
+  | cron | rodadas perdidas | % |
+  |---|---|---|
+  | `fila-processar-1min` | 402 de 1.440 | 27,9% |
+  | `copiloto-entrega-5min` | 81 de 288 | 28,1% |
+  | `copiloto-lead-5min` (a Nina atendendo lead) | 49 de 192 | **25,5%** |
+  | `copiloto-feedback-perguntar` | 1 de 2 | 50% |
+  | `nina-relatorio-diario` | 1 de 1 | **100%** |
+
+  **Nada avisa.** O cron marca `failed` numa tabela que ninguém abre, e a operação segue parecendo
+  normal rodando a ~72%. Foi isso que matou o `nina-reativa-onda1` às 17:48 de 03/11 — não havia
+  defeito na função.
+
+- **O BANCO É COMPARTILHADO, e o maior consumidor não é a Nitron.** Schemas: `public` (Nitron,
+  339 MB), `roga` (106 MB), `seguranca_bkp` (76 MB), `cron` (66 MB), `constelacao`, `teak`,
+  `nitronceo`. A consulta mais cara do banco inteiro é do **roga** (`roga.fila_envio`: 19.812
+  chamadas, média 1.073 ms, **21.255 s acumulados** — 3x a segunda colocada). Mexer em
+  `cron.max_running_jobs` ou no tier afeta os cinco projetos, então **não é decisão de uma sessão
+  da Nitron**.
+
+- **São 157 crons ATIVOS, não 74** (170 cadastrados). 14 execuções por minuto, 80.958 em 4 dias.
+  Este arquivo dizia 74 e ninguém reconferiu. Antes de criar cron novo, lembrar que cada um disputa
+  as mesmas 60 conexões.
 - **NUNCA consultar `cron.job_run_details` sem filtro indexado.** Em 03/11 eu disparei três
   varreduras completas nela para diagnosticar o cron da reativação; cada uma segurou uma conexão
   por 60s e o pool esgotou — e eu passei a atribuir ao cron uma lentidão que **eu** tinha causado.
