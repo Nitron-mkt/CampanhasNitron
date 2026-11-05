@@ -209,15 +209,26 @@ Deno.serve(async (req) => {
       donoCrm = d?.dono_crm || null;
     } catch { /* segue: a linha do lead vale mesmo sem contato resolvido */ }
 
-    // tag e origem no contato, para quem abrir o CRM ver de onde ele veio
+    // TAG E ORIGEM NO CONTATO — e por elas que quem abre o CRM ve de onde o lead veio.
+    //
+    // As tags entram pelo endpoint PROPRIO de tags, que SOMA. Um PUT em /contacts/{id} com `tags`
+    // SUBSTITUI a lista inteira: num contato que ja existia (lojista que voltou, ou que ja falou
+    // com a Nina antes) isso apagaria calado as tags que ele ja tinha, inclusive as que o fluxo do
+    // GHL usa para decidir atendimento.
+    //
+    // Quais tags, em copiloto_config.lp_tags (separadas por virgula): trocar e UPDATE, sem deploy.
     if (contactId) {
-      try {
-        await ghl("PUT", `/contacts/${contactId}`, {
-          tags: ["lead", "lp-nitron-direto"],
-          source: origem,
-          ...(email ? { email } : {}),
-        });
-      } catch { /* a tag e conforto para quem le o CRM, nao pre-requisito */ }
+      const qt = await rest("copiloto_config?select=valor&chave=eq.lp_tags");
+      const tags = String((qt.ok ? (await qt.json())[0]?.valor : "") || "lead,lp-nitron-direto")
+        .split(",").map((t) => t.trim()).filter(Boolean).slice(0, 10);
+      if (tags.length) {
+        try { await ghl("POST", `/contacts/${contactId}/tags`, { tags }); }
+        catch { /* a tag e conforto para quem le o CRM, nao pre-requisito do atendimento */ }
+      }
+      // o `source` o copiloto-lead LE para dizer a Nina de onde o lead veio, entao vale o PUT —
+      // mas sem `tags` no corpo, para nao reabrir o problema de cima.
+      try { await ghl("PUT", `/contacts/${contactId}`, { source: origem, ...(email ? { email } : {}) }); }
+      catch { /* idem */ }
     }
 
     // ---- a linha do lead. E ela que faz a Nina atender e que carrega CNPJ e CEP. ----
