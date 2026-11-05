@@ -765,44 +765,61 @@ confundir com as outras, inclusive porque estamos mandando apenas para a galera 
   sem cron. `reativa_ativo` segue `sim` e **sem cron nada sai sozinho** — é seguro deixar assim.
   A fila é dinâmica (lead entra e sai da faixa conforme `atualizado`), então sobra sempre um resto
   pequeno; tocar é repetir a chamada dentro de 9h–16h.
-- **A INTERMITÊNCIA É UMA JANELA DIÁRIA, das 17h à 1h20 de São Paulo** (medido em 04/11). Esta é a
-  terceira versão desta linha e as duas primeiras estavam erradas — registro as duas porque o erro
-  é instrutivo:
-  1. Em 03/11 escrevi "não é carga, só há 18 conexões". **Errado**: eu não sabia que o teto era 60.
-  2. Em 04/11 de manhã escrevi que a causa era `29 + cron.max_running_jobs(32) > max_connections(60)`.
-     **Era hipótese, não medida** — e cai por terra com o dado abaixo.
+- **A INSTABILIDADE DE TRÊS DIAS ERA O SPEND CAP, E A RESPOSTA NÃO ESTAVA NO BANCO** (resolvido em
+  05/11). A organização é **Pro com spend cap LIGADO**, e o **Cached Egress** estourou a cota:
+  **260,5 GB de 250 (104%)**. Com o cap ligado o Supabase não cobra excedente — ele **degrada o
+  projeto**. O próprio painel diz: *"your projects could become unresponsive or enter read only
+  mode if you exceed the included quota"*. O gestor desligou o cap por volta das 15h e **tudo
+  voltou no mesmo minuto**: banco, página de pedido, painel, e os crons retomaram sozinhos.
 
-  O que a medição mostra: nas últimas 6 horas houve **ZERO falhas**, inclusive em minutos com
-  **64 jobs disparando juntos**. O limite de conexões, portanto, não é o que morde. O que existe é
-  uma janela:
+  **Eu errei o diagnóstico três vezes, e o padrão do erro é o que vale registrar:**
+  1. 03/11 — "não é carga, só há 18 conexões". Eu não sabia que o teto era 60.
+  2. 04/11 de manhã — `29 + cron.max_running_jobs(32) > max_connections(60)`. Hipótese, não medida.
+  3. 04/11 de tarde — "é uma janela diária das 17h à 1h20". Padrão real, causa errada: a hora
+     mudava (17h no dia 3, 16h08 no dia 4, 10h13 no dia 5) porque o que apertava era o **consumo
+     do mês acumulando**, não um horário.
 
-  | hora SP | falhas |
+  **O erro de método, nos três: procurei a explicação DENTRO do banco.** Conexões, workers, crons,
+  horários. A resposta estava no **painel de billing**, que o MCP não expõe — não há ferramenta de
+  consumo nem de fatura. Quando os números internos não explicam, a causa pode estar fora do que
+  se consegue medir, e aí a saída é **pedir a tela a quem tem acesso**, não refinar a hipótese.
+
+  **O sintoma que entregou o jogo, e que serve de atalho da próxima vez:** o Storage devolvia
+  `544 DatabaseTimeout` **só em arquivo GRANDE**. `pedido.html` (3,8 MB) falhava; `gestor.html`
+  (300 KB) e a arte do e-mail (39 KB) passavam. Não é "o banco está fora" — é "o banco está
+  estrangulado". Leitura simples respondia e ESCRITA estourava, o que é fácil confundir com lock.
+
+  **Como conferir, se repetir:** o badge `EXCEEDING USAGE LIMITS` no topo do dashboard, e
+  `https://supabase.com/dashboard/org/<org>/usage`. Desligar o cap custa **US$ 0,03/GB** de cached
+  egress excedente — na largada eram 10,5 GB (US$ 0,32), com projeção de ~US$ 7 no ciclo. O preço
+  de manter o cap ligado era o projeto fora do ar.
+
+- **O QUE COME A COTA É `comando/index.html`, NÃO a página de pedido** (medido em 05/11 nos
+  `edge_logs`, que o MCP expõe e que dizem o que o painel de billing não diz).
+
+  | | |
   |---|---|
-  | 09h–16h | 0 a 2% |
-  | **17h** | 18% (a janela abre) |
-  | **18h–00h** | **87% a 95%** |
-  | 01h20 | fecha |
+  | arquivo | `storage/v1/object/public/comando/index.html` — "Comando Central Nitron", 177 KB |
+  | requisições em 24h | **136.187** (51% de TODAS as do projeto) |
+  | tráfego em 24h | **24,1 GB** |
+  | origem | um serviço no **Cloudflare, em Singapura** — `cf.city=Singapore`, `asOrganization=Cloudflare, Inc.` |
+  | cache | 100% `HIT` — é exatamente a métrica que estourou |
 
-  Começa cravado às **17:00:01** e termina **01:20**, todo dia, atingindo **115 jobs** e ~5.000
-  disparos por noite. O erro é sempre `job startup timeout`, que no pg_cron significa que o
-  background worker não subiu — e `max_worker_processes` é **6**, teto apertado para 157 crons.
+  24 GB/dia dá **~720 GB/mês**, quase 3x a cota de 250 GB. Tudo da Nitron somado — fila, Nina,
+  campanhas, e-mails, reativação — é menos de 15% das requisições. O pico de **35.134 numa hora**
+  caiu às 10h de SP em 05/11, o minuto em que o banco colapsou.
 
-  **A causa última da janela continua DESCONHECIDA.** Não é job pesado dos projetos: nenhum cron do
-  banco passa de 30 s de execução. Sobram hipóteses que só se conferem no painel do Supabase
-  (Reports → Database): CPU/IO saturados por esgotamento de burst do tier, ou rotina da plataforma
-  nesse horário. **Não ligar automação nova nem concluir nada sobre a causa antes disso.**
+  **A suspeita anterior (a página de pedido de 3,8 MB) estava ERRADA** — fica registrado porque
+  era plausível e me custou tempo: 260 GB ÷ 3,8 MB daria 68 mil aberturas, e o volume de leads
+  não chega perto. A conta não fechava, e isso deveria ter me feito medir antes de supor.
 
-  Consequência prática: **a janela 17h–01h20 é terra de ninguém.** Foi ela que matou o
-  `nina-reativa-onda1` às 17:48 de 03/11 — não havia defeito na função, e não havia defeito no cron.
+  **O que não dá para ver daqui:** qual Worker do Cloudflare faz isso. Está fora do Supabase.
+  Nenhuma pessoa abre uma página 136 mil vezes por dia — é um laço. **Pendente com o gestor.**
 
-  **Em 04/11 ela abriu às 16h08, quase uma hora mais cedo** — o horário NÃO é fixo. Medido no
-  `nina-reativa-onda2` (jobid 248): rodadas de 16h00 e 16h04 `succeeded`, as de 16h08, 16h12,
-  16h16 e 16h20 `failed`. Do lado de fora deu para ver o mesmo pela porta do MCP: **leitura
-  continuava respondendo e ESCRITA estourava** em `Connection terminated due to connection
-  timeout`, inclusive num `update` de uma linha só em `copiloto_config` — seis tentativas
-  seguidas, e a sétima, 70 s depois, passou. Quem for planejar automação pela borda da janela
-  **conte com 16h, não com 17h**, e saiba que o sintoma pode ser escrita falhando sozinha, com
-  leitura intacta — o que é fácil confundir com lock.
+  **Como medir de novo** (vale para qualquer investigação de egress):
+  `select log_attributes['request.path'], count(*) from logs where source='edge_logs' group by 1`
+  e depois, no caminho suspeito, agrupar por `request.cf.city`, `request.cf.asOrganization`,
+  `response.headers.cf_cache_status` e somar `response.headers.content_length`.
 
 - **O que a Nitron perde nessa janela** (24h): `fila-processar-1min` 402 rodadas de 1.440,
   `copiloto-lead-5min` 49 de 192, `copiloto-entrega-5min` 81 de 288, `copiloto-feedback-perguntar`
