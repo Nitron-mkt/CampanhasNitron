@@ -670,6 +670,51 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   **Conferido no fim, com dois cadastros seguidos pelo site:** contato criado do zero com as tags
   `lead` e `campanha-lp-direto`, dono a Nina, `source` gravado, uma unica linha de lead com cidade,
   UF, CNAE 8550301 e cesta R01 — e o segundo cadastro **nao** duplicou.
+- **A CESTA GERAL EXISTE DESDE 05/11 — e ate aqui a pagina errava CALADA quando nao tinha cesta.**
+  O `pickSeg()` escolhia a cesta pelo pedaco antes do `~` no link e, quando esse pedaco nao era uma
+  cesta conhecida, caia em `segIds[0]` — que e o **Sudeste-R01**, a cesta de Casa de Utilidades do
+  Sudeste. Uma farmacia no Para via exatamente ela. E nao e caso raro: o CNAE pode nao cair em
+  R01..R10, e ha combinacao regiao x ramo que **nao existe** (o Norte nao tem R03, R07, R08, R09
+  nem R10; o Centro-Oeste nao tem R08 nem R09). Hoje existem seis cestas novas — `Geral` e
+  `Geral-<Regiao>` para as cinco regioes — e o fallback aponta para `Geral`.
+  **Como ela e montada:** pela mesma regua das outras, penetracao real na base de clientes. Para
+  cada regiao, a penetracao de cada produto e a media ponderada das cestas de ramo daquela regiao,
+  com peso igual ao numero de clientes de cada ramo; produto fora da cesta de um ramo conta 0 ali.
+  Preco, descricao, embalagem e foto saem do CATALOGO da propria pagina — **a cesta geral nao
+  inventa numero nenhum**, e por isso o `~F<perc>` continua valendo nela igual. Subtotais medidos:
+  Sudeste 8.282,63 · Sul 9.116,80 · Centro-Oeste 8.835,10 · Nordeste 11.720,53 · Norte 15.673,15 ·
+  Geral 8.237,45. Conferido no navegador: `#Geral-Sudeste` da R$ 7.454,37 e `#Geral-Sudeste~F8.9`
+  da R$ 8.117,05 (fator 1,0889, arredondando item a item), e `#Farmacia-R99~F8.9` cai em `Geral`.
+  **Publicar e a funcao `pedido-publicar`**, chamada por SQL com a chave do cofre
+  (`vault.decrypted_secrets`): ela LE a pagina publicada, recalcula as cestas gerais a partir das de
+  ramo que estao la dentro, aplica os dois patches de codigo e regrava. E idempotente, nao exige
+  chave no chat (o gestor proibiu) e nao sobrescreve a pagina com uma copia local — o que tambem
+  protege do caso de duas sessoes publicarem uma por cima da outra.
+  **O que falta:** o `link_pedido` do `copiloto-lead` ainda tem `if (!/^R\d{2}$/.test(ramo)) ramo =
+  "R01"` e uma cadeia de fallback que termina em `Sudeste-R01` rotulada "cesta geral" — mentira,
+  agora que a geral existe. Apontar para `Geral-<Regiao>` e `Geral` **exige publicar o
+  `copiloto-lead`**, que esta atendendo gente.
+- **O LEAD DA LANDING CAI NO FUNIL, e a tag inteligente diz o que ele e** (`lp-lead` v6, 05/11,
+  ordem do gestor). Pipeline **Novos Clientes** (`DPcneonoDqReGwLhnwan`), etapa **Novo Lead**
+  (`b7df7683-...`), ids em `copiloto_config` (`lp_pipeline_id`, `lp_stage_id`) — sem eles a
+  oportunidade NAO e criada e o motivo vai para o resumo do lead; chutar um pipeline seria pior.
+  E **upsert**, nao create: casa por (pipeline, contato), entao quem preencher o formulario duas
+  vezes nao vira dois cards. Alem da tag fixa `campanha-lp-direto` (que diz DE ONDE ele veio), vao
+  as tags **inteligentes** (que dizem O QUE ELE E): `lp-ramo-<R0x>` do CNAE e `lp-uf-<UF>` do CEP.
+  O molde mora em `copiloto_config.lp_tags_inteligentes`. **Tag com buraco nao vai** (`lp-uf-`
+  sozinho) — tag, no GHL, ninguem apaga depois. O GHL grava tudo em minusculas.
+- **A PONTE RESPONDE PRIMEIRO E ENRIQUECE DEPOIS — e isso custou uma regressao para aprender.**
+  O servidor da LP desiste em **8 segundos** e, sem resposta, devolve o protocolo **sem o link do
+  WhatsApp**: o lojista termina o cadastro e nao e levado para a conversa, que e o passo que
+  converte. Quando a ponte passou a abrir tambem a oportunidade, a soma (BrasilAPI ate 9s + ViaCEP
+  + lookup no GHL + tags + PUT + upsert) estourou o limite — medido: o cadastro completou no
+  servidor e mesmo assim voltou sem link. Hoje a ordem e: grava a linha do lead com o essencial do
+  formulario, resolve a praca com teto de 3s, **responde**, e roda CNAE + CRM + tags + funil em
+  `EdgeRuntime.waitUntil`. Medido depois: **3,3s** com link. `?sync=1` espera o enriquecimento e
+  devolve o resultado — e assim que se confere a ponte inteira sem depender da tela da LP.
+  **Efeito colateral a conhecer:** sem CEP resolvido, `cidade`/`uf` caem no endereco do CNPJ na
+  Receita, que pode ser outra praca (num teste, CEP do Acre e cidade gravada no RS). O preco nao
+  erra por isso — o frete e calculado do `cep` —, mas o repasse pode. Falta avisar isso no resumo.
 - **TESTE DA PONTE: nao use numero obvio, e confira ANTES se ele existe no CRM.** Usei
   `11999999999` e ele **casou com um contato que ja existia** ("Teste Turno" / "Loja Teste", mas
   carregando dados reais do codparc 9214, E PIANHO - CURITIBA). O cadastro de teste gravou nele as

@@ -508,7 +508,7 @@ var IMG = window.IMG || {};
   (D.catalogo||[]).forEach(function(it){ it.preco=r2(it.preco); });
   Object.keys(D.segs||{}).forEach(function(k){ (D.segs[k].itens||[]).forEach(function(it){ it.preco=r2(it.preco); }); });
 })();
-var REGORD={Sudeste:1,Nordeste:2,Sul:3,"Centro-Oeste":4,Norte:5};
+var REGORD={Brasil:0,Sudeste:1,Nordeste:2,Sul:3,"Centro-Oeste":4,Norte:5};
 var fmt=function(n){return (n||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});};
 var fmtI=function(n){return (n||0).toLocaleString("pt-BR");};
 var esc=function(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});};
@@ -535,7 +535,16 @@ var els={};
 // O hash e #<Segmento>[~<marca>]. A marca pode ser "adm" (visao interna) ou "L23" (o id do lead,
 // para o pedido-visita saber QUEM abriu). Tudo depois do ~ sai antes de procurar o segmento —
 // sem isto um link com marca cairia em D.segs[undefined] e entregaria a cesta errada.
-function pickSeg(){var h=(location.hash||"").replace(/^#/,"").split("~")[0].replace(/^adm$/i,""); return (h&&D.segs[h])?h:segIds[0];}
+// O QUE FAZER QUANDO A MARCA NAO APONTA PARA NENHUMA CESTA. Antes caia em `segIds[0]`, que e o
+// Sudeste-R01 — a cesta de Casa de Utilidades do Sudeste. Uma farmacia no Para via ela, calada, e
+// o preco ate batia (o ~F do link resolve o frete), mas o MIX era de outro ramo e de outra regiao.
+// Acontece mais do que parece: o CNAE do lead pode nao cair em R01..R10, e ha combinacao
+// regiao x ramo que simplesmente nao existe (o Norte nao tem R03, R07, R08, R09 nem R10).
+// Agora cai na cesta GERAL — os mais vendidos, por penetracao real ponderada pela base de
+// clientes. Errar para "o que a maioria compra" e honesto; errar para o ramo errado nao e.
+function pickSeg(){var h=(location.hash||"").replace(/^#/,"").split("~")[0].replace(/^adm$/i,"");
+  if(h&&D.segs[h]) return h;
+  return D.segs["Geral"]?"Geral":segIds[0];}
 function buildSegSelect(){els.seg.innerHTML=segIds.map(function(id){var s=D.segs[id];return '<option value="'+id+'">'+esc(s.reg)+' · '+esc(s.ramo)+'</option>';}).join("");}
 
 function loadSeg(id){
