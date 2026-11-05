@@ -24,8 +24,10 @@
 // O QUE ELA NAO FAZ, de proposito:
 //  - nao manda mensagem nenhuma. Quem fala e a Nina, quando o lojista escrever. Assim um POST
 //    forjado nao vira Zaptos para um numero de terceiro.
-//  - nao define dono do contato no CRM. Contato de lead SEM DONO recebe Zaptos normalmente; com
-//    dono de outra instancia, o `campanhas-enviar` recusa o envio da Nina.
+//  - nao escolhe dono por fora: o contato NOVO nasce com a Nina, que e quem vai falar com ele. O
+//    numero de saida E o `assignedTo`, entao dono indefinido e numero de saida indefinido. Contato
+//    que JA existe nao tem o dono mexido — e se alguem do time assumir depois, o dono muda e o
+//    `campanhas-enviar` passa a recusar a saudacao automatica, que e a protecao que importa.
 //
 // Uso:
 //   POST /lp-lead            header `x-lp-token: <LP_TOKEN>`
@@ -51,6 +53,9 @@ const UA = "Mozilla/5.0 (compatible; NitronBot/1.0)";
 
 // WhatsApp da Nina. O mesmo numero da pagina de pedido.
 const NINA_WA = "5511960390203";
+// Nome da instancia no `instancia_ghl`. Vai no lookup do CRM e na linha do lead — os dois tem de
+// dizer a mesma coisa, senao o contato nasce de um jeito e o lead diz outro.
+const INSTANCIA = "Nina";
 
 const digits = (s: unknown) => String(s ?? "").replace(/\D/g, "");
 // grava o numero INTEIRO: tira o 55 so quando o que sobra ainda e numero brasileiro plausivel.
@@ -137,8 +142,6 @@ async function praca(cep: string): Promise<{ cidade: string; uf: string; regiao:
   } catch { return { erro: "ViaCEP fora do ar" }; }
 }
 
-const prim = (s: string) => (String(s || "").trim().split(/\s+/)[0] || "");
-
 Deno.serve(async (req) => {
   try {
     if (req.method === "OPTIONS") return j({ ok: true });
@@ -192,22 +195,34 @@ Deno.serve(async (req) => {
       praca: pOk ? `${pOk.cidade}/${pOk.uf} — ${pOk.regiao} (${pOk.perc}%)` : (pr as any).erro,
     });
 
-    // ---- contato no CRM. Sem dono, de proposito. ----
+    // ---- contato no CRM ----
     // O `campanhas-enviar` em modo lookup acha ou cria o contato e devolve o id — e o mesmo caminho
     // que todo o resto do projeto usa, entao o de-para de telefone e duplicidade ja esta resolvido.
+    //
+    // A INSTANCIA E OBRIGATORIA NO LOOKUP, mesmo sem mandar mensagem nenhuma. O `campanhas-enviar`
+    // recusa WhatsApp sem instancia ANTES de procurar o contato (`sem_instancia`), entao a chamada
+    // sem ela voltava `ok:false` e o lead ficava sem contato no CRM — e SEM CONTATO NAO HA TAG.
+    // Medido em 05/11, no primeiro cadastro que passou pela ponte de verdade: lead gravado inteiro,
+    // CNAE e praca resolvidos, e `contact_id` vazio.
+    //
+    // E o "nao" do CRM nao pode mais sumir. Antes, qualquer recusa — telefone fixo, instancia fora
+    // do cadastro, GHL de pe no chao — era engolida pelo catch e o lead nascia mudo: alguem so
+    // descobriria abrindo o CRM e nao achando ninguem. Agora o motivo vai para o resumo do lead e
+    // para a resposta.
     let contactId: string | null = null;
-    let contatoCriado = false, donoCrm: string | null = null;
+    let contatoCriado = false, donoCrm: string | null = null, crmErro: string | null = null;
     try {
       const lk = await fetch(`${URL_()}/functions/v1/campanhas-enviar`, {
         method: "POST",
         headers: { Authorization: "Bearer " + srvKey(), "Content-Type": "application/json" },
-        body: JSON.stringify({ lookup: true, canal: "whatsapp", fone, nome, email: email || undefined }),
+        body: JSON.stringify({ lookup: true, canal: "whatsapp", instancia: INSTANCIA, fone, nome, email: email || undefined }),
       });
       const d = await lk.json().catch(() => ({} as any));
       contactId = d?.contactId || null;
       contatoCriado = !!d?.criado;
       donoCrm = d?.dono_crm || null;
-    } catch { /* segue: a linha do lead vale mesmo sem contato resolvido */ }
+      if (!contactId) crmErro = String(d?.motivo || "o CRM nao devolveu contato").slice(0, 200);
+    } catch (e) { crmErro = String(e).slice(0, 200); }
 
     // TAG E ORIGEM NO CONTATO — e por elas que quem abre o CRM ve de onde o lead veio.
     //
@@ -234,7 +249,7 @@ Deno.serve(async (req) => {
     // ---- a linha do lead. E ela que faz a Nina atender e que carrega CNPJ e CEP. ----
     const agora = new Date().toISOString();
     const row: any = {
-      contact_id: contactId, fone, instancia: "Nina",
+      contact_id: contactId, fone, instancia: INSTANCIA,
       nome, nome_confirmado: true,          // ele mesmo digitou, com sobrenome conferido
       empresa: temRamo?.razao || null,
       razao_social: temRamo?.razao || null,
@@ -256,16 +271,23 @@ Deno.serve(async (req) => {
         ramo ? `Cesta: ${ramo} (${ramoVeioDe}).` : "Cesta nao resolvida pelo CNAE.",
         pOk ? `Praca: ${pOk.cidade}/${pOk.uf}.` : "Praca nao resolvida pelo CEP.",
         cliente ? `ATENCAO: o CNPJ ja tem cadastro — ${cliente.razao}, codparc ${cliente.codparc}, situacao ${cliente.situacao}.` : "CNPJ sem cadastro: lead novo.",
+        crmErro ? `ATENCAO: contato NAO resolvido no CRM (${crmErro}) — sem contato nao ha tag nem conversa.` : "",
         "CNPJ e CEP ja estao preenchidos: o link de pedido pode sair na primeira resposta.",
-      ].join(" ").slice(0, 900),
+      ].filter(Boolean).join(" ").slice(0, 900),
       atualizado: agora,
     };
 
-    // upsert por contact_id, ou por telefone quando o CRM nao resolveu
-    const col = contactId ? "contact_id" : "fone";
-    const val = contactId || fone;
-    const qa = await rest(`copiloto_lead?select=id&${col}=eq.${encodeURIComponent(val)}&order=id.desc&limit=1`);
-    const atual = qa.ok ? (await qa.json())[0] || null : null;
+    // Procura por contact_id E TAMBEM por telefone, nessa ordem. So por contact_id, um lead que
+    // tenha nascido sem contato (o CRM recusou numa passada anterior) viraria linha NOVA no
+    // cadastro seguinte: o mesmo telefone em duas linhas, uma com contato e outra sem, e a Nina
+    // lendo a errada. Medido em 05/11, nos dois cadastros de teste da ponte.
+    let atual: { id: number } | null = null;
+    for (const [c, v] of ([["contact_id", contactId], ["fone", fone]] as [string, string | null][])) {
+      if (!v) continue;
+      const q = await rest(`copiloto_lead?select=id&${c}=eq.${encodeURIComponent(v)}&order=id.desc&limit=1`);
+      atual = q.ok ? (await q.json())[0] || null : null;
+      if (atual) break;
+    }
 
     let leadId: number | null = null;
     if (atual?.id) {
@@ -302,6 +324,7 @@ Deno.serve(async (req) => {
       contact_id: contactId,
       contato_criado: contatoCriado,
       dono_crm: donoCrm,
+      crm_erro: crmErro || undefined,
       ja_cliente: cliente ? { codparc: cliente.codparc, razao: cliente.razao, situacao: cliente.situacao } : null,
       ramo, ramo_veio_de: ramoVeioDe,
       praca: pOk ? { cidade: pOk.cidade, uf: pOk.uf, regiao: pOk.regiao, perc_cif: pOk.perc } : null,

@@ -646,6 +646,40 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   mas mexe em funcao que esta atendendo, entao e decisao do gestor.
 - **A LP valida o link de WhatsApp antes de usar** (so aceita `wa.me` / `whatsapp.com` em https).
   Se a ponte fosse comprometida, nao daria para redirecionar o lojista para outro lugar.
+- **A PONTE ESTA NO AR E FUNCIONANDO, desde 05/11** — e para chegar la foram DUAS publicacoes e
+  dois defeitos. Vale guardar como se conferiu, porque nada disso aparece sem cadastro real.
+  **1) O site no ar nao era o codigo novo.** Com o `LP_TOKEN` ja certo nos dois lados, um cadastro
+  de teste voltou **201 sem `whatsappUrl`** e nenhuma linha em `copiloto_lead`: o servidor
+  publicado nao tinha o `forwardLeadToNitron`. Enquanto nao se republica, lead da LP morre no
+  Postgres do Replit. **Como saber qual build esta no ar sem criar lead:** a rota tem DUAS
+  mensagens de 400 — a do schema ("Confira os campos obrigatorios") e a da checagem seguinte
+  ("Informe nome e sobrenome, um CNPJ valido"). Um POST com CNPJ de digito errado e sem
+  `ramo_codigo` diz qual das duas responde.
+  **2) O lookup do CRM era recusado ANTES de procurar o contato.** O `campanhas-enviar` exige
+  `instancia` para canal WhatsApp e recusa (`sem_instancia`) antes de qualquer busca — e a ponte
+  chamava sem ela. Resultado: lead gravado inteiro (CNPJ, CEP, cidade, CNAE, cesta) e
+  **`contact_id` vazio** — ou seja, **sem contato no CRM e portanto SEM TAG**, que era justamente o
+  que o gestor tinha pedido. A recusa vinha sendo engolida por um `catch`. Hoje a ponte manda
+  `instancia: "Nina"` e grava o motivo no resumo do lead quando o CRM diz nao.
+  **Efeito colateral aceito e desejado:** com a instancia no lookup, o contato NOVO nasce com a
+  Nina como `assignedTo`. O numero de saida E o dono, entao dono indefinido seria numero de saida
+  indefinido. **Contato que ja existe nao tem o dono mexido** (conferido).
+  **3) Lead sem contato virava linha DUPLICADA no cadastro seguinte.** O upsert procurava so por
+  `contact_id`; quem tivesse nascido sem contato nao era encontrado e virava linha nova com o mesmo
+  telefone. Hoje procura por `contact_id` e depois por `fone`.
+  **Conferido no fim, com dois cadastros seguidos pelo site:** contato criado do zero com as tags
+  `lead` e `campanha-lp-direto`, dono a Nina, `source` gravado, uma unica linha de lead com cidade,
+  UF, CNAE 8550301 e cesta R01 — e o segundo cadastro **nao** duplicou.
+- **TESTE DA PONTE: nao use numero obvio, e confira ANTES se ele existe no CRM.** Usei
+  `11999999999` e ele **casou com um contato que ja existia** ("Teste Turno" / "Loja Teste", mas
+  carregando dados reais do codparc 9214, E PIANHO - CURITIBA). O cadastro de teste gravou nele as
+  tags `lead` e `campanha-lp-direto` (desfeitas), o `source` e o `email`. **O `source` nao se
+  desfaz: o GHL ignora string vazia no PUT**, entao ele ficou com `teste-ponte-claude` — e `source`
+  preenchido e sinal de lead para o `copiloto-lead`. O jeito certo e o que funcionou depois:
+  `lookup-contact` por telefone primeiro, usar so numero que devolve lista vazia, e **apagar o
+  contato** (`delete-contact`) junto com a linha de lead no fim.
+- **A LP valida o link de WhatsApp antes de usar** (so aceita `wa.me` / `whatsapp.com` em https).
+  Se a ponte fosse comprometida, nao daria para redirecionar o lojista para outro lugar.
 - **A PONTE ESTA PRONTA DOS DOIS LADOS E MESMO ASSIM NAO RODA: o site no ar e um build ANTIGO.**
   Medido em 05/11, depois de o gestor configurar o `LP_TOKEN`. O segredo esta certo no Supabase (a
   funcao passou a responder `401 nao autorizado` em vez de `500 LP_TOKEN nao configurado`), e o
