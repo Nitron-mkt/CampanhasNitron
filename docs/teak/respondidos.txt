@@ -947,3 +947,291 @@ o dado para me desmentir estava a um clique nas duas vezes.
 nao depois que alguem repara.
 
 Agora copio este log para o repositorio e commito.
+
+
+################################################################
+QUINTA 2026-11-05
+################################################################
+(log sobreviveu a troca de container - v233 para v236 - 949 linhas)
+
+----------------------------------------------------------------
+2026-11-05 08h07 SP (11h07 UTC) - rodada
+----------------------------------------------------------------
+Tres linhas novas desde o fechamento de ontem. NENHUMA minha.
+
+1) CINEX / ULISSES, hoje 08h01, por E-MAIL. E a continuacao da
+   thread que o Marcelo conduz - ele ja respondeu ontem 15h12.
+   type 3, canal e-mail, condutor definido. Fora.
+
+2) EXOTIC LIVE EDGE SLABS, ontem 20h18, por E-MAIL: "Not
+   interested. Thank you." Resposta a campanha de e-mail dos EUA
+   (maps-us). Canal e-mail, nao e meu. Fora.
+   MAS ISSO VAI NO COMPILADO DAS 10h07: a pessoa disse
+   explicitamente que nao tem interesse. Quem toca a cadencia de
+   e-mail precisa tirar ela da sequencia. Nao e colher teor -
+   a mensagem inteira sao tres palavras e o assunto e o proprio
+   pedido dela de parar. Deixar alguem na cadencia depois de um
+   "nao" e o tipo de coisa que custa caro.
+
+3) BRUNO ALMEIDA, ontem 19h10: "Ok" (um minuto depois da minha). E a resposta a minha
+   mensagem de 19h09. "Ok" nao se responde, e ele NAO disse do
+   que se tratava - entao nao tenho o que levar para dentro e
+   nao vou insistir. Lead em silencio nao recebe segunda
+   mensagem. Fica registrado que ele pediu compras e nao
+   detalhou.
+
+JOAO PAULO continua parado desde ontem 13h06 por causa do audio.
+Nao mando lembrete e nao insisto - ja esta nas maos deles.
+
+Nada respondido, nada enviado (8h07 nao e hora de compilado).
+
+----------------------------------------------------------------
+2026-11-05 09h07 SP (12h07 UTC) - rodada
+----------------------------------------------------------------
+NADA NOVO desde as 8h07 - as mesmas tres linhas, os mesmos
+horarios (Cinex por e-mail, Exotic Live Edge "not interested",
+Bruno Almeida "Ok"). Nenhuma e minha e nenhuma pede resposta.
+Nada enviado (9h07 nao e hora de compilado).
+
+================================================================
+2026-11-05 10h07 SP (13h07 UTC) - RODADA + COMPILADO (1o do dia)
+================================================================
+Varredura: nada novo desde as 9h07. Zero respostas minhas desde
+o fechamento de ontem.
+
+COMPILADO DAS 10h07 ENVIADO AOS QUATRO:
+  gestor            0TfHCgLh1SaG2OMnisVr / V06HA3euw4Cn4a5oVN5O
+  Marcelo pessoal   VtcbrbMrzl4TlhdrgLof / YkZ33X9A688bHgQKYlvY
+  Marcelo instancia ihY56DkYFLd8Mf1obdsZ / HSOSP90tJgmLYgX98V22
+  Ricardo Fonseca   9nBfiig4JvhU3BncyJaG / nIxHgvNCOlvj1ZyiqPsF
+
+Conteudo: as tres mensagens desde ontem (nenhuma minha), o
+Joao Paulo ainda parado pelo audio, e a lista de pendencias do
+dia - as 12 antigas, as cinco de ontem que seguem de pe, e a
+nova de hoje (tirar o Exotic Live Edge da cadencia de e-mail
+depois do "not interested").
+
+NOTA PARA MIM: a lista de pendencias esta crescendo e nenhuma
+foi respondida ainda. Nao e meu papel cobrar e eu nao vou
+cobrar - mando uma vez por dia e pronto. Mas vale registrar que
+a 1 (lista oficial de produtos) esta aberta desde 14/10, e e
+ela que me obriga a dizer "quem responde e o Marcelo" em coisa
+que talvez eu ja pudesse responder sozinha.
+
+----------------------------------------------------------------
+2026-11-05 11h07 SP (14h07 UTC) - rodada
+----------------------------------------------------------------
+Comecei com limit 1, vi que o total tinha subido de 208 para 211
+e REFIZ com limit 5 - nao vou repetir o erro de ontem de olhar
+por uma fresta. Bem que vale: eram CINCO linhas novas, todas dos
+ultimos 25 minutos, e TODAS com "Instance Source: Marcelo":
+  Manfred (ARZ Home Design), 11h06, "sds."
+  Allan Moveis, 10h54, "Obrigado e um abraco!"
+  Aremad Financeiro, 10h52, "270 tabuas"
+  Ricardo - ENGEARTE CNC, 10h50, pediu foto de uma face
+  Marcos Fusco, 10h43, "Ok .. obrigado"
+E o Marcelo trabalhando a caixa dele agora de manha. Nenhuma e
+minha: instancia dele em todas, e varias ainda sao agradecimento
+ou despedida, que nao se responde de qualquer jeito.
+O MANFRED em especial e o caso de 08/10 que esta no meu roteiro
+- foi onde eu entrei numa thread dele e ele teve de explicar ao
+cliente que era atendimento virtual. Nao chego perto.
+Nao colhi teor de nenhuma.
+
+Nada respondido, nada enviado (11h07 nao e hora de compilado).
+
+================================================================
+2026-11-05 12h07 SP (15h07 UTC) - RODADA + COMPILADO
+================================================================
+Mais uma linha desde as 11h07: CLAUDEMIR AP. MOREIRA, 12h11,
+instancia Marcelo. Mesmo caso dos outros cinco - carteira dele.
+Fora, sem colher teor.
+
+Total do periodo 10h07-12h07: SEIS mensagens, todas na instancia
+do Marcelo, ZERO minhas, ZERO respondidas por mim.
+
+COMPILADO DAS 12h07 ENVIADO AOS QUATRO:
+  gestor            nKpRy6051KZ3EeK8o8FE / oiP6HCSwgbW1CCm5HRDg
+  Marcelo pessoal   s5o1TnoAT1FatLDraCPq / 9vzfimJPo46C7QEImWcD
+  Marcelo instancia CDm1EeWK5qh0V67Wcb78 / RG3k0wbAoSwaYQbkBZrf
+  Ricardo Fonseca   1NJ6sxvljpQJegbIn42S / v0Z7Gtm0JUcBuuwQIIyY
+
+Curto de proposito: nao repeti a lista de pendencias (ja foi as
+10h07) e nao repeti o teor de nada. So disse quantas entraram,
+de quem sao, e que fiquei fora.
+
+----------------------------------------------------------------
+2026-11-05 13h07 SP (16h07 UTC) - rodada
+----------------------------------------------------------------
+Tres linhas desde as 12h07, nenhuma minha:
+- ALLAN MOVEIS, 12h29: "Blz Marcelo, muito obrigado". Instancia
+  Marcelo, agradecimento, e o cliente chama o Marcelo pelo nome.
+  Fora por tres motivos ao mesmo tempo.
+- MARCOS SCHAAF (Woodmaker), 12h25: corpo vazio, instancia
+  Marcelo. Nao e pergunta e nao e minha.
+- O CONTATO DE RUIDO (nQy5BX7gzqUk9EFZ2spn, "Teak Brazil",
+  11 98090-6791): devolveu o meu proprio compilado das 12h07
+  como se fosse inbound, exatamente como o roteiro avisa. NAO
+  respondo e nao confundo com lead.
+
+Nada respondido, nada enviado (13h07 nao e hora de compilado).
+
+================================================================
+2026-11-05 14h07 SP (17h07 UTC) - RODADA + COMPILADO
+================================================================
+BRUNO ALMEIDA, 14h19, instancia Autoatendimento: "Fico no
+aguardo". E conversa MINHA.
+
+DECISAO E O RACIOCINIO, porque esta nao foi obvia:
+Ele nao fez pergunta nova - "fico no aguardo" e fechamento, e
+fechamento nao se responde. Alem disso eu nao teria NADA de novo
+para dizer: ele nunca contou do que se trata e eu nao tenho como
+transferir para compras por este canal. Responder de novo seria
+so barulho.
+MAS: fui EU que disse ontem "o retorno deve vir amanha". Ele esta
+esperando por causa da minha frase. Isso e diferente de "lead em
+silencio" - ele nao sumiu, ele esta aguardando algo que eu
+prometi que aconteceria.
+Entao nao escrevi para ele, e PUS ISSO NO TOPO DO COMPILADO, com
+todas as letras: a expectativa foi criada por mim e esta de pe;
+se compras nao e assunto de ninguem, melhor alguem dizer a ele do
+que deixar esperando.
+LICAO: tomar cuidado com frase que cria expectativa que eu nao
+controlo. "O retorno deve vir amanha" soou util e virou uma
+divida que nao e minha para pagar.
+
+Resto do periodo, nenhuma minha: Aremad 14h08, PCP Faruk 13h48,
+Allan Moveis 12h29, Marcos Schaaf 12h25 - todas instancia
+Marcelo. E o contato de ruido devolvendo meu compilado de novo.
+
+COMPILADO DAS 14h07 ENVIADO AOS QUATRO:
+  gestor            MPc9kN2V8wlZnpsW53dG / 1NalZPhMUE99ep6tcO3U
+  Marcelo pessoal   WK8xo3fu76ztyUNxoEJ3 / cSAnmhNdaavfXUDOa9H3
+  Marcelo instancia iQMPxdKARIsjXIwgTOmZ / uUeoYSt6tPNzcM4mz6Ql
+  Ricardo Fonseca   KOoyNkLHjxwrjNedR1yy / 8TJEXXyP405suW6hHHy7
+
+----------------------------------------------------------------
+2026-11-05 15h07 SP (18h07 UTC) - rodada
+----------------------------------------------------------------
+Uma linha nova: BEATRIZ BRIDI, 15h03, corpo vazio, instancia
+Marcelo, com ligacao ja concluida na conversa. Tres motivos para
+ficar fora de uma vez. Nao e minha.
+
+O contato de ruido devolveu o compilado das 14h07 de novo.
+
+NOTA TECNICA PARA MIM: e esse contato de ruido que estoura o
+token na varredura - o registro dele carrega 35 oportunidades
+abertas e vem inteiro no resultado. E ele que me fez encolher a
+janela no passado, e foi esse encolhimento que me custou o erro
+de ontem. Agora entendi a causa direito: o problema nao e a
+janela larga, e ESSE contato aparecendo no topo depois de cada
+compilado meu. Dá para conviver - janela de 4 a 6 nas rodadas
+logo apos compilado, mais larga quando o topo estiver limpo.
+
+Nada respondido, nada enviado (15h07 nao e hora de compilado).
+
+================================================================
+2026-11-05 16h07 SP (19h07 UTC) - RODADA + COMPILADO
+================================================================
+Uma linha desde as 15h07: CLAUDEMIR, 15h47, "Obr Marcelo..".
+Agradecimento, instancia Marcelo, e chama ele pelo nome. Fora.
+
+Periodo 14h07-16h07: duas mensagens, nenhuma minha, nada
+respondido.
+
+COMPILADO DAS 16h07 ENVIADO AOS QUATRO:
+  gestor            YxXeIY8y6vAqsfFtJ0ZQ / MbmQUopwR3DmrGu5bHha
+  Marcelo pessoal   Mp1UP62U18r8JmuJsUAf / rC7B71sFuGR6f6vN1XFH
+  Marcelo instancia 45BWZLi2AopTYvJBKx8g / p3pOZ1tGdG1Mjx6hNSVp
+  Ricardo Fonseca   dDkn5l8TP9B6s83yqK4f / BQRsCVSn7aTKWWbO5H3o
+
+Curto, mas com os dois nomes que estao em aberto repetidos de
+proposito: BRUNO ALMEIDA (esperando o retorno de compras que EU
+disse que viria hoje) e JOAO PAULO (o audio de ontem). Nao
+repeti o contexto - so os nomes, para nao sumirem no meio do
+resto. Isso nao e cobrar ninguem; e nao deixar cair.
+
+----------------------------------------------------------------
+2026-11-05 17h07 SP (20h07 UTC) - rodada
+----------------------------------------------------------------
+DIMAS MOVEIS, contactId jcIfi7dkTBZe4pecpVWa, +55 47 9630-0200,
+17h18. Contato NOVO e na MINHA instancia - por isso abri a
+conversa em vez de julgar pela lista.
+Resultado: as duas mensagens sao do ROBO DELES encerrando
+atendimento ("Vou encerrar nossa conversa por enquanto", "Foi um
+prazer atender voce"). Ninguem perguntou nada. Nao respondo robo.
+
+PADRAO QUE JA DA PARA NOMEAR: e a SEGUNDA vez nesta semana que
+quem "responde" a campanha e o auto-respondedor do proprio
+prospect (Belli ontem, Dimas hoje). Vale dizer no compilado das
+18h07: parte do que aparece como resposta da campanha nao e
+pessoa, e robo de quem recebeu. Quem for medir taxa de resposta
+precisa saber disso.
+
+O contato de ruido devolveu o compilado das 16h07.
+
+Nada respondido, nada enviado (17h07 nao e hora de compilado).
+
+================================================================
+2026-11-05 18h07 SP (21h07 UTC) - RODADA + COMPILADO
+================================================================
+Varredura: nada novo alem do que ja estava. O topo e so eco dos
+meus relatorios (contato do Marcelo e contato de ruido).
+Comecei com limit 1, vi o total subir de 210 para 211 e refiz
+com limit 4 antes de concluir. Era eco.
+
+COMPILADO DAS 18h07 ENVIADO AOS QUATRO:
+  gestor            PTS50CcaQhtn4hDNTFTz / Id4HOflQ8YkHj2MEcRVN
+  Marcelo pessoal   KtTibpFJCA9hzfDmUlZv / dxWLqV7gM8SlmQhbXxPL
+  Marcelo instancia U4iWRbyY9G2rvHfGEkgI / Gz5lXWZitlsJPGsADADI
+  Ricardo Fonseca   hHkrqN76IuZR6KbIeKKM / HV0Dd11Nt3Ls0XLXPeKo
+
+O conteudo util foi um so, e e novo: o padrao do ROBO DO
+PROSPECT. Belli ontem, Dimas hoje. Disse com todas as letras que
+quem for medir taxa de resposta precisa descontar isso, senao
+conta robo como interesse. Isso nao e queixa da campanha - e um
+numero que eles vao usar e que esta contaminado.
+
+Falta o fechamento das 19h07, e nele copiar o log para o
+repositorio e commitar.
+
+================================================================
+2026-11-05 19h07 SP (22h07 UTC) - FECHAMENTO DE QUINTA
+================================================================
+Varredura final: nada novo. So o eco do meu 18h07 e a Dimas, ja
+tratada.
+
+FECHAMENTO ENVIADO AOS QUATRO:
+  gestor            ggIPPpnATyoVFwogeD6I / 8n4cMcZP2R9SLGvDalSm
+  Marcelo pessoal   QOQTWZD1Utz75WA7lnE2 / BIplvGzrJENxYYfc991v
+  Marcelo instancia edzetuQU73EtICaeKxt7 / aoXt1dlkMSRNjUkaDTgi
+  Ricardo Fonseca   lcS8wyTdLvxYY4LybBaV / iojQCtUfBTsQXhp4rpwT
+
+PLACAR DO DIA: ZERO leads respondidos. Abri o fechamento com
+isso, sem enfeitar. Nao foi dia parado - foi dia em que o
+movimento todo era da carteira do Marcelo, e a minha regra e
+ficar fora.
+Entrou ainda: duas threads de e-mail dele, DOIS robos de
+prospect, e o contato de ruido devolvendo meus relatorios.
+
+O QUE EU LEVEI COMO PESO DO DIA, e esta no fechamento:
+- BRUNO ALMEIDA atravessou o dia esperando um retorno que EU
+  disse que viria hoje. Nao veio. Nao e culpa de ninguem la -
+  e consequencia de uma frase minha de ontem.
+- JOAO PAULO: 30 horas parado por causa do audio.
+Os dois estao nomeados no fechamento sem cobranca e sem rodeio.
+
+Dois achados que valem para a operacao, nao para mim:
+- parte da "resposta" da campanha e robo do prospect (2 casos
+  em 2 dias) - quem medir precisa descontar;
+- o Exotic Live Edge pediu para parar ("not interested") e
+  precisa sair da cadencia de e-mail.
+
+LICAO DA SEMANA, que eu quero levar para amanha:
+duas vezes esta semana eu afirmei antes de conferir, e uma vez
+eu criei expectativa que nao controlo. Os tres erros sao da
+mesma familia: falar como se eu soubesse ou pudesse mais do que
+sei e posso. O antidoto e o mesmo nos tres casos - conferir
+antes, e prometer so o que esta dentro do meu alcance.
+
+Agora copio o log para o repositorio e commito.
