@@ -605,6 +605,37 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   primeiro na ordem da view), roda-se `?n=1`, le-se o corpo entregue pelo GHL — e **apagam-se as
   duas linhas depois**, a de `nitronmob_envio` e a de `nitronmob_envio2`.
 
+## Landing "Nitron Direto" (campanhas.nitron.com.br) — o lead ja chega com CNPJ e CEP (05/11)
+
+- **A LP mora no Replit** (app "Nitron Campaign Landing", publicada em `campanhas.nitron.com.br`) e
+  pede num formulario so: nome e sobrenome, e-mail, WhatsApp, **CNPJ com digito verificador
+  conferido**, **CEP** e o **ramo em R01..R10** — os mesmos codigos daqui. Quem a montou usou a
+  nossa penetracao real por ramo.
+- **Ate 05/11 o cadastro MORRIA no Postgres do Replit.** Nao criava contato no CRM, nao avisava
+  ninguem: o lojista recebia um numero de protocolo e ficava esperando um contato que ninguem
+  sabia que tinha de fazer.
+- **A ponte e a `lp-lead`** (`verify_jwt: false`, header `x-lp-token` contra o segredo `LP_TOKEN`,
+  que existe nos DOIS lados — Supabase e Replit). Ela confere tudo de novo no servidor, roda as
+  duas cadeias em paralelo (CNPJ → BrasilAPI → CNAE → `cnae_ramo` → R01..R10, e CEP → ViaCEP →
+  COD_IBGE → `pedido_frete_cidade`), acha ou cria o contato pelo `lookup` do `campanhas-enviar`,
+  marca tag e `source`, e grava a linha de `copiloto_lead` ja preenchida.
+- **O gancho que faz a Nina atender e a propria linha de `copiloto_lead`.** O `copiloto-lead` pula
+  quem nao tem tag, nao tem `source` e cuja mensagem nao parece abertura — mas **nao pula quem ja
+  tem linha**. Criar a linha na ponte evita publicar a funcao de lead, que esta atendendo gente.
+- **A ponte NAO manda mensagem**, de proposito: quem fala e a Nina, quando o lojista escrever.
+  Assim um POST forjado nao vira Zaptos para um terceiro. E **nao define dono do contato** —
+  contato de lead sem dono recebe Zaptos normalmente.
+- **O texto do WhatsApp mora na `lp-lead`**, nao na LP: a pagina so redireciona para a URL que a
+  funcao devolve. Mudar a mensagem nao exige mexer no Replit.
+- **O `jaSei` do `copiloto-lead` NAO LISTA O CEP** — ele escreve "CNPJ ja informado" e
+  "praca: Cidade/UF", mas nunca o CEP com todas as letras. Com isso a Nina tem o dado salvo e
+  ainda assim pode pedir de novo, que e exatamente o que fez o Cassio ir embora. Tapado em 05/11
+  pelas licoes **402 e 403** (entram no prompt sem deploy). **O conserto de verdade e uma linha no
+  `jaSei`** (`leadRow.cep && "CEP ja informado"`), e vale para TODO lead, nao so os da landing —
+  mas mexe em funcao que esta atendendo, entao e decisao do gestor.
+- **A LP valida o link de WhatsApp antes de usar** (so aceita `wa.me` / `whatsapp.com` em https).
+  Se a ponte fosse comprometida, nao daria para redirecionar o lojista para outro lugar.
+
 ## Acao "raspagem onda 1" — prospeccao de distribuidoras (27/10)
 
 Acao NOVA, pedida pelo Dan em `docs/` e autorizada pelo gestor no mesmo dia. **Nao se mistura com
