@@ -604,6 +604,17 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   em `nitronmob_envio` com `entrega='clicked'` e o codparc de maior faturamento (assim ela sai
   primeiro na ordem da view), roda-se `?n=1`, le-se o corpo entregue pelo GHL — e **apagam-se as
   duas linhas depois**, a de `nitronmob_envio` e a de `nitronmob_envio2`.
+- **ONDA 2 DO 2o E-MAIL: 1.000 em 05/11, rejeicao 0,91% — o dobro do volume NAO piorou a
+  entrega.** 994 aceitos pelo GHL, **9 `failed`**, 115 aberturas/cliques ate o fim da tarde. Os 6
+  que ficaram sem leitura nao eram leitura pendente: sao recusa no proprio envio (2 descadastrados,
+  3 sem contactId, 1 `429 Too Many Requests` do GHL — esse ultimo da para repetir). Com 500 deu
+  0,40% e com 1.000 deu 0,91%: os dois abaixo dos 2%, entao o teto pode subir de novo. **A regra
+  continua sendo dobrar, nao pular** — o que derrubou a cadencia do 1o e-mail foi saltar de 507
+  para 4.240 num dia.
+- **A leitura de entrega nao precisa de cron depois que a onda fecha.** O `nitronmob2-entrega`
+  (`* 19-20 * * *`) era temporario e foi **removido em 05/11**: um cron de minuto em minuto por
+  duas horas disputa as mesmas 60 conexoes do banco. Quando `?entrega=1` devolve `faltam: 0`,
+  acabou — o que sobra com `entrega` vazia e linha com `ok=false`, que nunca teve mensagem para ler.
 
 ## Landing "Nitron Direto" (campanhas.nitron.com.br) — o lead ja chega com CNPJ e CEP (05/11)
 
@@ -635,6 +646,18 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   mas mexe em funcao que esta atendendo, entao e decisao do gestor.
 - **A LP valida o link de WhatsApp antes de usar** (so aceita `wa.me` / `whatsapp.com` em https).
   Se a ponte fosse comprometida, nao daria para redirecionar o lojista para outro lugar.
+- **A PONTE ESTA PRONTA DOS DOIS LADOS E MESMO ASSIM NAO RODA: o site no ar e um build ANTIGO.**
+  Medido em 05/11, depois de o gestor configurar o `LP_TOKEN`. O segredo esta certo no Supabase (a
+  funcao passou a responder `401 nao autorizado` em vez de `500 LP_TOKEN nao configurado`), e o
+  workspace do Replit esta coerente (o formulario manda `ramo_codigo` em `R01..R10`, que e o que o
+  schema exige). Mas um cadastro de teste pelo endereco real devolveu **201 sem `whatsappUrl`** e
+  **nenhuma linha** apareceu em `copiloto_lead`: o servidor publicado nao tem o
+  `forwardLeadToNitron`. **Enquanto nao for publicado, todo lead da LP continua morrendo no
+  Postgres do Replit** — o lojista recebe protocolo e ninguem e avisado. Publicar e `publish_app`,
+  que exige autorizacao do gestor (a ferramenta recusa como "Production Deploy").
+  **Como conferir sem criar lead:** a rota tem DUAS mensagens de 400 — a do schema ("Confira os
+  campos obrigatorios") e a da checagem seguinte ("Informe nome e sobrenome, um CNPJ valido"). Um
+  POST com CNPJ de digito errado diz qual das duas responde, e portanto qual build esta no ar.
 
 ## Acao "raspagem onda 1" — prospeccao de distribuidoras (27/10)
 
