@@ -660,7 +660,12 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
   // landing do Google (que nao grava em lugar nenhum) ou a propria conversa. Nos tres casos ele JA
   // informou — a Nina nao pede de novo, e o codigo ja confere se esse CNPJ tem cadastro, para ela
   // nao tratar cliente antigo como lead novo.
-  const cnpjForm = crm.cnpj || acl?.cnpj || cnpjDito || "";
+  // PRECEDENCIA: o que a PESSOA digitou vence o CF_CNPJ guardado no CRM, que pode ter lixo de anos
+  // atras e e gravado DE VOLTA na linha do lead mais abaixo. Em 06/11 o CRM do Getulio guardava
+  // "612421018/0004-85" (15 digitos) e isso sobrescreveu o CNPJ que ele digitara na landing.
+  // `docOk` barra valor malformado em qualquer fonte: 14 digitos (CNPJ) ou 11 (CPF).
+  const docOk = (v: any) => { const d = digits(v || ""); return (d.length === 14 || d.length === 11) ? d : ""; };
+  const cnpjForm = docOk(cnpjDito) || docOk(acl?.cnpj) || docOk(leadRow?.cnpj) || docOk(crm.cnpj) || "";
   let cadastro: any = null;
   if (cnpjForm && cnpjForm.length >= 11) { const { data } = await sb.from("ghl_cliente").select("codparc, razao, situacao, dias").ilike("cnpj", "%" + cnpjForm + "%").limit(1).maybeSingle(); cadastro = data || null; }
 
@@ -762,6 +767,15 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
   // pode ter acabado de gravar o nome confirmado, e o valor antigo o apagaria.
   const up = await upsertLead(sb, ctx, { ultima_msg_id: ultima.id, ultima_resposta_em: new Date().toISOString() });
   if (!env?.ok) {
+    // O CARIMBO SAI QUANDO O ENVIO E RECUSADO. Ele e gravado antes do envio de proposito (trava
+    // contra duas rodadas do cron escreverem a mesma resposta), mas se o envio nao aconteceu ele
+    // vira mordaca: a rodada seguinte le "ja respondi esta mensagem" e pula, para sempre. Custou
+    // 4h de silencio ao Getulio em 06/11 (ver CLAUDE.md). `!env.ok` significa NAO entregue, entao
+    // limpar nao duplica; quem segura a repeticao e o `envio_erro_em` abaixo. UPDATE direto porque
+    // o `upsertLead` descarta null.
+    if (!opts.dry && up.lead?.id) {
+      try { await sb.from("copiloto_lead").update({ ultima_msg_id: null }).eq("id", up.lead.id); } catch (_e) { /* o erro de envio importa mais */ }
+    }
     // QUEDA: para tudo agora. Sem isto a rodada seguinte escreve outra mensagem, e a seguinte outra.
     if (env?.instancia_caiu) {
       const p = await pausarInstancia(sb, opts.inst, "queda detectada ao responder lead: " + String(env?.recusado || env?.motivo || "").slice(0, 200));
