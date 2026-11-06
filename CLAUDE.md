@@ -720,6 +720,31 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   **Efeito colateral a conhecer:** sem CEP resolvido, `cidade`/`uf` caem no endereco do CNPJ na
   Receita, que pode ser outra praca (num teste, CEP do Acre e cidade gravada no RS). O preco nao
   erra por isso — o frete e calculado do `cep` —, mas o repasse pode. Falta avisar isso no resumo.
+- **LEAD QUE PASSA DE 48h SEM RESPOSTA CAI NUM BURACO ENTRE AS DUAS FUNCOES — e nada o tira de la.**
+  Medido em 06/11. O `copiloto-lead` so olha conversa cuja ultima mensagem tem entre
+  `lead_espera_min` (2 min) e **`lead_ate_horas` (48h)** — e o `naJanela()` da linha 996 corta
+  ANTES de qualquer outra coisa. A `nina-reativa` pula de proposito quem tem a ultima mensagem
+  **inbound** (linha 219: *"a ultima mensagem e DELE — o copiloto-lead e que tem de responder"*).
+  As duas regras estao certas uma a uma: a janela evita a Nina acordar conversa velha, e a
+  reativacao nao deve atropelar quem escreveu. **Juntas, elas deixam um vao:** quem escreve e nao e
+  respondido em 48h nunca mais e olhado por nenhuma das duas.
+  **Nao e caso raro: 35 conversas na instancia da Nina**, lidas 600 das 852 da location (15/09 a
+  06/11), com a ultima palavra do cliente e mais de 48h — 10 sao lead dizendo *"Olá! Posso ter mais
+  informações sobre isso?"* e esperando de 5 a 41 dias; 8 sao de **recrutamento de representante**
+  que responderam e levaram silencio (*"Satisfação conhecê-la"*, *"Forte abraço e vamos nos
+  falando!"*); e ~14 sao `[Undecryptable]` de meados de setembro, que e outro defeito.
+  **Trocar o dono do contato NAO basta** — foi o que eu errei ao destravar o Vinicius Sorgi (612) e
+  a Angelica Tereza (578) achando que a Nina responderia na rodada seguinte. O dono resolve a
+  RECUSA do envio; a janela de 48h resolve se ela sequer olha. Sao travas independentes.
+  **Alargar `lead_ate_horas` nao e conserto** — varreria todas as conversas velhas de uma vez, que e
+  exatamente a licao de 16/09. O conserto e uma passada propria, com lote e lista conferida.
+- **"O contato e da Mara" quase nunca quer dizer que a Mara assumiu a conversa.** O usuario
+  `WlHZT90d36qnnXFbKzbl` e a caixa COMPARTILHADA, e e o mesmo que assina todo o fluxo de SDR da
+  **Isadora** de 2025 — por isso herdou centenas de contatos de anuncio daquela epoca. Num dia
+  normal ela tem conversa respondida por Mara, Bianca, Camyla, Marcos, Julie e Logistica. Entao
+  `dono_divergente` apontando "Mara" pode ser humano de verdade (o Luiz Carlos 547, que ela atendeu
+  a mao em 26/10) ou ninguem (o Vinicius 612 e a Angelica 578, cuja conversa inteira e robo de
+  2025). **Antes de decidir puxar, leia a conversa** — a coluna do dono nao distingue os dois.
 - **ENVIO RECUSADO DEIXA A NINA ACHANDO QUE RESPONDEU — e ela nunca mais volta naquele lead.**
   Descoberto em 06/11, no Getulio (lead 648). A trava e a linha 625 do `copiloto-lead`:
   `if (leadRow?.ultima_msg_id === ultima.id) return pular "ja respondi esta mensagem"`. O
