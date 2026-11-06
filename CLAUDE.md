@@ -715,6 +715,42 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   **Efeito colateral a conhecer:** sem CEP resolvido, `cidade`/`uf` caem no endereco do CNPJ na
   Receita, que pode ser outra praca (num teste, CEP do Acre e cidade gravada no RS). O preco nao
   erra por isso — o frete e calculado do `cep` —, mas o repasse pode. Falta avisar isso no resumo.
+- **ENVIO RECUSADO DEIXA A NINA ACHANDO QUE RESPONDEU — e ela nunca mais volta naquele lead.**
+  Descoberto em 06/11, no Getulio (lead 648). A trava e a linha 625 do `copiloto-lead`:
+  `if (leadRow?.ultima_msg_id === ultima.id) return pular "ja respondi esta mensagem"`. O
+  `ultima_msg_id` e carimbado quando ela MONTA a resposta, nao quando o envio e confirmado — entao
+  uma recusa do `campanhas-enviar` (dono divergente, instancia caida, fixo) a trava **para sempre**
+  naquela mensagem. Ele escreveu as 07h29, o envio foi recusado as 07h35, e ele ficou 4 horas sem
+  resposta enquanto o cron rodava a cada 5 min dizendo "ja respondi".
+  **E a mesma doenca do `toques` de 02/10 e do `reativa_em`:** contador escrito antes do envio
+  confirmado mente. Aqui e pior, porque nao ha teto — e silencio permanente.
+  **Destravar a mao:** `update copiloto_lead set ultima_msg_id = null where id = <id>` e rodar o
+  `copiloto-lead`. **O conserto de verdade** e so carimbar depois do `env.ok`, e mexe na funcao que
+  esta atendendo.
+- **O CNPJ VELHO DO CRM VENCE O QUE O LOJISTA ACABOU DE DIGITAR.** Linha 663 do `copiloto-lead`:
+  `const cnpjForm = crm.cnpj || acl?.cnpj || cnpjDito || ""`. O campo `CF_CNPJ` do contato tem
+  precedencia sobre o que veio da landing. No Getulio, contato de out/2025, o CRM guardava
+  `612421018/0004-85` (15 digitos, invalido) e isso sobrescreveu o `61242108000185` correto que ele
+  digitou no formulario. Afeta todo lead que ja tenha ficha antiga no CRM — 1 em 4 ate agora.
+  Corrigido a mao nos dois lugares (tabela e campo do CRM). **Inverter a precedencia exige publicar
+  o `copiloto-lead`** — autorizado pelo gestor em 06/11 ("se for possivel subscrever com o CNPJ
+  novo, pode seguir assim"), ainda nao feito.
+- **A MASCARA DE TELEFONE DA LP CORTA O FIM DE QUEM DIGITA O 55.** `maskPhone` guarda os 11
+  primeiros digitos, entao `5531980100473` vira `55319801004` — numero que nao existe. Pegou **2
+  dos 4** primeiros cadastros (`55319801004` e `55119929251`). Estrago medido: o Rogerio virou
+  DOIS leads e DOIS contatos (a ponte gravou o numero torto; quando ele escreveu do numero real o
+  sistema nao reconheceu e abriu outro registro), e **a Nina pediu de novo o CNPJ e o CEP que ele ja
+  tinha digitado** — exatamente o que a ponte existe para evitar. Conserto mandado ao Replit em
+  06/11: tirar o 55 do inicio **so quando ha mais de 11 digitos**. O DDD 55 existe (Santa Maria/RS),
+  entao um numero de 11 digitos comecando com 55 e legitimo e nao pode ser tocado.
+- **LEAD PERDIDO SE RESGATA A MAO, e o caminho e este** (Doralice, 06/11). Quem se cadastrou antes
+  de a ponte existir nao tem contato, nem lead, nem aviso — fica so no Postgres do Replit. Para
+  trazer: `campanhas-enviar` em modo `lookup` com `instancia: Nina` (cria o contato ja com a Nina
+  como dona), `POST /contacts/{id}/tags` com as tags fixas e as inteligentes, `POST
+  /opportunities/upsert` no pipeline Novos Clientes, e a linha de `copiloto_lead` com CNPJ, CEP,
+  cidade/UF e `cnae_em` carimbado. **CNPJ que a Receita nao conhece (404) nao impede nada**: a
+  cesta cai no ramo que a pessoa marcou no formulario, e o `cnae_em` fica preenchido para a Nina
+  nao ficar perguntando de novo.
 - **TESTE DA PONTE: nao use numero obvio, e confira ANTES se ele existe no CRM.** Usei
   `11999999999` e ele **casou com um contato que ja existia** ("Teste Turno" / "Loja Teste", mas
   carregando dados reais do codparc 9214, E PIANHO - CURITIBA). O cadastro de teste gravou nele as
