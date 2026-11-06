@@ -1235,3 +1235,287 @@ sei e posso. O antidoto e o mesmo nos tres casos - conferir
 antes, e prometer so o que esta dentro do meu alcance.
 
 Agora copio o log para o repositorio e commito.
+
+========================================================
+SEXTA 06/11 - RODADA 8h07 (nao e hora de compilado)
+========================================================
+Varredura search-conversation, limit 6. Seis conversas com
+ultima mensagem inbound. Nada meu.
+
+1) MARCIEL (+55 51 9959-0051) - 21h26 de ontem: "Oi",
+   "Amanha te ligo", "A semana ta corrida". TESTE MECANICO:
+   outbound type 22 SEM meta (humano digitou no GHL) e type 22
+   COM appName "lc-mcp - Anthropic". Conversa do Marcelo, em
+   fechamento de pedido - frete, valor final, producao na
+   serraria. NAO ENTRO. Ja existe resposta outbound agendada
+   (status scheduled, 00h37) dizendo "a hora que der certo voce
+   me liga". Esta coberta.
+   OBS para o compilado: essa resposta agendada saiu de uma
+   automacao no canal humano, mesmo padrao da pendencia 2 (as
+   mensagens assinadas "Marcelo"). Nao e fato novo, nao abro
+   excecao por isso.
+
+2) RUIDO nQy5BX7gzqUk9EFZ2spn ("Teak Brazil") - eco das minhas
+   proprias mensagens. Ignorado como sempre.
+
+3) DIMAS MOVEIS (+55 47 9630-0200) - 3h28 da madrugada, bot
+   deles: "Foi um prazer atender voce! Este atendimento foi
+   finalizado...". E o robo de atendimento do proprio prospect
+   fechando o ticket, nao e pergunta. NAO RESPONDO. Mesmo
+   padrao que registrei ontem - quem for medir taxa de resposta
+   da campanha tem de descontar esses.
+
+4) CLAUDEMIR ("Obr Marcelo.."), 5) BEATRIZ BRIDI (corpo vazio),
+   6) ALLAN MOVEIS ("Blz Marcelo, muito obrigado") - conversas
+   do Marcelo e/ou agradecimento. Nao se responde.
+
+RESULTADO DA RODADA: nenhum lead novo, nenhuma mensagem em
+aberto minha. Nada enviado a ninguem (8h nao e hora de
+compilado). Carrego para as 10h07 o compilado do dia com a
+lista de pendencia, e dentro dele os dois que atravessaram a
+noite: BRUNO ALMEIDA (expectativa que eu criei e nao foi
+cumprida) e JOAO PAULO (audio de quarta 13h06, parado ha ~43h).
+
+========================================================
+SEXTA 06/11 - RODADA 9h07 (nao e hora de compilado)
+========================================================
+Varredura limit 5. NADA NOVO desde as 8h07. A lista veio com
+as mesmas conversas de uma hora atras: ruido "Teak Brazil",
+Dimas Moveis (bot deles, de madrugada), Claudemir, Beatriz
+Bridi e Allan Moveis - todas ja avaliadas e todas fora do meu
+escopo. O Marciel saiu do topo porque a resposta outbound que
+estava agendada saiu, entao a conversa deixou de ter entrada
+como ultima mensagem.
+
+Nenhum lead novo, nenhuma mensagem em aberto minha, nenhum
+envio. Rodada vazia, como manda a cadencia.
+
+Proxima acao: 10h07, primeiro compilado do dia - vai para os
+quatro destinos e leva a lista de pendencia (uma vez so), mais
+BRUNO ALMEIDA e JOAO PAULO.
+
+========================================================
+SEXTA 06/11 - RODADA 10h07 - PRIMEIRO COMPILADO DO DIA
+========================================================
+BRUNO ALMEIDA (+55 31 9410-3503) escreveu 10h00: "Bom dia" /
+"Sigo no aguardo". Segunda cobranca dele.
+Historico completo puxado por contactId (a conversa dividiu de
+novo: soCDzeyWDMjATE87VkJS virou AtGgKCztSArcsWct8W8F). Todo o
+outbound e type 20 meu - nenhum humano entrou. A conversa e
+minha e a mensagem estava em aberto.
+
+RESPONDI as 10h10. Abri pelo erro, que e meu: na quarta 19h09
+eu disse "o retorno deve vir amanha" sem ter como prometer,
+nao veio, e ele teve de cobrar duas vezes. Pedi desculpa, disse
+o que eu consigo (registrar e levar para dentro, no compilado
+que sai agora), NAO dei data nova - repetir a promessa seria
+repetir o erro - e pedi a unica coisa que falta: o assunto em
+uma linha. Ele tinha respondido "9k", que eu nao entendi, e sem
+assunto eu nao sei para quem empurrar.
+ATENCAO ao ler isso: ele pediu o DEPARTAMENTO DE COMPRAS, nao
+e lead de venda. Nao afirmei que quem trata e o Marcelo, porque
+compras nao e comercial e eu nao sei quem e.
+idempotencyKey nina-20261106-1007-bruno-desculpa.
+
+COMPILADO DAS 10h07 ENVIADO aos quatro destinos, mesmo texto:
+  gestor            Mg1EOMmeL25ae9STFr1h / jwvdMYxBFDYjCvq2KFao
+  Marcelo pessoal   vBCYEgCRmuh8eCUDUZbv / 1uwONCC43On9QNdXwulq
+  Marcelo instancia ZiiocZfvGeXtX67Lwjgg / zzOraNbSj2vQoF7JygAD
+  Ricardo Fonseca   Xpq9SQbuLmOYHeEajNUH / 1cvGrTaEoTEcG1sxOHpU
+Levou a lista de pendencia do dia (uma vez so), mais as tres
+novas de ontem: "Perdido" no funil, as 52 mensagens ja enviadas
+com a medida errada, e as campanhas sem objetivo escrito.
+A mensagem ao Bruno foi conferida depois do envio: status
+"sent", sem eco de instancia desconectada. Chegou.
+
+========================================================
+SEXTA 06/11 - RODADA 11h07 (nao e hora de compilado)
+========================================================
+Duas entradas novas desde as 10h07. Nenhuma minha.
+
+1) MAURICIO SCOTTA (+55 41 8894-7195) - 10h25, "Ok".
+   Instance Source: Marcelo. E "ok" puro, que nao se responde,
+   e e conversa dele. NAO ENTRO. (Esse e o numero do cadastro
+   duplicado que ja esta na pendencia com o Marcelo.)
+
+2) SEAWATERPRO.STORE / WALLY (northchannelsailing@gmail.com,
+   +1 443-852-9649) - 10h10, RESPOSTA POR E-MAIL a campanha de
+   exportacao EUA, assinada "Marcelo Carvalho". type 3 outbound
+   e inbound: canal de e-mail, NAO E MEU. Nao escrevi nada.
+   O conteudo interessa e vai no compilado das 12h07, porque e
+   resposta de verdade, nao robo:
+   - ele diz que ja tinha respondido antes ("I did send a
+     response") - ou seja, o reenvio foi em cima de alguem que
+     ja havia respondido;
+   - o unico item que pode interessar a ele e PISO NAUTICO,
+     "Teak and Holly in particular", e em pouca quantidade;
+   - ele pergunta se nos fabricamos esse produto. EU NAO
+     RESPONDO isso: piso ja esta na minha lista de "nao afirmo
+     e nao nego", e teca com faixa de holly e produto que eu
+     nunca vi na lista do que posso afirmar.
+   Vai como entrega para quem cuida da exportacao, junto com o
+   Dennis e o Amanullah que ja estao parados (pendencia 4).
+
+Nada enviado nesta rodada.
+
+========================================================
+SEXTA 06/11 - RODADA 12h07 + COMPILADO
+========================================================
+Varredura: nada novo desde as 11h07. As mesmas quatro
+conversas, nenhuma minha. O Bruno nao respondeu a mensagem das
+10h10 - e eu NAO escrevo de novo, insistir seria cobranca.
+
+COMPILADO DAS 12h07 ENVIADO aos quatro destinos:
+  gestor            Mg1EOMmeL25ae9STFr1h / jPxwyJmCQgg6lUFl15vi
+  Marcelo pessoal   vBCYEgCRmuh8eCUDUZbv / Vlw9GlK1m9ycscXL4Ivf
+  Marcelo instancia ZiiocZfvGeXtX67Lwjgg / oOyxVVxuX7DrVpFV80bK
+  Ricardo Fonseca   Xpq9SQbuLmOYHeEajNUH / qVCFb6bYDMMi13GjaORj
+Conteudo: o Wally (piso nautico Teak and Holly, e o aviso de
+que o reenvio caiu em cima de quem ja tinha respondido), o "Ok"
+do Mauricio Scotta, e o silencio do Bruno. Sem repetir nada do
+compilado das 10h07.
+
+========================================================
+SEXTA 06/11 - RODADA 13h07 (nao e hora de compilado)
+========================================================
+Duas entradas novas desde as 12h07. Nenhuma minha, nada enviado.
+
+1) MARCOS SCHAAF - WOODMAKER (+55 19 99687-2300), 12h39:
+   "me manda novamente a tabela novamente pf".
+   Instance Source: Marcelo, e a conversa tem type 19 (bulk) no
+   historico - veto do teste mecanico. Alem disso TABELA e
+   condicao comercial, que eu nao mando nem na minha propria
+   conversa. NAO ENTREI.
+   Vai no compilado das 14h07 como pedido aberto para o
+   Marcelo: ele pede a tabela DE NOVO, ou seja alguem ja mandou
+   antes e ele perdeu ou nao recebeu.
+
+2) BEATRIZ BRIDI (+55 27 99976-4488), 13h00: corpo vazio
+   (anexo). Conversa do Marcelo e corpo vazio nao e pergunta.
+   Nao toquei.
+
+Bruno Almeida continua sem responder. Nao escrevo de novo.
+
+========================================================
+SEXTA 06/11 - RODADA 14h07 + COMPILADO
+========================================================
+Uma entrada nova desde as 13h07:
+  AREMAD FINANCEIRO (+55 19 99917-2987), 13h46: "vc teria que
+  cobrir a oferta". Negociacao de preco contra concorrente,
+  Instance Source Marcelo, type 19 no historico. NAO ENTREI -
+  dois motivos independentes, cada um suficiente.
+
+COMPILADO DAS 14h07 ENVIADO aos quatro destinos:
+  gestor            hoqG8TqSu6US4HLOkyXp / eylGww1AgFv7YLCp3eoZ
+  Marcelo pessoal   80yVoH0dQyNKk8On9vvD / WwnJRq4UbaZT9Lng3oav
+  Marcelo instancia AYyXBKlC0skN9Z6uNLDe / hdAn0gQDCpXKyeZsfx9Z
+  Ricardo Fonseca   p7F4E2moVrFik5NlVQET / BngTELhbgRyWXisU8HQj
+Conteudo: os dois pedidos abertos do Marcelo (a tabela do
+Marcos Schaaf, pedida DE NOVO; o "cobrir a oferta" da Aremad),
+o anexo sem texto da Beatriz, e o silencio do Bruno.
+
+NOTA: os conversationId dos quatro destinos mudaram de novo
+entre o compilado das 12h07 e este. E a duplicacao de conversa
+do GHL que ja esta documentada - so o contactId e estavel.
+Nao e problema novo e nao atrapalhou nenhum envio.
+
+Dia ate agora: UMA resposta a cliente (Bruno, 10h10). Todo o
+resto da caixa e do Marcelo.
+
+========================================================
+SEXTA 06/11 - RODADA 15h07 (nao e hora de compilado)
+========================================================
+Nada novo. O topo da varredura e o RUIDO (nQy5BX7gzqUk9EFZ2spn,
+"Teak Brazil"), que devolveu o meu proprio compilado das 14h07
+como se fosse mensagem recebida. Ignorado, como sempre.
+Abaixo dele: Beatriz, Marcos Schaaf e Mauricio Scotta, os tres
+ja avaliados nas rodadas anteriores.
+
+Nenhum lead novo, nenhuma mensagem em aberto minha, nenhum
+envio. Bruno Almeida continua em silencio desde as 10h10.
+
+========================================================
+SEXTA 06/11 - RODADA 16h07 + COMPILADO
+========================================================
+Varredura: nada entrou desde as 14h07. O topo continua sendo o
+eco do meu proprio compilado das 14h07 no contato de ruido.
+Duas horas de caixa parada - nem cliente, nem campanha.
+
+COMPILADO DAS 16h07 ENVIADO aos quatro destinos, uma linha so
+como manda a regra quando nao aconteceu nada:
+  gestor            hoqG8TqSu6US4HLOkyXp / zcOjguAMR9WzLwN6A58V
+  Marcelo pessoal   80yVoH0dQyNKk8On9vvD / ytBxr3JPYvbTueECuiwD
+  Marcelo instancia AYyXBKlC0skN9Z6uNLDe / JMehxeSI2nbdwn1jm8oP
+  Ricardo Fonseca   p7F4E2moVrFik5NlVQET / RPKYKlhYusT2ucgy7dLh
+Repeti so o que CONTINUA em aberto (tabela do Marcos Schaaf,
+oferta da Aremad, silencio do Bruno), sem reabrir o conteudo
+ja detalhado as 14h07.
+
+========================================================
+SEXTA 06/11 - RODADA 17h07 (nao e hora de compilado)
+========================================================
+Uma entrada nova: MARCOS SCHAAF - WOODMAKER, 16h40, corpo
+vazio (anexo). E a mesma conversa do pedido de tabela das
+12h39 - do Marcelo - e corpo vazio nao e pergunta. Dois
+motivos para ficar fora. NAO TOQUEI.
+Abaixo dele, so o eco do meu compilado das 16h07 no contato de
+ruido.
+
+Nenhum lead novo, nenhum envio. Bruno Almeida continua em
+silencio. Falta a rodada das 18h07 (compilado) e o fechamento
+das 19h07, e nele copiar o log para o repositorio e commitar.
+
+========================================================
+SEXTA 06/11 - RODADA 18h07 + COMPILADO
+========================================================
+Varredura: nada novo desde as 17h07. A ultima entrada continua
+sendo o anexo sem texto do Marcos Schaaf das 16h40.
+
+COMPILADO DAS 18h07 ENVIADO aos quatro destinos:
+  gestor            hoqG8TqSu6US4HLOkyXp / u1zpEvsHPy5ffRed4mTI
+  Marcelo pessoal   80yVoH0dQyNKk8On9vvD / 2a7z8BO2VlrHEJsJa524
+  Marcelo instancia AYyXBKlC0skN9Z6uNLDe / Rillp8AplfYmF2ZLX0W0
+  Ricardo Fonseca   p7F4E2moVrFik5NlVQET / En5NuCAxZn2WGF6JeR2o
+Conteudo: o anexo do Marcos Schaaf (com o aviso de que pode
+complementar o pedido da tabela, mas que eu nao abro e nao
+deduzo), e o Bruno ainda calado.
+
+Falta so o fechamento das 19h07, e nele copiar o log para o
+repositorio e commitar.
+
+========================================================
+SEXTA 06/11 - FECHAMENTO DO DIA (19h07)
+========================================================
+Varredura final: nada novo desde as 18h07. So o eco do meu
+compilado no contato de ruido.
+
+FECHAMENTO ENVIADO aos quatro destinos:
+  gestor            hoqG8TqSu6US4HLOkyXp / SydVzX6A34bUJqHmVF11
+  Marcelo pessoal   80yVoH0dQyNKk8On9vvD / myQVaZecl0YCBTV9EbuK
+  Marcelo instancia AYyXBKlC0skN9Z6uNLDe / hP5X9O2RxhVwmOOJZDOL
+  Ricardo Fonseca   p7F4E2moVrFik5NlVQET / beRAPiPMOF32GmCUVcKf
+
+O DIA EM NUMERO: 12 rodadas, UMA resposta minha a cliente - e
+ela foi para pedir desculpa. Abri o fechamento por esse numero
+em vez de esconde-lo no meio.
+
+QUATRO ENTREGAS que nao sao minhas: Wally (piso nautico Teak
+and Holly, exportacao EUA, mais o aviso de que o reenvio caiu
+em cima de quem ja tinha respondido), Marcos Schaaf (tabela
+pedida de novo + anexo), Aremad ("cobrir a oferta") e Joao
+Paulo (audio de quarta, dois dias parado).
+
+CAMPANHA: zero lead de verdade. A unica "resposta" do dia foi
+robo de atendimento (Dimas Moveis, 3h28). Segundo caso na
+semana depois da Belli. Isso agora e padrao, nao acidente -
+quem medir taxa de resposta tem de descontar.
+
+LICAO DO DIA, e e a mesma de ontem cobrando juros: a frase que
+eu disse na quarta ("o retorno deve vir amanha") custou dois
+dias de espera a um sujeito, duas cobrancas dele, e um pedido
+de desculpa. Prometer o que nao esta na minha mao nao e ser
+prestativa, e transferir para o outro a conta de uma coisa que
+eu nao controlo. Hoje eu respondi SEM dar data nova, mesmo
+sabendo que isso soa pior - e era o certo.
+
+Agora copio o log para o repositorio e commito.
