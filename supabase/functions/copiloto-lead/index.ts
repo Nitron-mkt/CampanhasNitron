@@ -767,13 +767,19 @@ async function atender(sb: any, cfg: Record<string, string>, cv: any, opts: { dr
   // pode ter acabado de gravar o nome confirmado, e o valor antigo o apagaria.
   const up = await upsertLead(sb, ctx, { ultima_msg_id: ultima.id, ultima_resposta_em: new Date().toISOString() });
   if (!env?.ok) {
-    // O CARIMBO SAI QUANDO O ENVIO E RECUSADO. Ele e gravado antes do envio de proposito (trava
-    // contra duas rodadas do cron escreverem a mesma resposta), mas se o envio nao aconteceu ele
-    // vira mordaca: a rodada seguinte le "ja respondi esta mensagem" e pula, para sempre. Custou
-    // 4h de silencio ao Getulio em 06/11 (ver CLAUDE.md). `!env.ok` significa NAO entregue, entao
-    // limpar nao duplica; quem segura a repeticao e o `envio_erro_em` abaixo. UPDATE direto porque
-    // o `upsertLead` descarta null.
-    if (!opts.dry && up.lead?.id) {
+    // O CARIMBO SAI QUANDO O ENVIO E RECUSADO POR MOTIVO TECNICO. Ele e gravado antes do envio de
+    // proposito (trava contra duas rodadas do cron escreverem a mesma resposta), mas se o envio
+    // nao aconteceu ele vira mordaca: a rodada seguinte le "ja respondi esta mensagem" e pula,
+    // enquanto o lead nao escrever de novo. Custou 4h de silencio ao Getulio em 06/11.
+    // `!env.ok` significa NAO entregue (a checagem de entrega existe para isso), entao limpar nao
+    // duplica; quem segura a repeticao e o `envio_erro_em` abaixo.
+    // MAS NAO LIMPA QUANDO O CONTATO TEM OUTRO DONO (`dono_divergente`): ali a recusa esta CERTA —
+    // significa que alguem do time assumiu a conversa, e insistir faria a Nina tentar de 2 em 2
+    // horas por cima de um humano. Medido em 06/11: dos 10 leads com o carimbo preso, 7 eram
+    // exatamente isso (Monica, Valeria, Camyla, Mara). Esses nao sao defeito de envio — sao lead
+    // esperando uma PESSOA, e o que falta para eles e aviso, nao reenvio.
+    // UPDATE direto porque o `upsertLead` descarta null.
+    if (!opts.dry && up.lead?.id && !env?.dono_divergente) {
       try { await sb.from("copiloto_lead").update({ ultima_msg_id: null }).eq("id", up.lead.id); } catch (_e) { /* o erro de envio importa mais */ }
     }
     // QUEDA: para tudo agora. Sem isto a rodada seguinte escreve outra mensagem, e a seguinte outra.

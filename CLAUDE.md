@@ -117,7 +117,12 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   SRV_JWT — chave de administrador do banco, no fonte, válida por anos. Retiradas em 31/08; as duas
   usam `srvKey()` como todo o resto. Se aparecer outra, tire: a variável SRV_JWT existe e funciona.
   **Nos `copiloto-*` apareceram mais sete** (cinco funções com a chave chumbada, duas com ela como
-  fallback do SRV_JWT): retiradas no fonte em 10/09, mas o que está no ar ainda as carrega.
+  fallback do SRV_JWT), retiradas do fonte em 10/09. **Conferido em 06/11: o `copiloto-lead` que
+  estava no ar era BYTE A BYTE igual ao do repositório** (versão 28, 90.646 bytes) — ou seja, nessa
+  função já não há chave chumbada no ar, e o fonte daqui é a verdade. As outras `copiloto-*` não
+  foram reconferidas, e conferir é barato: o `get_edge_function` devolve o conteúdo **em arquivo**
+  quando é grande, então dá para comparar com `md5sum` sem carregar 90 KB na conversa. Não afirme
+  divergência sem comparar.
 - **Tarefa que a Nina abre e ninguém vê não conta.** `copiloto_tarefas` é a nossa fila: uma tabela
   que alguém precisa abrir, e que **não avisa ninguém**. Em 10/09 o gestor abriu o painel do contato
   do lead qualificado e leu "Ainda não há tarefas" — "isso não pode passar de jeito nenhum". Desde
@@ -725,8 +730,18 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   **E a mesma doenca do `toques` de 02/10 e do `reativa_em`:** contador escrito antes do envio
   confirmado mente. Aqui e pior, porque nao ha teto — e silencio permanente.
   **Destravar a mao:** `update copiloto_lead set ultima_msg_id = null where id = <id>` e rodar o
-  `copiloto-lead`. **O conserto de verdade** e so carimbar depois do `env.ok`, e mexe na funcao que
-  esta atendendo.
+  `copiloto-lead`.
+  **MAS O CONSERTO OBVIO ESTA ERRADO, e so a medicao mostrou.** "Limpar o carimbo em toda recusa"
+  faz a Nina voltar a tentar de 2 em 2 horas (`lead_erro_espera_min`) tambem quando a recusa e
+  `dono_divergente` — e ali a recusa esta CERTA: significa que alguem do time assumiu a conversa.
+  Medido em 06/11: dos **10 leads** com o carimbo preso, **7 eram exatamente isso** (Mara 3,
+  Monica 2, Valeria 1, Camyla 1), parados **6,5 dias em media**. Os outros 3 eram tecnicos (bind
+  nao aceito, troca de instancia nao confirmada, instancia `ghl-nativo` fora do cadastro) e foram
+  destravados a mao. O conserto no fonte limpa o carimbo **so quando `!env.dono_divergente`**.
+  **E o que falta para os 7 nao e reenvio, e AVISO:** sao leads esperando uma pessoa, e nada
+  avisa ninguem de que eles estao la. Decisao do gestor — pulled para a Nina so faz sentido quando
+  o dono e instancia de assistente (Mara/Camyla) e ninguem falou de verdade; tirar da Monica ou da
+  Valeria seria tirar o lead de quem recebeu o repasse de proposito.
 - **O CNPJ VELHO DO CRM VENCE O QUE O LOJISTA ACABOU DE DIGITAR.** Linha 663 do `copiloto-lead`:
   `const cnpjForm = crm.cnpj || acl?.cnpj || cnpjDito || ""`. O campo `CF_CNPJ` do contato tem
   precedencia sobre o que veio da landing. No Getulio, contato de out/2025, o CRM guardava
