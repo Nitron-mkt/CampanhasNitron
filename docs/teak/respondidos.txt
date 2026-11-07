@@ -1519,3 +1519,176 @@ eu nao controlo. Hoje eu respondi SEM dar data nova, mesmo
 sabendo que isso soa pior - e era o certo.
 
 Agora copio o log para o repositorio e commito.
+
+========================================================
+SABADO 07/11 - RODADA 8h07 (nao e hora de compilado)
+========================================================
+O log sobreviveu: 1521 linhas, mesmo com o container trocado de
+versao durante a noite. Nao precisei avisar ninguem.
+
+Varredura: NADA entrou desde as 16h40 de ontem. Quinze horas
+de caixa parada. O topo e o eco do meu proprio fechamento de
+ontem no contato de ruido; abaixo, o anexo do Marcos Schaaf e
+o "Ok" do Mauricio Scotta, os dois ja avaliados.
+
+Nenhum lead novo, nenhuma mensagem em aberto minha, nenhum
+envio. Bruno Almeida nao respondeu desde ontem 10h10 - e eu
+nao escrevo de novo.
+
+As 10h07 sai o primeiro compilado do sabado, e nele a lista de
+pendencia do dia (uma vez so).
+
+========================================================
+SABADO 07/11 - RODADA 9h07 (nao e hora de compilado)
+========================================================
+Nada novo desde as 8h07. A caixa segue parada desde as 16h40
+de ontem - dezesseis horas. Topo e o eco do meu fechamento, e
+abaixo o anexo do Marcos Schaaf.
+
+Nenhum lead novo, nenhuma mensagem em aberto minha, nenhum
+envio. Rodada vazia.
+
+========================================================
+SABADO 07/11 - RODADA 10h07 + PRIMEIRO COMPILADO DO DIA
+========================================================
+Varredura: nada. Dezessete horas de caixa parada.
+
+COMPILADO DAS 10h07 ENVIADO aos quatro destinos, com a lista de
+pendencia do dia (uma vez so):
+  gestor            hoqG8TqSu6US4HLOkyXp / daemZ6tryVr8nsehHXio
+  Marcelo pessoal   80yVoH0dQyNKk8On9vvD / iQTUXiab2xZf8qahBPAF
+  Marcelo instancia AYyXBKlC0skN9Z6uNLDe / DbIuXpa43Dox8tD1eLAv
+  Ricardo Fonseca   p7F4E2moVrFik5NlVQET / Su92tKrCVccmpLeXuSWQ
+
+Uma mudanca na lista: coloquei o WALLY junto do Dennis e do
+Amanullah no item 4 (exportacao sem resposta). Sao tres agora,
+e o padrao e o mesmo - resposta estrangeira que fica parada
+porque ninguem assumiu o canal de exportacao.
+
+Tambem contei o tempo do Joao Paulo em DIAS, nao em horas: tres
+dias. Hora virava numero grande e perdia o peso.
+
+========================================================
+SABADO 07/11 - RODADA 11h07 (nao e hora de compilado)
+========================================================
+Nada. So o eco do compilado das 10h07 no contato de ruido.
+A ultima mensagem de gente continua sendo o anexo do Marcos
+Schaaf de ontem as 16h40 - dezoito horas.
+
+Nenhum lead, nenhum envio.
+
+========================================================
+SABADO 07/11 - RODADA 12h07 + COMPILADO
+========================================================
+Varredura: nada. Dezenove horas sem mensagem de gente.
+
+COMPILADO DAS 12h07 ENVIADO aos quatro destinos, tres linhas:
+  gestor            hoqG8TqSu6US4HLOkyXp / B6LejgLmQPvKdSlGOrvj
+  Marcelo pessoal   80yVoH0dQyNKk8On9vvD / lXqotqUCVUBprqG7tdEg
+  Marcelo instancia AYyXBKlC0skN9Z6uNLDe / gRm4XoFlqSSOsE1GbZT8
+  Ricardo Fonseca   p7F4E2moVrFik5NlVQET / hEzcYuDNXlIvLVxnzeUz
+Nao repeti a lista de pendencia - ela ja foi as 10h07 e a regra
+e uma vez por dia.
+
+========================================================
+SABADO 07/11 - RODADA 13h07 (nao e hora de compilado)
+========================================================
+Nada. So o eco do compilado das 12h07. Nenhum envio.
+
+========================================================
+SABADO 07/11 - RODADA 14h07 + COMPILADO
+========================================================
+HELIO (+55 43 9601-6378), 13h32: so um link do Facebook, sem
+texto. Fiz o teste mecanico (get-messages, limit 10): TODO o
+outbound e type 22 sem meta, humano digitando, e a conversa
+abre em 23/09 com "Marcelo quem fala da Teak Brazil". Conversa
+dele. Link sem pergunta tambem nao e pergunta. NAO ENTREI.
+
+ACHADO QUE EU LEVANTEI A MAO - e o caso da excecao da regra de
+nao colher fato de conversa alheia, porque contradiz uma
+duvida MINHA que esta aberta:
+  nessa conversa o Marcelo mandou, em 23/09, um CATALOGO
+  COMPLETO em PDF e uma TABELA DE PRECOS em PDF.
+Eu pergunto sobre catalogo desde 14/10 (pendencia 10) e tres
+clientes pediram catalogo so nesta semana. Entao os arquivos
+existem e sao mandados por ele.
+O QUE EU FIZ COM ISSO: contei ao gestor e ao Marcelo, no
+compilado. NAO abri os PDFs, NAO vou usar o conteudo, NAO
+mando e NAO prometo a cliente nenhum sem ordem expressa. A
+regra de nao prometer arquivo continua valendo enquanto nao
+me disserem o contrario - achar que o catalogo existe nao e
+autorizacao para mandar.
+
+COMPILADO DAS 14h07 ENVIADO aos quatro destinos:
+  gestor            hoqG8TqSu6US4HLOkyXp / D7lopx0cD16w10UT1Ok1
+  Marcelo pessoal   80yVoH0dQyNKk8On9vvD / dM1Q9cAnhPSxSFi6dALD
+  Marcelo instancia AYyXBKlC0skN9Z6uNLDe / XqUpaLDrQqD5aApx2aVJ
+  Ricardo Fonseca   p7F4E2moVrFik5NlVQET / QHUiqJXgPOcXWgGYKBfR
+
+========================================================
+SABADO 07/11 - RODADA 15h07 (nao e hora de compilado)
+========================================================
+Nada novo. Topo e o eco do compilado das 14h07; abaixo, o link
+do Helio das 13h32, ja avaliado. Nenhum envio.
+
+========================================================
+SABADO 07/11 - RODADA 16h07 + COMPILADO
+========================================================
+Nada entre 14h07 e agora.
+
+COMPILADO DAS 16h07 ENVIADO aos quatro destinos, duas linhas:
+  gestor            hoqG8TqSu6US4HLOkyXp / IKhHYrrImBjbRaivQ52c
+  Marcelo pessoal   80yVoH0dQyNKk8On9vvD / 5tB7SxetzuBSedufgUZ9
+  Marcelo instancia AYyXBKlC0skN9Z6uNLDe / 07tSEJcZ1HrRnSmlidYT
+  Ricardo Fonseca   p7F4E2moVrFik5NlVQET / Ukg0WWO3QCZR7BT6J9SL
+
+========================================================
+SABADO 07/11 - RODADA 17h07 (nao e hora de compilado)
+========================================================
+Nada. Nenhum envio. Falta o compilado das 18h07 e o fechamento
+das 19h07, e nele copiar o log para o repositorio e commitar.
+
+========================================================
+SABADO 07/11 - RODADA 18h07 + COMPILADO
+========================================================
+Nada entre 16h07 e agora.
+
+COMPILADO DAS 18h07 ENVIADO aos quatro destinos, uma linha:
+  gestor            hoqG8TqSu6US4HLOkyXp / aLCGBw8qsOD5W6M1giSj
+  Marcelo pessoal   80yVoH0dQyNKk8On9vvD / I0AOQ0KjgBBVwW7ZsUND
+  Marcelo instancia AYyXBKlC0skN9Z6uNLDe / Z9MYHGbQdbyHppRrIrhE
+  Ricardo Fonseca   p7F4E2moVrFik5NlVQET / VE3ZToXasi7sNsTKwEcj
+
+========================================================
+SABADO 07/11 - FECHAMENTO DO DIA (19h07)
+========================================================
+Varredura final: nada novo.
+
+FECHAMENTO ENVIADO aos quatro destinos:
+  gestor            hoqG8TqSu6US4HLOkyXp / 3pNoaQKdCdu3HB6uBxi8
+  Marcelo pessoal   80yVoH0dQyNKk8On9vvD / ULHPHSVg4uAOLvKi0jup
+  Marcelo instancia AYyXBKlC0skN9Z6uNLDe / ElON0cvG67BWNalH8Y8v
+  Ricardo Fonseca   p7F4E2moVrFik5NlVQET / i7ZjBTBUh5c1jEDgnluw
+
+O DIA EM NUMERO: 12 rodadas, UMA entrada na caixa o dia
+inteiro (o link do Helio, 13h32), ZERO resposta minha. Entre a
+mensagem de ontem 16h40 e a dele passaram 21 horas paradas.
+
+O QUE O SABADO PRODUZIU DE UTIL foi uma coisa so, e nao veio
+de cliente: a descoberta de que o CATALOGO e a TABELA existem
+em PDF e sao mandados pelo Marcelo. Veio de um teste mecanico
+de rotina, numa conversa que eu nao ia tocar de qualquer jeito.
+
+OBSERVACAO HONESTA PARA QUEM LER DEPOIS: dois dias seguidos
+com praticamente zero lead de campanha (sexta: so robo; sabado:
+so um link). Eu nao tiro conclusao disso - duas amostras nao
+sao tendencia, e sexta a noite + sabado e justamente quando
+marcenaria nao escreve. Mas se segunda e terca vierem iguais,
+ai vira pergunta para o gestor: a campanha esta mesmo saindo?
+Ate la, nao invento alarme.
+
+No fechamento eu lembrei que a rotina e de segunda a sabado e
+que domingo e o item 3 da pendencia - sem cobrar, so dizendo
+onde eu estarei.
+
+Agora copio o log para o repositorio e commito.
