@@ -1176,3 +1176,31 @@ conversa — ao contrário do `#contact_instance`, que o app confirma com "Conta
 Então, se o app ignorar o comando, a mensagem sai pela instância de antes e **só o aparelho de quem
 recebe mostra isso**. É a mesma família do `status: sent` de 26/08. Por isso `forcar_switch` é opt-in
 e **não deve ser ligado em lote sem teste em aparelho**.
+
+### Teste do `#switch` no aparelho do gestor (09/11, autorizado por ele)
+
+Feito direto pela API, **sem publicar código** — justamente para não mexer na função mais crítica por
+causa de um comando ainda não provado. Sequência na conversa `xXzFWU0Kt5Bfs9kTxM8U`:
+
+| hora | o que foi mandado | status |
+|---|---|---|
+| 17:42:51 | `#switch:Camyla` (linha de serviço) | delivered |
+| 17:43:32 | TESTE 1 — texto | **delivered** |
+| 17:43:38 | `#switch:Nina` (devolve) | sent |
+| 17:43:56 | `[System]: Nina - Unable to send the message.` | escrito pelo app |
+| 17:44:13 | TESTE 2 — texto | **delivered** (28s depois) |
+
+Duas coisas ficaram provadas pela própria conversa, independentemente de qual número apareceu no
+aparelho:
+
+1. **O `#switch` NÃO tem linha de confirmação.** O `#contact_instance:` sempre responde
+   `[System]: Contact Instance Updated!` — e as duas linhas desse mesmo dia, às 16:21 e em 06/11,
+   estão lá para comparar. O `#switch` não gerou nada parecido. Então **não há como travar**: se o app
+   ignorar o comando, a mensagem sai pela instância de antes e nada no CRM mostra isso.
+2. **Existe uma segunda linha de sistema que a checagem de entrega NÃO conhece:**
+   `[System]: <instância> - Unable to send the message.` A nossa `ehQueda()` só procura
+   "instance is disconnected". **E está certo não procurar esta**: aqui ela apareceu nomeando a Nina e
+   a mensagem foi **entregue 28s depois** — tratá-la como erro marcaria como falha uma linha que
+   chegou. Fica registrado como sinal **transitório**, não como queda.
+
+Qual número apareceu em cada mensagem só o aparelho diz — é a pergunta devolvida ao gestor.
