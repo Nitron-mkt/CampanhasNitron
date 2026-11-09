@@ -1076,3 +1076,58 @@ etapa; formulário no mesmo minuto **move a mesma** oportunidade para a 2ª; con
 O prompt para o desenvolvedor está em `docs/nitronconecta-formulario/PROMPT-DESENVOLVEDOR.md` — o
 gestor pediu o briefing em vez do código, e a implementação de referência (`index.html`) ficou como
 ponto de partida opcional.
+
+## O Conecta vai por Zaptos E por e-mail, com imagem (09/11)
+
+Pedido do gestor: *"além dos contatos de whatsapp, a comunicação tem que ser mandada pelo email
+também… o template a enviar pra eles tem que ser o mesmo que mandei antes, mesma informação, só tem
+que ter um botão lá para cadastrar a imagem"*.
+
+- **O texto do cliente é o que ele escreveu, palavra por palavra** (a chamada da Reforma Tributária).
+  A única coisa não literal é o "FALTAM 7 DIAS": virou `[DIAS]`, calculado da primeira data do evento.
+  Número escrito na mão envelhece — mandar "faltam 7 dias" na véspera seria mentira na cara do
+  cliente. Negrito no padrão do WhatsApp (`*assim*`).
+- **O e-mail leva a MESMA mensagem, só vestida.** `cnEmailHTML()` monta a partir do próprio texto do
+  Zaptos: mesmos parágrafos, mesma ordem, mesmas palavras, mais um cabeçalho, o bloco de
+  data/hora/local destacado e um botão para o formulário. Não se reescreve o texto do gestor ali.
+  **O HTML sai em UMA LINHA SÓ**: o `campanhas-enviar` envolve o corpo num `<div>` e troca `\n` por
+  `<br>`, então qualquer quebra viraria `<br>` extra entre as tags.
+- **Imagem: o widget é o mesmo dos dois comunicados** (`midiaHTML`/`midiaLigar`, contexto `conecta`),
+  subindo para o bucket `comunicado-midia`. As URLs viajam no campo `imagens` das duas linhas: no
+  e-mail viram `<img>` no fim do corpo (`fila-processar`), no Zaptos vão como `attachments` no próprio
+  POST do texto, uma mensagem só (`campanhas-enviar` v30). Mesmo mecanismo conferido no aparelho em
+  14/09 — não é anexo novo.
+- Assunto do e-mail é campo editável na tela; a prévia do e-mail monta pelo **mesmo** `cnEmailHTML()`
+  do envio, com as imagens, para não repetir o erro da prévia que diverge da mensagem.
+
+### E aqui está o que derruba a premissa do "sai pela Nina"
+
+O gestor pediu que o convite ao cliente saísse pela instância da Nitron. **A fila não deixa isso
+acontecer, e não por bug:** o número de saída é o `assignedTo` do contato, e o `fila-processar` v17
+manda campanha de **cliente** com `usar_dono: true` — ou seja, quando o dono diverge da instância
+pedida, ele **troca para a dona de fato** em vez de recusar (nas de representante é o contrário:
+recusa, porque divergência ali é aviso para a gestão).
+
+Medido em 09/11 numa amostra de 9 clientes do raio, com `campanhas-enviar?lookup`:
+
+| dono do contato | clientes |
+|---|---|
+| **sem dono** | 6 |
+| outra instância (Bianca, Mônica, Karla) | 3 |
+| Nina | 0 |
+
+Ou seja: pedir `instancia: Nina` nas 940 linhas **não faz o Zaptos sair pela Nina**. Sai pela dona de
+cada contato, e **contato sem dono costuma não sair** ("sem dono, a mensagem não sai").
+
+**O e-mail não depende de instância e chega para todos** — por isso o pedido de mandar também por
+e-mail é, sem querer, o que salva a campanha.
+
+Pôr a Nina como dona dos 940 contatos resolveria o Zaptos, mas é exatamente a operação que custou dois
+dias em 15/09: trocar dono muda, em silêncio, todo aviso que saía por outra instância para aquele
+contato. **Não mexido — decisão do gestor.** A tela mostra esse aviso em vermelho, com os números,
+antes do botão de envio, em vez de prometer uma instância que não vai ser usada.
+
+**Achado de passagem, não relacionado:** a `cobranca_alerta` (alerta interno) acumula **166 linhas em
+erro desde 19/10**, a última hoje às 16h, todas com o mesmo motivo — o contato é da **Nina Financeiro**
+(pausada desde 25/09) e a linha pede Nina. Toda hora o cron enfileira de novo e erra de novo. Não
+mexido.

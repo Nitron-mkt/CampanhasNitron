@@ -1742,14 +1742,19 @@
      CNPJ: vai na lista AO REPRESENTANTE, em linha propria (regra de 28/08). Na mensagem ao CLIENTE
      nao vai — ali seria o documento dele mesmo. */
   var CNC={},CNR={},CNLIN=[],CNREPS=[],CNPAR={},CNCOD="nitronconecta",CNCOB=null,CNCAD=null,CNVAGAS=[],CNINS=[];
-  var CNTPL_CLI="Ola [NOME]!\n\nAqui e a Nitron. Estamos abrindo uma consultoria presencial aqui na fabrica, em Guarulhos — um bate-papo para falar de mix, giro e o que esta vendendo na sua regiao.\n\nComo e presencial, estamos convidando quem esta perto: voce esta a cerca de [KM] km da gente, em [CIDADE].\n\nSeu representante [REP] tambem foi convidado.\n\nGaranta sua vaga aqui: [LINK]";
+  /* O TEXTO DO CLIENTE E O QUE O GESTOR ESCREVEU (09/11), palavra por palavra. A unica coisa que
+     nao e literal e o "FALTAM 7 DIAS": vira [DIAS], calculado da primeira data do evento. Numero
+     escrito na mao envelhece — mandar "faltam 7 dias" na vespera seria mentira na cara do cliente.
+     Negrito no padrao do WhatsApp (*assim*); no e-mail o cnEmailHTML() converte para <b>. */
+  var CNTPL_CLI="\u{1F6A8} *FALTAM [DIAS] PARA O NITRON CONECTA!*\n\nA Reforma Tributária vai impactar o mercado de utilidades domésticas. *Sua empresa está preparada?*\n\nA Nitron está reunindo seus principais parceiros para uma conversa exclusiva sobre desafios, mudanças e soluções para o nosso setor.\n\n\u{1F525} *Apenas 15 convidados por dia!*\n\n\u{1F4C5} *16, 17 ou 18 de novembro*\n\u{23F0} *Das 9h às 17h*\n\u{1F4CD} *Nitron | Rua Uruçuí, 600 \u2013 Cidade Aracília, Guarulhos/SP*\n\n\u26A0\uFE0F *Não deixe sua inscrição para a última hora!*\n\nGaranta sua vaga: [LINK]";
+  var CNASS="Nitron Conecta \u2014 16, 17 ou 18 de novembro | Reforma Tributária";
   var CNTPL_REP="Ola [NOME]!\n\nEstamos montando uma consultoria presencial aqui na fabrica e queremos voce junto, com os seus clientes que estao perto de Guarulhos.\n\nDa sua carteira, [QTD] cliente(s) estao dentro do raio:\n\n[LISTA]\nO convite para eles sai daqui, pelo numero da Nitron — voce nao precisa fazer nada. So queremos que voce saiba quem foi chamado, e se quiser comentar com algum deles, melhor ainda.\n\nAlguma observacao antes de mandarmos?\n\nA pagina de inscricao e esta: [LINK]";
   function cnKm(v){return (v==null?"?":String(v).replace(".",","));}
   function cnTempo(min){if(min<1)return "menos de 1 min";if(min<60)return min+" min";
     var h=Math.floor(min/60),m=min%60;return h+"h"+(m?(m<10?"0":"")+m:"");}
   function cnConta(){var c=0,r=0,k;for(k in CNC)if(CNC[k])c++;for(k in CNR)if(CNR[k])r++;return {cli:c,rep:r};}
   function abrirConecta(cod){
-    CNCOD=cod;CNC={};CNR={};CNLIN=[];CNREPS=[];CNCOB=null;CNCAD=null;
+    CNCOD=cod;CNC={};CNR={};CNLIN=[];CNREPS=[];CNCOB=null;CNCAD=null;MIDIA.conecta=[];
     $("op-nome").textContent="Nitron Conecta — consultoria presencial";
     $("op-meta").textContent="lendo…";
     $("op-kpis").innerHTML="";var ai=$("atuInfo");if(ai)ai.textContent="";
@@ -1780,7 +1785,7 @@
   }
   function cnRender(){
     var n=cnConta(),fat=0;CNLIN.forEach(function(x){fat+=Number(x.fat12m||0);});
-    $("op-meta").textContent="Clientes a ate "+CNPAR.raio+" km da fabrica (Guarulhos) · convite ao CLIENTE sai pela instancia "+CNPAR.inst_cliente+" · ao REPRESENTANTE pela assistente dele (Sankhya)";
+    $("op-meta").textContent="Clientes a até "+CNPAR.raio+" km da fábrica (Guarulhos) · cada cliente marcado recebe por Zaptos E por e-mail · ao representante, pela assistente dele (Sankhya)";
     $("op-kpis").innerHTML='<div class="kpi"><div class="n">'+CNLIN.length+'</div><div class="l">clientes no raio</div></div>'
       +'<div class="kpi"><div class="n">'+CNREPS.length+'</div><div class="l">representantes</div></div>'
       +'<div class="kpi s"><div class="n">'+brl(fat)+'</div><div class="l">faturamento 12m</div></div>';
@@ -1836,6 +1841,18 @@
         +'<br>O raio esta em <code>campanhas.filtros_padrao.conecta_raio_km</code>: muda por UPDATE, sem deploy.'
         +'</div>';
     }
+    /* 1b) POR ONDE O ZAPTOS SAI DE VERDADE. A tela nao pode prometer "sai pela Nina": quem decide o
+       numero de saida e o DONO do contato no CRM (assignedTo), e a fila manda campanha de CLIENTE
+       com `usar_dono` (fila-processar v17) — ou seja, ela troca para a dona de fato em vez de
+       recusar. Medido numa amostra de 9 clientes do raio em 09/11: 6 sem dono e 3 de outra
+       instancia (Bianca, Monica, Karla). O e-mail nao depende disso. */
+    h+='<div class="note" style="margin:0 0 10px;padding:10px 12px;background:#fdf3f2;border:1px solid #f0c9c4;border-radius:8px">'
+      +'<b>Por onde o Zaptos sai:</b> quem manda no número de saída é o <b>dono do contato no CRM</b>, não a instância pedida aqui — '
+      +'a fila troca sozinha nas campanhas de cliente (<code>usar_dono</code>). Numa amostra de 9 clientes deste raio: '
+      +'<b>6 sem dono</b> e <b>3 de outra instância</b>. Contato sem dono costuma <b>não sair</b> no Zaptos. '
+      +'<b>O e-mail não depende de instância e sai para todos.</b> Pôr a '+esc(CNPAR.inst_cliente)+' como dona dos contatos resolveria o Zaptos, '
+      +'mas trocar dono em massa é a operação que já custou dois dias em 15/09 — <b>decisão do gestor</b>.'
+      +'</div>';
     /* 2) Relogio — le a propria campanha, nao uma constante (mesma convencao do pixRelogio). */
     var cad=(CNCAD&&CNCAD.cadencia)||[],avulso=(cad.length===1&&cad[0]==="avulso");
     h+='<div class="note" style="margin:0 0 10px;padding:9px 12px;border-radius:8px;'
@@ -1851,12 +1868,16 @@
       +'<button class="btn" onclick="cnTudoRep(0)">limpar reps</button>'
       +'</div>'
       +'<div id="cn-resumo" style="margin:4px 0 10px"></div>'
-      +'<div style="font-size:12px;color:#6a7f78;margin-bottom:4px"><b>Convite ao CLIENTE</b> — sai pela instancia '+esc(CNPAR.inst_cliente)+'. Marcadores: [NOME] [CIDADE] [KM] [REP]. <b>Sem CNPJ</b> (ali seria o documento dele mesmo).</div>'
+      +'<div style="font-size:12px;color:#6a7f78;margin-bottom:4px"><b>Convite ao CLIENTE</b> — vai por <b>Zaptos e e-mail</b>, com o mesmo texto. Marcadores: [DIAS] [LINK] [NOME] [CIDADE] [KM] [REP]. <b>Sem CNPJ</b> (ali seria o documento dele mesmo).</div>'
       +'<textarea id="cn-tpl-cli" style="width:100%;min-height:150px;font:13px/1.5 ui-monospace,monospace;padding:9px;border:1px solid var(--line);border-radius:8px">'+esc(CNTPL_CLI)+'</textarea>'
+      +'<div style="font-size:12px;color:#6a7f78;margin:10px 0 4px"><b>Assunto do e-mail ao cliente</b></div>'
+      +'<input id="cn-ass" type="text" value="'+esc(CNASS)+'" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;font:inherit">'
+      +'<div id="cn-midia"></div>'
       +'<div style="font-size:12px;color:#6a7f78;margin:10px 0 4px"><b>Convite ao REPRESENTANTE</b> — sai pela assistente dele. Marcadores: [NOME] [QTD] [LISTA]. A lista vai com <b>CNPJ em linha propria</b> (regra de 28/08) e e montada em codigo.</div>'
       +'<textarea id="cn-tpl-rep" style="width:100%;min-height:130px;font:13px/1.5 ui-monospace,monospace;padding:9px;border:1px solid var(--line);border-radius:8px">'+esc(CNTPL_REP)+'</textarea>'
       +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:9px">'
-      +'<button class="btn" onclick="cnPrevia(\'cli\')">👁 previa do cliente</button>'
+      +'<button class="btn" onclick="cnPrevia(\'cli\')">👁 prévia do cliente (Zaptos)</button>'
+      +'<button class="btn" onclick="cnPrevia(\'mail\')">✉ prévia do e-mail</button>'
       +'<button class="btn" onclick="cnPrevia(\'rep\')">👁 previa do rep</button>'
       +'<button class="btn big ok" id="cn-btn" onclick="cnEnviar()">📨 Enfileirar convites</button>'
       +'</div>'
@@ -1896,6 +1917,9 @@
       h+='</div>';
     });
     $("kaFlow").innerHTML=h;
+    /* o widget de imagem e o MESMO dos dois comunicados (midiaHTML/midiaLigar): um so lugar que
+       sobe para o bucket comunicado-midia e um so formato de lista. */
+    var mb=$("cn-midia");if(mb){mb.innerHTML=midiaHTML("conecta");midiaLigar("conecta",cnResumo);}
     cnResumo();
   }
   function cnResumo(){
@@ -1911,6 +1935,7 @@
     var txt='<b>'+n.cli+'</b> cliente'+(n.cli===1?"":"s")+' e <b>'+n.rep+'</b> representante'+(n.rep===1?"":"s")+' marcado'+(n.rep===1?"":"s")+'.';
     if(n.cli)txt+=' Clientes: ~<b>'+cnTempo(minCli)+'</b> de disparo pela instancia '+esc(CNPAR.inst_cliente)+' (2 Zaptos/min).';
     if(n.rep)txt+=' Reps: ~<b>'+cnTempo(minRep)+'</b> (dividido entre as assistentes).';
+    if(n.cli)txt+=' Cada cliente recebe por <b>Zaptos e e-mail</b> (1 contato de cada canal).';
     if(n.cli>200)txt+=' <span style="color:#b7791f">Lote grande — a fila solta no ritmo dela, nada sai de uma vez.</span>';
     el.innerHTML=txt||"nada marcado";
   }
@@ -1923,12 +1948,58 @@
   function cnTudo(v){CNLIN.forEach(function(c){CNC[c.codparc]=!!v;});cnRender();}
   function cnTudoRep(v){CNREPS.forEach(function(r){CNR[r.codvend]=!!v;});cnRender();}
   function cnTudoDoRep(codvend,v){CNREPS.forEach(function(r){if(r.codvend===codvend)r.cli.forEach(function(c){CNC[c.codparc]=!!v;});});cnRender();}
+  /* [DIAS] sai da PRIMEIRA data do evento (conecta_vagas), nunca de constante. */
+  function cnFaltam(){
+    if(!CNVAGAS.length)return "POUCOS DIAS";
+    var p=String(CNVAGAS[0].dia).split("-");
+    var hoje=new Date();hoje.setHours(0,0,0,0);
+    var n=Math.round((new Date(+p[0],+p[1]-1,+p[2])-hoje)/86400000);
+    if(n>1)return n+" DIAS";
+    if(n===1)return "1 DIA";
+    if(n===0)return "HOJE";
+    return "POUCOS DIAS";
+  }
   function cnMontarCli(c,tpl){
-    return String(tpl||"").replace(/\[NOME\]/g,String(c.cliente||""))
+    return String(tpl||"").replace(/\[DIAS\]/g,cnFaltam())
+      .replace(/\[NOME\]/g,String(c.cliente||""))
       .replace(/\[CIDADE\]/g,String((c.cidade||"")+(c.uf?("/"+c.uf):"")))
       .replace(/\[KM\]/g,cnKm(c.km))
       .replace(/\[REP\]/g,String(c.rep||""))
       .replace(/\[LINK\]/g,CNPAR.form_url||"(link do formulário ainda não cadastrado)");
+  }
+  /* ===== CORPO DO E-MAIL =====
+     O corpo chega ao GHL como HTML cru (o campanhas-enviar so envolve num <div> e troca \n por
+     <br>), entao HTML passa direto — MAS por isso mesmo este HTML tem de sair em UMA LINHA SO:
+     qualquer \n viraria um <br> extra entre as tags e abriria buraco no layout.
+     A MENSAGEM E A MESMA do Zaptos, so vestida: mesmos paragrafos, mesma ordem, mesmas palavras.
+     Nao se reescreve o texto do gestor aqui. O que o e-mail acrescenta e so a forma — titulo,
+     bloco de data/hora/local e um botao para o formulario. As imagens entram DEPOIS, no fim do
+     corpo, montadas pelo fila-processar (blocoImagens), que e quem sabe delas nos dois canais. */
+  function cnEmailHTML(txt){
+    var linhas=String(txt||"").split("\n"),blocos=[],atual=[];
+    linhas.forEach(function(l){ if(l.trim()===""){ if(atual.length){blocos.push(atual);atual=[];} } else atual.push(l); });
+    if(atual.length)blocos.push(atual);
+    var forte=function(t){return esc(t).replace(/\*([^*]+)\*/g,"<b>$1</b>");};
+    var corpo="";
+    blocos.forEach(function(b){
+      var t=b.join("\n");
+      /* o bloco de data/hora/local vira caixa destacada — e o que a pessoa precisa achar de relance */
+      if(/^[\u{1F4C5}\u{23F0}\u{1F4CD}]/u.test(b[0])){
+        corpo+='<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:18px 0;background:#f2f8f5;border:1px solid #cfe5d9;border-radius:10px"><tr><td style="padding:14px 16px;font-size:15px;line-height:1.7;color:#14211d">'
+             +b.map(forte).join("<br>")+'</td></tr></table>';
+        return;
+      }
+      if(/^Garanta sua vaga/i.test(b[0]))return; /* vira botao, nao linha de texto */
+      corpo+='<p style="margin:0 0 14px;font-size:15px;line-height:1.65;color:#14211d">'+forte(t).replace(/\n/g,"<br>")+'</p>';
+    });
+    var url=CNPAR.form_url||"";
+    var botao=url
+      ? '<table role="presentation" cellpadding="0" cellspacing="0" style="margin:22px auto"><tr><td style="background:#0f7a46;border-radius:11px"><a href="'+esc(url)+'" style="display:inline-block;padding:14px 30px;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none">Garantir minha vaga</a></td></tr></table>'
+        +'<p style="margin:0;text-align:center;font-size:12px;color:#5d7169">Ou copie e cole no navegador: '+esc(url)+'</p>'
+      : '<p style="margin:0;text-align:center;font-size:13px;color:#b7791f">(link de inscrição ainda não cadastrado — grave em filtros_padrao.conecta_form_url)</p>';
+    return '<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:620px;margin:0 auto;background:#ffffff">'
+      +'<div style="background:#0a5c34;border-radius:14px 14px 0 0;padding:22px 20px;text-align:center"><div style="color:#ffffff;font-size:24px;font-weight:800;letter-spacing:1px">NITRON CONECTA</div></div>'
+      +'<div style="border:1px solid #dfe8e4;border-top:0;border-radius:0 0 14px 14px;padding:22px 20px">'+corpo+botao+'</div></div>';
   }
   function cnMontarRep(r,tpl){
     /* A lista entra em CODIGO, com CNPJ em linha propria — nunca escrita por IA e nunca pela mao. */
@@ -1945,6 +2016,15 @@
   }
   function cnPrevia(tipo){
     var box=$("cn-previa");if(!box)return;box.style.display="";
+    if(tipo==="mail"){
+      var am=null;CNLIN.forEach(function(c){if(!am&&CNC[c.codparc])am=c;});
+      if(!am){box.textContent="marque ao menos um cliente";return;}
+      /* a previa monta pelo MESMO caminho do envio (cnEmailHTML + midiaPreviaHTML), senao mente —
+         o CLAUDE.md tem um item inteiro sobre previa que diverge da mensagem. */
+      box.innerHTML='<div style="font:12px/1.5 ui-monospace,monospace;color:#6a7f78;margin-bottom:8px">como vai sair por e-mail — '+esc(am.cliente||"")+' (primeiro marcado)<br>assunto: <b>'+esc(($("cn-ass")||{}).value||CNASS)+'</b></div>'
+        +cnEmailHTML(cnMontarCli(am,$("cn-tpl-cli").value))+midiaPreviaHTML("conecta");
+      return;
+    }
     if(tipo==="cli"){
       var alvo=null;CNLIN.forEach(function(c){if(!alvo&&CNC[c.codparc])alvo=c;});
       if(!alvo){box.textContent="marque ao menos um cliente";return;}
@@ -2012,6 +2092,8 @@
     if(!confirm("Enfileirar convites?\n\n"+n.cli+" cliente(s) pela instancia "+CNPAR.inst_cliente+" (~"+cnTempo(minCli)+" de disparo)\n"+n.rep+" representante(s) pelas assistentes\n\nA fila solta no ritmo de 2 Zaptos/min por instancia. Nada sai de uma vez."))return;
     var btn=$("cn-btn");if(btn)btn.disabled=true;
     var tplC=$("cn-tpl-cli").value,tplR=$("cn-tpl-rep").value,falhas=[],itens=[];
+    var assC=(($("cn-ass")||{}).value||CNASS).trim()||CNASS;
+    var imgs=(MIDIA.conecta||[]).slice(0);
     var cps=[],cvs=[];
     CNLIN.forEach(function(c){if(CNC[c.codparc]&&cps.indexOf(String(c.codparc))<0)cps.push(String(c.codparc));});
     CNREPS.forEach(function(r){if(CNR[r.codvend])cvs.push(String(r.codvend));});
@@ -2024,11 +2106,15 @@
         var it=mapC[String(c.codparc)]||{contatos:[]},cts=it.contatos||[],texto=cnMontarCli(c,tplC);
         if(!cts.length){falhas.push((c.cliente||c.codparc)+": sem contato");return;}
         cts.filter(function(x){return x.preferido;}).forEach(function(ct){
-          if(ct.canal==="email"){itens.push({campanha:CNCOD,publico:"cliente",canal:"email",email:ct.valor,assunto:"Nitron Conecta — convite para a consultoria presencial",corpo:texto,nome:c.cliente,codparc:c.codparc});return;}
+          /* E-MAIL E ZAPTOS LEVAM A MESMA MENSAGEM. O e-mail so troca o texto cru pelo HTML
+             montado a partir DELE (cnEmailHTML), e as duas linhas carregam as mesmas imagens:
+             no e-mail elas viram <img> no fim do corpo (fila-processar), no Zaptos vao como
+             anexo no proprio POST do texto, uma mensagem so (campanhas-enviar v30). */
+          if(ct.canal==="email"){itens.push({campanha:CNCOD,publico:"cliente",canal:"email",email:ct.valor,assunto:assC,corpo:cnEmailHTML(texto),nome:c.cliente,codparc:c.codparc,imagens:imgs});return;}
           if(foneCel(ct.valor)===false){falhas.push((c.cliente||c.codparc)+": "+ct.valor+" e fixo, sem WhatsApp");return;}
           /* AQUI esta o ponto do pedido: o convite ao cliente sai pela instancia da NINA, nao pela
              assistente do representante. Quem convida e a fabrica. */
-          itens.push({campanha:CNCOD,publico:"cliente",canal:"whatsapp",fone:ct.valor,instancia:CNPAR.inst_cliente,corpo:texto,nome:c.cliente,codparc:c.codparc});
+          itens.push({campanha:CNCOD,publico:"cliente",canal:"whatsapp",fone:ct.valor,instancia:CNPAR.inst_cliente,corpo:texto,nome:c.cliente,codparc:c.codparc,imagens:imgs});
         });
       });
       cnContatos("rep",cvs,"",function(mapR,errR){
@@ -2049,7 +2135,9 @@
         cnEnfileirar(itens,function(tot,errE){
           if(errE){if(btn)btn.disabled=false;
             st.innerHTML='<b style="color:#c0392b">✗ '+esc(errE)+'</b> — '+tot+' ja entraram'+rodape;return;}
-          st.innerHTML="<b style='color:#1a7f4b'>✓ "+tot+" na fila</b> · sai a 2 Zaptos/min por instancia"
+          var nz=0,ne=0;itens.forEach(function(x){if(x.canal==="email")ne++;else nz++;});
+          st.innerHTML="<b style='color:#1a7f4b'>✓ "+tot+" na fila</b> · "+nz+" Zaptos (2/min por instância) + "+ne+" e-mail"+(ne===1?"":"s")
+            +(imgs.length?(" · "+imgs.length+" imagem"+(imgs.length===1?"":"ns")):"")
             +'<span id="cnpp" style="color:#6a7f78"></span>'+rodape;
           /* So os CLIENTES vao para o pipeline: as colunas sao de empresa convidada
              ("Compareceu" e a loja que veio). O aviso ao representante e interno. */
@@ -3123,7 +3211,7 @@
                   imagem com o texto de legenda. Nao dobra o consumo do teto de 2/min por instancia.
      A entrega no Zaptos foi conferida no aparelho em 14/09 antes de a tela oferecer isso — o GHL
      aceitar nao e o cliente receber, e essa confusao ja custou oito mensagens fantasma em 26/08. */
-  var MIDIA = { rep: [], cliente: [] };
+  var MIDIA = { rep: [], cliente: [], conecta: [] };
   var MIDIAMAX = 8;
   function midiaKB(n) { return n >= 1048576 ? ((n / 1048576).toFixed(1) + " MB") : (Math.round(n / 1024) + " KB"); }
   /* XHR com corpo binario: o postJSON da casa serializa em JSON e o upload precisa dos bytes crus. */
