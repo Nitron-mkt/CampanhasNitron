@@ -250,12 +250,12 @@
   var brl=function(v){return "R$ "+Math.round(v).toLocaleString("pt-BR");};
   var $=function(id){return document.getElementById(id);};
   var esc=function(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");};
-  var PIPES={clube:["💳","Clube"],saldo:["⚠️","Saldo / Ruptura"],recompra:["🔁","Recompra"],reativacao:["⏱️","Reativação"],representantes:["🤝","Representantes"],cobranca:["💰","Cobrança"],preparacao:["📦","Logística — Pedidos"],key_accounts:["👑","Key Accounts"],redes:["🏬","Promoção de Redes"],aquisicao:["🎯","Prospecção — novos"],inteligencia:["🧠","Inteligência"],cobranca_auto:["🔔","Cobrança automática"]};
+  var PIPES={clube:["💳","Clube"],saldo:["⚠️","Saldo / Ruptura"],recompra:["🔁","Recompra"],reativacao:["⏱️","Reativação"],representantes:["🤝","Representantes"],cobranca:["💰","Cobrança"],preparacao:["📦","Logística — Pedidos"],key_accounts:["👑","Key Accounts"],redes:["🏬","Promoção de Redes"],aquisicao:["🎯","Prospecção — novos"],inteligencia:["🧠","Inteligência"],cobranca_auto:["🔔","Cobrança automática"],nitronconecta:["🏭","Nitron Conecta"]};
   /* ===== ÁREAS — este mesmo arquivo serve /gestor, /logistica e /cobranca.
      A área sai do caminho da URL, então nao existe copia do painel pra manter. ===== */
   var AREAS={
     comercial:{nome:"Comercial",rota:"/gestor",
-      pipes:["clube","recompra","reativacao","representantes","key_accounts","cobranca_auto","redes","aquisicao","inteligencia"]},
+      pipes:["clube","recompra","reativacao","representantes","key_accounts","cobranca_auto","nitronconecta","redes","aquisicao","inteligencia"]},
     logistica:{nome:"Logística",rota:"/logistica",
       pipes:["saldo","preparacao"]},
     cobranca:{nome:"Cobrança",rota:"/cobranca",
@@ -281,7 +281,7 @@
     return "/agenda";
   }
   /* uma campanha e clicavel se alguma tela sabe operar ela */
-  function clicavel(cod){return (OPERAVEIS[cod]||KA[cod]||ROT[cod]||SAL[cod]||COB[cod]||AGE[cod]||RET[cod]||IAP[cod]||PROS[cod]||TPL[cod]||REDES[cod]||COM[cod]||COMC[cod]||PIX[cod])?1:0;}
+  function clicavel(cod){return (OPERAVEIS[cod]||KA[cod]||ROT[cod]||SAL[cod]||COB[cod]||AGE[cod]||RET[cod]||IAP[cod]||PROS[cod]||TPL[cod]||REDES[cod]||COM[cod]||COMC[cod]||PIX[cod]||CONECTA[cod])?1:0;}
   function pintarAreas(cont){
     var h="";
     ["comercial","logistica","cobranca"].forEach(function(a){
@@ -311,6 +311,7 @@
   var COB={cobranca_duplicata_cliente:1,cobranca_aviso_rep:1,cobranca_juridico:1}, COBMSG={};
   /* Cobranca automatica do PIX antecipado (25/09): dois quadros irmaos, um por publico. */
   var PIX={cobranca_pix_rep:1,cobranca_pix_cliente:1,cobranca_recusa_rep:1}, PIXMSG={}, PIXLIN=[];
+  var CONECTA={nitronconecta:1};
   var RET={prep_retorno:1};
   var IAP={ia_propoe:1};
   var TPL={templates_whatsapp:1};
@@ -775,6 +776,7 @@
     if(IAP[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirIA(cod);}
     if(KA[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirKA(cod);}
     if(RET[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirRetorno(cod);}
+    if(CONECTA[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirConecta(cod);}
     if(PIX[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return (cod==="cobranca_recusa_rep"?abrirRecusa(cod):abrirPix(cod));}
     if(COB[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirCobranca(cod);}
     if(AGE[cod]){$("opFlow").style.display="none";$("roteiroFlow").style.display="none";$("kaFlow").style.display="";return abrirAgendar(cod);}
@@ -1505,7 +1507,8 @@
     var ab=(m.lista.length>1?"Alguns pedidos seus foram recusados na liberação:":"Um pedido seu foi recusado na liberação:");
     return t.replace(/\[NOME\]/g,String(m.rep||"").split(/\s+/)[0])
             .replace(/\[ABERTURA\]/g,ab)
-            .replace(/\[LISTA\]/g,lista);
+            .replace(/\[LISTA\]/g,lista)
+      .replace(/\[LINK\]/g,CNPAR.form_url||"(link do formulário ainda não cadastrado)");
   }
   function pixSelN(){var n=0;for(var k in PIXSEL)if(PIXSEL[k])n++;return n;}
   function pixToggle(i,on){PIXSEL[i]=!!on;pixPintarBarra();}
@@ -1632,7 +1635,7 @@
      for 'avulso' o campanhas-cron nunca casa com o dia da semana e nada sai sozinho — a tela tem de
      dizer isso com todas as letras, senao alguem assume que ja esta rodando. */
   function pixRelogio(cod){
-    getJSON(SUPA+"/rest/v1/campanhas?codigo=eq."+cod+"&select=cadencia,filtros_padrao",function(d){
+    getJSON(SUPA+"/rest/v1/campanha_config?codigo=eq."+cod+"&select=cadencia,filtros_padrao",function(d){
       var box=$("pix-relogio");if(!box||!d||!d.length)return;
       var c=d[0],cad=c.cadencia||[],f=c.filtros_padrao||{};
       var manual=(cad.length===0||(cad.length===1&&cad[0]==="avulso"));
@@ -1722,6 +1725,312 @@
         PIXMSG[i]={lista:lst,rep:rn,instancia:inst,camp:"cobranca_recusa_rep",tipo:"recusa"};});
       h+='<div id="pix-fora"></div>';
       $("kaFlow").innerHTML=h;pixRelogio(cod);pixAtuCarimbo();pixPintarBarra();pixFora("recusa_pedido",jan);});}
+  /* ===== NITRON CONECTA (09/11) — consultoria presencial na fabrica =====
+     Bate-papo/consultoria interna na Nitron, para clientes de representante E para os proprios
+     representantes. Como e PRESENCIAL, so entra cliente a ate `conecta_raio_km` km da fabrica
+     (Rua Urucui 600, Guarulhos — lat/lng em campanhas.filtros_padrao, nao em constante).
+     A tela e uma ARVORE: representante -> clientes dele dentro do raio. Serve para o gestor ver de
+     quem e cada cliente antes de convidar.
+     DUAS COMUNICACOES DIFERENTES, e por isso duas caixas e duas selecoes:
+       - ao CLIENTE: sai pela instancia da NINA (`conecta_inst_cliente`), nao pela assistente do rep.
+         O convite e da fabrica, nao do representante.
+       - ao REPRESENTANTE: sai pela assistente dele no Sankhya, como toda campanha ao rep.
+     Ritmo: a fila ja limita 2 Zaptos/min por instancia (fila_config.wpp_max_min). Entao 941 clientes
+     numa instancia so sao ~8h de disparo. A tela DIZ isso antes, em vez de deixar o gestor descobrir
+     olhando a fila nao andar. Nada e enviado de uma vez: enfileira e a fila solta no ritmo dela.
+     CNPJ: vai na lista AO REPRESENTANTE, em linha propria (regra de 28/08). Na mensagem ao CLIENTE
+     nao vai — ali seria o documento dele mesmo. */
+  var CNC={},CNR={},CNLIN=[],CNREPS=[],CNPAR={},CNCOD="nitronconecta",CNCOB=null,CNCAD=null,CNVAGAS=[],CNINS=[];
+  var CNTPL_CLI="Ola [NOME]!\n\nAqui e a Nitron. Estamos abrindo uma consultoria presencial aqui na fabrica, em Guarulhos — um bate-papo para falar de mix, giro e o que esta vendendo na sua regiao.\n\nComo e presencial, estamos convidando quem esta perto: voce esta a cerca de [KM] km da gente, em [CIDADE].\n\nSeu representante [REP] tambem foi convidado.\n\nGaranta sua vaga aqui: [LINK]";
+  var CNTPL_REP="Ola [NOME]!\n\nEstamos montando uma consultoria presencial aqui na fabrica e queremos voce junto, com os seus clientes que estao perto de Guarulhos.\n\nDa sua carteira, [QTD] cliente(s) estao dentro do raio:\n\n[LISTA]\nO convite para eles sai daqui, pelo numero da Nitron — voce nao precisa fazer nada. So queremos que voce saiba quem foi chamado, e se quiser comentar com algum deles, melhor ainda.\n\nAlguma observacao antes de mandarmos?\n\nA pagina de inscricao e esta: [LINK]";
+  function cnKm(v){return (v==null?"?":String(v).replace(".",","));}
+  function cnTempo(min){if(min<1)return "menos de 1 min";if(min<60)return min+" min";
+    var h=Math.floor(min/60),m=min%60;return h+"h"+(m?(m<10?"0":"")+m:"");}
+  function cnConta(){var c=0,r=0,k;for(k in CNC)if(CNC[k])c++;for(k in CNR)if(CNR[k])r++;return {cli:c,rep:r};}
+  function abrirConecta(cod){
+    CNCOD=cod;CNC={};CNR={};CNLIN=[];CNREPS=[];CNCOB=null;CNCAD=null;
+    $("op-nome").textContent="Nitron Conecta — consultoria presencial";
+    $("op-meta").textContent="lendo…";
+    $("op-kpis").innerHTML="";var ai=$("atuInfo");if(ai)ai.textContent="";
+    $("kaFlow").innerHTML='<div class="note" style="padding:16px">montando a arvore de representantes…</div>';
+    getJSON(SUPA+"/rest/v1/campanha_config?select=cadencia,filtros_padrao&codigo=eq."+cod,function(cc){
+      CNCAD=(cc&&cc[0])?cc[0]:null;
+      getJSON(SUPA+"/rest/v1/nitronconecta_cobertura?select=*",function(cb){
+        CNCOB=(cb&&cb[0])?cb[0]:null;
+        getJSON(SUPA+"/rest/v1/conecta_vagas?select=*",function(vg){
+        CNVAGAS=(Array.isArray(vg)?vg:[]);
+        getJSON(SUPA+"/rest/v1/conecta_inscricao_painel?select=*&order=criado_em.desc",function(ins){
+        CNINS=(Array.isArray(ins)?ins:[]);
+        getJSON(SUPA+"/rest/v1/nitronconecta_apto?select=*&order=rep.asc,km.asc",function(d){
+          if(!d||d.erro||!Array.isArray(d)){$("kaFlow").innerHTML='<div class="note" style="padding:16px;color:#c0392b">erro ao ler nitronconecta_apto</div>';return;}
+          CNLIN=d;
+          var fp=(CNCAD&&CNCAD.filtros_padrao)||{};
+          CNPAR={inst_cliente:(d[0]&&d[0].instancia_cliente)||"Nina",raio:(d[0]&&d[0].raio_km)||(CNCOB&&CNCOB.raio_km)||60,
+                 form_url:fp.conecta_form_url||"",vagas_dia:Number(fp.conecta_vagas_dia||15),horario:fp.conecta_horario||"",local:fp.conecta_local||""};
+          var por={};
+          d.forEach(function(x){var k=String(x.codvend);
+            if(!por[k]){por[k]={codvend:x.codvend,rep:x.rep,assist:x.assistente_rep,cli:[],fat:0};CNREPS.push(por[k]);}
+            por[k].cli.push(x);por[k].fat+=Number(x.fat12m||0);});
+          CNREPS.sort(function(a,b){return b.cli.length-a.cli.length;});
+          cnRender();
+        });});});
+      });
+    });
+  }
+  function cnRender(){
+    var n=cnConta(),fat=0;CNLIN.forEach(function(x){fat+=Number(x.fat12m||0);});
+    $("op-meta").textContent="Clientes a ate "+CNPAR.raio+" km da fabrica (Guarulhos) · convite ao CLIENTE sai pela instancia "+CNPAR.inst_cliente+" · ao REPRESENTANTE pela assistente dele (Sankhya)";
+    $("op-kpis").innerHTML='<div class="kpi"><div class="n">'+CNLIN.length+'</div><div class="l">clientes no raio</div></div>'
+      +'<div class="kpi"><div class="n">'+CNREPS.length+'</div><div class="l">representantes</div></div>'
+      +'<div class="kpi s"><div class="n">'+brl(fat)+'</div><div class="l">faturamento 12m</div></div>';
+    var h="";
+    /* 0) A AGENDA — 3 dias, 15 empresas por dia. Quem conta a vaga e o banco (trava por dia dentro
+       da transacao); aqui so se mostra. O numero de vagas e as datas moram em filtros_padrao. */
+    if(CNVAGAS.length){
+      h+='<div class="kaCard" style="background:#f3f8ff;border-color:#cfe0f5">'
+        +'<div class="kaHead" style="cursor:default"><b>Agenda — inscrições pelo formulário</b>'
+        +'<span class="kaTag">'+CNPAR.vagas_dia+' empresas/dia</span>'
+        +(CNPAR.horario?('<span class="kaTag">'+esc(CNPAR.horario)+'</span>'):'')
+        +'<span style="flex:1"></span>'
+        +(CNPAR.form_url?('<a class="kaTag" href="'+esc(CNPAR.form_url)+'" target="_blank" style="text-decoration:none">abrir formulário ↗</a>')
+                        :'<span class="kaTag" style="background:#fff3e0;color:#b7791f">link do formulário não cadastrado — grave em filtros_padrao.conecta_form_url</span>')
+        +'</div>'
+        +'<div style="display:flex;gap:10px;flex-wrap:wrap;padding:8px 0">';
+      CNVAGAS.forEach(function(v){
+        var cor=v.restantes===0?"#c0392b":(v.restantes<=3?"#b7791f":"#1a7f4b");
+        h+='<div style="flex:1;min-width:150px;border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:#fff">'
+          +'<div style="font-size:17px;font-weight:800">'+String(v.dia).split("-").reverse().slice(0,2).join("/")+'</div>'
+          +'<div style="font-size:12px;color:#6a7f78">'+v.ocupadas+' de '+v.vagas_total+' empresas</div>'
+          +'<div style="font-size:12.5px;font-weight:700;color:'+cor+'">'+(v.restantes===0?"esgotado":(v.restantes+" vaga"+(v.restantes===1?"":"s")))+'</div>'
+          +'<div style="font-size:12px;color:#6a7f78">'+v.pessoas+' pessoa'+(v.pessoas===1?"":"s")+' p/ comida e bebida</div>'
+          +'</div>';
+      });
+      h+='</div>';
+      if(CNINS.length){
+        h+='<div style="max-height:240px;overflow:auto;border-top:1px dashed #e6eeea;padding-top:6px">';
+        CNINS.forEach(function(i){
+          var ac=(i.acompanhantes&&i.acompanhantes.length)?(" + "+i.acompanhantes.join(", ")):"";
+          h+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:3px 0;font-size:13px">'
+            +'<span class="kaTag">'+String(i.data_escolhida||"").split("-").reverse().slice(0,2).join("/")+'</span>'
+            +'<b>'+esc(i.razao_social||i.empresa||"")+'</b>'
+            +'<span style="color:#6a7f78">'+esc(i.nome||"")+esc(ac)+'</span>'
+            +'<span class="kaTag">'+i.pessoas+' pessoa'+(i.pessoas===1?"":"s")+'</span>'
+            +(i.rep?('<span class="kaTag">'+esc(i.rep)+'</span>'):(i.representante?('<span class="kaTag">'+esc(i.representante)+'</span>'):''))
+            +'</div>';
+        });
+        h+='</div>';
+      }else{
+        h+='<div style="font-size:13px;color:#6a7f78;padding-top:4px">nenhuma inscrição ainda.</div>';
+      }
+      h+='</div>';
+    }
+    /* 1) O que esta fora, e por que — antes de qualquer botao. */
+    if(CNCOB){
+      h+='<div class="note" style="margin:0 0 10px;padding:10px 12px;background:#fff8e6;border:1px solid #f0d9a0;border-radius:8px">'
+        +'<b>Raio de '+CNPAR.raio+' km</b> medido do CEP da loja ate a fabrica. '
+        +'Da base de '+CNCOB.base_total+' clientes, <b>'+CNCOB.no_raio+'</b> estao dentro. '
+        +'<b>'+CNCOB.sem_cep_geo+'</b> ficam de fora por <b>nao ter CEP geocodificado</b> — nao e que estejam longe, e que nao da para medir. '
+        +'<br><b>Atenção à distância:</b> '+(CNCOB.km_pela_cidade||0)+' dos '+CNCOB.no_raio+' usam a coordenada do <b>centro da cidade</b>, não do CEP da loja — o <code>cep_geo</code> só tem coordenada própria para parte dos CEPs. Esses aparecem como "~N km (cidade)". Por isso todo cliente de Guarulhos marca ~0 km. Para o corte de '+CNPAR.raio+' km serve; para dizer a distância exata da porta, não.'
+        +'<br>O raio esta em <code>campanhas.filtros_padrao.conecta_raio_km</code>: muda por UPDATE, sem deploy.'
+        +'</div>';
+    }
+    /* 2) Relogio — le a propria campanha, nao uma constante (mesma convencao do pixRelogio). */
+    var cad=(CNCAD&&CNCAD.cadencia)||[],avulso=(cad.length===1&&cad[0]==="avulso");
+    h+='<div class="note" style="margin:0 0 10px;padding:9px 12px;border-radius:8px;'
+      +(avulso?'background:#fff8e6;border:1px solid #f0d9a0':'background:#eaf7ef;border:1px solid #bfe3cd')+'">'
+      +(avulso?'⏱ <b>Disparo automatico: DESLIGADO.</b> Hoje so sai clicando no botao.'
+              :'⏱ <b>Disparo automatico LIGADO</b> — cadencia: '+esc(cad.join(", ")))+'</div>';
+    /* 3) Caixa de envio. */
+    h+='<div class="kaCard" style="background:#f7fbf9">'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'
+      +'<button class="btn" onclick="cnTudo(1)">marcar todos os clientes</button>'
+      +'<button class="btn" onclick="cnTudo(0)">limpar clientes</button>'
+      +'<button class="btn" onclick="cnTudoRep(1)">marcar todos os reps</button>'
+      +'<button class="btn" onclick="cnTudoRep(0)">limpar reps</button>'
+      +'</div>'
+      +'<div id="cn-resumo" style="margin:4px 0 10px"></div>'
+      +'<div style="font-size:12px;color:#6a7f78;margin-bottom:4px"><b>Convite ao CLIENTE</b> — sai pela instancia '+esc(CNPAR.inst_cliente)+'. Marcadores: [NOME] [CIDADE] [KM] [REP]. <b>Sem CNPJ</b> (ali seria o documento dele mesmo).</div>'
+      +'<textarea id="cn-tpl-cli" style="width:100%;min-height:150px;font:13px/1.5 ui-monospace,monospace;padding:9px;border:1px solid var(--line);border-radius:8px">'+esc(CNTPL_CLI)+'</textarea>'
+      +'<div style="font-size:12px;color:#6a7f78;margin:10px 0 4px"><b>Convite ao REPRESENTANTE</b> — sai pela assistente dele. Marcadores: [NOME] [QTD] [LISTA]. A lista vai com <b>CNPJ em linha propria</b> (regra de 28/08) e e montada em codigo.</div>'
+      +'<textarea id="cn-tpl-rep" style="width:100%;min-height:130px;font:13px/1.5 ui-monospace,monospace;padding:9px;border:1px solid var(--line);border-radius:8px">'+esc(CNTPL_REP)+'</textarea>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:9px">'
+      +'<button class="btn" onclick="cnPrevia(\'cli\')">👁 previa do cliente</button>'
+      +'<button class="btn" onclick="cnPrevia(\'rep\')">👁 previa do rep</button>'
+      +'<button class="btn big ok" id="cn-btn" onclick="cnEnviar()">📨 Enfileirar convites</button>'
+      +'</div>'
+      +'<div id="cn-previa" style="white-space:pre-wrap;font:13px/1.6 ui-monospace,monospace;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px;margin-top:9px;display:none"></div>'
+      +'<div id="cn-st" style="margin-top:8px;font-size:13px"></div>'
+      +'</div>';
+    /* 4) A arvore: representante -> clientes. */
+    CNREPS.forEach(function(r){
+      var marc=0;r.cli.forEach(function(c){if(CNC[c.codparc])marc++;});
+      h+='<div class="kaCard">'
+        +'<div class="kaHead">'
+        +'<label style="display:flex;align-items:center;gap:7px;cursor:pointer"><input type="checkbox" '+(CNR[r.codvend]?"checked":"")+' onchange="cnMarcarRep('+r.codvend+',this.checked)"><b>'+esc(r.rep||("codvend "+r.codvend))+'</b></label>'
+        +'<span class="kaTag">'+r.cli.length+' cliente'+(r.cli.length>1?"s":"")+' no raio</span>'
+        +'<span class="kaTag">'+brl(r.fat)+'</span>'
+        +(r.assist?('<span class="kaTag">assistente: '+esc(r.assist)+'</span>')
+                  :'<span class="kaTag" style="background:#fdecea;color:#c0392b">sem assistente no Sankhya — Zaptos ao rep nao sai</span>')
+        +'<span style="flex:1"></span>'
+        +'<button class="btn" onclick="cnTudoDoRep('+r.codvend+',1)">marcar os '+r.cli.length+'</button>'
+        +'<button class="btn" onclick="cnTudoDoRep('+r.codvend+',0)">limpar</button>'
+        +'<span class="kaTag" id="cn-mc-'+r.codvend+'">'+marc+' marcado'+(marc===1?"":"s")+'</span>'
+        +'</div>';
+      r.cli.forEach(function(c){
+        var av=[];
+        if(c.bloqueado)av.push('<span class="kaTag" style="background:#fdecea;color:#c0392b">bloqueado no Sankhya</span>');
+        if(c.inadimplente)av.push('<span class="kaTag" style="background:#fff3e0;color:#b7791f">inadimplente</span>');
+        if(c.atendimento_direto)av.push('<span class="kaTag" style="background:#eef2f7;color:#5d7169">atendimento direto — sem rep de rua</span>');
+        h+='<div style="display:flex;align-items:center;gap:8px;padding:4px 0 4px 18px;border-top:1px dashed #e6eeea;flex-wrap:wrap">'
+          +'<label style="display:flex;align-items:center;gap:7px;cursor:pointer;flex:1;min-width:260px">'
+          +'<input type="checkbox" id="cnc-'+c.codparc+'" '+(CNC[c.codparc]?"checked":"")+' onchange="cnMarcarCli('+c.codparc+','+r.codvend+',this.checked)">'
+          +'<span>'+esc(c.cliente||"")+'</span></label>'
+          +'<span class="kaTag"'+(c.km_fonte==="cidade"?' title="distância do CENTRO DA CIDADE — o CEP desta loja não tem coordenada própria" style="opacity:.75"':'')+'>'+(c.km_fonte==="cidade"?"~":"")+cnKm(c.km)+' km'+(c.km_fonte==="cidade"?" (cidade)":"")+'</span>'
+          +'<span class="kaTag">'+esc((c.cidade||"")+(c.uf?("/"+c.uf):""))+'</span>'
+          +'<span class="kaTag">'+brl(Number(c.fat12m||0))+'</span>'
+          +av.join("")
+          +'</div>';
+      });
+      h+='</div>';
+    });
+    $("kaFlow").innerHTML=h;
+    cnResumo();
+  }
+  function cnResumo(){
+    var n=cnConta(),el=$("cn-resumo");if(!el)return;
+    /* O ritmo nao e escolha da tela: a fila solta 2 Zaptos/min POR INSTANCIA
+       (fila_config.wpp_max_min). Os clientes vao todos pela mesma instancia, entao o tempo deles e
+       N/2 minutos — e e isso que precisa estar na cara antes de clicar. Os reps se dividem entre as
+       assistentes, entao vale a maior fila. */
+    var minCli=Math.ceil(n.cli/2);
+    var porInst={};CNREPS.forEach(function(r){if(!CNR[r.codvend])return;var k=r.assist||"(sem)";porInst[k]=(porInst[k]||0)+1;});
+    var maxR=0;for(var k in porInst)if(porInst[k]>maxR)maxR=porInst[k];
+    var minRep=Math.ceil(maxR/2);
+    var txt='<b>'+n.cli+'</b> cliente'+(n.cli===1?"":"s")+' e <b>'+n.rep+'</b> representante'+(n.rep===1?"":"s")+' marcado'+(n.rep===1?"":"s")+'.';
+    if(n.cli)txt+=' Clientes: ~<b>'+cnTempo(minCli)+'</b> de disparo pela instancia '+esc(CNPAR.inst_cliente)+' (2 Zaptos/min).';
+    if(n.rep)txt+=' Reps: ~<b>'+cnTempo(minRep)+'</b> (dividido entre as assistentes).';
+    if(n.cli>200)txt+=' <span style="color:#b7791f">Lote grande — a fila solta no ritmo dela, nada sai de uma vez.</span>';
+    el.innerHTML=txt||"nada marcado";
+  }
+  function cnMarcarCli(codparc,codvend,v){CNC[codparc]=!!v;var r=null;
+    CNREPS.forEach(function(x){if(x.codvend===codvend)r=x;});
+    if(r){var m=0;r.cli.forEach(function(c){if(CNC[c.codparc])m++;});
+      var e=$("cn-mc-"+codvend);if(e)e.textContent=m+" marcado"+(m===1?"":"s");}
+    cnResumo();}
+  function cnMarcarRep(codvend,v){CNR[codvend]=!!v;cnResumo();}
+  function cnTudo(v){CNLIN.forEach(function(c){CNC[c.codparc]=!!v;});cnRender();}
+  function cnTudoRep(v){CNREPS.forEach(function(r){CNR[r.codvend]=!!v;});cnRender();}
+  function cnTudoDoRep(codvend,v){CNREPS.forEach(function(r){if(r.codvend===codvend)r.cli.forEach(function(c){CNC[c.codparc]=!!v;});});cnRender();}
+  function cnMontarCli(c,tpl){
+    return String(tpl||"").replace(/\[NOME\]/g,String(c.cliente||""))
+      .replace(/\[CIDADE\]/g,String((c.cidade||"")+(c.uf?("/"+c.uf):"")))
+      .replace(/\[KM\]/g,cnKm(c.km))
+      .replace(/\[REP\]/g,String(c.rep||""))
+      .replace(/\[LINK\]/g,CNPAR.form_url||"(link do formulário ainda não cadastrado)");
+  }
+  function cnMontarRep(r,tpl){
+    /* A lista entra em CODIGO, com CNPJ em linha propria — nunca escrita por IA e nunca pela mao. */
+    var lista="";
+    r.cli.forEach(function(c){if(!CNC[c.codparc])return;
+      lista+="• "+String(c.cliente||"")+"\n";
+      var dc=pixDoc(c.cnpj);if(dc)lista+="  "+dc+"\n";
+      lista+="  "+String(c.cidade||"")+" — "+(c.km_fonte==="cidade"?"~":"")+cnKm(c.km)+" km da fabrica\n";});
+    var q=0;r.cli.forEach(function(c){if(CNC[c.codparc])q++;});
+    if(!lista){lista="(nenhum cliente marcado)\n";}
+    return String(tpl||"").replace(/\[NOME\]/g,String(r.rep||""))
+      .replace(/\[QTD\]/g,String(q))
+      .replace(/\[LISTA\]/g,lista);
+  }
+  function cnPrevia(tipo){
+    var box=$("cn-previa");if(!box)return;box.style.display="";
+    if(tipo==="cli"){
+      var alvo=null;CNLIN.forEach(function(c){if(!alvo&&CNC[c.codparc])alvo=c;});
+      if(!alvo){box.textContent="marque ao menos um cliente";return;}
+      box.textContent="como vai sair — "+(alvo.cliente||"")+" (primeiro marcado), pela instancia "+CNPAR.inst_cliente+"\n\n"+cnMontarCli(alvo,$("cn-tpl-cli").value);
+      return;
+    }
+    var r=null;CNREPS.forEach(function(x){if(!r&&CNR[x.codvend])r=x;});
+    if(!r){box.textContent="marque ao menos um representante";return;}
+    box.textContent="como vai sair — "+(r.rep||"")+" (primeiro marcado), pela assistente "+(r.assist||"(sem assistente)")+"\n\n"+cnMontarRep(r,$("cn-tpl-rep").value);
+  }
+  /* Busca de contatos em blocos: 941 codparcs numa URL so nao cabe. */
+  function cnContatos(pub,chaves,ordem,cb){
+    var acc={},i=0,PASSO=120;
+    (function passo(){
+      if(i>=chaves.length)return cb(acc,null);
+      var bloco=chaves.slice(i,i+PASSO);i+=PASSO;
+      var st=$("cn-st");if(st)st.textContent="buscando contatos "+Math.min(i,chaves.length)+"/"+chaves.length+"…";
+      getJSON(SUPA+"/functions/v1/cobranca-contatos?publico="+pub+(ordem?("&ordem="+ordem):"")
+        +"&"+(pub==="rep"?"codvends=":"codparcs=")+bloco.join(","),function(d){
+        if(!d||d.ok!==true)return cb(acc,(d&&d.erro)||"falha ao buscar contatos");
+        for(var k in (d.itens||{}))acc[k]=d.itens[k];
+        passo();
+      });
+    })();
+  }
+  /* Enfileira em blocos: um POST de 941 mensagens passaria de 1 MB. A trava de duplicidade do
+     fila-enfileirar e por (campanha,canal,destino), entao dividir em blocos nao a enfraquece. */
+  function cnEnfileirar(itens,cb){
+    var i=0,PASSO=250,total=0;
+    (function passo(){
+      if(i>=itens.length)return cb(total,null);
+      var bloco=itens.slice(i,i+PASSO);i+=PASSO;
+      var st=$("cn-st");if(st)st.textContent="enfileirando "+Math.min(i,itens.length)+"/"+itens.length+"…";
+      postJSON(SUPA+"/functions/v1/fila-enfileirar",{itens:bloco},function(r){
+        if(!r||!r.ok)return cb(total,(r&&r.erro)||"falha ao enfileirar");
+        total+=Number(r.enfileirados||0);passo();
+      });
+    })();
+  }
+  function cnEnviar(){
+    var st=$("cn-st"),n=cnConta();
+    if(!n.cli&&!n.rep){st.innerHTML='<b style="color:#c0392b">nada marcado</b>';return;}
+    var minCli=Math.ceil(n.cli/2);
+    if(!confirm("Enfileirar convites?\n\n"+n.cli+" cliente(s) pela instancia "+CNPAR.inst_cliente+" (~"+cnTempo(minCli)+" de disparo)\n"+n.rep+" representante(s) pelas assistentes\n\nA fila solta no ritmo de 2 Zaptos/min por instancia. Nada sai de uma vez."))return;
+    var btn=$("cn-btn");if(btn)btn.disabled=true;
+    var tplC=$("cn-tpl-cli").value,tplR=$("cn-tpl-rep").value,falhas=[],itens=[];
+    var cps=[],cvs=[];
+    CNLIN.forEach(function(c){if(CNC[c.codparc]&&cps.indexOf(String(c.codparc))<0)cps.push(String(c.codparc));});
+    CNREPS.forEach(function(r){if(CNR[r.codvend])cvs.push(String(r.codvend));});
+    /* ordem=convite: PRINCIPAL -> COMPRAS -> CRM -> FINANCEIRO. Convite vai para quem DECIDE,
+       nao para quem paga — o contrario da cobranca. */
+    cnContatos("cliente",cps,"convite",function(mapC,errC){
+      if(errC){st.innerHTML='<b style="color:#c0392b">✗ '+esc(errC)+'</b>';if(btn)btn.disabled=false;return;}
+      CNLIN.forEach(function(c){
+        if(!CNC[c.codparc])return;
+        var it=mapC[String(c.codparc)]||{contatos:[]},cts=it.contatos||[],texto=cnMontarCli(c,tplC);
+        if(!cts.length){falhas.push((c.cliente||c.codparc)+": sem contato");return;}
+        cts.filter(function(x){return x.preferido;}).forEach(function(ct){
+          if(ct.canal==="email"){itens.push({campanha:CNCOD,publico:"cliente",canal:"email",email:ct.valor,assunto:"Nitron Conecta — convite para a consultoria presencial",corpo:texto,nome:c.cliente,codparc:c.codparc});return;}
+          if(foneCel(ct.valor)===false){falhas.push((c.cliente||c.codparc)+": "+ct.valor+" e fixo, sem WhatsApp");return;}
+          /* AQUI esta o ponto do pedido: o convite ao cliente sai pela instancia da NINA, nao pela
+             assistente do representante. Quem convida e a fabrica. */
+          itens.push({campanha:CNCOD,publico:"cliente",canal:"whatsapp",fone:ct.valor,instancia:CNPAR.inst_cliente,corpo:texto,nome:c.cliente,codparc:c.codparc});
+        });
+      });
+      cnContatos("rep",cvs,"",function(mapR,errR){
+        if(errR)falhas.push("contatos de rep: "+errR);
+        CNREPS.forEach(function(r){
+          if(!CNR[r.codvend])return;
+          var it=mapR[String(r.codvend)]||{contatos:[]},cts=it.contatos||[],texto=cnMontarRep(r,tplR);
+          if(!cts.length){falhas.push((r.rep||r.codvend)+": sem contato");return;}
+          cts.filter(function(x){return x.preferido;}).forEach(function(ct){
+            if(ct.canal==="email"){itens.push({campanha:CNCOD,publico:"rep",canal:"email",email:ct.valor,assunto:"Nitron Conecta — seus clientes convidados",corpo:texto,nome:r.rep,codvend:r.codvend});return;}
+            if(!r.assist){falhas.push((r.rep||r.codvend)+": Zaptos sem assistente no Sankhya (e-mail vai)");return;}
+            if(foneCel(ct.valor)===false){falhas.push((r.rep||r.codvend)+": "+ct.valor+" e fixo, sem WhatsApp");return;}
+            itens.push({campanha:CNCOD,publico:"rep",canal:"whatsapp",fone:ct.valor,instancia:r.assist,corpo:texto,nome:r.rep,codvend:r.codvend});
+          });
+        });
+        var rodape=falhas.length?('<div style="margin-top:6px;color:#b7791f;font-size:12px">'+esc(falhas.join(" · "))+'</div>'):'';
+        if(!itens.length){st.innerHTML='<b style="color:#c0392b">✗ nenhum contato encontrado</b>'+rodape;if(btn)btn.disabled=false;return;}
+        cnEnfileirar(itens,function(tot,errE){
+          if(btn)btn.disabled=false;
+          st.innerHTML=errE?('<b style="color:#c0392b">✗ '+esc(errE)+'</b> — '+tot+' ja entraram'+rodape)
+                           :("<b style='color:#1a7f4b'>✓ "+tot+" na fila</b> · sai a 2 Zaptos/min por instancia"+rodape);
+        });
+      });
+    });
+  }
   function abrirCobranca(cod){var jur=(cod==="cobranca_juridico");
     $("op-nome").textContent=jur?"Jurídico — vencidos +180 dias":"Cobrança — títulos vencidos";
     $("op-meta").textContent=jur?"Alerta interno · encaminhar ao jurídico/financeiro · sem empurrão comercial ao cliente":"Duplicata vencida ≤180d · empurra cliente (2ª via) e rep (não faturar) · não expõe outros títulos";

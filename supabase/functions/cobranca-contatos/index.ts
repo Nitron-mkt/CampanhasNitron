@@ -1,4 +1,4 @@
-// cobranca-contatos (v3) — so os CONTATOS de um representante ou de um cliente. Sem IA, sem
+// cobranca-contatos (v4) — so os CONTATOS de um representante ou de um cliente. Sem IA, sem
 // audiencia, sem consolidacao por matriz.
 //
 // POR QUE ELA EXISTE. Os quadros do PIX antecipado e do pedido recusado pediam os contatos ao
@@ -37,6 +37,14 @@
 // da fila (rank 6, `ultimo_recurso: true`) e so sao escolhidos quando nao ha mais nada naquele canal.
 // A v2 os jogava fora, o que em cliente sem outro contato virava "sem contato" — pior do que mandar
 // para o telefone da expedicao, que pelo menos e a empresa certa.
+//
+// v4 (09/11) — ?ordem=convite. A funcao deixou de ser so de cobranca: o Nitron Conecta convida o
+// cliente para uma consultoria presencial, e ali quem interessa e QUEM DECIDE ir, nao quem paga.
+// Entao a ordem muda de dono:
+//   ordem=cobranca (padrao) FINANCEIRO > PRINCIPAL > COMPRAS > CRM
+//   ordem=convite            PRINCIPAL > COMPRAS > CRM > FINANCEIRO
+// Em ambas, expedicao/fiscal ficam por ultimo. A FONTE e os ROTULOS sao os mesmos nos dois casos —
+// so a prioridade muda, para a tela e o disparo nunca lerem cadastros diferentes.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, content-type, apikey", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };
 const j = (o: unknown, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
@@ -44,10 +52,14 @@ const srvKey = () => Deno.env.get("SRV_JWT") || Deno.env.get("SUPABASE_SERVICE_R
 const digits = (s: any) => String(s || "").replace(/\D/g, "");
 // "Expedicao" e "EXPEDIÇÃO" sao a mesma funcao; o cadastro tem as duas grafias.
 const chaveFuncao = (f: any) => String(f || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
-const RANK: Record<string, number> = { FINANCEIRO: 1, PRINCIPAL: 2, COMPRAS: 3, CRM: 4 };
+const ORDENS: Record<string, Record<string, number>> = {
+  cobranca: { FINANCEIRO: 1, PRINCIPAL: 2, COMPRAS: 3, CRM: 4 },
+  convite:  { PRINCIPAL: 1, COMPRAS: 2, CRM: 3, FINANCEIRO: 4 },
+};
 // Nao sao descartados: vao para o fim da fila e so entram se nao houver mais nada (ver v3).
 const ULTIMO_RECURSO = new Set(["EXPEDICAO", "FISCAL"]);
-const rankDe = (f: any) => (ULTIMO_RECURSO.has(chaveFuncao(f)) ? 6 : (RANK[chaveFuncao(f)] || 5));
+const rankDe = (f: any, ordem: Record<string, number>) =>
+  (ULTIMO_RECURSO.has(chaveFuncao(f)) ? 6 : (ordem[chaveFuncao(f)] || 5));
 
 // Copia literal do campanhas-cobranca: mesma deduplicacao (o mesmo numero com e sem +55 e um so).
 function pushCanal(out: any[], seen: any, canal: string, valor: any, funcao: string, origem: string) {
@@ -103,7 +115,8 @@ Deno.serve(async (req) => {
     } else {
       const cods = nums(p, "codparc", "codparcs");
       if (!cods.length) return j({ ok: false, erro: "informe codparc" });
-      // nada e descartado por funcao; a funcao so decide a ORDEM (ver v3)
+      // nada e descartado por funcao; a funcao so decide a ORDEM (ver v3 e v4)
+      const ordem = ORDENS[String(p.get("ordem") || "cobranca")] || ORDENS.cobranca;
       const [sc, gc] = await Promise.all([
         sb.from("snap_contato").select("codparc,funcao,nome,fone,email").in("codparc", cods),
         sb.from("ghl_contato").select("codparc,nome,fone,email").in("codparc", cods),
@@ -117,7 +130,7 @@ Deno.serve(async (req) => {
       (sc.data || []).forEach((ct: any) => {
         const k = String(ct.codparc); if (!cand[k]) return;
         if (!nomes[k] && ct.nome) nomes[k] = ct.nome;
-        const f = ct.funcao || "Contato", r = rankDe(f);
+        const f = ct.funcao || "Contato", r = rankDe(f, ordem);
         [["whatsapp", ct.fone], ["email", ct.email]].forEach((par: any) => {
           if (!String(par[1] || "").trim()) return;
           cand[k].push({ canal: par[0], valor: par[1], funcao: f, origem: "Sankhya", rank: r });
@@ -126,8 +139,8 @@ Deno.serve(async (req) => {
       (gc.data || []).forEach((g: any) => {
         const k = String(g.codparc); if (!cand[k]) return;
         if (!nomes[k] && g.nome) nomes[k] = g.nome;
-        cand[k].push({ canal: "whatsapp", valor: g.fone, funcao: "CRM", origem: "CRM", rank: RANK.CRM });
-        cand[k].push({ canal: "email", valor: g.email, funcao: "CRM", origem: "CRM", rank: RANK.CRM });
+        cand[k].push({ canal: "whatsapp", valor: g.fone, funcao: "CRM", origem: "CRM", rank: ordem.CRM });
+        cand[k].push({ canal: "email", valor: g.email, funcao: "CRM", origem: "CRM", rank: ordem.CRM });
       });
       cods.forEach((c) => {
         const k = String(c);

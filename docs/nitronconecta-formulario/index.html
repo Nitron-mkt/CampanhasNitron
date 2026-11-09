@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nitron Conecta — inscrição</title>
+<!--
+  NITRON CONECTA — página de inscrição (referência para o desenvolvedor)
+  ---------------------------------------------------------------------
+  Esta página é FUNCIONAL: pode ser publicada como está ou reestilizada à vontade.
+  O que NÃO pode mudar é o contrato com a API (ver README.md ao lado).
+
+  Regras que já estão implementadas aqui e não devem ser removidas:
+    1. Datas, horário, local, vagas e o TEXTO da chamada vêm do GET — não estão escritos no HTML.
+       O gestor muda qualquer um deles no banco, sem pedir deploy.
+    2. 15 EMPRESAS por dia. A página mostra quantas sobraram e desabilita o dia lotado, mas quem
+       garante o limite é o banco (trava por dia dentro da transação). Nunca confie só na tela.
+    3. O número de participantes é CONTADO PELOS NOMES, não digitado à parte. Campo de quantidade
+       separado dos nomes sempre acaba discordando dos nomes ("5 pessoas", 2 nomes) — e esse número
+       vira comida e bebida encomendada.
+    4. Erro da API chega como HTTP 200 com ok:false. Trate pelo corpo, nunca pelo status.
+-->
+<style>
+  :root{
+    --ink:#14211d; --soft:#5d7169; --line:#dfe8e4; --bg:#f4f8f6; --card:#fff;
+    --nitron:#0f7a46; --nitron-d:#0a5c34; --alerta:#c0392b; --ouro:#b7791f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+  .wrap{max-width:720px;margin:0 auto;padding:18px 16px 56px}
+  .hero{background:linear-gradient(135deg,var(--nitron-d),var(--nitron));color:#fff;
+        border-radius:16px;padding:22px 20px;margin-bottom:16px}
+  .hero .faltam{display:inline-block;background:rgba(255,255,255,.16);border-radius:999px;
+        padding:4px 12px;font-size:12.5px;font-weight:700;letter-spacing:.4px;margin-bottom:10px}
+  .hero h1{margin:0 0 10px;font-size:26px;line-height:1.2;letter-spacing:.5px}
+  .hero p{margin:0 0 10px}
+  .hero b,.hero strong{font-weight:700}
+  .quando{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .quando span{background:rgba(255,255,255,.14);border-radius:8px;padding:6px 10px;font-size:13.5px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px}
+  .card h2{margin:0 0 4px;font-size:16px}
+  .card .sub{margin:0 0 14px;color:var(--soft);font-size:13.5px}
+  label{display:block;font-size:13px;font-weight:600;color:var(--soft);margin:12px 0 4px}
+  input[type=text],input[type=tel],input[type=email],textarea{
+    width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;
+    font:inherit;background:#fff;color:var(--ink)}
+  input:focus,textarea:focus{outline:2px solid var(--nitron);outline-offset:-1px}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .row>div{flex:1;min-width:200px}
+  .erro{color:var(--alerta);font-size:12.5px;margin-top:4px;display:none}
+  .campo.invalido input{border-color:var(--alerta)}
+  .campo.invalido .erro{display:block}
+  /* dias */
+  .dias{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  .dia{flex:1;min-width:150px;border:2px solid var(--line);border-radius:12px;padding:12px;
+       background:#fff;cursor:pointer;text-align:left;font:inherit;color:inherit;transition:.12s}
+  .dia:hover:not(:disabled){border-color:var(--nitron)}
+  .dia.sel{border-color:var(--nitron);background:#eaf7ef}
+  .dia:disabled{opacity:.55;cursor:not-allowed;background:#f6f7f7}
+  .dia .d{font-size:19px;font-weight:800}
+  .dia .s{font-size:12.5px;color:var(--soft);text-transform:capitalize}
+  .dia .v{font-size:12.5px;font-weight:700;margin-top:6px;color:var(--nitron)}
+  .dia .v.poucas{color:var(--ouro)}
+  .dia .v.zero{color:var(--alerta)}
+  /* pessoas */
+  .pessoa{display:flex;gap:8px;align-items:center;margin-top:8px}
+  .pessoa input{flex:1}
+  .pessoa button{border:1px solid var(--line);background:#fff;border-radius:9px;width:40px;height:40px;
+       cursor:pointer;font-size:17px;color:var(--soft)}
+  .total{margin-top:12px;background:#eaf7ef;border:1px solid #bfe3cd;border-radius:10px;
+       padding:10px 12px;font-size:14px}
+  .btn{border:none;border-radius:11px;padding:14px 20px;font:inherit;font-weight:700;cursor:pointer;
+       background:var(--nitron);color:#fff;width:100%;font-size:16px}
+  .btn:disabled{opacity:.55;cursor:default}
+  .add{background:#fff;border:1px dashed var(--line);color:var(--soft);font-weight:600;
+       border-radius:10px;padding:9px 12px;cursor:pointer;margin-top:8px;font:inherit}
+  .st{margin-top:12px;font-size:14px}
+  .ok{background:#eaf7ef;border:1px solid #bfe3cd;border-radius:12px;padding:18px;text-align:center}
+  .ok h2{color:var(--nitron-d);margin:0 0 8px}
+  .carregando{text-align:center;color:var(--soft);padding:40px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="app"><div class="carregando">carregando…</div></div>
+</div>
+
+<script>
+/* ===================== CONFIGURAÇÃO ===================== */
+/* A chave abaixo é a chave PÚBLICA (anon) do projeto — a mesma que já está no painel de campanhas.
+   Peça ao marketing. Ela não dá acesso a estas tabelas: toda a escrita acontece dentro da função,
+   pela chave de serviço, que nunca sai do servidor. */
+var API  = "https://bwbeieumxcuomtrvlqxs.supabase.co/functions/v1/conecta-form";
+var ANON = "COLE_AQUI_A_CHAVE_ANON_PUBLICA";
+
+/* ===================== ESTADO ===================== */
+var CFG = null, DIA = null, ACOMP = [""], ENVIANDO = false;
+var TOKEN = new URLSearchParams(location.search).get("token") || "";
+
+function h(headers) {
+  return Object.assign({ "apikey": ANON, "Authorization": "Bearer " + ANON, "Content-Type": "application/json" }, headers || {});
+}
+function esc(s) {
+  return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+}
+/* O texto vem do banco com **negrito** estilo WhatsApp/markdown — converte sem deixar HTML passar. */
+function textoHTML(t) {
+  return esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/\*(.+?)\*/g, "<b>$1</b>").replace(/\n/g, "<br>");
+}
+function diasAte(iso) {
+  var hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  var p = iso.split("-");
+  return Math.round((new Date(+p[0], +p[1] - 1, +p[2]) - hoje) / 86400000);
+}
+
+/* ===================== CARGA ===================== */
+fetch(API + (TOKEN ? "?token=" + encodeURIComponent(TOKEN) : ""), { headers: h() })
+  .then(function (r) { return r.json(); })
+  .then(function (d) {
+    if (!d || d.ok !== true) throw new Error((d && d.erro) || "falha ao carregar");
+    CFG = d;
+    var abertos = d.dias.filter(function (x) { return x.aberta; });
+    if (abertos.length === 1) DIA = abertos[0].data;   /* um dia só aberto: já vem marcado */
+    render();
+  })
+  .catch(function (e) {
+    document.getElementById("app").innerHTML =
+      '<div class="card"><h2>Não conseguimos carregar a agenda</h2><p class="sub">' + esc(e.message) +
+      '</p><p>Fale com a gente pelo WhatsApp e garantimos sua vaga.</p></div>';
+  });
+
+/* ===================== TELA ===================== */
+function render() {
+  var c = CFG.convite || {};
+  var prox = CFG.dias.length ? diasAte(CFG.dias[0].data) : null;
+  var faltam = prox > 1 ? ("FALTAM " + prox + " DIAS") : (prox === 1 ? "É AMANHÃ" : (prox === 0 ? "É HOJE" : ""));
+
+  var html =
+    '<div class="hero">' +
+      (faltam ? '<div class="faltam">🚨 ' + faltam + ' PARA O ' + esc(CFG.titulo) + '</div>' : '') +
+      '<h1>' + esc(CFG.titulo) + '</h1>' +
+      '<p>' + textoHTML(CFG.texto) + '</p>' +
+      '<div class="quando">' +
+        '<span>📅 ' + CFG.dias.map(function (x) { return x.curto; }).join(" · ") + '</span>' +
+        (CFG.horario ? '<span>⏰ ' + esc(CFG.horario) + '</span>' : '') +
+      '</div>' +
+      (CFG.local ? '<div class="quando"><span>📍 ' + esc(CFG.local) + '</span></div>' : '') +
+    '</div>';
+
+  /* --- dia --- */
+  html +=
+    '<div class="card"><h2>Escolha o dia</h2>' +
+    '<p class="sub">Atendemos ' + CFG.vagas_dia + ' empresas por dia. As vagas aparecem em tempo real.</p>' +
+    '<div class="dias">' +
+    CFG.dias.map(function (x) {
+      var cls = x.restantes === 0 ? "zero" : (x.restantes <= 3 ? "poucas" : "");
+      var txt = x.restantes === 0 ? "esgotado"
+              : (x.restantes === 1 ? "última vaga" : x.restantes + " vagas");
+      return '<button type="button" class="dia' + (DIA === x.data ? ' sel' : '') + '"' +
+             (x.aberta ? '' : ' disabled') + ' onclick="escolher(\'' + x.data + '\')">' +
+             '<div class="d">' + esc(x.curto) + '</div>' +
+             '<div class="s">' + esc(x.semana) + '</div>' +
+             '<div class="v ' + cls + '">' + txt + '</div></button>';
+    }).join("") +
+    '</div><div class="erro" id="err-dia">escolha um dos dias</div></div>';
+
+  /* --- empresa --- */
+  html +=
+    '<div class="card"><h2>Sua empresa</h2>' +
+    '<div class="campo" id="c-razao"><label for="razao">Razão social</label>' +
+      '<input id="razao" type="text" autocomplete="organization" value="' + esc(c.razao_social || "") + '">' +
+      '<div class="erro">informe a razão social</div></div>' +
+    '<div class="campo" id="c-doc"><label for="doc">CNPJ</label>' +
+      '<input id="doc" type="text" inputmode="numeric" placeholder="00.000.000/0000-00" ' +
+      'oninput="mascaraDoc(this)" value="' + esc(c.documento || "") + '">' +
+      '<div class="erro">CNPJ incompleto</div></div>' +
+    '<div class="campo"><label for="rep">Nome do seu representante Nitron</label>' +
+      '<input id="rep" type="text" value="' + esc(c.representante || "") + '" placeholder="se não lembrar, pode deixar em branco"></div>' +
+    '</div>';
+
+  /* --- contato --- */
+  html +=
+    '<div class="card"><h2>Contato principal</h2>' +
+    '<p class="sub">É para esse WhatsApp que mandamos a confirmação e as orientações de chegada.</p>' +
+    '<div class="campo" id="c-nome"><label for="nome">Nome completo</label>' +
+      '<input id="nome" type="text" autocomplete="name" value="' + esc(c.nome || "") + '" oninput="pintarTotal()">' +
+      '<div class="erro">informe o nome do contato principal</div></div>' +
+    '<div class="row">' +
+      '<div class="campo" id="c-fone"><label for="fone">WhatsApp</label>' +
+        '<input id="fone" type="tel" inputmode="numeric" placeholder="(11) 99999-9999" oninput="mascaraFone(this)">' +
+        '<div class="erro">informe um WhatsApp com DDD</div></div>' +
+      '<div class="campo" id="c-email"><label for="email">E-mail</label>' +
+        '<input id="email" type="email" autocomplete="email" placeholder="voce@empresa.com.br">' +
+        '<div class="erro">e-mail inválido</div></div>' +
+    '</div></div>';
+
+  /* --- participantes --- */
+  html +=
+    '<div class="card"><h2>Quem vem com você?</h2>' +
+    '<p class="sub">O almoço e o coffee break são reservados por pessoa, então precisamos do nome de ' +
+    'cada convidado da sua empresa. Se vier só você, é só deixar a lista vazia.</p>' +
+    '<div id="pessoas"></div>' +
+    '<button type="button" class="add" onclick="addPessoa()">+ adicionar pessoa</button>' +
+    '<div class="total" id="total"></div></div>';
+
+  /* --- observação + envio --- */
+  html +=
+    '<div class="card"><label for="obs">Quer nos adiantar algum assunto? (opcional)</label>' +
+      '<textarea id="obs" rows="3" placeholder="alguma dúvida sobre a Reforma Tributária, mix, prazo…"></textarea>' +
+      '<div style="margin-top:14px"><button class="btn" id="enviar" onclick="enviar()">Confirmar minha inscrição</button></div>' +
+      '<div class="st" id="st"></div>' +
+    '</div>';
+
+  document.getElementById("app").innerHTML = html;
+  renderPessoas();
+}
+
+function escolher(d) { DIA = d; render(); }
+
+function renderPessoas() {
+  document.getElementById("pessoas").innerHTML = ACOMP.map(function (v, i) {
+    return '<div class="pessoa">' +
+      '<input type="text" placeholder="Nome do convidado ' + (i + 1) + '" value="' + esc(v) + '" ' +
+      'oninput="ACOMP[' + i + ']=this.value;pintarTotal()">' +
+      '<button type="button" title="remover" onclick="delPessoa(' + i + ')">×</button></div>';
+  }).join("");
+  pintarTotal();
+}
+function addPessoa() { if (ACOMP.length < 19) { ACOMP.push(""); renderPessoas(); } }
+function delPessoa(i) { ACOMP.splice(i, 1); if (!ACOMP.length) ACOMP = [""]; renderPessoas(); }
+
+/* O total é DERIVADO dos nomes — nunca um campo que a pessoa digita separado. Campo de quantidade
+   independente dos nomes sempre acaba discordando deles, e esse número vira comida encomendada. */
+function pintarTotal() {
+  var nomes = ACOMP.map(function (x) { return String(x || "").trim(); }).filter(Boolean);
+  var voce = (document.getElementById("nome") || {}).value || "";
+  var n = nomes.length + 1;
+  document.getElementById("total").innerHTML =
+    "👥 <b>" + n + " pessoa" + (n > 1 ? "s" : "") + "</b> da sua empresa: " +
+    esc([voce.trim() || "você"].concat(nomes).join(", "));
+}
+
+function mascaraDoc(el) {
+  var v = el.value.replace(/\D/g, "").slice(0, 14);
+  el.value = v.length > 11
+    ? v.replace(/^(\d{2})(\d{0,3})(\d{0,3})(\d{0,4})(\d{0,2}).*/, function (_, a, b, c, d, e) {
+        return a + (b ? "." + b : "") + (c ? "." + c : "") + (d ? "/" + d : "") + (e ? "-" + e : ""); })
+    : v.replace(/^(\d{0,3})(\d{0,3})(\d{0,3})(\d{0,2}).*/, function (_, a, b, c, d) {
+        return a + (b ? "." + b : "") + (c ? "." + c : "") + (d ? "-" + d : ""); });
+}
+function mascaraFone(el) {
+  var v = el.value.replace(/\D/g, "").slice(0, 11);
+  el.value = v.replace(/^(\d{0,2})(\d{0,5})(\d{0,4}).*/, function (_, a, b, c) {
+    return (a ? "(" + a : "") + (a.length === 2 ? ") " : "") + b + (c ? "-" + c : ""); });
+}
+function marcar(id, ruim) {
+  var el = document.getElementById(id); if (el) el.classList.toggle("invalido", !!ruim);
+  return !ruim;
+}
+
+/* ===================== ENVIO ===================== */
+function enviar() {
+  if (ENVIANDO) return;
+  var v = function (id) { return (document.getElementById(id).value || "").trim(); };
+  var doc = v("doc").replace(/\D/g, ""), fone = v("fone").replace(/\D/g, ""), email = v("email");
+  var ok = true;
+  ok = marcar("c-nome",  !v("nome"))  && ok;
+  ok = marcar("c-razao", !v("razao")) && ok;
+  ok = marcar("c-doc",   doc.length !== 14 && doc.length !== 11) && ok;
+  ok = marcar("c-fone",  fone.length < 10) && ok;
+  ok = marcar("c-email", email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) && ok;
+  document.getElementById("err-dia").style.display = DIA ? "none" : "block";
+  if (!DIA) ok = false;
+  if (!ok) { document.getElementById("st").innerHTML = '<span style="color:#c0392b">Confira os campos marcados.</span>'; return; }
+
+  var nomes = ACOMP.map(function (x) { return String(x || "").trim(); }).filter(Boolean);
+  var corpo = {
+    token: TOKEN || null,
+    publico: (CFG.convite && CFG.convite.publico) || "cliente",
+    codparc: (CFG.convite && CFG.convite.codparc) || null,
+    codvend: (CFG.convite && CFG.convite.codvend) || null,
+    nome: v("nome"), razao_social: v("razao"), documento: v("doc"),
+    representante: v("rep"), fone: v("fone"), email: email,
+    pessoas: nomes.length + 1, acompanhantes: nomes,
+    data_escolhida: DIA, observacao: v("obs"), origem: "form"
+  };
+
+  ENVIANDO = true;
+  var b = document.getElementById("enviar"); b.disabled = true; b.textContent = "enviando…";
+  document.getElementById("st").textContent = "";
+
+  fetch(API, { method: "POST", headers: h(), body: JSON.stringify(corpo) })
+    .then(function (r) { return r.json(); })   /* erro vem como 200 + ok:false — trate pelo corpo */
+    .then(function (d) {
+      ENVIANDO = false; b.disabled = false; b.textContent = "Confirmar minha inscrição";
+      if (d && d.dias) CFG.dias = d.dias;      /* lotou enquanto preenchia? redesenha os dias */
+      if (!d || d.ok !== true) {
+        if (d && d.campo === "data_escolhida" && d.erro === "dia lotado") {
+          DIA = null; render();
+          document.getElementById("st").innerHTML =
+            '<span style="color:#c0392b">Esse dia acabou de lotar. Escolha outro — ainda dá tempo.</span>';
+          return;
+        }
+        document.getElementById("st").innerHTML =
+          '<span style="color:#c0392b">' + esc((d && d.erro) || "não conseguimos registrar") + '</span>';
+        return;
+      }
+      sucesso(d);
+    })
+    .catch(function () {
+      ENVIANDO = false; b.disabled = false; b.textContent = "Confirmar minha inscrição";
+      document.getElementById("st").innerHTML =
+        '<span style="color:#c0392b">Falha de conexão. Tente de novo em instantes.</span>';
+    });
+}
+
+function sucesso(d) {
+  var dia = CFG.dias.filter(function (x) { return x.data === d.dia; })[0] || {};
+  document.getElementById("app").innerHTML =
+    '<div class="hero"><h1>' + esc(CFG.titulo) + '</h1></div>' +
+    '<div class="card ok"><h2>' + (d.atualizado ? "Inscrição atualizada ✅" : "Inscrição confirmada ✅") + '</h2>' +
+    '<p>Te esperamos <b>' + esc(dia.longo || d.dia) + '</b>' + (dia.semana ? ' (' + esc(dia.semana) + ')' : '') +
+    (CFG.horario ? ', ' + esc(CFG.horario.toLowerCase()) : '') + '.</p>' +
+    (CFG.local ? '<p>📍 ' + esc(CFG.local) + '</p>' : '') +
+    '<p class="sub">Vamos te mandar a confirmação pelo WhatsApp. Se precisar mudar algo, é só responder ' +
+    'por lá ou preencher o formulário de novo com o mesmo CNPJ.</p></div>';
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>

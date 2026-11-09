@@ -902,3 +902,124 @@ passa se `pendentes = 0`, justamente para não despejar backlog velho ao religar
     Juliete e Camyla. As duas coisas não cabem juntas: ou a Camyla é exceção reconhecida (ela usa o
     usuário da Isadora), ou a divergência se resolve pelo Sankhya e ela sai. **Não mexer até ele
     decidir.**
+
+## Nitron Conecta — consultoria presencial na fábrica (criado em 09/11)
+
+Pipe e campanha **`nitronconecta`**, na área COMERCIAL. Bate-papo/consultoria interna na Nitron para
+clientes de representante **e** para os próprios representantes. Como é presencial, só entra cliente a
+até **60 km** da fábrica (`filtros_padrao.conecta_raio_km`, com `conecta_lat/lng` do CEP 07250-150 —
+Rua Uruçuí 600, Guarulhos, geocodificado pela BrasilAPI em -23.46278 / -46.53333).
+
+A tela é uma **árvore: representante → clientes dele dentro do raio**, como o gestor pediu. Fonte
+única da tela e do disparo: a view **`nitronconecta_apto`**.
+
+**Duas comunicações, duas seleções, duas instâncias** — e é esse o ponto do pedido:
+
+| público | sai por | por quê |
+|---|---|---|
+| cliente | instância **Nina** (`conecta_inst_cliente`) | quem convida é a fábrica, não o representante |
+| representante | assistente dele no Sankhya (`rep_instancia.instancia_erp`) | como toda campanha ao rep |
+
+**O ritmo não é escolha da tela.** A fila já solta 2 Zaptos/min por instância, então os 940 clientes
+numa instância só são **~8h de disparo**. A caixa de envio mostra a estimativa antes do clique e a
+confirmação repete; nada sai de uma vez. O lote vai em blocos de 250 ao `fila-enfileirar` (um POST de
+940 mensagens passaria de 1 MB) e a busca de contato em blocos de 120 (941 codparcs não cabem numa
+URL). Dividir não enfraquece a trava de duplicidade, que é por `(campanha, canal, destino)`.
+
+Contato do cliente vem do `cobranca-contatos` com **`ordem=convite`** (v4): PRINCIPAL → COMPRAS → CRM
+→ FINANCEIRO, expedição/fiscal como último recurso. Convite vai para quem **decide**, não para quem
+paga — o contrário da cobrança. Vai **1 contato por canal**.
+
+CNPJ: na lista **ao representante**, em linha própria (regra de 28/08), montada em código pelo
+`cnMontarRep()`. Na mensagem **ao cliente não vai** — ali seria o documento dele mesmo.
+
+Audiência medida em 09/11: **940 clientes, 29 representantes, R$ 31,6 mi de faturamento 12m**.
+218 clientes ficam de fora por **não ter CEP geocodificado** (não é que estejam longe: não dá para
+medir) — a tela diz isso, com o número, em vez de escondê-los.
+
+**A própria Nitron estava na audiência.** `codparc 1` (NITRONPLAST IND COM LT), 0,0 km, sob o codvend
+67. Sai por **lista** em `filtros_padrao.conecta_excluir_codparc`, não por um `codparc <> 1` no
+código: o grupo tem 23 empresas e as outras aparecem quando o cadastro mudar. `TSIEMP` **não está
+liberada** para o nosso perfil no Sankhya (só as 15 `AD_VW_COM_*`), então não dá para derivar a lista
+sozinho. **Primeira tentativa de exclusão passou batida em silêncio:** `'[1]'::jsonb ? '1'` é FALSE —
+o operador `?` procura chave de **texto** e o array guarda o número 1. 941 continuou 941. Agora
+compara elemento a elemento convertido.
+
+**91 dos 940 são `atendimento_direto`** (codvend 67 AUTO ATEND. e 116 DENIZE): clientes de verdade e
+perto, mas sem representante de rua — e a árvore é "rep → clientes dele". **Não são descartados**,
+ficam marcados na tela para o gestor decidir.
+
+## `cep_geo` é coordenada de CIDADE, não de rua (achado em 09/11)
+
+Custou um diagnóstico errado na hora: a árvore do Conecta mostrava **todo cliente de Guarulhos a
+"0,0 km"**, com CEPs diferentes. Não era bug de cálculo.
+
+**427 CEPs dividem a mesma coordenada de São Paulo** (-23.5475 / -46.63611), **81** a do Rio, **48** a
+de Guarulhos — e a de Guarulhos é, por coincidência, a mesma da fábrica. Dos 940 clientes no raio,
+**799 usam coordenada de cidade e só 141 têm coordenada própria do CEP**. A BrasilAPI devolve
+coordenada de rua só para parte dos CEPs e cai no centro do município no resto; regeocodificar não
+melhora.
+
+Para um corte de 60 km isso serve — o que importa é se a **cidade** é perto. Para dizer a distância da
+porta da loja, não serve. A view expõe **`km_fonte`** ('cep' ou 'cidade') e a tela imprime "~14,1 km
+(cidade)" quando é centroide, com o aviso no bloco de cobertura.
+
+**Isso põe em dúvida o número do roteiro de visitas.** O "raio médio em SP caiu de ~135 km para
+4–6 km" vem da mesma fonte: dentro de uma cidade a distância entre dois clientes dá ~0 por construção,
+então o 4–6 km mede quase só a troca de cidade. O agrupamento por proximidade continua fazendo
+sentido (cidade é a unidade real), mas o número não é raio de rua. **Não mexido — fica registrado.**
+
+## A tabela `campanhas` não é legível pela anon key (achado em 09/11)
+
+`GET /rest/v1/campanhas` devolve `[]` para a anon key — **sempre devolveu**, em qualquer campanha.
+Consequência achada ao ligar o relógio do Conecta: o **`pixRelogio()` nunca apareceu na tela**. Ele
+fazia `GET /campanhas?codigo=eq...&select=cadencia,filtros_padrao` e, com a resposta vazia, só dava
+`return` — então a caixa "⏱ Disparo automático: DESLIGADO" não existe na tela desde 25/09, embora o
+código esteja lá e correto.
+
+Criada a view **`campanha_config`** (codigo, nome, pipe, ativa, cadencia, canais, publico,
+filtros_padrao), liberada para anon. `pixRelogio()` e o Conecta passaram a ler dela. **Qualquer tela
+que precise de cadência ou parâmetro de negócio tem de ler `campanha_config`, não `campanhas`.**
+
+## Formulário de inscrição do Conecta — agenda de 3 dias (09/11)
+
+Pedido do gestor: 16, 17 e 18/11, das 9h às 17h, **15 empresas por dia**, com os campos Contato
+Principal, WhatsApp, E-mail, CNPJ, Razão Social, Nome do Representante e **quem vem junto**.
+
+Entregue em `docs/nitronconecta-formulario/` — `index.html` funcional (pode ser reestilizado) e
+`README.md` com o contrato da API. O desenvolvedor mexe no visual; o contrato é o que não muda.
+
+- **Endpoint único `conecta-form`.** `GET` devolve datas, horário, local, vagas por dia e o **texto da
+  chamada**; `POST` grava. Escrita **não** passa pela anon key: as duas tabelas estão com RLS ligada e
+  **sem policy**, e quem escreve é a função, pela service role. Front que escrevesse direto quebraria
+  no dia em que a pendência 2 tirar a escrita da anon.
+- **Data, horário, local, capacidade e o texto moram no banco** (`filtros_padrao`: `conecta_datas`,
+  `conecta_vagas_dia`, `conecta_horario`, `conecta_local`, `conecta_texto`, `conecta_form_url`).
+  Virar 4 dias ou 20 empresas/dia é UPDATE, sem pedir deploy ao dev.
+- **O limite de 15 é garantido pelo BANCO**, não pela tela: `public.conecta_inscrever(jsonb)` conta a
+  vaga e grava **na mesma transação**, com `pg_advisory_xact_lock` por dia. Sem isso dois cliques
+  simultâneos na última vaga fecham o dia com 16.
+- **"15 empresas" conta por CNPJ**, não por inscrição: a mesma empresa preenchendo de novo
+  **atualiza** (`atualizado:true`) em vez de ocupar outra vaga. É assim que a pessoa corrige o número
+  de convidados sem ligar para ninguém.
+- **A quantidade de pessoas é contada pelos NOMES**, não digitada à parte. Campo de quantidade separado
+  da lista sempre acaba discordando dela ("5 pessoas", 2 nomes) — e esse número vira almoço e coffee
+  break encomendados. `pessoas = acompanhantes + 1`.
+- **Erro volta como HTTP 200 com `ok:false`** (mesma convenção do `campanhas-comunicado-cliente` e dos
+  refresh de cobrança): o motivo *é* a resposta ("dia lotado, escolha outro"), e cliente que descarta
+  corpo em status != 2xx mostraria "status 409".
+- Sucesso e recusa trazem **`dias` atualizado**, para a página redesenhar a agenda sem segundo pedido:
+  alguém pode ter pego a última vaga enquanto a pessoa preenchia.
+
+Conferido em 09/11 contra o endpoint real: GET com as 3 datas; POST válido; **mesmo CNPJ não consome
+segunda vaga**; CNPJ de 3 dígitos recusado pelo campo certo; e, com o dia 16 cheio na mão (15 empresas
+inseridas), a 16ª recusada com `dia lotado` e `aberta:false`. As inscrições de teste foram apagadas —
+sem isso a agenda mostraria 16/11 lotado sem ninguém inscrito.
+
+Tabelas: `conecta_convite` (token do link pessoal, para pré-preencher), `conecta_inscricao` (respostas),
+views `conecta_vagas` (ocupação por dia) e `conecta_inscricao_painel` (inscrição + dados do convite).
+O quadro do painel mostra a agenda com a ocupação de cada dia, as pessoas por dia (para comida e
+bebida) e a lista de quem já se inscreveu.
+
+**`conecta_form_url` está vazio** — assim que a página do dev subir, grave o endereço lá e o marcador
+`[LINK]` das duas mensagens passa a sair preenchido sozinho.
