@@ -1,4 +1,4 @@
-// campanhas-enviar (v33) — email com ARTE + {{...}}. Garante contato. WhatsApp via SMS+#contact_instance. Recusa WhatsApp para telefone FIXO (10 digitos). ?diag mostra rate-limit.
+// campanhas-enviar (v34) — email com ARTE + {{...}}. Garante contato. WhatsApp via SMS+#contact_instance. Recusa WhatsApp para telefone FIXO (10 digitos). ?diag mostra rate-limit.
 // v22: TRAVA DE INSTANCIA. Antes, sem instancia ele mandava o texto SEM amarrar — a mensagem saia pela ultima instancia
 //      a que aquele contato ficou preso (de outro assunto, de outro mes), e o cliente recebia algo desconexo.
 //      Agora WhatsApp sem instancia e RECUSADO, e o token e conferido contra o cadastro instancia_ghl (cache de 5 min).
@@ -94,6 +94,35 @@
 //      que e justamente o caso da instancia que acabou de cair. E a consulta ao estado da instancia
 //      e FEITA NA HORA, sem passar pelo cache de 5 min: a fila pausa a caida e avisa em seguida, e
 //      com cache quente a caida ainda pareceria viva e o aviso sairia pelo numero que morreu.
+// v34: TRES COISAS, e a primeira e uma CORRECAO DE REGRESSAO (09/11).
+//   (a) O PUBLICADO ESTAVA NA v30 DE OUTRA LINHA. Em 26/10 outra sessao partiu da v29 e acrescentou
+//       anexo de e-mail, publicando por cima — entao v31 (queda que le o NOME da instancia), v32/v33
+//       (modo aviso) e a imagem no Zaptos sumiram da producao, embora estivessem no repositorio e no
+//       CLAUDE.md. Consequencia pratica: a deteccao de queda voltou a condenar a instancia errada (o
+//       bug que prendeu 174 mensagens por 12 dias em 03/09) e `imagens` no Zaptos nao fazia nada.
+//       Esta versao e a MESCLA: v33 do repositorio + o `anexos` de e-mail de 26/10, que e util e foi
+//       pedido pelo gestor. Nenhuma das duas linhas foi descartada.
+//   (b) ANEXO NO E-MAIL (de 26/10, preservado): `anexos` = lista de URLs publicas, opcional.
+//   (c) #switch:<instancia> — COMANDO DE TROCA DE INSTANCIA DE SAIDA (`forcar_switch: true`).
+//       O gestor informou em 09/11 que o ZaptosWPP aceita `#switch:<instancia>`, que troca a instancia
+//       das PROXIMAS mensagens daquela conversa. Isso e diferente do `#contact_instance:<x>`, que
+//       governa a ENTRADA. Se funcionar, resolve o problema do Conecta: o convite ao cliente precisa
+//       sair pela Nina, mas o numero de saida e o `assignedTo` do contato e a fila manda campanha de
+//       cliente com `usar_dono`, trocando para a dona de fato.
+//       `forcar_switch: true` faz duas coisas, e as duas sao necessarias juntas:
+//         1. a instancia PEDIDA prevalece — nao cai para a dona do contato nem recusa por divergencia;
+//         2. manda `#switch:<instancia>` como linha de servico ANTES do conteudo.
+//       O `#switch` vai logo depois do bind, de proposito: assim a espera do ack e a margem de 20s que
+//       ja existem (e que em 24/08 provaram ser necessarias — com 1,7s a mensagem saiu pela instancia
+//       antiga) valem para os dois comandos, sem somar outra espera.
+//       NAO mexe em `assignedTo`. O gestor descreveu o comando mandando o codigo antes da imagem e de
+//       novo antes do texto; aqui imagem e texto sao UMA mensagem so (attachments no POST do texto,
+//       v30 do repositorio), entao um `#switch` basta. `switch_duplo: true` repete antes do conteudo
+//       para quem quiser o comportamento literal.
+//       ATENCAO: nao ha como confirmar o `#switch` lendo a conversa — nao se conhece linha de ack
+//       para ele. Entao, ao contrario do bind, ele NAO tem trava: se o app ignorar o comando, a
+//       mensagem sai pela instancia de antes e so o aparelho de quem recebe mostra isso. Por isso
+//       `forcar_switch` e opt-in e exige teste em aparelho antes de lote.
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, content-type, apikey", "Access-Control-Allow-Methods": "POST, OPTIONS" };
 const j = (o: unknown, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -344,8 +373,16 @@ async function enviarMsg(contactId: string, canal: string, texto: string, assunt
     if (templateId) { const raw = await arteHtml(templateId); if (raw) { html = preencher(raw, nome, texto, merge, opts?.campos); arte_ok = true; } }
     if (!html) html = "<div>" + String(texto).replace(/\n/g, "<br>") + "</div>";
     const subj = preencher(assunto || "Nitron", nome, texto, merge, opts?.campos);
-    const r = await ghl("POST", "/conversations/messages", { type: "Email", contactId, subject: subj, html }, "2021-04-15");
-    return { status: r.status, body: (await r.text()).slice(0, 400), bind: null as any, arte_ok };
+    // ANEXO (26/10, preservado da outra linha de desenvolvimento): o GHL aceita `attachments` como
+    // lista de URLs publicas no envio de e-mail. Entrou para o pedido do lojista sair com a planilha
+    // junto (ordem do gestor). Campanha que nao manda `anexos` monta o mesmo corpo de sempre.
+    const anexosMail = Array.isArray(opts?.anexos)
+      ? opts.anexos.map((x: any) => String(x || "").trim()).filter((x: string) => /^https?:\/\//i.test(x)).slice(0, 10)
+      : [];
+    const corpo: any = { type: "Email", contactId, subject: subj, html };
+    if (anexosMail.length) corpo.attachments = anexosMail;
+    const r = await ghl("POST", "/conversations/messages", corpo, "2021-04-15");
+    return { status: r.status, body: (await r.text()).slice(0, 400), bind: null as any, arte_ok, anexos: anexosMail.length || undefined };
   }
   const to = fone ? e164(fone) : undefined;
   const janela = Number(opts?.espera_ms) > 0 ? Number(opts.espera_ms) : BIND_ESPERA_MS;
@@ -356,6 +393,13 @@ async function enviarMsg(contactId: string, canal: string, texto: string, assunt
   if (!(bind.status >= 200 && bind.status < 300)) return { status: 0, body: "", bind, troca: { confirmado: false, motivo: "o GHL recusou o proprio bind" }, recusado: "bind nao aceito — texto nao enviado" };
   let cid = ""; let bindId = "";
   try { const d = JSON.parse(bind.body); cid = String(d?.conversationId || ""); bindId = String(d?.messageId || ""); } catch { /* corpo inesperado */ }
+  // 1b) #switch — troca a instancia de SAIDA das proximas mensagens desta conversa. Vai aqui para
+  //     aproveitar a espera do ack e a margem que ja vem abaixo, em vez de somar outra.
+  let sw: any = null;
+  if (opts?.switch_inst === true && instancia) {
+    sw = await sms(contactId, `#switch:${instancia}`, to);
+    sw = { status: sw.status, aceito: sw.status >= 200 && sw.status < 300 };
+  }
   // 2) espera o app confirmar a troca na conversa
   let troca: any;
   if (cid && bindId) troca = await esperarTroca(cid, bindId, janela);
@@ -364,8 +408,16 @@ async function enviarMsg(contactId: string, canal: string, texto: string, assunt
   // 3) margem de acomodacao: a confirmacao diz que o app processou, nao que a sessao de envio ja pegou a troca
   const esperaTotal = troca.confirmado === true ? margem : Math.max(margem, janela - (troca.ms || 0));
   await sleep(esperaTotal);
+  // repeticao literal do comando, para quem quiser o comportamento que o gestor descreveu
+  if (opts?.switch_duplo === true && opts?.switch_inst === true && instancia) {
+    await sms(contactId, `#switch:${instancia}`, to);
+    // mesma margem do bind: em 24/08 ficou provado que 1,7s nao basta para a sessao de envio pegar a
+    // troca (a mensagem saiu pela instancia antiga) e 22,6s bastou. Margem curta aqui seria pior que
+    // nada — o comando poderia ser processado DEPOIS da mensagem.
+    await sleep(margem);
+  }
   const enviadoAs = Date.now();
-  // o anexo vai SO aqui, no texto — nunca no bind, que e a linha de servico #contact_instance
+  // o anexo vai SO aqui, no texto — nunca no bind nem no #switch, que sao linhas de servico
   const res = await sms(contactId, texto, to, anexos);
   // 4) o GHL aceitar nao e o cliente receber. Se o ZaptosWPP disser na conversa que a instancia caiu,
   //    esta linha e ERRO — melhor uma linha para reenviar do que um lote marcado como entregue.
@@ -382,7 +434,7 @@ async function enviarMsg(contactId: string, canal: string, texto: string, assunt
     // da Nina (escopo lead, fora das campanhas de rep) aparece para nos.
     if (q.outra) return { ...res, bind, troca: { ...troca, margem_ms: esperaTotal }, queda_outra: q.outra };
   }
-  return { ...res, bind, troca: { ...troca, margem_ms: esperaTotal } };
+  return { ...res, bind, troca: { ...troca, margem_ms: esperaTotal }, switch: sw || undefined };
 }
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
@@ -465,7 +517,11 @@ Deno.serve(async (req) => {
         }
       }
     }
-    if (dono && dono !== instancia) {
+    // forcar_switch: a instancia PEDIDA prevalece. Sem isto o `usar_dono` da fila trocaria para a
+    // dona do contato e o #switch perderia o sentido — seria um comando pedindo a instancia que ja
+    // ia ser usada. Nao toca no assignedTo: o dono continua o mesmo, so a saida e desviada.
+    const forcarSwitch = b.forcar_switch === true && canal !== "email";
+    if (dono && dono !== instancia && !forcarSwitch) {
       if (b.usar_dono === true || alertaPeloDono) instUsada = dono;
       else return j({
         ok: false, contactId, via, criado, canal, instancia, dono_crm: dono, dono_divergente: true,
@@ -487,8 +543,8 @@ Deno.serve(async (req) => {
       if (re.test(texto)) { textoUsado = texto.replace(re, instUsada); textoAjustado = true; }
     }
     const mergeUsado = (instUsada !== instancia && b.merge && typeof b.merge === "object") ? { ...b.merge, instancia: instUsada, assistente: instUsada } : b.merge;
-    const res: any = await enviarMsg(contactId, canal, textoUsado, b.assunto, b.templateId, instUsada || undefined, b.fone, b.nome, mergeUsado, { espera_ms: b.espera_ms, margem_ms: b.margem_ms, exigir_confirmacao: b.exigir_confirmacao, campos: b.campos, checar_entrega: b.checar_entrega, checar_ms: b.checar_ms, imagens: b.imagens });
+    const res: any = await enviarMsg(contactId, canal, textoUsado, b.assunto, b.templateId, instUsada || undefined, b.fone, b.nome, mergeUsado, { espera_ms: b.espera_ms, margem_ms: b.margem_ms, exigir_confirmacao: b.exigir_confirmacao, campos: b.campos, checar_entrega: b.checar_entrega, checar_ms: b.checar_ms, imagens: b.imagens, anexos: b.anexos, switch_inst: forcarSwitch, switch_duplo: b.switch_duplo === true });
     const ok = res.status >= 200 && res.status < 300;
-    return j({ ok, contactId, via, criado, canal, instancia: instUsada || null, instancia_pedida: instUsada !== instancia ? instancia : undefined, texto_ajustado: textoAjustado || undefined, campos_gravados: camposGravados || undefined, dono_crm: dono, arte: !!b.templateId, arte_ok: res.arte_ok, motivo: ok ? undefined : (res.recusado || ("GHL " + res.status + ": " + res.body)), bind_nao_confirmado: res.recusado ? true : undefined, instancia_caiu: res.instancia_caiu || undefined, queda_outra: res.queda_outra || undefined, dono_forcado: donoForcado || undefined, alerta_pelo_dono: alertaPeloDono || undefined, anexos: (Array.isArray(b.imagens) ? b.imagens.length : 0) || undefined, resultado: res, teste: !!b.test });
+    return j({ ok, contactId, via, criado, canal, instancia: instUsada || null, instancia_pedida: instUsada !== instancia ? instancia : undefined, texto_ajustado: textoAjustado || undefined, campos_gravados: camposGravados || undefined, dono_crm: dono, arte: !!b.templateId, arte_ok: res.arte_ok, motivo: ok ? undefined : (res.recusado || ("GHL " + res.status + ": " + res.body)), bind_nao_confirmado: res.recusado ? true : undefined, instancia_caiu: res.instancia_caiu || undefined, queda_outra: res.queda_outra || undefined, dono_forcado: donoForcado || undefined, switch_pedido: forcarSwitch ? instancia : undefined, switch_aceito: res.switch ? res.switch.aceito : undefined, alerta_pelo_dono: alertaPeloDono || undefined, anexos: (Array.isArray(b.imagens) ? b.imagens.length : 0) || undefined, resultado: res, teste: !!b.test });
   } catch (e) { return j({ ok: false, erro: String(e) }, 500); }
 });

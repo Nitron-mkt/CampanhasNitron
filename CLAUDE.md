@@ -1131,3 +1131,48 @@ antes do botão de envio, em vez de prometer uma instância que não vai ser usa
 erro desde 19/10**, a última hoje às 16h, todas com o mesmo motivo — o contato é da **Nina Financeiro**
 (pausada desde 25/09) e a linha pede Nina. Toda hora o cron enfileira de novo e erra de novo. Não
 mexido.
+
+## REGRESSÃO: o `campanhas-enviar` publicado estava na v30 de outra linha (achado em 09/11)
+
+Achado ao abrir a função para acrescentar o `#switch`. **O publicado era v30; o repositório, v33.**
+Em **26/10** outra sessão partiu da **v29** e acrescentou anexo de e-mail (`anexos`), publicando por
+cima. Com isso **sumiram da produção** três versões que estão no repositório e descritas neste arquivo:
+
+| versão | o que fazia | efeito de não estar em produção |
+|---|---|---|
+| v30 (repo) | imagem no Zaptos via `attachments` no POST do texto | **`imagens` no Zaptos não fazia nada** — a imagem só ia no e-mail |
+| v31 | queda de instância passou a ler o **NOME** na linha do app | **voltou a condenar a instância errada** — é o bug que prendeu 174 mensagens por 12 dias em 03/09 |
+| v32/v33 | modo aviso (`alerta: true`), troca de dono como último recurso | o aviso de queda no celular do gestor não consegue sair por outra instância |
+
+**Nenhuma das duas linhas foi descartada.** A **v34** é a mescla: v33 do repositório **+** o `anexos`
+de e-mail de 26/10, que é útil e foi pedido pelo gestor.
+
+**Lição de processo:** `get_edge_function` **antes** de qualquer deploy, e comparar com o repositório.
+O CLAUDE.md já mandava conferir o md5 do `gestor.html` publicado pelo mesmo motivo — a regra vale
+igual para as Edge Functions, e aqui ela não tinha sido seguida por ninguém. Duas sessões mexendo no
+mesmo arquivo é o problema de fundo (ver "Uma sessão de cada vez").
+
+## `#switch:<instância>` — a troca de instância de SAÍDA (09/11)
+
+O gestor informou: *"pode usar para mandar apenas essa mensagem um codigo que muda a instancia pelas
+proximas mensagens, que é o #switch:Nina"*. Isso é **diferente** do `#contact_instance:<x>`, que
+governa a **entrada**. Se funcionar, é o que resolve o Conecta: o convite ao cliente precisa sair pela
+Nina, mas o número de saída é o `assignedTo` e a fila manda campanha de cliente com `usar_dono`.
+
+Implementado na **v34** como `forcar_switch: true`, que faz duas coisas **juntas**:
+1. a instância **pedida** prevalece — não cai para a dona do contato nem recusa por divergência;
+2. manda `#switch:<instância>` como linha de serviço **antes** do conteúdo.
+
+O `#switch` vai logo **depois do bind**, de propósito: assim a espera do ack e a margem de 20s que já
+existem (e que em 24/08 provaram ser necessárias — com 1,7s a mensagem saiu pela instância antiga)
+valem para os dois comandos, sem somar outra espera. **Não toca em `assignedTo`.**
+
+O gestor descreveu mandar o código antes da imagem e de novo antes do texto; aqui **imagem e texto são
+UMA mensagem só** (attachments no POST do texto), então um `#switch` basta. `switch_duplo: true`
+repete antes do conteúdo para quem quiser o comportamento literal, com a mesma margem.
+
+**O `#switch` NÃO TEM TRAVA, e isso é o ponto frágil.** Não se conhece linha de ack para ele na
+conversa — ao contrário do `#contact_instance`, que o app confirma com "Contact Instance Updated!".
+Então, se o app ignorar o comando, a mensagem sai pela instância de antes e **só o aparelho de quem
+recebe mostra isso**. É a mesma família do `status: sent` de 26/08. Por isso `forcar_switch` é opt-in
+e **não deve ser ligado em lote sem teste em aparelho**.
