@@ -1,4 +1,4 @@
-/* conecta-form — endpoint unico do formulario do NITRON CONECTA (09/11/2026).
+/* conecta-form (v2) — endpoint unico do formulario do NITRON CONECTA (09/11/2026).
  *
  * Por que uma funcao e nao PostgREST direto:
  *   1) a pendencia 2 quer TIRAR a escrita da anon key. Formulario que escrevesse na tabela pela anon
@@ -126,7 +126,41 @@ Deno.serve(async (req) => {
     };
 
     const r = await rest(`rpc/conecta_inscrever`, { method: "POST", body: JSON.stringify({ p }) });
-    const res = (Array.isArray(r) ? r[0] : r) || {};
+    const res: any = (Array.isArray(r) ? r[0] : r) || {};
+
+    /* v2 — PIPELINE DO CRM. Respondeu o formulario => o lead anda para "Formulario preenchido".
+       Nao e uma linha nova no pipeline: o conecta-pipeline procura a oportunidade que o convite ja
+       criou e AVANCA aquela mesma, e nunca anda para tras (quem ja estava adiante fica onde esta).
+       Quem preencheu sem token (abriu o link direto) e achado pelo CNPJ em contato_enriquecido.
+       Se isso falhar, a inscricao NAO e desfeita: o registro no banco vale mais que a coluna do CRM,
+       e `crm` na resposta diz o que aconteceu. */
+    if (res.ok === true) {
+      try {
+        let codparc: any = p.codparc ?? null;
+        if (!codparc && b.token) {
+          const c = await rest(`conecta_convite?select=codparc&token=eq.${encodeURIComponent(String(b.token))}`);
+          codparc = c?.[0]?.codparc ?? null;
+        }
+        if (!codparc) {
+          const doc = p.documento.replace(/\D/g, "");
+          if (doc) {
+            const ce = await rest(`contato_enriquecido?select=codparc&cnpj=eq.${doc}&limit=1`);
+            codparc = ce?.[0]?.codparc ?? null;
+          }
+        }
+        const alvo: any = { nome: p.razao_social || p.nome, fone: p.fone };
+        if (codparc) alvo.codparc = codparc;
+        const mv = await fetch(`${SUPA}/functions/v1/conecta-pipeline`, {
+          method: "POST",
+          headers: { apikey: srvKey(), authorization: `Bearer ${srvKey()}`, "content-type": "application/json" },
+          body: JSON.stringify({ acao: "formulario", alvos: [alvo] }),
+        });
+        const mb = await mv.json().catch(() => null);
+        res.crm = mb?.itens?.[0]?.resultado || (mb?.erro ? `erro: ${mb.erro}` : "sem resposta");
+      } catch (e) {
+        res.crm = `falhou: ${String((e as Error).message || e)}`;
+      }
+    }
     /* Mesmo quando recusa, devolve as vagas atualizadas: se o dia lotou enquanto a pessoa preenchia,
        a pagina precisa poder redesenhar os botoes sem um segundo pedido. */
     const cfg = await config();

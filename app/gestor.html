@@ -312,6 +312,7 @@
   /* Cobranca automatica do PIX antecipado (25/09): dois quadros irmaos, um por publico. */
   var PIX={cobranca_pix_rep:1,cobranca_pix_cliente:1,cobranca_recusa_rep:1}, PIXMSG={}, PIXLIN=[];
   var CONECTA={nitronconecta:1};
+  var LOCGHL="rZ8y7lzqV7fzxsartaX2";
   var RET={prep_retorno:1};
   var IAP={ia_propoe:1};
   var TPL={templates_whatsapp:1};
@@ -1792,6 +1793,7 @@
         +'<span class="kaTag">'+CNPAR.vagas_dia+' empresas/dia</span>'
         +(CNPAR.horario?('<span class="kaTag">'+esc(CNPAR.horario)+'</span>'):'')
         +'<span style="flex:1"></span>'
+        +'<a class="kaTag" href="https://app.gohighlevel.com/v2/location/'+LOCGHL+'/opportunities/list" target="_blank" style="text-decoration:none">pipeline no CRM ↗</a>'
         +(CNPAR.form_url?('<a class="kaTag" href="'+esc(CNPAR.form_url)+'" target="_blank" style="text-decoration:none">abrir formulário ↗</a>')
                         :'<span class="kaTag" style="background:#fff3e0;color:#b7791f">link do formulário não cadastrado — grave em filtros_padrao.conecta_form_url</span>')
         +'</div>'
@@ -1982,6 +1984,27 @@
       });
     })();
   }
+  /* ===== PIPELINE DO CRM (09/11) =====
+     Pedido do gestor: lead selecionado e com mensagem mandada tem de aparecer no pipeline
+     "Nitron Conecta". Quem recebe convite entra em "Convite enviado"; quem responde o formulario
+     ANDA para "Formulario preenchido" — a mesma oportunidade, nao uma linha nova. Quem avanca e o
+     `conecta-pipeline`, que NUNCA move para tras: reenviar convite para quem ja respondeu nao puxa
+     o lead de volta para a primeira coluna.
+     Em blocos porque cada alvo custa 1 ou 2 chamadas ao GHL; um lote de 900 numa requisicao so
+     estouraria o tempo da funcao. */
+  function cnPipeline(alvos,cb){
+    var i=0,PASSO=25,acc={criados:0,movidos:0,ja_adiante:0,sem_contato:0,falhas:0};
+    (function passo(){
+      if(i>=alvos.length)return cb(acc,null);
+      var bloco=alvos.slice(i,i+PASSO);i+=PASSO;
+      var pp=$("cnpp");if(pp)pp.textContent=" · CRM "+Math.min(i,alvos.length)+"/"+alvos.length+"…";
+      postJSON(SUPA+"/functions/v1/conecta-pipeline",{acao:"convite",alvos:bloco},function(r){
+        if(!r||r.ok!==true)return cb(acc,(r&&r.erro)||"falha no pipeline");
+        ["criados","movidos","ja_adiante","sem_contato","falhas"].forEach(function(k){acc[k]+=Number(r[k]||0);});
+        passo();
+      });
+    })();
+  }
   function cnEnviar(){
     var st=$("cn-st"),n=cnConta();
     if(!n.cli&&!n.rep){st.innerHTML='<b style="color:#c0392b">nada marcado</b>';return;}
@@ -2024,9 +2047,24 @@
         var rodape=falhas.length?('<div style="margin-top:6px;color:#b7791f;font-size:12px">'+esc(falhas.join(" · "))+'</div>'):'';
         if(!itens.length){st.innerHTML='<b style="color:#c0392b">✗ nenhum contato encontrado</b>'+rodape;if(btn)btn.disabled=false;return;}
         cnEnfileirar(itens,function(tot,errE){
-          if(btn)btn.disabled=false;
-          st.innerHTML=errE?('<b style="color:#c0392b">✗ '+esc(errE)+'</b> — '+tot+' ja entraram'+rodape)
-                           :("<b style='color:#1a7f4b'>✓ "+tot+" na fila</b> · sai a 2 Zaptos/min por instancia"+rodape);
+          if(errE){if(btn)btn.disabled=false;
+            st.innerHTML='<b style="color:#c0392b">✗ '+esc(errE)+'</b> — '+tot+' ja entraram'+rodape;return;}
+          st.innerHTML="<b style='color:#1a7f4b'>✓ "+tot+" na fila</b> · sai a 2 Zaptos/min por instancia"
+            +'<span id="cnpp" style="color:#6a7f78"></span>'+rodape;
+          /* So os CLIENTES vao para o pipeline: as colunas sao de empresa convidada
+             ("Compareceu" e a loja que veio). O aviso ao representante e interno. */
+          var pipe=[];
+          CNLIN.forEach(function(c){if(CNC[c.codparc])pipe.push({codparc:c.codparc,nome:c.cliente});});
+          if(!pipe.length){if(btn)btn.disabled=false;return;}
+          cnPipeline(pipe,function(acc,errP){
+            if(btn)btn.disabled=false;
+            var pp=$("cnpp");if(!pp)return;
+            pp.innerHTML=errP?('<span style="color:#c0392b"> · CRM: '+esc(errP)+'</span>')
+              :(' · <b>CRM:</b> '+acc.criados+' em "Convite enviado"'
+                +(acc.ja_adiante?(', '+acc.ja_adiante+' já estavam adiante'):'')
+                +(acc.sem_contato?(', <span style="color:#b7791f">'+acc.sem_contato+' sem contato no CRM</span>'):'')
+                +(acc.falhas?(', <span style="color:#c0392b">'+acc.falhas+' falharam</span>'):''));
+          });
         });
       });
     });

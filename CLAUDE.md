@@ -1023,3 +1023,56 @@ bebida) e a lista de quem já se inscreveu.
 
 **`conecta_form_url` está vazio** — assim que a página do dev subir, grave o endereço lá e o marcador
 `[LINK]` das duas mensagens passa a sair preenchido sozinho.
+
+## Pipeline "Nitron Conecta" no CRM (09/11)
+
+O gestor criou no GHL o pipeline **Nitron Conecta** (`wqarKxvvO5Z5fYBXMQMc`) com quatro etapas:
+Convite enviado → Formulário preenchido → Confirmado → Compareceu. Pedido: o lead selecionado que
+recebe a mensagem tem de aparecer na primeira etapa, e **quem responde o formulário atualiza o lead
+que já estava lá**, não cria outro.
+
+Função **`conecta-pipeline`**. Os ids de pipeline e etapa moram em `filtros_padrao`
+(`conecta_pipeline_id`, `conecta_etapas`, `conecta_etapa_ordem`) — renomear ou reordenar etapa no CRM
+não exige deploy. Dois pontos de entrada: o painel chama `acao:"convite"` depois de enfileirar (em
+blocos de 25, porque cada alvo custa 1 ou 2 chamadas ao GHL), e o `conecta-form` v2 chama
+`acao:"formulario"` logo após gravar a inscrição.
+
+**NUNCA ANDA PARA TRÁS.** Compara a posição da etapa atual com a de destino e só avança; quem já está
+em "Formulário preenchido" e recebe um segundo convite fica onde está (`ja_adiante`). Sem isso um
+reenvio de lote desfaria, em silêncio, o trabalho de quem já respondeu — e ninguém veria, porque **o
+GHL não guarda histórico de etapa de oportunidade**. Pelo mesmo motivo toda movimentação vai para
+`conecta_crm_log` com a etapa de origem: é a lição do `rep_dono_log` de 19/10.
+
+**A busca de oportunidade do GHL é INDEXADA e não devolve o que acabou de ser criado.** Isto custou um
+teste e seria um desastre em produção: em 09/11 o convite criou a oportunidade e, **no mesmo minuto**,
+`GET /opportunities/search?contact_id=…` pelo MESMO contato voltou vazio — então o formulário criou
+uma **segunda** oportunidade em vez de mover a primeira, e a empresa ficou com dois cards. Como o
+convite sai e o formulário pode ser respondido minutos depois, esperar o índice não é opção. Corrigido
+na **v3**: o vínculo empresa → oportunidade é gravado em `conecta_oportunidade` (chave `c:<codparc>` /
+`r:<codvend>`) na criação, e a busca do GHL virou **plano B**, só para quem ainda não tem vínculo. Se
+a oportunidade for apagada no CRM, o `GET /opportunities/{id}` devolve 404 e o vínculo velho é
+removido sozinho.
+
+**Um codparc tem vários contatos no CRM** (o 15 tem 3). A escolha do contato passou a ser
+determinística (menor `ghl_id`), senão "o primeiro que vier" muda de uma chamada para outra.
+
+**Os filtros da busca são snake_case** (`pipeline_id`, `contact_id`). Com camelCase a API devolve 422
+`"property pipelineId should not exist"` — e, como a busca falhava, nenhuma oportunidade era achada.
+O MCP do GHL aceita camelCase porque traduz; a API crua, não.
+
+**Só os CLIENTES vão para o pipeline.** As colunas são de empresa convidada ("Compareceu" é a loja que
+veio); o aviso ao representante é interno. Mudar isso é uma linha no `cnEnviar()`.
+
+**"Convite enviado" significa "convite na fila", não "entregue".** O painel move a etapa logo depois de
+enfileirar, não depois de o ZaptosWPP confirmar. Com a fila a 2/min por instância, um lote grande leva
+horas, e linha de instância caída fica pendente — então o pipeline vai estar à frente da entrega real.
+Enganchar no `fila-processar` resolveria; não foi feito porque mexer no `campanhas-enviar` exige
+transcrever o arquivo inteiro (ver a nota de 14/09). **Decisão do gestor.**
+
+Testado de ponta a ponta em 09/11, com as oportunidades de teste apagadas depois: convite cria na 1ª
+etapa; formulário no mesmo minuto **move a mesma** oportunidade para a 2ª; convite repetido devolve
+`ja_adiante` sem tocar em nada; e o quadro ficou zerado.
+
+O prompt para o desenvolvedor está em `docs/nitronconecta-formulario/PROMPT-DESENVOLVEDOR.md` — o
+gestor pediu o briefing em vez do código, e a implementação de referência (`index.html`) ficou como
+ponto de partida opcional.
