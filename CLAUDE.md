@@ -1279,3 +1279,50 @@ usar o switch **só** em quem precisa (dono diferente ou sem dono); ou medir se 
    `#switch:Nina`** (17:43:56 e 17:50:46). Nas duas a mensagem seguinte foi entregue, então é
    transitório — mas voltar para a Nina parece custar uma tentativa. A Nina é a instância do convite
    ao cliente e a dos avisos de lead: vale observar.
+
+
+## Teste de ponta a ponta do Conecta (09/11) — funcionou
+
+O gestor pediu um teste do começo ao fim: mandar a mensagem, receber por e-mail, se inscrever, escolher
+um dia e ver o pipeline atualizar. Feito, com o destinatário desviado para ele — **nenhum cliente real
+recebeu nada**.
+
+| etapa | resultado |
+|---|---|
+| Zaptos | `fila_envio` 14003 **enviado** pela Nina — `ok fone:+5511970399053` |
+| E-mail | `fila_envio` 14004 **enviado** para marketing@nitron.com.br |
+| Pipeline, no convite | card **criado** em "Convite enviado" às 18:26:47 (`V2wXIpFS7rnAvsvZxEpS`) |
+| Inscrição | 16/11, **3 pessoas** (Leonardo + Maria + Dan), consentimento anexado na observação |
+| Pipeline, no formulário | **o MESMO card movido** para "Formulário preenchido" às 18:36:12 |
+| Agenda | 16/11 passou a 1 de 15 empresas · 3 pessoas para comida e bebida |
+
+No CRM o pipeline tem **`total: 1`** — um card, não dois. `createdAt 18:26:47` e
+`lastStageChangeAt 18:36:12` provam que é a mesma oportunidade, criada na 1ª etapa e movida na 2ª.
+Era exatamente o cenário que a v3 do `conecta-pipeline` corrigiu (o índice do GHL não devolve
+oportunidade recém-criada), agora confirmado com 10 minutos entre uma coisa e outra.
+
+**A mensagem foi montada pelas funções do próprio painel** (`cnMontarCli` e `cnEmailHTML`, lidas do
+`gestor.html`), não por um texto paralelo — senão o teste provaria outra coisa que não o que o botão
+faz.
+
+**O teste pagou por si: achou um bug.** O primeiro `conecta-pipeline` devolveu `sem_contato` para um
+contato que existe, com o telefone certo. A busca por telefone tentava **um formato só**
+(`contains_set` com o número sem o 55), e o cadastro guarda `+5511...`, `5511...` e `11...` misturados.
+Isso quebraria **o passo do formulário**, que chega na função só com nome e telefone quando o documento
+não casa com nenhum codparc. Corrigido na **v4**: tenta as três variantes e, por último, a busca por
+texto que o `campanhas-enviar` usa há meses; também aceita `contact_id` direto.
+
+**O documento de teste foi escolhido para não encostar em cliente real** (`77.777.777/0001-77`, ausente
+de `contato_enriquecido`). O gestor preencheu com um **CPF** (`457.888.348-56`) — que o formulário
+aceita de propósito, porque há cliente pessoa física na base — e esse CPF também não casou com ninguém,
+então nenhum card de cliente foi tocado. **Em teste, conferir o documento contra `contato_enriquecido`
+ANTES**: documento que case com cliente real moveria o card dele.
+
+**O site do desenvolvedor está no ar e conectado** (`nitron-agenda-conecta.replit.app`), e
+`conecta_form_url` aponta para ele. A conferência tem de ser feita **num navegador de verdade**
+(Playwright) — o deployment fica atrás do `__replshield` do Replit, que devolve 307 para `curl`. O
+token pré-preencheu CNPJ, razão social, representante e contato, e a agenda veio da nossa API com
+"15 de 15 vagas".
+
+Resta limpar quando o gestor mandar: o card `V2wXIpFS7rnAvsvZxEpS`, a inscrição id 3, o vínculo
+`r:undefined` em `conecta_oportunidade` e o convite `teste-gestor-0911`.
