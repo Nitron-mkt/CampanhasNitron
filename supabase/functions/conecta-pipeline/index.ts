@@ -1,4 +1,4 @@
-// conecta-pipeline (v3) — move o lead do NITRON CONECTA no pipeline do CRM (09/11/2026).
+// conecta-pipeline (v4) — move o lead do NITRON CONECTA no pipeline do CRM (09/11/2026).
 //
 // Pipeline "Nitron Conecta" no GHL, com as 4 etapas que o gestor criou:
 //   convite -> formulario -> confirmado -> compareceu
@@ -41,6 +41,7 @@ const LOC = "rZ8y7lzqV7fzxsartaX2";
 const UA = "Mozilla/5.0 (compatible; NitronCampanhas/1.0)";
 const digits = (s: any) => String(s || "").replace(/\D/g, "");
 const nf = (s: any) => digits(s).replace(/^0+/, "").replace(/^55/, "");
+const e164 = (s: any) => { const d = digits(s); return !d ? "" : (d.length <= 11 ? "+55" + d : "+" + d); };
 
 async function ghl(tok: string, metodo: string, caminho: string, corpo?: unknown) {
   const r = await fetch(API + caminho, {
@@ -112,9 +113,25 @@ Deno.serve(async (req) => {
       let cid: string | null = null;
       const porCp = a.codparc != null ? porCodparc.get(String(a.codparc)) : null;
       if (porCp?.ghl_id) cid = porCp.ghl_id;
+      if (!cid && a.contact_id) cid = String(a.contact_id);
+      // Busca por telefone: o cadastro guarda o numero em formatos diferentes (+5511..., 5511...,
+      // 11...), entao tentar UM formato so devolve vazio e o alvo vira "sem_contato" sem motivo.
+      // Achado no teste de ponta a ponta de 09/11: o contato do gestor existe, com o telefone certo,
+      // e `contains_set` com o numero sem o 55 nao achou nada. Agora tenta as variantes, na ordem
+      // mais provavel, e para na primeira que achar.
       if (!cid && a.fone && nf(a.fone).length >= 10) {
-        const s = await ghl(tok, "POST", "/contacts/search", { locationId: LOC, pageLimit: 1, filters: [{ field: "phone", operator: "contains_set", value: [nf(a.fone)] }] });
-        cid = s.body?.contacts?.[0]?.id || null;
+        const d = nf(a.fone);
+        const variantes = [e164(a.fone), "55" + d, d];
+        for (const v of variantes) {
+          if (cid) break;
+          const s1 = await ghl(tok, "POST", "/contacts/search", { locationId: LOC, pageLimit: 1, filters: [{ field: "phone", operator: "contains_set", value: [v] }] });
+          cid = s1.body?.contacts?.[0]?.id || null;
+        }
+        // ultimo recurso: a busca simples por texto, que e a que o campanhas-enviar usa ha meses
+        if (!cid) {
+          const s2 = await ghl(tok, "GET", `/contacts/?locationId=${LOC}&query=${encodeURIComponent(e164(a.fone))}&limit=1`);
+          cid = s2.body?.contacts?.[0]?.id || null;
+        }
       }
       if (!cid) {
         sem_contato++;
