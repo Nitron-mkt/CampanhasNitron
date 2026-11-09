@@ -1212,14 +1212,20 @@ O primeiro teste deu falso negativo e quase fez a gente descartar o comando. Com
 foi a **mensagem de serviço seguinte** — por isso apareceu uma linha no número da Camyla sem o texto
 do teste junto. Reaproveitar a margem de 20s do bind era exatamente o erro.
 
-Segundo teste: comando isolado, **80s de espera**, uma única mensagem depois. **A mensagem saiu pela
-Camyla.** A prova não veio da nossa telemetria e sim da resposta do próprio gestor, que entrou no CRM
-com `Instance Source: Camyla` no corpo — o ZaptosWPP carimba a instância de origem no inbound.
+Segundo teste: comando isolado, **80s de espera**, uma única mensagem depois. Um inbound do gestor
+chegou com `Instance Source: Camyla` e eu li isso como prova. **ERRADO, e ele corrigiu:** a Camyla
+(pessoa) tinha mandado mensagem para ele no meio do teste e ele respondeu *a ela*, por outra conversa.
+O `Instance Source: Camyla` era dessa troca, não do teste. **A prova não existia.**
+
+Lição: `Instance Source` diz por qual instância aquele inbound entrou, e nada mais. Num teste onde o
+sujeito usa WhatsApp o tempo todo, qualquer inbound pode ser de outra conversa. A prova boa é a
+**thread em que a mensagem de saída caiu**, vista no aparelho — ou um inbound que seja **resposta à
+mensagem do teste**, no mesmo balão.
 
 | espera entre `#switch:X` e o conteúdo | resultado |
 |---|---|
-| 41 s | saiu pela **dona** do contato; a troca pegou a mensagem seguinte |
-| 80 s | saiu pela **X** pedida |
+| 41 s | saiu pela **dona** do contato (as duas mensagens caíram na thread da Nina) |
+| 80 s | **inconclusivo** — a prova que eu tinha era inválida; refeito como TESTE 4, aguardando o gestor |
 
 Por isso a v34 tem **margem própria** (`SWITCH_MARGEM_MS`, 80.000 ms), somada — não a do bind.
 Ajustável por variável de ambiente e por `switch_margem_ms` no corpo.
