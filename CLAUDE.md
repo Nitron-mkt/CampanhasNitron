@@ -1367,3 +1367,20 @@ Nina faz a resposta do cliente cair na conversa da Nina, e a assistente dele par
 proprietária — ele trocou para testar. Enquanto estiver assim, **os avisos de lead novo não chegam
 por Zaptos**, porque eles saem pela Nina (`copiloto_config.lead_inst`) e a trava de dono recusa. É
 exatamente a falha que levou dois dias para aparecer em 15/09. Tem de voltar para a **Nina**.
+
+
+### Decisão do gestor em 09/11: o Zaptos do Conecta sai pela assistente de cada cliente
+
+Com as três tentativas negativas, as opções eram: trocar o dono e devolver (arriscado), dar dono Nina
+só a quem não tem, ou deixar como está. **Ele escolheu deixar como está** — nenhum `assignedTo` é
+tocado, o Zaptos sai pela assistente dona de cada contato e o **e-mail** é o canal que garante o
+alcance. O painel passou a dizer exatamente isso, em azul (informação), no lugar do aviso vermelho que
+prometia a Nina.
+
+E a estimativa de tempo mudou de sentido: como o lote se divide entre várias instâncias, o "~8h numa
+instância só" deixou de valer. A tela agora diz que o Zaptos sai a 2/min **por instância** e que o
+e-mail não tem fila de instância, em vez de cravar um número que superestimaria.
+
+**Contato do gestor devolvido para a NINA** (09/11 18:58, autorizado por ele), com a troca gravada em
+`rep_dono_log` id 48 **antes** de chamar o GHL — `codvend 0` porque a coluna é NOT NULL e ele não é
+representante. Os avisos de lead voltam a sair por Zaptos.

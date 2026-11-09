@@ -1785,7 +1785,7 @@
   }
   function cnRender(){
     var n=cnConta(),fat=0;CNLIN.forEach(function(x){fat+=Number(x.fat12m||0);});
-    $("op-meta").textContent="Clientes a até "+CNPAR.raio+" km da fábrica (Guarulhos) · cada cliente marcado recebe por Zaptos E por e-mail · ao representante, pela assistente dele (Sankhya)";
+    $("op-meta").textContent="Clientes a até "+CNPAR.raio+" km da fábrica (Guarulhos) · cada cliente marcado recebe por Zaptos E por e-mail · o Zaptos sai pela assistente dona do contato";
     $("op-kpis").innerHTML='<div class="kpi"><div class="n">'+CNLIN.length+'</div><div class="l">clientes no raio</div></div>'
       +'<div class="kpi"><div class="n">'+CNREPS.length+'</div><div class="l">representantes</div></div>'
       +'<div class="kpi s"><div class="n">'+brl(fat)+'</div><div class="l">faturamento 12m</div></div>';
@@ -1841,17 +1841,20 @@
         +'<br>O raio esta em <code>campanhas.filtros_padrao.conecta_raio_km</code>: muda por UPDATE, sem deploy.'
         +'</div>';
     }
-    /* 1b) POR ONDE O ZAPTOS SAI DE VERDADE. A tela nao pode prometer "sai pela Nina": quem decide o
-       numero de saida e o DONO do contato no CRM (assignedTo), e a fila manda campanha de CLIENTE
-       com `usar_dono` (fila-processar v17) — ou seja, ela troca para a dona de fato em vez de
-       recusar. Medido numa amostra de 9 clientes do raio em 09/11: 6 sem dono e 3 de outra
-       instancia (Bianca, Monica, Karla). O e-mail nao depende disso. */
-    h+='<div class="note" style="margin:0 0 10px;padding:10px 12px;background:#fdf3f2;border:1px solid #f0c9c4;border-radius:8px">'
-      +'<b>Por onde o Zaptos sai:</b> quem manda no número de saída é o <b>dono do contato no CRM</b>, não a instância pedida aqui — '
-      +'a fila troca sozinha nas campanhas de cliente (<code>usar_dono</code>). Numa amostra de 9 clientes deste raio: '
-      +'<b>6 sem dono</b> e <b>3 de outra instância</b>. Contato sem dono costuma <b>não sair</b> no Zaptos. '
-      +'<b>O e-mail não depende de instância e sai para todos.</b> Pôr a '+esc(CNPAR.inst_cliente)+' como dona dos contatos resolveria o Zaptos, '
-      +'mas trocar dono em massa é a operação que já custou dois dias em 15/09 — <b>decisão do gestor</b>.'
+    /* 1b) POR ONDE O ZAPTOS SAI DE VERDADE — fechado por teste em 09/11, depois de tres tentativas.
+       Nao da para forcar a instancia: nem o `#switch:<inst>` (testado com 41s e com 100s de espera)
+       nem o bind `#contact_instance:<inst>` desviam o remetente. No teste que encerrou o assunto o
+       contato estava com a CAMYLA como dona, o bind foi para a NINA, o app confirmou com
+       "Contact Instance Updated!" em 2,0s, a margem de 20s foi respeitada — e a mensagem chegou
+       prefixada "Camyla:". Quem manda no numero de saida e o DONO do contato (assignedTo), como ja
+       estava escrito desde agosto. Decisao do gestor em 09/11: deixar sair pela assistente de cada
+       cliente, sem mexer em dono de ninguem. */
+    h+='<div class="note" style="margin:0 0 10px;padding:10px 12px;background:#f3f8ff;border:1px solid #cfe0f5;border-radius:8px">'
+      +'<b>Por onde cada mensagem sai:</b> o <b>Zaptos</b> sai pela <b>assistente dona do contato</b> no CRM — a fila troca sozinha, e o cliente recebe pelo número com quem já fala. '
+      +'Não dá para forçar outra instância: testado em 09/11 com <code>#switch</code> e com o bind <code>#contact_instance</code>, e nos dois a mensagem saiu pela dona mesmo assim. '
+      +'Quem manda é o <b>dono do contato</b>, e mexer nisso em massa é a operação que custou dois dias em 15/09.<br>'
+      +'<b>Cliente sem dono no CRM provavelmente não recebe o Zaptos</b> — e é a maioria. '
+      +'<b>O e-mail não depende de instância e chega para todos</b>, por isso ele é o canal que garante o alcance deste convite.'
       +'</div>';
     /* 2) Relogio — le a propria campanha, nao uma constante (mesma convencao do pixRelogio). */
     var cad=(CNCAD&&CNCAD.cadencia)||[],avulso=(cad.length===1&&cad[0]==="avulso");
@@ -1933,7 +1936,10 @@
     var maxR=0;for(var k in porInst)if(porInst[k]>maxR)maxR=porInst[k];
     var minRep=Math.ceil(maxR/2);
     var txt='<b>'+n.cli+'</b> cliente'+(n.cli===1?"":"s")+' e <b>'+n.rep+'</b> representante'+(n.rep===1?"":"s")+' marcado'+(n.rep===1?"":"s")+'.';
-    if(n.cli)txt+=' Clientes: ~<b>'+cnTempo(minCli)+'</b> de disparo pela instancia '+esc(CNPAR.inst_cliente)+' (2 Zaptos/min).';
+    /* O Zaptos de cliente sai pela dona de cada contato, entao o lote se divide entre varias
+       instancias e nao fica preso numa so — o piso de ~N/2 min valeria se fosse tudo numa instancia,
+       e dizer isso seria superestimar o tempo. */
+    if(n.cli)txt+=' Clientes: o Zaptos sai pela assistente de cada um, a 2/min <b>por instância</b>, então o lote se divide; o e-mail sai sem fila de instância.';
     if(n.rep)txt+=' Reps: ~<b>'+cnTempo(minRep)+'</b> (dividido entre as assistentes).';
     if(n.cli)txt+=' Cada cliente recebe por <b>Zaptos e e-mail</b> (1 contato de cada canal).';
     if(n.cli>200)txt+=' <span style="color:#b7791f">Lote grande — a fila solta no ritmo dela, nada sai de uma vez.</span>';
