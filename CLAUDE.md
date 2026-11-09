@@ -1326,3 +1326,44 @@ token pré-preencheu CNPJ, razão social, representante e contato, e a agenda ve
 
 Resta limpar quando o gestor mandar: o card `V2wXIpFS7rnAvsvZxEpS`, a inscrição id 3, o vínculo
 `r:undefined` em `conecta_oportunidade` e o convite `teste-gestor-0911`.
+
+
+## Nem o `#switch` nem o bind trocam o remetente — só o `assignedTo` (fechado em 09/11)
+
+Três tentativas, todas no aparelho do gestor, todas negativas. Fica aqui para ninguém gastar outro dia
+nisto.
+
+| tentativa | o que foi feito | resultado |
+|---|---|---|
+| `#switch:X` com 41 s | comando + texto | saiu pela **dona** |
+| `#switch:X` com 100 s | comando sozinho, uma mensagem só depois | saiu pela **dona** |
+| `#contact_instance:Nina` + `ignorar_dono:true` | dono do contato na **Camyla**, bind na Nina, ack confirmado em 2,0 s, margem de 20 s | **saiu pela CAMYLA** |
+
+O terceiro é o que encerra o assunto: o bind foi aceito, o app confirmou com
+`[System]: Contact Instance Updated!`, a margem de 20 s foi respeitada — e a mensagem **ainda** saiu
+pela dona. O ZaptosWPP prefixa cada mensagem com o nome de quem mandou, e o TESTE 5 chegou como
+`Camyla: TESTE 5 — …`.
+
+**Então o comentário da v25 do `campanhas-enviar` estava certo o tempo todo:** o `#contact_instance`
+governa a **entrada**, o `fromNumber` não funciona (26/08), e o número de saída é o **`assignedTo`**.
+
+Isso também corrige uma leitura errada que eu quase gravei aqui: o gestor relatou que, depois de
+devolver o bind para a Nina, recebeu "pela Nina". A tela do WhatsApp dele mostra que aquelas linhas
+(`Nina: 14:48`, `Nina: 15:00`) estavam na conversa do número da **Camyla**, com o nome prefixado —
+não eram mensagens vindas do número da Nina.
+
+**Consequência para o Conecta:** fazer o convite sair pela Nina exige mexer no `assignedTo` — trocar o
+dono para a Nina, mandar, e devolver o dono para quem era antes. É a mesma máquina que o modo aviso
+(`alerta: true`) já usa, e é a operação que custou dois dias em 15/09. Alternativa sem risco nenhum:
+deixar o Zaptos sair pela assistente que já atende aquele cliente (é o que acontece hoje, sozinho) e
+contar com o e-mail para o alcance. **Decisão do gestor.**
+
+A função **`conecta-rebind`** foi escrita e publicada para o passo de devolver o bind, mas **não serve
+mais ao propósito original** — o bind não desvia a saída. Ela continua útil para devolver o
+roteamento de **entrada** depois de qualquer bind nosso, que é um efeito real: contato amarrado na
+Nina faz a resposta do cliente cair na conversa da Nina, e a assistente dele para de ver o cliente.
+
+**ATENÇÃO, estado deixado pelo teste:** o contato do gestor (11970399053) está com **Camyla** como
+proprietária — ele trocou para testar. Enquanto estiver assim, **os avisos de lead novo não chegam
+por Zaptos**, porque eles saem pela Nina (`copiloto_config.lead_inst`) e a trava de dono recusa. É
+exatamente a falha que levou dois dias para aparecer em 15/09. Tem de voltar para a **Nina**.
