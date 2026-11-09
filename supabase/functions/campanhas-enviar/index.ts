@@ -123,6 +123,13 @@
 //       para ele. Entao, ao contrario do bind, ele NAO tem trava: se o app ignorar o comando, a
 //       mensagem sai pela instancia de antes e so o aparelho de quem recebe mostra isso. Por isso
 //       `forcar_switch` e opt-in e exige teste em aparelho antes de lote.
+//       PROVADO EM 09/11, e o numero importa: o comando funciona, mas precisa de MUITO mais tempo
+//       que o bind. Com 41s entre o `#switch:Camyla` e o texto, o texto ainda saiu pela Nina (a dona)
+//       e quem pegou a troca foi a mensagem de servico SEGUINTE. Com 80s e uma unica mensagem depois,
+//       a mensagem saiu pela Camyla — provado pela resposta do gestor, que entrou no CRM com
+//       "Instance Source: Camyla". Por isso a margem do #switch e PROPRIA (SWITCH_MARGEM_MS, 80s) e
+//       nao a do bind (20s): reaproveitar os 20s era justamente o que fazia o comando pegar a
+//       mensagem errada.
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, content-type, apikey", "Access-Control-Allow-Methods": "POST, OPTIONS" };
 const j = (o: unknown, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -165,6 +172,10 @@ const BIND_POLL_MS = numEnv("BIND_POLL_MS", 1500);
 const BIND_MARGEM_MS = numEnv("BIND_MARGEM_MS", 20000);
 // janela de pos-checagem: quanto tempo esperar a queda da instancia aparecer na conversa
 const ENTREGA_CHECK_MS = numEnv("ENTREGA_CHECK_MS", 12000);
+// margem do #switch: medida em 09/11. 41s NAO bastou (o texto saiu pela dona e a troca pegou a
+// mensagem seguinte); 80s bastou. Nao e a mesma margem do bind — sao comandos diferentes e o do
+// bind tem ack para esperar, este nao tem.
+const SWITCH_MARGEM_MS = numEnv("SWITCH_MARGEM_MS", 80000);
 function ghl(method: string, path: string, body: any, version = "2021-07-28") {
   return fetch(API + path, { method, headers: { "Authorization": "Bearer " + Deno.env.get("GHL_TOKEN"), "Version": version, "Content-Type": "application/json", "Accept": "application/json", "User-Agent": UA }, body: body ? JSON.stringify(body) : undefined });
 }
@@ -393,12 +404,15 @@ async function enviarMsg(contactId: string, canal: string, texto: string, assunt
   if (!(bind.status >= 200 && bind.status < 300)) return { status: 0, body: "", bind, troca: { confirmado: false, motivo: "o GHL recusou o proprio bind" }, recusado: "bind nao aceito — texto nao enviado" };
   let cid = ""; let bindId = "";
   try { const d = JSON.parse(bind.body); cid = String(d?.conversationId || ""); bindId = String(d?.messageId || ""); } catch { /* corpo inesperado */ }
-  // 1b) #switch — troca a instancia de SAIDA das proximas mensagens desta conversa. Vai aqui para
-  //     aproveitar a espera do ack e a margem que ja vem abaixo, em vez de somar outra.
+  // 1b) #switch — troca a instancia de SAIDA das proximas mensagens desta conversa.
+  //     A margem e PROPRIA e somada (SWITCH_MARGEM_MS): o teste de 09/11 mostrou que reaproveitar os
+  //     20s do bind faz o comando pegar a mensagem de servico seguinte em vez do texto.
   let sw: any = null;
   if (opts?.switch_inst === true && instancia) {
-    sw = await sms(contactId, `#switch:${instancia}`, to);
-    sw = { status: sw.status, aceito: sw.status >= 200 && sw.status < 300 };
+    const r0 = await sms(contactId, `#switch:${instancia}`, to);
+    const esperaSw = Number(opts?.switch_margem_ms) >= 0 ? Number(opts.switch_margem_ms) : SWITCH_MARGEM_MS;
+    sw = { status: r0.status, aceito: r0.status >= 200 && r0.status < 300, margem_ms: esperaSw };
+    if (sw.aceito) await sleep(esperaSw);
   }
   // 2) espera o app confirmar a troca na conversa
   let troca: any;
@@ -543,7 +557,7 @@ Deno.serve(async (req) => {
       if (re.test(texto)) { textoUsado = texto.replace(re, instUsada); textoAjustado = true; }
     }
     const mergeUsado = (instUsada !== instancia && b.merge && typeof b.merge === "object") ? { ...b.merge, instancia: instUsada, assistente: instUsada } : b.merge;
-    const res: any = await enviarMsg(contactId, canal, textoUsado, b.assunto, b.templateId, instUsada || undefined, b.fone, b.nome, mergeUsado, { espera_ms: b.espera_ms, margem_ms: b.margem_ms, exigir_confirmacao: b.exigir_confirmacao, campos: b.campos, checar_entrega: b.checar_entrega, checar_ms: b.checar_ms, imagens: b.imagens, anexos: b.anexos, switch_inst: forcarSwitch, switch_duplo: b.switch_duplo === true });
+    const res: any = await enviarMsg(contactId, canal, textoUsado, b.assunto, b.templateId, instUsada || undefined, b.fone, b.nome, mergeUsado, { espera_ms: b.espera_ms, margem_ms: b.margem_ms, exigir_confirmacao: b.exigir_confirmacao, campos: b.campos, checar_entrega: b.checar_entrega, checar_ms: b.checar_ms, imagens: b.imagens, anexos: b.anexos, switch_inst: forcarSwitch, switch_duplo: b.switch_duplo === true, switch_margem_ms: b.switch_margem_ms });
     const ok = res.status >= 200 && res.status < 300;
     return j({ ok, contactId, via, criado, canal, instancia: instUsada || null, instancia_pedida: instUsada !== instancia ? instancia : undefined, texto_ajustado: textoAjustado || undefined, campos_gravados: camposGravados || undefined, dono_crm: dono, arte: !!b.templateId, arte_ok: res.arte_ok, motivo: ok ? undefined : (res.recusado || ("GHL " + res.status + ": " + res.body)), bind_nao_confirmado: res.recusado ? true : undefined, instancia_caiu: res.instancia_caiu || undefined, queda_outra: res.queda_outra || undefined, dono_forcado: donoForcado || undefined, switch_pedido: forcarSwitch ? instancia : undefined, switch_aceito: res.switch ? res.switch.aceito : undefined, alerta_pelo_dono: alertaPeloDono || undefined, anexos: (Array.isArray(b.imagens) ? b.imagens.length : 0) || undefined, resultado: res, teste: !!b.test });
   } catch (e) { return j({ ok: false, erro: String(e) }, 500); }

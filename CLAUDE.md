@@ -1204,3 +1204,39 @@ aparelho:
    chegou. Fica registrado como sinal **transitório**, não como queda.
 
 Qual número apareceu em cada mensagem só o aparelho diz — é a pergunta devolvida ao gestor.
+
+### O `#switch` FUNCIONA — e precisa de ~80s, não de 20s (provado em 09/11)
+
+O primeiro teste deu falso negativo e quase fez a gente descartar o comando. Com **41s** entre o
+`#switch:Camyla` e o texto, **o texto ainda saiu pela Nina** (a dona do contato) e quem pegou a troca
+foi a **mensagem de serviço seguinte** — por isso apareceu uma linha no número da Camyla sem o texto
+do teste junto. Reaproveitar a margem de 20s do bind era exatamente o erro.
+
+Segundo teste: comando isolado, **80s de espera**, uma única mensagem depois. **A mensagem saiu pela
+Camyla.** A prova não veio da nossa telemetria e sim da resposta do próprio gestor, que entrou no CRM
+com `Instance Source: Camyla` no corpo — o ZaptosWPP carimba a instância de origem no inbound.
+
+| espera entre `#switch:X` e o conteúdo | resultado |
+|---|---|
+| 41 s | saiu pela **dona** do contato; a troca pegou a mensagem seguinte |
+| 80 s | saiu pela **X** pedida |
+
+Por isso a v34 tem **margem própria** (`SWITCH_MARGEM_MS`, 80.000 ms), somada — não a do bind.
+Ajustável por variável de ambiente e por `switch_margem_ms` no corpo.
+
+**A conta de tempo muda, e muda muito.** Por mensagem de Zaptos com `forcar_switch`: bind + ack (~22s)
++ switch (80s) + checagem de entrega (12s) ≈ **115s**. A fila já espaça 30s por instância (2/min),
+então o gargalo passa a ser a função: **~1 mensagem a cada 2 min por instância**. Os 940 clientes do
+Conecta numa instância só deixam de ser ~8h e viram **~31h**. Caminhos possíveis, nenhum aplicado:
+mandar os `#switch` de todo o lote numa passada e os textos na seguinte (desacopla as esperas);
+usar o switch **só** em quem precisa (dono diferente ou sem dono); ou medir se 60s bastam.
+
+**Duas coisas ainda não conferidas, e as duas podem inviabilizar o lote:**
+1. **O cliente vê o texto `#switch:...`?** A Camyla (pessoa) perguntou "o que significa?" durante o
+   teste, o que sugere que a linha aparece para alguém. O `#contact_instance:` roda em produção há
+   meses sem reclamação, então ele é consumido pelo app — mas não está provado que o `#switch` também
+   seja. Perguntado ao gestor.
+2. **`[System]: Nina - Unable to send the message.` apareceu DUAS VEZES, sempre logo após
+   `#switch:Nina`** (17:43:56 e 17:50:46). Nas duas a mensagem seguinte foi entregue, então é
+   transitório — mas voltar para a Nina parece custar uma tentativa. A Nina é a instância do convite
+   ao cliente e a dos avisos de lead: vale observar.
