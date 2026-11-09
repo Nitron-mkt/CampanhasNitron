@@ -1692,3 +1692,348 @@ que domingo e o item 3 da pendencia - sem cobrar, so dizendo
 onde eu estarei.
 
 Agora copio o log para o repositorio e commito.
+
+========================================================
+SEGUNDA 09/11 - RODADA 8h07 (nao e hora de compilado)
+========================================================
+O log sobreviveu ao fim de semana: 1694 linhas.
+
+UMA ENTRADA no domingo, fora da janela do plantao:
+DR THIAGO RHAINER PIMENTA (+55 33 9847-4045), domingo 21h20 a
+21h23, nove mensagens seguidas.
+TESTE MECANICO (get-messages, limit 20): todo o outbound e
+type 22 SEM meta - humano digitando, e varios audios gravados
+pelo Marcelo. A conversa e dele desde outubro. NAO ENTREI.
+
+MAS E MATERIA PARA O COMPILADO DAS 10h07, como pedido aberto
+do Marcelo: o cliente nao mandou duvida, mandou DECISAO sobre
+o pedido dele - fechou o que quer, como quer instalar e deu
+PRAZO. Esta esperando desde domingo a noite. Nao reproduzo o
+detalhe comercial aqui nem no compilado; quem abrir a conversa
+ve. So sinalizo que tem decisao de cliente parada.
+
+ISSO E EXEMPLO VIVO DA PENDENCIA 3 (o plantao cobre domingo?):
+nove mensagens de um cliente decidindo compra entraram num
+domingo as 21h20. Mesmo que eu cobrisse domingo, essa conversa
+nao seria minha - mas o gestor tem agora um caso concreto para
+decidir a janela, em vez de so o meu numero de "19 contatos
+fora dela".
+
+Nada mais desde o fechamento de sabado. Nenhum envio nesta
+rodada.
+
+========================================================
+SEGUNDA 09/11 - RODADA 9h07 (nao e hora de compilado)
+========================================================
+BRUNO ALMEIDA (+55 31 9410-3503) voltou as 8h26: "Bom dia" /
+"Fico no aguardo" / "Abs". TERCEIRA cobranca dele.
+A conversa e minha (todo outbound e meu type 20) e a mensagem
+estava em aberto. RESPONDI as 9h10.
+(A conversa dividiu de novo: agora CxWiZrfyTY6BUX93bp9j.)
+
+O QUE EU DISSE, e por que:
+- desculpei os quarenta minutos e disse que olho de hora em
+  hora. E a verdade e custa pouco;
+- nao veio retorno, eu ja registrei duas vezes e NAO TENHO
+  COMO FORCAR. Dizer isso e pior de ouvir do que inventar
+  prazo, e e a unica coisa honesta que me sobrou depois do
+  erro da semana passada;
+- NENHUMA data nova. De novo;
+- repeti o pedido do assunto em uma linha - mas pela ULTIMA
+  vez, e falei isso para ele: se nao quiser escrever, eu
+  registro como esta e PARO DE PEDIR.
+Essa ultima parte e deliberada. Ele ja ignorou o pedido duas
+vezes; insistir uma terceira sem prazo de validade viraria
+cobranca minha em cima de quem esta cobrando - e cobrar nao e
+meu papel.
+idempotencyKey nina-20261109-0907-bruno-semretorno.
+
+O QUE ISSO VIRA PARA O COMPILADO DAS 10h07: quatro dias uteis
+de espera de um sujeito que so queria falar com compras, e
+ninguem aqui dentro assumiu. Eu nao cobro o Marcelo nem o
+gestor - so ponho o numero na frente deles.
+
+========================================================
+SEGUNDA 09/11 - RODADA 10h07 + PRIMEIRO COMPILADO DO DIA
+========================================================
+Varredura: nada novo desde as 9h07. A conversa do Bruno saiu
+do topo porque eu respondi - a ultima mensagem dela agora e
+minha.
+
+COMPILADO DAS 10h07 ENVIADO aos quatro destinos, com a lista
+de pendencia do dia (uma vez so):
+  gestor            hoqG8TqSu6US4HLOkyXp / tKzC4DQWa5AT0iBuQvlS
+  Marcelo pessoal   80yVoH0dQyNKk8On9vvD / lnfEZCjkbbLE2upwwEOk
+  Marcelo instancia AYyXBKlC0skN9Z6uNLDe / qH697PDgTbE2wrydJQ8D
+  Ricardo Fonseca   p7F4E2moVrFik5NlVQET / ZazTeMtA4EHgsWGm3EXQ
+
+TRES MUDANCAS QUE EU FIZ NA LISTA, de proposito:
+- item 3 (domingo) deixou de ser so "19 contatos fora da
+  janela" e ganhou o caso do Dr Thiago. Numero nao move
+  ninguem; cliente fechando compra num domingo as 21h20 move;
+- item 10 (catalogo) agora carrega o que eu vi sabado - ele
+  existe em PDF. A pergunta deixou de ser "temos catalogo?" e
+  virou "eu posso usar o que ja existe?";
+- o Joao Paulo saiu da lista do gestor e entrou na do Marcelo,
+  que e onde ele sempre esteve de fato, e com o tempo em DIAS:
+  seis.
+
+=== 09/11/2026 11h07 (segunda) — RONDA SEM COMPILADO ===
+Varredura: dois itens NOVOS desde a ronda das 10h07. Nenhum dos dois e meu. Nada respondido.
+
+1) AMY LIPPER (Lipper International, EUA) — contato IxkpxjdwZVMjsBnUiUbV — 09/11 10h40, E-MAIL.
+   Canal e-mail (type 3) = nao e meu em hipotese nenhuma. Nao toquei.
+   Ela respondeu o reenvio que saiu hoje 8h04 e disse NAO, com todas as letras: ja trabalham com
+   uma fabrica no Brasil ha mais de 12 anos, visitada pessoalmente, com interrupcoes por Covid e
+   tarifa, e sao "loyal to our suppliers".
+   Duas coisas que valem para quem le o compilado:
+   - e a SEGUNDA vez que um reenvio arranca resposta (a primeira foi o Wally). O reenvio nao esta
+     morrendo no vazio;
+   - a resposta dela e exatamente o que a propria linha do reenvio pediu — "if teak is not something
+     you buy, just tell me and I will stop writing". Ela fez isso. Essa frase esta funcionando como
+     valvula de saida e, na minha leitura, e argumento para MANTER a linha na sequencia: ela troca
+     silencio por um nao limpo, que e informacao.
+   Nao e um fracasso da campanha; e um lead qualificado para fora. Quem medir taxa de resposta
+   precisa contar isso como resposta.
+
+2) PCP FARUK / Junior (+55 31 9159-3110) — contato rG4emqIQZ8P8MizOMvRt — 09/11 10h32:
+   "Bom dia, tudo bem?" + "se quiser estou disponivel".
+   TESTE MECANICO FEITO (get-messages, 20 mensagens): TODA saida dessa conversa e type 22 SEM
+   meta.marketplace, userId nXGAeMtrbxH6b8FKT9OP, provider 6aa2d8476548eab979ff881e. E o Marcelo
+   digitando no GHL, do comeco ao fim. Nao ha UMA mensagem minha ali. Fico fora.
+   O que a conversa diz, e que e material do compilado: e o negocio de R$ 13.960 (oportunidade
+   "Gerson Reis", movida de Proposta para Primeiro Pedido em 05/11). Em 05/11 17h25 o cliente pediu
+   o espelho de pedido; o Marcelo tentou ligacao em 05/11 e de novo em 06/11 ("Esta com tempo para
+   falar agora?"); hoje o cliente voltou oferecendo janela.
+
+   DECISAO QUE EU TOMEI, e registro porque e discutivel: "estou disponivel" perde validade dentro
+   da hora, e eu poderia ter quebrado a cadencia para avisar agora, 50 minutos antes do compilado
+   das 12h07. Nao quebrei, por dois motivos concretos: a mensagem caiu na INSTANCIA DO PROPRIO
+   MARCELO — ele tem isso no aparelho dele, nao depende de mim para enxergar; e avisar com 50
+   minutos de antecedencia sobre algo que ja esta na mao dele e cobranca, e cobrar o Marcelo nao e
+   meu papel. Vai como PRIMEIRO item das 12h07, com o horario de chegada, para ele medir sozinho se
+   a janela ainda esta aberta.
+
+Dr Thiago (08/11 21h23, "Na regua de 9cm") continua parado e continua na lista do Marcelo — hoje com
+a observacao de que a oportunidade dele esta marcada como LOST no funil enquanto ele fecha medida de
+pedido por mensagem. Helio (07/11) e Marcos Schaaf (06/11) sem novidade.
+
+ZERO lead de campanha de novo. E o segundo dia util seguido. Mantenho o que escrevi sabado: duas
+amostras nao sao tendencia, e eu nao invento alarme. Se terca vier igual, ai sim vira pergunta para
+o gestor — a campanha esta mesmo saindo? Hoje ainda nao e pergunta.
+
+=== 09/11/2026 12h07 (segunda) — RONDA COM COMPILADO ===
+Varredura: NADA novo desde as 10h40 (a Amy). Nenhuma mensagem respondida nesta ronda.
+
+O QUE MUDOU, e e a noticia da ronda: o PCP FARUK e o DR THIAGO SAIRAM DA FILA DE ESPERA.
+As duas conversas estavam no topo as 11h07 com lastMessageDirection=inbound; as 12h07 nao estao mais
+em lugar nenhum da lista de recebidas, e o `total` caiu de 208 para 206. Isso quer dizer que entrou
+uma SAIDA depois da mensagem de cada um — alguem respondeu.
+Nao abri nenhuma das duas conversas para conferir o que foi dito. Isso seria ronda de status, que o
+gestor cancelou em 16/10, e seria colher fato de conversa alheia. Relatei exatamente o que a
+varredura mostra, com essas palavras, e deixei a conclusao para quem respondeu: "Marcelo, se foi
+voce, o item esta resolvido e pode ignorar."
+
+ISSO VALIDA A DECISAO QUE EU TOMEI AS 11H07. Eu havia segurado o aviso do Faruk ("se quiser estou
+disponivel", R$ 13.960) em vez de quebrar a cadencia 50 minutos antes do compilado, com o argumento
+de que a mensagem caiu na instancia do proprio Marcelo e ele nao depende de mim para enxergar. Uma
+hora depois, respondido. Registro porque na hora era aposta, nao certeza — se tivesse dado errado,
+o custo seria meu e eu teria de dizer isso aqui do mesmo jeito.
+O Dr Thiago sai da lista do Marcelo. Era o item mais velho que eu carregava, desde domingo 21h23.
+
+COMPILADO DAS 12h07 ENVIADO aos quatro, mesmo texto, com quatro itens: Faruk (com a janela e com a
+saida da fila), Amy Lipper (o nao da exportacao e o achado do reenvio/valvula de saida), Dr Thiago
+(resolvido, sai) e a linha do segundo dia sem lead.
+  gestor            hoqG8TqSu6US4HLOkyXp / hIrL7c48cIxOrOBEKt6l
+  Marcelo pessoal   80yVoH0dQyNKk8On9vvD / Zz6mvCzRvUYiFlQz0Qj0
+  Marcelo instancia AYyXBKlC0skN9Z6uNLDe / m5azBfzMcqadid5uBrL9
+  Ricardo Fonseca   p7F4E2moVrFik5NlVQET / PIy60pOc5H9tLnGa506E
+Entrega conferida na conversa do gestor: type 20, provider 6aa320fd..., status delivered, com o eco
+"[System]: Contact Instance Updated!" antes e SEM nenhum "[System]: ... instance is disconnected".
+Chegou.
+
+Nao repeti a lista de pendencia — ela vai so no primeiro compilado do dia, e ja foi as 10h07.
+
+=== 09/11/2026 13h07 (segunda) — RONDA SEM COMPILADO, SEM NOVIDADE ===
+Varredura identica a das 12h07: topo continua a Amy Lipper (09/11 10h40), depois Helio (07/11),
+Marcos Schaaf (06/11) e Mauricio Scotta (05/11). `total` estavel em 206. Nada chegou na ultima hora.
+Nenhuma mensagem respondida, nada enviado a ninguem — 13h07 nao e hora de compilado.
+Nao abri conversa nenhuma: nao havia suspeita a testar, e abrir para "ver como esta" e ronda de
+status, que nao existe mais.
+
+Detalhe pequeno que registro so para nao esquecer: o contato-ruido (nQy5BX7gzqUk9EFZ2spn) NAO subiu
+ao topo desta vez, apesar do compilado das 12h07. Ele costuma aparecer depois de cada relatorio meu.
+Nao mudei nada no envio; pode ser so o eco demorando. Nao e problema e nao vira item de relatorio —
+se ele parar de ecoar de vez, melhor para a varredura.
+
+Terceira hora seguida sem lead novo de campanha. Sigo sem levantar alarme hoje; o teste e terca.
+
+=== 09/11/2026 14h07 (segunda) — RONDA COM COMPILADO DE UMA LINHA ===
+Varredura: nada desde as 10h40. Topo inalterado (Amy, Helio, Marcos Schaaf), `total` em 206.
+Nenhuma mensagem respondida. Nenhuma conversa aberta — nao havia suspeita a testar.
+
+Como 14h07 e hora de compilado e nas duas horas nao aconteceu nada, mandei A LINHA UNICA que a regra
+pede, em vez de pular o envio. Isso e de proposito: quem recebe de duas em duas horas precisa
+distinguir "nao houve nada" de "a Nina parou de rodar". Compilado mudo nao prova plantao vivo.
+Nao repeti nem o Faruk nem a Amy em detalhe — ja foram as 12h07; so citei a Amy como referencia de
+que ela segue sendo a unica recebida do dia.
+
+Enviado aos quatro:
+  gestor            1BaTYUdYYiiTcZbrqhUZ / 373O599hqWeNOO6OubwA
+  Marcelo pessoal   C9CYMih7LtooyKfEfURt / PBHP4VtnMX99OWJoG3Gl
+  Marcelo instancia zJawHYons9jpMglFnTpb / VtGnqKqHOiktl7wDNWzr
+  Ricardo Fonseca   kgJ39te5kJZtjGQObjoT / P1FDUfwEsQT100TKJBZ1
+Entrega conferida no gestor: type 20, provider 6aa320fd..., delivered, com o eco "Contact Instance
+Updated!" e SEM aviso de instancia desconectada.
+
+DE NOVO O RE-CHAVEAMENTO DO GHL: os quatro conversationId sao OUTROS em relacao as 12h07 (o do
+gestor era hoqG8TqSu6US4HLOkyXp, agora e 1BaTYUdYYiiTcZbrqhUZ). Duas horas bastaram. Confirma pela
+enesima vez que so o contactId presta como identificador; guardar conversationId entre rondas da
+erro. Nao e problema novo e nao vai para relatorio.
+
+=== 09/11/2026 15h07 (segunda) — RONDA SEM COMPILADO ===
+Dois itens novos na varredura. Nenhum e meu, nenhum respondido, nada enviado (15h07 nao e compilado).
+
+1) COMPRAS ID MOVEIS (11 98998-9381, contato tchoENIxE3aXHSf6qylQ) — 09/11 14h38:
+   "mas qualquer novidades eu aviso, ok ?" — Instance Source: Marcelo.
+   FICO FORA, por tres motivos que se somam, nao por um so:
+   - os tipos ja registrados na conversa sao 19 (bulk), 3 (e-mail) e 22 (humano digitando no GHL).
+     Qualquer um dos tres sozinho me veta;
+   - o conteudo prova condutor: "eu aviso" so se diz a quem ja esta conversando com voce. Nao e
+     primeiro contato de campanha;
+   - e, mesmo que fosse minha, e despedida educada / encerramento — e isso nao se responde.
+   NAO abri a conversa. Aqui o teste mecanico e a lista apontam para o MESMO lado (ficar fora), e
+   abrir so serviria para colher fato de conversa alheia. Quando a lista me manda ficar fora, eu
+   fico: so vou a conversa quando a duvida for se POSSO entrar.
+   Ela esta marcada "aguardando-nossa-resposta", e eu ignorei a tag de proposito — campo de CRM nao
+   manda em mim. Se alguem quiser o item na lista do Marcelo, ele que decida; eu nao transformo
+   despedida de cliente em pendencia inventada.
+
+2) CONTATO-RUIDO (nQy5BX7gzqUk9EFZ2spn) — 09/11 14h10, devolvendo meu proprio compilado das 14h07
+   como se fosse mensagem recebida. Previsto, nao respondido, nao confundido com lead.
+   Corrige o que eu anotei as 13h07: ele NAO parou de ecoar, so atrasa. Dessa vez levou ~3 minutos
+   para aparecer e subiu ao topo como sempre. Fica como estava: ruido conhecido, sem acao.
+
+Quarta hora seguida sem lead novo de campanha. Continuo sem alarme; o teste e terca.
+
+=== 09/11/2026 16h07 (segunda) — RONDA COM COMPILADO ===
+Varredura: nada novo desde as 14h38. Nenhuma mensagem respondida por mim.
+A ID MOVEIS SAIU DA FILA DE ESPERA — nao aparece mais entre as recebidas e o `total` voltou de 208
+para 206. Foi respondida, como o Faruk e o Dr Thiago de manha. Terceira vez hoje que a conversa que
+eu deixei de lado foi atendida por quem devia atender.
+
+Compilado das 16h07 enviado aos quatro, cobrindo a ID Moveis (os tres motivos de eu ter ficado fora,
+e o fato de ja ter sido respondida) e uma linha dizendo que nao ha mais nada.
+  gestor            1BaTYUdYYiiTcZbrqhUZ / T5CShCY8p1ANQm8JTKP5
+  Marcelo pessoal   C9CYMih7LtooyKfEfURt / 6MboKd2RpkeuBh9RCHSy
+  Marcelo instancia zJawHYons9jpMglFnTpb / uXHKBDXUtJ8xxWQ1GTz2
+  Ricardo Fonseca   kgJ39te5kJZtjGQObjoT / 5KdNaAqN27XRKcwVWNE8
+Entrega conferida no gestor: delivered, type 20, com o eco de instancia e sem aviso de desconexao.
+Os conversationId destes quatro sao os MESMOS das 14h07 — o re-chaveamento nao e a cada envio.
+
+PONTO QUE EU FIZ QUESTAO DE ESCREVER NO COMPILADO, e nao so aqui: avisei que ignorei a tag
+"aguardando-nossa-resposta" da ID Moveis de proposito. Podia ter ficado calada — o resultado seria o
+mesmo. Mas se um dia alguem for conferir por que uma conversa marcada como esperando resposta passou
+por mim sem acao, a resposta tem de estar escrita por mim antes de alguem perguntar, nao depois.
+Dizer "ignorei a tag" e diferente de "nao vi a tag".
+
+Quinta hora seguida sem lead novo de campanha. Fecha o dia util amanha: se terca repetir, vira
+pergunta ao gestor.
+
+=== 09/11/2026 17h07 (segunda) — RONDA SEM COMPILADO, MAS COM ACHADO ===
+Um item novo: FELIPE MEDEIROS (+598 96241579, Uruguai, contato oEFABS967rQj1FCeC58Z), 09/11 17h01:
+"Buenas tardes, lo necesitan para ahora noviembre para que este aca en Uruguay el 1 diciembre para
+poder montar ya el beach club."
+
+TESTE MECANICO FEITO (12 mensagens). NAO E MINHA, por todos os criterios ao mesmo tempo:
+toda saida e type 22 no provider 6aa2d847... (canal humano), from "Hyak WhatsApp"; e o cliente abre
+com "Marcelo buenas tardes". Fico fora. Nao escrevi, nao corrigi, nao toquei.
+
+MAS ACHEI O QUE PRECISO LEVANTAR A MAO — e e a excecao unica da regra de nao colher fato alheio,
+porque contradiz uma instrucao MINHA.
+Hoje as 16h44-16h45 sairam QUATRO mensagens nessa conversa, assinadas como Marcelo, type 22 no canal
+humano, mas com meta.marketplace.appName = "lc-mcp - Anthropic" (appId 6a3e39daceb2ab00111df10c).
+Isso nao e o Marcelo digitando: e OUTRA AUTOMACAO escrevendo em nome dele. E uma delas diz:
+  "Ya pase tu consulta a mi aserradero y estoy esperando que me vuelvan con disponibilidad y plazo.
+   Apenas lo tenga, te respondo con la cotizacion."
+Disponibilidade, PRAZO e COTACAO prometidos. E exatamente o que eu tenho proibido de fazer. Eu nao
+mando cotacao, nao falo prazo, nao anuncio disponibilidade — e aqui isso saiu com a assinatura da
+Teak, para um cliente de EXPORTACAO, com data dura.
+Eu NAO julgo se a automacao pode. Nao e minha alcada e pode haver autorizacao que eu desconheco. O
+que eu faco e o que a regra manda: levantar a mao com o gestor e o Marcelo, nao com o cliente.
+
+E O SEGUNDO CASO DO MESMO PADRAO. O primeiro e a pendencia numero 2 com o gestor: as mensagens
+assinadas "Marcelo" na conversa do THOMAS, reportadas em 14/10 18h58, sem resposta ate hoje. Aquilo
+deixou de ser caso isolado. Vou dizer isso com essas palavras no compilado — um caso e duvida, dois
+e padrao.
+
+POR QUE NAO QUEBREI A CADENCIA: a regra so autoriza envio fora de hora se algo quebrou ou se eu
+errei. Nao foi nem um nem outro — eu nao errei aqui, e nada parou de funcionar. Alem disso o caso do
+Thomas esta parado ha 26 dias; uma hora nao muda esse quadro. Vai como PRIMEIRO item das 18h07.
+
+O que tambem vai no compilado, e e do Marcelo: o Felipe respondeu a pergunta de data. Precisa do
+material no Uruguai ate 1 de dezembro para montar o beach club. Referencia anterior da conversa
+(16/09): 100 trozas, diametro ~200 mm, 2500 mm. Entrego a data e a urgencia; prazo e cotacao sao
+deles.
+
+=== 09/11/2026 18h07 (segunda) — RONDA COM COMPILADO; O ACHADO FOI ENTREGUE ===
+Varredura: nada novo desde as 17h01. O Felipe continua no topo com a mensagem DELE como ultima —
+ninguem respondeu ate 18h07. Disse isso no compilado com essas palavras, porque e o dado que importa
+para quem tem de decidir: nao e so que ele deu a data, e que a data esta parada.
+
+Compilado das 18h07 enviado aos quatro com dois itens:
+  1) a data do Felipe (material no Uruguai ate 1/12, precisa sair em novembro) e o fato de seguir sem
+     resposta;
+  2) o levantamento de mao sobre as quatro mensagens de hoje 16h44-16h45 assinadas como Marcelo mas
+     vindas de automacao, uma delas prometendo disponibilidade, prazo e cotacao.
+  gestor            1BaTYUdYYiiTcZbrqhUZ / BDX4fxFNaH8lejntGBJl
+  Marcelo pessoal   C9CYMih7LtooyKfEfURt / BioVHljkxK3UoY3vz40B
+  Marcelo instancia zJawHYons9jpMglFnTpb / RqqtWX1E3g0IVVA4BuDq
+  Ricardo Fonseca   kgJ39te5kJZtjGQObjoT / GKIfzGtmnxIzY36bNpAW
+Entrega conferida na instancia do Marcelo: delivered, type 20, eco de instancia presente, sem aviso
+de desconexao.
+
+COMO EU ESCREVI O ITEM 2, e por que assim:
+- descrevi o que esta registrado (horario, canal, appName, a frase ao cliente) e parei ali. Nao
+  afirmei que foi errado, nao disse quem configurou, nao chamei de falha;
+- escrevi, com todas as letras, "eu NAO estou julgando se essa automacao pode fazer isso. Pode haver
+  autorizacao que eu desconheco, e nao e minha alcada". Isso nao e diplomacia: e verdade. Eu nao sei
+  o que foi autorizado para ela, do mesmo jeito que ninguem precisa me explicar;
+- e terminei oferecendo a saida honesta: "se estiver tudo certo, me digam e eu paro de levantar
+  isso". Se eu nao oferecer isso, viro alguem que repete a mesma queixa toda semana sem aceitar
+  resposta - e ai a proxima vez que eu levantar algo de verdade ninguem le.
+O que eu NAO abri mao: dizer que sao DOIS casos e que o primeiro esta ha 26 dias sem resposta.
+Amaciar isso seria esconder o unico fato que torna o aviso util.
+
+Fechamento do dia as 19h07. Entre o compilado e ele: se o Felipe continuar sem resposta, isso vai no
+fechamento tambem — nao como cobranca, como estado.
+
+=== 09/11/2026 19h07 (segunda) — FECHAMENTO DO DIA ===
+Varredura final: so o eco do ruido no topo. Conferi a conversa do Felipe diretamente: a mensagem
+dele das 17h01 AINDA e a ultima — duas horas, sem resposta. Conferi porque o fechamento precisa dizer
+o estado real do que eu entreguei; nao e ronda de status, e prestar conta do que eu mesma reportei.
+
+BALANCO DO DIA, honesto: onze rondas, UMA mensagem minha a cliente (Bruno, 9h07). Mais nada.
+Chegaram quatro mensagens e nenhuma era minha: Faruk 10h32, Amy 10h40 (e-mail), Id Moveis 14h38,
+Felipe 17h01. Tres ja foram atendidas. Dito de outro jeito: hoje eu quase so NAO agi — e esse quase
+sempre foi a decisao certa, porque em tres dos quatro casos quem devia responder respondeu.
+Um dia em que o acerto e nao ter escrito nao parece trabalho, mas e. Em 08/10, com o Manfred, foi o
+contrario que custou caro.
+
+BRUNO ALMEIDA — CUMPRI O QUE PROMETI. De manha eu disse a ele: se voce preferir nao escrever o
+assunto, tudo bem, eu deixo registrado como esta e PARO DE TE PEDIR ISSO. Ele nao escreveu. Entao
+parei. Nao mandei lembrete, nao reformulei o pedido, nao dei um "ultimo empurrao". Promessa de parar
+que nao se cumpre e pior do que nunca ter prometido — e o cliente lembra.
+
+Fechamento enviado aos quatro:
+  gestor            1BaTYUdYYiiTcZbrqhUZ / nyN6f8f5rcvxBMsDzOix
+  Marcelo pessoal   C9CYMih7LtooyKfEfURt / ETpV4jwSbSbRWAY9Pim6
+  Marcelo instancia zJawHYons9jpMglFnTpb / dDOsDkA2T3GcC72RA2dY
+  Ricardo Fonseca   kgJ39te5kJZtjGQObjoT / EcHqmh33vgG5CqlB0JPq
+
+ANUNCIEI A PERGUNTA DE AMANHA EM VEZ DE GUARDA-LA. Zero lead de campanha o dia inteiro, segundo dia
+util seguido. Eu continuo achando que duas amostras nao sustentam alarme — e disse isso. Mas avisei
+que, se terca repetir, amanha as 18h07 eu pergunto se a campanha esta mesmo saindo. Avisar antes
+custa nada e tira o susto; pergunta que cai do nada parece acusacao.
+
+Vai para o repositorio agora (branch claude/ghl-teak-brazil-connection-hn2nzq), como manda o README.
