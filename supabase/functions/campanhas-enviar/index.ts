@@ -123,6 +123,17 @@
 //       para ele. Entao, ao contrario do bind, ele NAO tem trava: se o app ignorar o comando, a
 //       mensagem sai pela instancia de antes e so o aparelho de quem recebe mostra isso. Por isso
 //       `forcar_switch` e opt-in e exige teste em aparelho antes de lote.
+//       TESTADO E DESCARTADO EM 09/11 — leia antes de tentar de novo. O comando NAO troca a
+//       instancia de saida neste caminho de envio. Dois testes: com 41s e com 100s entre o
+//       `#switch:Camyla` e o texto, a mensagem saiu pela DONA do contato nas duas vezes. No segundo,
+//       o comando foi mandado sozinho e so uma mensagem veio depois; o gestor respondeu no mesmo
+//       balao e o inbound entrou com "Instance Source: Nina", ou seja, ele digitou na thread da Nina,
+//       que e onde a mensagem caiu. Houve um falso positivo no meio: um inbound com
+//       "Instance Source: Camyla" que era resposta a OUTRA conversa, nao ao teste.
+//       Coerente com o resto deste arquivo: o numero de saida e o `assignedTo`, o `fromNumber` nao
+//       funciona e o `#contact_instance` governa so a entrada. `forcar_switch` fica aqui opt-in e
+//       desligado, documentando o que foi testado. NAO USE.
+//       O texto abaixo era a leitura ERRADA, mantida para ninguem refazer o mesmo caminho:
 //       PROVADO EM 09/11, e o numero importa: o comando funciona, mas precisa de MUITO mais tempo
 //       que o bind. Com 41s entre o `#switch:Camyla` e o texto, o texto ainda saiu pela Nina (a dona)
 //       e quem pegou a troca foi a mensagem de servico SEGUINTE. Com 80s e uma unica mensagem depois,

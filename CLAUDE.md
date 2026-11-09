@@ -1224,8 +1224,41 @@ mensagem do teste**, no mesmo balão.
 
 | espera entre `#switch:X` e o conteúdo | resultado |
 |---|---|
-| 41 s | saiu pela **dona** do contato (as duas mensagens caíram na thread da Nina) |
-| 80 s | **inconclusivo** — a prova que eu tinha era inválida; refeito como TESTE 4, aguardando o gestor |
+| 41 s | saiu pela **dona** (Nina) — as duas mensagens caíram na thread da Nina |
+| 100 s | saiu pela **dona** (Nina) — ver o TESTE 4 abaixo |
+
+**VEREDITO: o `#switch` NÃO troca a instância de saída no nosso caminho de envio.** No TESTE 4 o
+comando foi mandado sozinho, esperou-se **100 s** e mandou-se **uma única** mensagem. O gestor
+respondeu "QUATRO" no mesmo balão e o inbound entrou com **`Instance Source: Nina`** — ou seja, ele
+digitou na thread da **Nina**, que é onde o TESTE 4 tinha caído. Dois testes independentes (41 s e
+100 s) deram o mesmo resultado.
+
+Isso é coerente com tudo o que já estava escrito aqui: **o número de saída é o `assignedTo`**, o
+`fromNumber` não funciona (26/08) e o `#contact_instance` governa só a entrada. O `#switch` deve
+pertencer à mesma família — mexe no roteamento de entrada ou é comando do lado do operador, não do
+remetente de API.
+
+*Ressalva honesta:* a leitura depende de o gestor ter respondido na mesma thread em que a mensagem
+caiu, como foi pedido. O `#switch:Nina` de restauração foi mandado 2 min antes da resposta dele, mas
+isso não move as threads do WhatsApp dele — um inbound chega no aparelho em que ele digitou.
+
+O `forcar_switch` continua na v34, opt-in e desligado: não custa nada e documenta o que foi testado.
+**Não use.** O caminho para o Zaptos sair pela Nina é o `assignedTo`, e há uma forma segura de fazer
+parte disso — ver abaixo.
+
+### O que dá para fazer sem repetir o erro de 15/09
+
+Da amostra de 9 clientes do raio: **6 sem dono nenhum** e **3 de outra instância**. São dois casos
+diferentes e merecem tratamento diferente:
+
+- **Sem dono** — pôr a Nina como dona é **seguro**: não existe aviso saindo por outra instância para
+  aquele contato, então não há o que quebrar em silêncio. É exatamente o que o `rep-dono-crm` já faz
+  para representante (só escreve onde não há dono), com log em tabela antes de chamar o GHL. E resolve
+  o caso maior: hoje esses contatos provavelmente **não recebem Zaptos nenhum**.
+- **Com dono de outra assistente** — deixar como está. O Zaptos sai pela assistente dela, que é o
+  comportamento normal de toda campanha de cliente. Mover é a operação que custou dois dias.
+
+**Nada aplicado — decisão do gestor.**
 
 Por isso a v34 tem **margem própria** (`SWITCH_MARGEM_MS`, 80.000 ms), somada — não a do bind.
 Ajustável por variável de ambiente e por `switch_margem_ms` no corpo.
