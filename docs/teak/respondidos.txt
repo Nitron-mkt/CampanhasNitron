@@ -2037,3 +2037,297 @@ que, se terca repetir, amanha as 18h07 eu pergunto se a campanha esta mesmo sain
 custa nada e tira o susto; pergunta que cai do nada parece acusacao.
 
 Vai para o repositorio agora (branch claude/ghl-teak-brazil-connection-hn2nzq), como manda o README.
+
+=== 10/11/2026 08h07 (terca) — PRIMEIRA RONDA DO DIA ===
+Log sobreviveu a virada (2039 linhas). Container nao reciclou.
+Tres mensagens chegaram ANTES da janela abrir, entre 07h17 e 07h52. Nenhuma e minha. Nada respondido,
+nada enviado (08h07 nao e compilado).
+
+1) BRUNO L. LOPES (84 9121-2716, contato sqiiY0H2Odb1TysEtDOg) — 07h17 e 07h18:
+   "Bom dia. Gostaria de saber se voces trabalham com os paineis de eucaliptos?" e
+   "Se vcs fabricam os paineis de eucalipto assim como os de teca".
+   ATENCAO: NAO e o Bruno Almeida. Outro contato, outro numero, outro assunto.
+   TESTE MECANICO FEITO (20 mensagens). Essa conversa JA FOI MINHA: em 08/10 as 13h09 eu respondi
+   nela (type 20, provider 6aa320fd...) e entreguei ao Marcelo. Quarenta minutos depois o MARCELO
+   ENTROU e conduziu — mensagens dele, type 22. Pela regra, depois que um humano entra eu SAIO E NAO
+   VOLTO. Entao nao e mais minha, mesmo tendo nascido minha.
+   O conteudo confirma: o cliente escreve "Boa tarde Marcelo" e "Obrigado Marcelo".
+   E, de qualquer forma, a pergunta e sobre EUCALIPTO — que esta na minha lista de nao afirmo e nao
+   nego. Mesmo se a conversa fosse minha hoje, eu nao responderia isso: diria que quem fala dessa
+   linha e o Marcelo.
+   Dois caminhos independentes, mesma saida. Fico fora.
+   Nao vou contar aqui o que o Marcelo respondeu na conversa dele em 08/10 — nao e fato meu para
+   colher. Para o compilado basta: lead perguntando sobre painel de eucalipto, conversa e do Marcelo,
+   chegou 07h17 e as 08h10 ainda sem resposta.
+
+2) PCP FARUK / Junior — 07h36: "Mas pode dar sequencia no meu pedido".
+   Conversa do Marcelo, ja testada ontem. Fico fora. Mas e a melhor noticia da manha e vai no
+   compilado das 10h07: e o negocio de R$ 13.960 e o cliente esta mandando TOCAR O PEDIDO.
+
+3) COMPRAS ID MOVEIS — 07h52: "vou confirmar com a Simone sobre o estoque e volto com as informacoes,
+   ok ?". Nao e minha (19/3/22) e nao e pergunta — e ele avisando que volta. Sem acao.
+
+AINDA ABERTO DE ONTEM: o FELIPE MEDEIROS continua sem resposta. A mensagem dele e das 17h01 de
+ontem; sao mais de QUINZE HORAS, com a data de 1/12 no Uruguai em cima. Nao e meu para responder e
+nao vou cobrar ninguem, mas vai no compilado das 10h07 com o tempo em horas, porque tempo e o unico
+jeito honesto de mostrar que um item parado esta ficando caro.
+
+Primeiro dado do teste que eu mesma marquei: ate agora, terca, nenhum lead novo de campanha. O
+Bruno L. Lopes nao conta — e cliente antigo da base, de 08/10, voltando. Decido as 18h07.
+
+=== 10/11/2026 09h07 (terca) — RONDA SEM COMPILADO ===
+Um item novo, recem-chegado (09h11, enquanto eu rodava): BRUNO L. LOPES de novo.
+"Estamos desenvolvendo um produto para lancas no mercado / Para te passar uma quantidade, pode ser
+que nao atinja sua quantidade minima para produzir / Entao voce poderia me dizer quanto seria o
+PEDIDO MINIMO em quantidade de pecas para essa medida de 200x1200 com 18mm".
+
+FICO FORA, e aqui o motivo e duplo e cada um bastaria sozinho:
+- a conversa e do Marcelo desde 08/10 (ja testado as 08h07 hoje);
+- e, acima de tudo, ele esta pedindo PEDIDO MINIMO. Condicao comercial. Essa e a pergunta que eu
+  tenho proibicao explicita de responder, e a proibicao tem nome e data: eu inflei o minimo numa
+  conversa e o cliente Edward desistiu. Nao e regra abstrata, e cicatriz.
+Nao respondi, nao chutei faixa, nao disse "costuma ser em torno de". Nem no compilado eu vou
+especular numero.
+
+Isso sobe no compilado das 10h07 como entrega ao Marcelo, com o que o cliente precisa: ele esta
+desenvolvendo um produto, quer dimensionar custo, e so consegue fechar quantidade DEPOIS de saber o
+minimo. E uma pergunta que trava o lado dele inteiro.
+
+Faruk e Id Moveis sairam da fila (total 211 -> 207): foram respondidos de manha.
+O FELIPE continua sem resposta — agora sao dezesseis horas desde as 17h01 de ontem.
+
+Nada enviado nesta ronda; 09h07 nao e hora de compilado.
+
+=== 10/11/2026 10h07 (terca) — PRIMEIRO COMPILADO DO DIA, COM A LISTA DE PENDENCIA ===
+Dois itens novos desde as 09h07, nenhum meu:
+- SOLUMADE VENDAS (47 9986-9016, contato iiKze9eDp6JOOU2a6M2l), 09h49: "Conversei com ele mas no
+  momento nao temos interesse, agradecemos o contato e qualquer interesse, volto a entrar em contato
+  contigo!". So type 22 na conversa — e do canal humano. E, mesmo que fosse minha, e agradecimento
+  com despedida: nao se responde. A oportunidade dela ja esta como perdida no funil.
+- BRUNO L. LOPES, 09h13: anexo sem texto. Corpo vazio nao e pergunta. Nao respondi.
+
+Compilado enviado aos quatro, com cinco itens e a lista de pendencia (primeiro do dia):
+  gestor            1BaTYUdYYiiTcZbrqhUZ / PqF9gNrZfKZi4wCoZY64
+  Marcelo pessoal   C9CYMih7LtooyKfEfURt / 3VkRQVgeIWaRKCXbKQmA
+  Marcelo instancia zJawHYons9jpMglFnTpb / veXVmPVsizvPbTDD3hC1
+  Ricardo Fonseca   kgJ39te5kJZtjGQObjoT / J16QV3T9NASDODez2S98
+Entrega conferida no Marcelo pessoal: delivered, type 20, sem aviso de desconexao.
+
+COMO ESCREVI O ITEM DO BRUNO L. LOPES, e por que: marquei "MARCELO, ESSE E PARA VOCE" com todas as
+letras, e expliquei POR QUE trava — ele so fecha quantidade depois de saber o minimo. Entregar
+"cliente perguntou o minimo" seria verdade e seria inutil; o que faz alguem agir e saber que o lado
+de la esta parado esperando um numero que so nos temos.
+E disse, de novo, que nao chutei faixa, citando o Edward pelo nome. Repito isso de proposito: a
+pessoa que le precisa entender que meu silencio sobre o minimo e regra, nao desleixo — senao alguem
+conclui que eu "esqueci" de responder.
+
+MUDANCAS QUE FIZ NA LISTA DE PENDENCIA HOJE:
+- item 2 do gestor (mensagens assinadas "Marcelo") agora carrega o segundo caso, o Felipe de ontem.
+  Nao e mais "um caso de 14/10 sem resposta", e um padrao com duas ocorrencias;
+- entrou na lista do Marcelo o pedido minimo do Bruno L. Lopes, item novo de hoje;
+- o Joao Paulo passou de seis para SETE DIAS. Mantenho a contagem em dias, nao em "ha uma semana":
+  numero exato envelhece sozinho e cobra sem que eu precise cobrar.
+
+Felipe: dezessete horas sem resposta. Segue no relogio.
+Lead novo de campanha hoje: ainda ZERO. Decido as 18h07 se viro pergunta, como avisei ontem.
+
+=== 10/11/2026 11h07 (terca) — RONDA SEM COMPILADO ===
+Um item novo: REBECA BARRETO (11 96873-5734, contato XCjMu3DDORGlJ8Yz5T7r), 10h37: "Ok, fico no
+aguardo".
+Fico fora, e de novo por soma de motivos: a conversa tem disparo em massa e mensagem digitada a mao,
+carrega a marca de transferencia humana, e o texto e um "ok" de quem ja foi atendido e esta
+esperando retorno de alguem. Nenhum dos tres sozinho me deixaria entrar.
+Nao respondi. "Ok, fico no aguardo" e aceite de espera, nao pergunta — responder seria so barulho, e
+pior: seria me meter entre ela e quem prometeu o retorno.
+
+O outro item no topo e o eco do meu proprio compilado das 10h07 no contato-ruido. Previsto.
+
+Nada enviado; 11h07 nao e hora de compilado.
+Felipe: dezoito horas sem resposta.
+Lead novo de campanha: ainda zero hoje.
+
+=== 10/11/2026 12h07 (terca) — RONDA COM COMPILADO ===
+Um item novo desde as 11h07: OSNY ALMEIDA (27 99921-8269, contato y1csiqSEjEyVmiTzSqh3), 11h40:
+"Pode deixar q se for mesmo usar madeira, conversarei com VC antes de fechar."
+Conversa com disparo em massa, ligacao e mensagem digitada a mao — nao e minha por tres caminhos.
+E, mais importante que o teste: nao e pergunta. E compromisso. Ele esta dizendo que volta.
+NAO RESPONDI, e o motivo merece ficar escrito porque e o tipo de silencio que parece preguica:
+responder "otimo, fico no aguardo!" a quem acabou de prometer voltar nao acrescenta nada e empurra
+de leve. Quem ja se comprometeu nao precisa de confirmacao nossa — precisa de espaco. A oportunidade
+dele e a maior aberta que passou por mim hoje: R$ 27.262.
+
+Compilado das 12h07 enviado aos quatro, com o Osny, a Rebeca e o relogio do Felipe:
+  gestor            1BaTYUdYYiiTcZbrqhUZ / kBixhDRA9pJsWQI0GPh0
+  Marcelo pessoal   C9CYMih7LtooyKfEfURt / detq8jDZ6Y9vT35vm3bu
+  Marcelo instancia zJawHYons9jpMglFnTpb / V9MYLuAiN5OsNTN8lytN
+  Ricardo Fonseca   kgJ39te5kJZtjGQObjoT / XabRljBoqCbe1ZRGaY7O
+
+UMA FRASE QUE EU PESEI ANTES DE MANDAR, sobre a Rebeca: "ha alguem esperando, e quem prometeu sabe
+quem e". Quase cortei — soa como alfinetada. Deixei porque e exatamente o oposto de cobranca: eu nao
+digo quem e, nao digo ha quanto tempo, nao peco nada. So registro que existe uma pessoa em espera.
+Se eu apagasse essa linha, o item viraria "cliente mandou ok" e ninguem olharia de novo. A diferenca
+entre reportar e cobrar esta em nomear o fato sem nomear o culpado.
+
+Felipe: dezenove horas. Lead novo de campanha hoje: ainda ZERO, cinco rondas.
+
+=== 10/11/2026 13h07 (terca) — RONDA SEM COMPILADO, SEM NOVIDADE ===
+Unico item novo no topo e o eco do meu proprio compilado das 12h07 no contato-ruido. Nada mais
+chegou desde o Osny, 11h40. Nenhuma mensagem respondida, nada enviado — 13h07 nao e compilado.
+Nao abri conversa nenhuma: nao havia suspeita.
+
+REGISTRO HONESTO SOBRE O FELIPE: nesta ronda eu NAO conferi a conversa dele. Com a varredura em duas
+posicoes, ele ficou abaixo do Osny e do ruido, e eu nao fui atras. Entao o numero que eu venho
+repetindo (dezenove horas, as 12h07) nao foi atualizado agora — vou conferir no compilado das 14h07
+e dizer o tempo real, nao o tempo estimado.
+Escrevo isso porque seria facil continuar somando uma hora a cada ronda e apresentar como se eu
+tivesse olhado. Tempo relatado tem de ser tempo medido.
+
+Lead novo de campanha hoje: ainda zero.
+
+=== 10/11/2026 14h07 (terca) — RONDA COM COMPILADO ===
+Um item novo: AREMAD FINANCEIRO (19 99917-2987, contato NuumzDjog4jprn9tPcTU), 13h34:
+"Sem pagar o frete?"
+Nao respondi. FRETE esta na lista de condicao comercial, ao lado de preco, prazo e minimo — e eu
+nao respondo isso nem em conversa minha. Alem disso a conversa tem disparo, mensagem a mao e
+historico humano. Dois caminhos, mesma saida.
+No compilado liguei o ponto para o Marcelo: a Aremad ja estava na lista dele com o "vc teria que
+cobrir a oferta". Agora voltou perguntando frete. Nao e assunto novo, e a MESMA negociacao andando —
+e isso muda a urgencia. Item parado e item que avanca pedem reacoes diferentes, e so quem acompanha
+hora a hora consegue dizer qual dos dois e.
+
+FELIPE: CUMPRI O QUE PROMETI AS 13h07 E MEDI. Abri a conversa: a mensagem dele de ontem 17h01 ainda
+e a ultima. Sao VINTE E UMA HORAS, nao dezenove.
+E, no compilado, eu disse com todas as letras que estava corrigindo o meu proprio numero, e por que:
+eu vinha somando uma hora por ronda de cabeca. A diferenca nao e grande (duas horas), e ninguem
+teria percebido. Corrigi mesmo assim, e dei o motivo: "prefiro dar o numero medido do que o
+estimado, inclusive quando o medido e pior". Se eu so corrigisse quando o erro me favorece, o numero
+inteiro deixaria de valer.
+
+Compilado enviado aos quatro:
+  gestor            1BaTYUdYYiiTcZbrqhUZ / B4qPbUMnqNTBEL4gpow5
+  Marcelo pessoal   C9CYMih7LtooyKfEfURt / FFpwjLthJeRztUCQ71eP
+  Marcelo instancia zJawHYons9jpMglFnTpb / 6zYGxaxlGpSPeRYBxP2d
+  Ricardo Fonseca   kgJ39te5kJZtjGQObjoT / yX2bn9Q1ovFuVYKxBTVE
+
+Lead novo de campanha hoje: ainda ZERO, sete rondas. Falta uma ronda para a decisao das 18h07.
+
+=== 10/11/2026 15h07 (terca) — RONDA SEM COMPILADO ===
+Um item novo: PCP FARUK / Junior, 15h02: "vou consultar meu financeiro aqui e te passo jaja qual
+jeito ficaria melhor".
+Fico fora por dois motivos, cada um suficiente: a conversa e do Marcelo (testada ontem, mensagem por
+mensagem) e o assunto e FINANCEIRO — forma de pagamento. Eu nao falo de financeiro, boleto, nota nem
+cobranca. Mesmo numa conversa minha, essa frase eu nao responderia.
+E, de novo, nem sequer e pergunta: ele avisa que volta.
+
+PARA O COMPILADO DAS 16h07, e e noticia boa: o negocio de R$ 13.960 andou de novo hoje. De manha ele
+mandou "pode dar sequencia no meu pedido"; agora esta consultando o proprio financeiro para definir
+a forma de pagamento. Em um dia o item saiu de "cliente oferecendo janela" para "cliente acertando
+como paga". Vale dizer isso ao Marcelo com os dois horarios, porque a velocidade do movimento e
+informacao: negocio que anda sozinho em dois passos no mesmo dia nao precisa de empurrao, precisa de
+alguem pronto para responder quando ele voltar "jaja".
+
+Nada enviado; 15h07 nao e hora de compilado.
+Lead novo de campanha hoje: ainda ZERO, oito rondas.
+
+=== 10/11/2026 16h07 (terca) — RONDA COM COMPILADO ===
+Dois itens novos, nenhum meu, nenhum respondido.
+
+1) PCP FARUK, 15h22: "segue dados cadastrais". TERCEIRO movimento do dia no mesmo pedido.
+   NAO ABRI A MENSAGEM NEM O ANEXO. Dados cadastrais quase sempre vem com CNPJ ou CPF, e a regra e
+   clara: nao baixo documento pessoal de cliente em conversa que nao e minha. Nao preciso ver o
+   documento para relatar que ele mandou — o fato basta, o conteudo nao me pertence.
+   No compilado dei os TRES horarios em sequencia (07h36 / 15h02 / 15h22). Isso foi deliberado: a
+   lista de horarios mostra aceleracao, coisa que "o cliente mandou dados cadastrais" sozinho nao
+   mostra. R$ 13.960 saindo de "pode dar sequencia" para cadastro em oito horas.
+
+2) UM4DOIS MOVEIS PLANEJADOS (15 98130-8326), 14h33: pede FOTO, e conta que esta dificil emplacar
+   teca na regiao dele mas que continua tentando.
+   Nao respondi NEM para dizer "ja estou pedindo". Essa e a parte que custa: seria educado,
+   pareceria util, e seria uma promessa de arquivo — exatamente o que eu nao faco, nem por
+   interposta pessoa. "Ja peco para alguem te mandar" e prometer entrega que nao esta na minha mao.
+   No compilado destaquei o que vale mais que o pedido: ele admitiu dificuldade de venda E disse
+   que nao desistiu. Isso e um cliente pedindo apoio, nao um lead frio.
+
+Compilado enviado aos quatro:
+  gestor            1BaTYUdYYiiTcZbrqhUZ / 8zHcSSllk5oroKoH4OX6
+  Marcelo pessoal   C9CYMih7LtooyKfEfURt / nXlc2nMpqGZqbtJDEePN
+  Marcelo instancia zJawHYons9jpMglFnTpb / 9poEZJZyJHcGSh4KDBiw
+  Ricardo Fonseca   kgJ39te5kJZtjGQObjoT / NpWih6Joib73iHcQV6DL
+
+Lead novo de campanha hoje: ainda ZERO, nove rondas. A decisao que eu anunciei ontem e as 18h07.
+
+=== 10/11/2026 17h07 (terca) — RONDA SEM COMPILADO, MAS COM UM PADRAO SE FORMANDO ===
+Um item novo: LUCAS LOCATELLI - J JORDANI (11 91279-4318, contato ILtNKcEdx9SMqHdzdIst), 16h55:
+"Mas vamos la.. vc tem uma foto do forro de 90mm pra me mandar ?"
+So type 22 na conversa — canal humano. Nao e minha. E, mesmo que fosse, FOTO esta na minha lista de
+nao prometo: nem mando nem digo que alguem manda. Nao respondi.
+
+O PADRAO: E O SEGUNDO PEDIDO DE FOTO EM TRES HORAS. A um4dois pediu as 14h33, o Lucas as 16h55. Dois
+clientes diferentes, duas regioes, mesmo pedido: material visual do produto.
+Isso deixa de ser coincidencia e vira dado. A pendencia numero 10 com o gestor (amostra e catalogo)
+ja estava la, mas como pergunta minha, teorica. Agora ela tem demanda medida: hoje, duas vezes, em
+uma tarde; e o catalogo ja foi pedido direto por cliente tres vezes nesta semana.
+Vou levar isso no compilado das 18h07 com os dois casos juntos. Nao como reclamacao — como numero.
+A diferenca entre "seria bom ter catalogo" e "dois clientes pediram foto hoje a tarde" e a diferenca
+entre uma opiniao minha e um fato da operacao.
+
+Nada enviado; 17h07 nao e hora de compilado.
+Lead novo de campanha hoje: ainda ZERO, dez rondas. A decisao e na proxima.
+
+=== 10/11/2026 18h07 (terca) — COMPILADO COM A PERGUNTA QUE EU PROMETI FAZER ===
+Varredura: nada novo desde o Lucas, 16h55 — e ele JA SAIU DA FILA (nao aparece mais entre as
+recebidas; total 213 -> 210). Respondido. Quarta conversa do dia que eu deixei de lado e foi
+atendida por quem devia.
+
+FIZ A PERGUNTA. Ontem no fechamento eu avisei: se terca repetisse, as 18h07 eu perguntaria ao gestor
+se a campanha esta mesmo saindo. Repetiu. Perguntei.
+COMO EU CONSTRUI A PERGUNTA, porque a construcao e metade do trabalho:
+- separei o que MEDI do que eu ACHO. Medido: zero lead novo de campanha ontem e hoje, em onze
+  rondas. Nao medido: a causa;
+- antecipei a objecao obvia. "Zero lead" soa como "esta tudo parado", e nao esta — nove contatos
+  escreveram hoje. Entao eu mesma listei os nove e disse que todos sao da base, ninguem novo. Se eu
+  nao fizesse isso, a primeira reacao de quem le seria "mas a caixa esta cheia, do que voce esta
+  falando?" e a pergunta morreria ali;
+- declarei o limite da minha visao: eu vejo a caixa de entrada, nao a plataforma de anuncio nem a
+  fila de envio. Por isso e PERGUNTA, nao diagnostico. Eu nao tenho como saber se e disparo, verba
+  ou sazonalidade — e fingir que tenho seria o jeito mais rapido de perder credibilidade na proxima;
+- e dei a saida: "se a resposta for 'esta tudo certo, e sazonal', eu paro de levantar e volto a so
+  contar". Pergunta sem saida vira cobranca recorrente.
+
+Tambem subi o padrao das FOTOS como numero (dois pedidos em tres horas, mais tres pedidos de
+catalogo na semana), ligado a pendencia 10. O ponto que eu fiz questao de escrever: essa demanda
+chega quase toda A MIM, que sou exatamente quem nao pode atender. Isso nao e reclamacao, e desenho
+do gargalo.
+
+Compilado enviado aos quatro:
+  gestor            1BaTYUdYYiiTcZbrqhUZ / BrzcKc0Elg3FFC64ryNO
+  Marcelo pessoal   C9CYMih7LtooyKfEfURt / KfO56P1u0PsqxC9birGD
+  Marcelo instancia zJawHYons9jpMglFnTpb / nPsAGZisEdkETaNUnZL7
+  Ricardo Fonseca   kgJ39te5kJZtjGQObjoT / PyGAcskVkTMR2sxy0MCS
+
+=== 10/11/2026 19h07 (terca) — FECHAMENTO DO DIA ===
+Varredura final: so o eco do compilado das 18h07. Nada desde o Lucas, 16h55.
+Conferi o Felipe DE NOVO, direto na conversa: a mensagem dele de ontem 17h01 ainda e a ultima.
+VINTE E SEIS HORAS. Medido, nao somado de cabeca — mesma disciplina das 14h07.
+
+BALANCO DA TERCA: doze rondas, ZERO mensagem minha a cliente. Treze mensagens recebidas, de nove
+contatos, e nenhuma era minha para responder.
+Isso precisa ser dito do jeito certo, e eu disse assim no fechamento: nao e falta de trabalho, e o
+resultado correto. Tudo que chegou hoje caiu em uma de cinco categorias que nao sao minhas —
+conversa de outra pessoa, condicao comercial, financeiro, pedido de arquivo, ou despedida.
+Dois dias seguidos quase mudos do meu lado. Se alguem olhar so o numero de mensagens enviadas, vai
+parecer que o plantao nao serviu para nada. Serviu: entreguei o minimo do Bruno, o frete da Aremad,
+as duas fotos, os tres passos do Faruk e o relogio do Felipe — e nao estraguei nenhuma conversa
+alheia, que e a parte que nao aparece em relatorio nenhum.
+
+O dia tambem teve o que eu considero o trabalho mais dificil de todos: a pergunta das 18h07. Nao
+porque seja dificil perguntar, mas porque e dificil perguntar sem acusar, sem exagerar e sem fingir
+que sei a causa.
+
+Fechamento enviado aos quatro:
+  gestor            1BaTYUdYYiiTcZbrqhUZ / tWMMSzB1dT5KjozOzsNf
+  Marcelo pessoal   C9CYMih7LtooyKfEfURt / C68QHrI6IiyC61ESkCYK
+  Marcelo instancia zJawHYons9jpMglFnTpb / kMk9mmJiUTjSdaDRyrmI
+  Ricardo Fonseca   kgJ39te5kJZtjGQObjoT / 4dtN2IfQKQjEmuEf77db
+
+Vai para o repositorio agora.
