@@ -1,4 +1,4 @@
-// conecta-pipeline (v4) — move o lead do NITRON CONECTA no pipeline do CRM (09/11/2026).
+// conecta-pipeline (v5) — move o lead do NITRON CONECTA no pipeline do CRM (09/11/2026).
 //
 // Pipeline "Nitron Conecta" no GHL, com as 4 etapas que o gestor criou:
 //   convite -> formulario -> confirmado -> compareceu
@@ -25,6 +25,12 @@
 // e a busca do GHL virou plano B, so para quem ainda nao tem vinculo.
 // Tambem passou a escolher o contato de forma DETERMINISTICA (menor ghl_id): um codparc pode ter
 // varios contatos no CRM (o 15 tem 3) e "o primeiro que vier" muda de uma chamada para outra.
+//
+// v5: O ID DO CONTATO PODE VIR COM SUFIXO. ghl_contato.ghl_id guarda, em 91 das 7.081 linhas, a
+// chave composta "<id>#r<codparc>" ou "<id>#biz<codparc>" — e o mesmo contato do CRM servindo mais
+// de uma loja, com o sufixo so para a linha ser unica por codparc. A funcao mandava a chave inteira
+// como contactId e o GHL recusava com 400 na criacao da oportunidade. Medido no lote de 11/11:
+// 3 clientes de 702. Agora corta tudo a partir do "#".
 //
 // POST { acao: "convite"|"formulario"|"confirmado"|"compareceu",
 //        alvos: [ { codparc?, codvend?, fone?, email?, nome? } ],
@@ -112,7 +118,11 @@ Deno.serve(async (req) => {
       // 1. achar o contato
       let cid: string | null = null;
       const porCp = a.codparc != null ? porCodparc.get(String(a.codparc)) : null;
-      if (porCp?.ghl_id) cid = porCp.ghl_id;
+      // ghl_contato.ghl_id as vezes guarda uma CHAVE COMPOSTA, "<id>#r<codparc>" / "<id>#biz<codparc>":
+      // sao 91 linhas de 7.081, um mesmo contato do CRM que atende varias lojas, e o sufixo existe
+      // so para a linha ficar unica por codparc. Mandar isso cru para o GHL da 400 na criacao da
+      // oportunidade. Achado em 11/11 no lote do Conecta (F. I. REPRESENTACOES, THIEGO, CAVANNA).
+      if (porCp?.ghl_id) cid = String(porCp.ghl_id).split("#")[0];
       if (!cid && a.contact_id) cid = String(a.contact_id);
       // Busca por telefone: o cadastro guarda o numero em formatos diferentes (+5511..., 5511...,
       // 11...), entao tentar UM formato so devolve vazio e o alvo vira "sem_contato" sem motivo.
