@@ -1384,3 +1384,54 @@ e-mail não tem fila de instância, em vez de cravar um número que superestimar
 **Contato do gestor devolvido para a NINA** (09/11 18:58, autorizado por ele), com a troca gravada em
 `rep_dono_log` id 48 **antes** de chamar o GHL — `codvend 0` porque a coluna é NOT NULL e ele não é
 representante. Os avisos de lead voltam a sair por Zaptos.
+
+
+## Fila cancelada de novo em 11/11 — e o motivo era a chave desligada outra vez
+
+*"Não sei o que está travado no painel, mas pode cancelar tudo!!!"* — gestor, 11/11.
+**1.133 linhas canceladas.**
+
+| campanha | canal | linhas | desde |
+|---|---|---|---|
+| nitronconecta | e-mail | 674 | 09/11 |
+| nitronconecta | Zaptos (Nina 350, Elaine 7, Mara 6, Juliete 4) | 367 | 09/11 |
+| rep_comunicado | Zaptos (Mara 31, Juliete 26, Elaine 20, Nina 5, Karla 2) | 84 | 10/11 |
+| reativacao_email_cliente | e-mail | 8 | 10–11/11 |
+
+**A causa: `fila_config.wpp_ativo = false` E `email_ativo = false`.** De novo. A primeira vez foi
+15/10 (descoberta 4 dias depois, 285 linhas presas); esta é a segunda, com **1.133**.
+
+**E desta vez a fila parecia viva**, o que é pior: desde a v35 a cobrança obedece
+`cobranca_config.ativo`, que está `true` — então 262 mensagens saíram nas últimas 48h e o painel não
+parecia parado. O que denuncia é o recorte: último Zaptos de campanha **não-cobrança** em
+**09/11 19:21**, último e-mail de cobrança em **11/11 11:31**.
+
+Ou seja: o gestor **disparou o Conecta em 09/11** e o lote morreu na chave, não no código.
+
+**O banco não guarda quem desligou nem quando.** Duas vezes em menos de um mês é padrão, não acidente:
+vale uma coluna de carimbo (`desligado_em`, `desligado_por`) em `fila_config` e um alerta quando
+houver linha pendente com a chave do canal em `false`.
+
+### O que o cancelamento deixou torto no CRM
+
+O lote de 09/11 **criou 635 cards em "Convite enviado"** (mais 302 `sem_contato` e 4 falhas) antes de
+a fila morrer. Esses 635 clientes **nunca receberam nada** — o pipeline está afirmando um convite que
+não saiu. Num reenvio isso não atrapalha (o card já está na etapa certa e volta `ja_adiante`), mas
+enquanto ninguém reenviar o quadro mente. **Não mexido — apagar 635 cards é decisão do gestor.**
+
+### Três inscrições REAIS já entraram pelo formulário
+
+E isso é a notícia boa: mesmo com a fila desligada, o site do Replit está recebendo.
+
+| quando | empresa | dia | pessoas |
+|---|---|---|---|
+| 10/11 13:04 | sandra bevilaqua | 18/11 | 1 |
+| 10/11 13:05 | leonildo bevilaqua da silva | 18/11 | 2 |
+| 11/11 08:50 | Caires comércio de Utilidades doméstica (Wagner fernando) | 16/11 | 2 |
+
+**Duas delas vieram com o telefone no campo do nome** e o nome da pessoa na razão social (ids 4 e 5).
+Não é erro do contrato — é a pessoa preenchendo trocado, ou o rótulo do campo induzindo. Vale olhar a
+ordem e os rótulos da primeira seção do formulário antes do convite em massa.
+
+A inscrição de teste (id 3, "NITRON CONECTA - TESTE", 16/11, 3 pessoas) **continua ocupando vaga e
+contando 3 pessoas para a comida** na agenda real. Apagar quando o gestor mandar.
