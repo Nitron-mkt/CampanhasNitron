@@ -1982,30 +1982,60 @@
      bloco de data/hora/local e um botao para o formulario. As imagens entram DEPOIS, no fim do
      corpo, montadas pelo fila-processar (blocoImagens), que e quem sabe delas nos dois canais. */
   function cnEmailHTML(txt){
+    /* O corpo chega ao GHL como HTML cru (o campanhas-enviar so envolve num <div> e troca \n por
+       <br>), entao HTML passa direto — MAS por isso mesmo este HTML tem de sair em UMA LINHA SO:
+       qualquer \n viraria um <br> extra entre as tags e abriria buraco no layout.
+       A MENSAGEM E A MESMA do Zaptos, so vestida: mesmas palavras, MESMA ORDEM. Nao se reescreve
+       o texto do gestor aqui — cada bloco dele vira uma peca do layout, no lugar em que ele
+       escreveu. So o bloco do alarme sobe, porque e o titulo da peca:
+         alarme -> selo no cabecalho        fogo  -> faixa ambar
+         calendario/relogio/pino -> cartao  aviso -> linha vermelha
+         "Garanta sua vaga: [LINK]"  -> botao
+       As imagens entram DEPOIS, no fim do corpo, montadas pelo fila-processar (blocoImagens). */
     var linhas=String(txt||"").split("\n"),blocos=[],atual=[];
     linhas.forEach(function(l){ if(l.trim()===""){ if(atual.length){blocos.push(atual);atual=[];} } else atual.push(l); });
     if(atual.length)blocos.push(atual);
     var forte=function(t){return esc(t).replace(/\*([^*]+)\*/g,"<b>$1</b>");};
-    var corpo="";
+    var ICO=/^[\s\u{1F300}-\u{1FAFF}\u2600-\u27BF\u2B00-\u2BFF\uFE0F\u200D]+/u;
+    var semIco=function(t){return String(t).replace(ICO,"").replace(/\s+/g," ").trim();};
+    var pegaIco=function(t){var m=String(t).match(ICO);return m?m[0].trim():"";};
+    var faixaHTML=function(t){return '<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:2px 0 18px"><tr>'
+      +'<td style="background:#fff6e0;border-left:4px solid #e8a317;border-radius:0 8px 8px 0;padding:12px 16px;font-size:15px;font-weight:700;color:#7a5200">'+forte(t)+'</td></tr></table>';};
+    var agendaHTML=function(ls){
+      var rows="";
+      ls.forEach(function(l){
+        rows+='<tr><td width="34" align="center" valign="top" style="width:34px;padding:7px 0;font-size:18px;line-height:1.5">'+esc(pegaIco(l))+'</td>'
+             +'<td valign="top" style="padding:7px 4px;font-size:16px;line-height:1.5;color:#14211d">'+forte(semIco(l))+'</td></tr>';
+      });
+      return '<table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:2px 0 20px;background:#f2f8f5;border:1px solid #cfe5d9;border-radius:12px"><tr><td style="padding:14px 16px">'
+        +'<table role="presentation" cellpadding="0" cellspacing="0" width="100%">'+rows+'</table></td></tr></table>';
+    };
+    var selo="",corpo="";
     blocos.forEach(function(b){
-      var t=b.join("\n");
-      /* o bloco de data/hora/local vira caixa destacada — e o que a pessoa precisa achar de relance */
-      if(/^[\u{1F4C5}\u{23F0}\u{1F4CD}]/u.test(b[0])){
-        corpo+='<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:18px 0;background:#f2f8f5;border:1px solid #cfe5d9;border-radius:10px"><tr><td style="padding:14px 16px;font-size:15px;line-height:1.7;color:#14211d">'
-             +b.map(forte).join("<br>")+'</td></tr></table>';
-        return;
-      }
-      if(/^Garanta sua vaga/i.test(b[0]))return; /* vira botao, nao linha de texto */
-      corpo+='<p style="margin:0 0 14px;font-size:15px;line-height:1.65;color:#14211d">'+forte(t).replace(/\n/g,"<br>")+'</p>';
+      var c0=b[0]||"";
+      if(/^\u{1F6A8}/u.test(c0)){selo=semIco(b.join(" "));return;}
+      if(/^\u{1F525}/u.test(c0)){corpo+=faixaHTML(semIco(b.join(" ")));return;}
+      if(/^[\u{1F4C5}\u{23F0}\u{1F4CD}]/u.test(c0)){corpo+=agendaHTML(b);return;}
+      if(/^\u26A0/u.test(c0)){corpo+='<p style="margin:2px 0 16px;text-align:center;font-size:15px;font-weight:700;line-height:1.5;color:#b23b2e">'+forte(semIco(b.join(" ")))+'</p>';return;}
+      if(/^Garanta sua vaga/i.test(c0))return;
+      corpo+='<p style="margin:0 0 15px;font-size:16px;line-height:1.65;color:#1b2b26">'+forte(b.join("\n")).replace(/\n/g,"<br>")+'</p>';
     });
     var url=CNPAR.form_url||"";
     var botao=url
-      ? '<table role="presentation" cellpadding="0" cellspacing="0" style="margin:22px auto"><tr><td style="background:#0f7a46;border-radius:11px"><a href="'+esc(url)+'" style="display:inline-block;padding:14px 30px;color:#ffffff;font-size:16px;font-weight:700;text-decoration:none">Garantir minha vaga</a></td></tr></table>'
-        +'<p style="margin:0;text-align:center;font-size:12px;color:#5d7169">Ou copie e cole no navegador: '+esc(url)+'</p>'
-      : '<p style="margin:0;text-align:center;font-size:13px;color:#b7791f">(link de inscrição ainda não cadastrado — grave em filtros_padrao.conecta_form_url)</p>';
-    return '<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:620px;margin:0 auto;background:#ffffff">'
-      +'<div style="background:#0a5c34;border-radius:14px 14px 0 0;padding:22px 20px;text-align:center"><div style="color:#ffffff;font-size:24px;font-weight:800;letter-spacing:1px">NITRON CONECTA</div></div>'
-      +'<div style="border:1px solid #dfe8e4;border-top:0;border-radius:0 0 14px 14px;padding:22px 20px">'+corpo+botao+'</div></div>';
+      ? '<table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:6px auto 10px"><tr><td style="background:#0f7a46;border-radius:12px"><a href="'+esc(url)+'" style="display:inline-block;padding:16px 38px;color:#ffffff;font-size:17px;font-weight:800;text-decoration:none;letter-spacing:.3px">Garantir minha vaga</a></td></tr></table>'
+        +'<p style="margin:0;text-align:center;font-size:12px;line-height:1.5;color:#5d7169">Ou copie e cole no navegador:<br><span style="color:#0f7a46">'+esc(url)+'</span></p>'
+      : '<p style="margin:0;text-align:center;font-size:13px;color:#b7791f">(link de inscri\u00e7\u00e3o ainda n\u00e3o cadastrado — grave em filtros_padrao.conecta_form_url)</p>';
+    var cab='<tr><td style="background:#0a5c34;padding:26px 24px 22px;text-align:center">'
+      +'<div style="color:#ffffff;font-size:27px;font-weight:800;letter-spacing:2px;line-height:1.1">NITRON CONECTA</div>'
+      +'<div style="color:#8fd3ae;font-size:13px;letter-spacing:1px;margin-top:6px;text-transform:uppercase">Encontro exclusivo com parceiros</div>'
+      +(selo?'<div style="margin-top:16px"><span style="display:inline-block;background:#ffd34d;color:#4a3200;font-size:14px;font-weight:800;letter-spacing:.5px;padding:9px 20px;border-radius:999px">'+forte(selo)+'</span></div>':'')
+      +'</td></tr>';
+    var rodape='<tr><td style="padding:18px 24px 24px;text-align:center;border-top:1px solid #e6ece9">'
+      +'<div style="font-size:13px;color:#5d7169;line-height:1.6">Nitronplast Ind\u00fastria e Com\u00e9rcio<br>Rua Uru\u00e7u\u00ed, 600 — Cidade Arac\u00edlia, Guarulhos/SP</div>'
+      +'<div style="font-size:11px;color:#93a39d;margin-top:10px">Voc\u00ea recebeu este convite porque \u00e9 cliente Nitron.</div></td></tr>';
+    return '<div style="background:#eef3f0;padding:22px 12px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif">'
+      +'<table role="presentation" cellpadding="0" cellspacing="0" align="center" width="620" style="max-width:620px;width:100%;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #dfe8e4">'
+      +cab+'<tr><td style="padding:24px 24px 20px">'+corpo+botao+'</td></tr>'+rodape+'</table></div>';
   }
   function cnMontarRep(r,tpl){
     /* A lista entra em CODIGO, com CNPJ em linha propria — nunca escrita por IA e nunca pela mao. */
