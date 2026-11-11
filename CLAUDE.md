@@ -1435,3 +1435,46 @@ ordem e os rótulos da primeira seção do formulário antes do convite em massa
 
 A inscrição de teste (id 3, "NITRON CONECTA - TESTE", 16/11, 3 pessoas) **continua ocupando vaga e
 contando 3 pessoas para a comida** na agenda real. Apagar quando o gestor mandar.
+
+## A v34 do `campanhas-enviar` FOI PUBLICADA em 11/11 — e a imagem no Zaptos voltou a funcionar
+
+A regressão achada em 09/11 ficou dois dias **só registrada**: o publicado continuou sendo a linha
+de 26/10. O gestor viu o sintoma antes de nós — recebeu a 2ª comunicação do Conecta **sem a arte**.
+
+A prova está na própria conversa do CRM, duas mensagens com o mesmo texto:
+
+| hora | `attachments` da mensagem |
+|---|---|
+| 12:27 (publicado de 26/10) | `[]` — vazio |
+| 13:27 (v34) | `["…/comunicado-midia/2026-11-11-nitron-conecta-arte-9srobf.jpg"]`, `delivered` |
+
+Publicada a **v34 inteira** (deploy 50), não um remendo: junto voltaram a **v31** (a queda lê o NOME
+da instância — é o bug que prendeu 174 mensagens por 12 dias em 03/09, e produção estava sem ele
+desde 26/10) e a **v32/v33** (modo aviso). O `anexos` de e-mail de 26/10 está preservado.
+
+Antes do deploy, `get_edge_function` e comparação com o repositório. Depois: `diag`, recusa sem
+instância, recusa por instância fora do cadastro, recusa por telefone fixo, `lookup`, e **envio real
+com imagem pelo caminho da fila**, conferido na conversa do GHL.
+
+**Lição de processo, agora com preço:** registrar a divergência no CLAUDE.md não conserta produção.
+Quando `get_edge_function` discordar do repositório, ou se publica na hora, ou se escreve no estado
+conhecido que **produção está sem aquilo** — e não como se estivesse resolvido.
+
+## `fila_espera` — fila com hora marcada (11/11)
+
+`fila_envio` não tem coluna de agendamento, e o status `agendado` **já conta como pendente** no
+`fila-processar` (`const PEND = ["pendente","agendado"]`), então não dá para segurar linha lá dentro.
+A tabela `public.fila_espera` guarda a linha pronta em `linha jsonb` com a hora em `liberar_em`; a
+função `fila_espera_soltar()` a move para `fila_envio` quando vence, e o cron `fila-espera-soltar`
+roda de 2 em 2 minutos. Mora no banco de propósito: não depende de nenhuma sessão de chat estar viva.
+
+Nasceu do pedido de 11/11 — a 2ª comunicação do Conecta sai para **cada representante 3h depois da
+mensagem que ele mesmo recebeu**, não num horário único.
+
+**Campanha nova, não a mesma.** A trava de duplicidade é por `(campanha, canal, destino)` nas últimas
+12h: reenviar para quem recebeu hoje de manhã com o mesmo código faria a fila recusar tudo **em
+silêncio**. Por isso `nitronconecta_arte`.
+
+**O e-mail de reenvio sai da lista de quem FOI ENTREGUE**, nunca da audiência inteira: assim os
+endereços inválidos não são tentados de novo e, sobretudo, quem está **descadastrado ou com DND** não
+recebe a segunda. Respeitar opt-out não é opcional, e reenviar queima o domínio.
