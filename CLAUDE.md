@@ -621,6 +621,39 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   duas horas disputa as mesmas 60 conexoes do banco. Quando `?entrega=1` devolve `faltam: 0`,
   acabou — o que sobra com `entrega` vazia e linha com `ok=false`, que nunca teve mensagem para ler.
 
+## A cadencia Nitron-Mob migrou para o CRM (12/11)
+
+- **O 3o e-mail e a tabela de precos, e todo numero dele ja existia.** Os 13 itens com valor de
+  fabrica sao a **Tabela Gestor 194 (NUTAB 663, vigente desde 02/09)**, conferida ao vivo; as 13
+  revendas sugeridas sao as que o **1o e-mail ja publicou** em 20/10. Fonte do HTML:
+  `app/nitronmob-email3.html`.
+  **Os precos nao mudaram em nenhum dos tres e-mails** — 13 de 13 batem ao centavo entre o 1o, o 2o
+  e a 194. O 1o e-mail **nao fala** de pedido minimo, 10% nem R$ 5.000, entao nao existe e-mail
+  antigo circulando com o minimo velho de R$ 2.500.
+- **O nome de catalogo diverge do Sankhya em duas refs, e quem manda e o catalogo.** A `851.004.N03`
+  e a `852.004.N03` sao "SAPATEIRA PEQUENA" e "SAPATEIRA GRANDE" no Sankhya, mas os e-mails 1 e 2
+  publicaram **"Organizador Multiuso P"** e **"Organizador Multiuso G"**. Os dois e-mails concordam
+  entre si; usar o nome do Sankhya foi erro meu no rascunho do 3o, corrigido.
+- **Um fardo de cada item = 52 pecas = R$ 5.212,60**, que na pagina da subtotal de R$ 5.791,78 e,
+  por passar dos R$ 5.000, leva os 10% e volta exatamente aos R$ 5.212,60. E o gancho do 3o e-mail,
+  e e conta fechada, nao promessa.
+- **A tag `nitronmob-comunicacao` marca o publico no CRM** (`nitronmob-tag`, tabela `nitronmob_tag`).
+  Ordem do gestor em 12/11: concentrar o disparo no GHL, que tem relatorio de abertura e clique — o
+  envio por API, que e como as duas ondas sairam, **nao tem**.
+  **Criterio: entrega CONFIRMADA no 1o e-mail** (delivered/opened/clicked). Ficam de fora os 214
+  `failed`, os **50 `sent` sem confirmacao** (aceito nao e entregue — a licao de 26/08) e os 20 que
+  falharam ou foram recusados no 2o. Sobram **4.808**, dos quais 4.806 tem contato no CRM.
+- **`contains_set` resolve 80 e-mails numa chamada so.** A primeira versao da funcao buscava um a
+  um: 4.808 chamadas ao GHL, ~100 por rodada de cron, horas de trabalho. O `POST /contacts/search`
+  com `filters:[{field:"email",operator:"contains_set",value:[...]}]` devolve todos de uma vez, e a
+  busca inteira caiu para ~60 chamadas. Vale para qualquer cruzamento de lista com o CRM.
+  Para marcar existe o irmao: `POST /contacts/bulk/tags/update/add`, 100 contatos por chamada.
+- **PostgREST corta em 1.000 linhas por leitura**, entao `limit=2500` na funcao devolve 1.000 e a
+  rodada faz 1.000 — nao adianta pedir mais num `select` so.
+- **O `pg_net` estava com timeout de DNS em massa em 12/11** (`DNS time: 60000ms`), derrubando cron
+  de todos os projetos do banco, nao so os da Nitron. Quando um cron "roda e nada acontece", olhar
+  `net._http_response.error_msg` antes de culpar a funcao.
+
 ## Landing "Nitron Direto" (campanhas.nitron.com.br) — o lead ja chega com CNPJ e CEP (05/11)
 
 - **A LP mora no Replit** (app "Nitron Campaign Landing", publicada em `campanhas.nitron.com.br`) e
