@@ -1,4 +1,18 @@
-// campanhas-enviar (v34) — email com ARTE + {{...}}. Garante contato. WhatsApp via SMS+#contact_instance. Recusa WhatsApp para telefone FIXO (10 digitos). ?diag mostra rate-limit.
+// campanhas-enviar (v35) — email com ARTE + {{...}}. Garante contato. WhatsApp via SMS+#contact_instance. Recusa WhatsApp para telefone FIXO (10 digitos). ?diag mostra rate-limit.
+//
+// v35: PEDIU IMAGEM, TEM DE IR IMAGEM — e agora a funcao CONFERE (12/11/2026).
+//      Ordem do gestor depois de receber a 2a comunicacao do Conecta sem a arte: "quando formos
+//      enviar qualquer campanha que tenha uma imagem anexada tem que ir a imagem".
+//      O furo nao era so o bug: era o SILENCIO. Em 26/10 uma versao sem suporte a `attachments`
+//      foi publicada por cima, e por duas semanas `imagens` no Zaptos nao fez nada — a linha
+//      gravava "enviado" igual, e so o aparelho de quem recebia mostrava a falta. Nenhum alarme.
+//      Agora, quando o pedido traz `imagens`, depois de enviar a funcao LE a mensagem gravada na
+//      conversa e confere o campo `attachments`. Se a mensagem saiu SEM anexo, a linha vira ERRO
+//      (`anexo_faltou`), nao "enviado" — melhor uma linha para reenviar do que um convite
+//      registrado como entregue sem a arte. E a mesma logica da v29 (o GHL aceitar nao e o cliente
+//      receber), aplicada ao anexo.
+//      Custa quase nada: a checagem de entrega ja leu a conversa por 12s, entao a mensagem ja esta
+//      indexada e a confirmacao sai na primeira leitura. `conferir_anexo: false` desliga.
 // v22: TRAVA DE INSTANCIA. Antes, sem instancia ele mandava o texto SEM amarrar — a mensagem saia pela ultima instancia
 //      a que aquele contato ficou preso (de outro assunto, de outro mes), e o cliente recebia algo desconexo.
 //      Agora WhatsApp sem instancia e RECUSADO, e o token e conferido contra o cadastro instancia_ghl (cache de 5 min).
@@ -386,6 +400,23 @@ async function esperarQueda(cid: string, desdeMs: number, janelaMs: number, inst
   }
   return { caiu: false, outra: outra || undefined };
 }
+// CONFERE SE A IMAGEM FOI JUNTO (v35). Pedir `imagens` nunca garantiu que a mensagem saisse com
+// anexo — e o caso de 26/10 a 11/11 provou que a falha e MUDA: a linha grava "enviado" e so o
+// aparelho de quem recebe mostra que faltou a arte. Aqui a gente le a propria mensagem gravada na
+// conversa e olha o `attachments`. E o unico sinal observavel, como a linha de queda e para a
+// instancia caida.
+async function conferirAnexo(cid: string, msgId: string, janelaMs: number) {
+  const t0 = Date.now();
+  while (Date.now() - t0 < janelaMs) {
+    const lida = await lerConversa(cid);
+    if (lida.http === 200) {
+      const m = lida.msgs.find((x: any) => String(x?.id || "") === msgId);
+      if (m) return { achou: true, anexos: Array.isArray(m.attachments) ? m.attachments.length : 0 };
+    }
+    await sleep(BIND_POLL_MS);
+  }
+  return { achou: false, anexos: 0 };   // nao deu para ler: nao condena a linha
+}
 async function enviarMsg(contactId: string, canal: string, texto: string, assunto?: string, templateId?: string, instancia?: string, fone?: string, nome?: string, merge?: any, opts?: any) {
   // so URL http(s): o GHL busca o arquivo de fora, entao caminho relativo ou data: URI nao chegaria
   const anexos: string[] = (Array.isArray(opts?.imagens) ? opts.imagens : [])
@@ -459,7 +490,21 @@ async function enviarMsg(contactId: string, canal: string, texto: string, assunt
     // da Nina (escopo lead, fora das campanhas de rep) aparece para nos.
     if (q.outra) return { ...res, bind, troca: { ...troca, margem_ms: esperaTotal }, queda_outra: q.outra };
   }
-  return { ...res, bind, troca: { ...troca, margem_ms: esperaTotal }, switch: sw || undefined };
+  // 5) PEDIU IMAGEM? Entao a mensagem gravada tem de ter anexo. Sem isso a falha e muda.
+  let anexosOk: number | undefined;
+  if (anexos.length && res.status >= 200 && res.status < 300 && cid && opts?.conferir_anexo !== false) {
+    let msgId = ""; try { msgId = String(JSON.parse(res.body)?.messageId || ""); } catch { /* corpo inesperado */ }
+    if (msgId) {
+      const a = await conferirAnexo(cid, msgId, 8000);
+      if (a.achou && a.anexos === 0) {
+        return { ...res, status: 0, bind, troca: { ...troca, margem_ms: esperaTotal },
+          recusado: "a imagem foi pedida mas a mensagem saiu SEM anexo — nao contar como entregue",
+          anexo_faltou: true, anexos_pedidos: anexos.length };
+      }
+      if (a.achou) anexosOk = a.anexos;
+    }
+  }
+  return { ...res, bind, troca: { ...troca, margem_ms: esperaTotal }, switch: sw || undefined, anexos_confirmados: anexosOk };
 }
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
@@ -471,7 +516,12 @@ Deno.serve(async (req) => {
       for (const kk of ["x-ratelimit-limit-daily", "x-ratelimit-daily-remaining", "x-ratelimit-interval-milliseconds", "x-ratelimit-max", "x-ratelimit-remaining", "retry-after"]) { const v = r.headers.get(kk); if (v != null) hdr[kk] = v; }
       const body = (await r.text()).slice(0, 200);
       const set = await instanciasValidas();
-      return j({ diag: true, status: r.status, headers: hdr, body, instancias_cadastradas: set ? [...set] : null, bind: { espera_ms: BIND_ESPERA_MS, poll_ms: BIND_POLL_MS, margem_ms: BIND_MARGEM_MS }, entrega_check_ms: ENTREGA_CHECK_MS });
+      // VERSAO E RECURSOS no diag (v35). A regressao de 26/10 ficou duas semanas em producao
+      // porque nao havia como perguntar "esta versao manda imagem no Zaptos?" — so o aparelho de
+      // quem recebia respondia. Agora o diag responde, e da para conferir ANTES de um lote.
+      return j({ diag: true, versao: "v35",
+        recursos: ["imagem_zaptos", "confere_anexo", "queda_por_nome", "modo_aviso", "anexo_email"],
+        status: r.status, headers: hdr, body, instancias_cadastradas: set ? [...set] : null, bind: { espera_ms: BIND_ESPERA_MS, poll_ms: BIND_POLL_MS, margem_ms: BIND_MARGEM_MS }, entrega_check_ms: ENTREGA_CHECK_MS });
     }
     const canal = b.canal || "whatsapp";
     const texto = b.texto || "";
@@ -570,6 +620,6 @@ Deno.serve(async (req) => {
     const mergeUsado = (instUsada !== instancia && b.merge && typeof b.merge === "object") ? { ...b.merge, instancia: instUsada, assistente: instUsada } : b.merge;
     const res: any = await enviarMsg(contactId, canal, textoUsado, b.assunto, b.templateId, instUsada || undefined, b.fone, b.nome, mergeUsado, { espera_ms: b.espera_ms, margem_ms: b.margem_ms, exigir_confirmacao: b.exigir_confirmacao, campos: b.campos, checar_entrega: b.checar_entrega, checar_ms: b.checar_ms, imagens: b.imagens, anexos: b.anexos, switch_inst: forcarSwitch, switch_duplo: b.switch_duplo === true, switch_margem_ms: b.switch_margem_ms });
     const ok = res.status >= 200 && res.status < 300;
-    return j({ ok, contactId, via, criado, canal, instancia: instUsada || null, instancia_pedida: instUsada !== instancia ? instancia : undefined, texto_ajustado: textoAjustado || undefined, campos_gravados: camposGravados || undefined, dono_crm: dono, arte: !!b.templateId, arte_ok: res.arte_ok, motivo: ok ? undefined : (res.recusado || ("GHL " + res.status + ": " + res.body)), bind_nao_confirmado: res.recusado ? true : undefined, instancia_caiu: res.instancia_caiu || undefined, queda_outra: res.queda_outra || undefined, dono_forcado: donoForcado || undefined, switch_pedido: forcarSwitch ? instancia : undefined, switch_aceito: res.switch ? res.switch.aceito : undefined, alerta_pelo_dono: alertaPeloDono || undefined, anexos: (Array.isArray(b.imagens) ? b.imagens.length : 0) || undefined, resultado: res, teste: !!b.test });
+    return j({ ok, contactId, via, criado, canal, instancia: instUsada || null, instancia_pedida: instUsada !== instancia ? instancia : undefined, texto_ajustado: textoAjustado || undefined, campos_gravados: camposGravados || undefined, dono_crm: dono, arte: !!b.templateId, arte_ok: res.arte_ok, motivo: ok ? undefined : (res.recusado || ("GHL " + res.status + ": " + res.body)), bind_nao_confirmado: res.recusado ? true : undefined, instancia_caiu: res.instancia_caiu || undefined, queda_outra: res.queda_outra || undefined, anexo_faltou: res.anexo_faltou || undefined, anexos_confirmados: res.anexos_confirmados, dono_forcado: donoForcado || undefined, switch_pedido: forcarSwitch ? instancia : undefined, switch_aceito: res.switch ? res.switch.aceito : undefined, alerta_pelo_dono: alertaPeloDono || undefined, anexos: (Array.isArray(b.imagens) ? b.imagens.length : 0) || undefined, resultado: res, teste: !!b.test });
   } catch (e) { return j({ ok: false, erro: String(e) }, 500); }
 });
