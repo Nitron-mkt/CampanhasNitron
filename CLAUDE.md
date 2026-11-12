@@ -1515,3 +1515,28 @@ dos 350 clientes com celular no CRM, 252 tinham dona conhecida e 98 nenhuma.
 **Cuidado ao ler `dono_crm: ""`:** significa "sem dono" **ou** "dono que não é instância nossa".
 Dos 98 "sem dono", **11 tinham dono de verdade** — um usuário do CRM fora do `instancia_ghl`. Só o
 `cliente-dono-nina` separa os dois casos, porque lê o `assignedTo` cru no GHL.
+
+## VALERIA saiu da Nitron — e isso não estava escrito em lugar nenhum (12/11)
+
+O gestor: *"já disse antes que Valeria não existe mais na Nitron"*. Ele tinha dito; o sistema não
+sabia. `instancia_ghl` a mantinha **`ativa=true`** e ela entrou no lote do Conecta como dona de
+3 contatos de cliente — 3 mensagens saíram pelo número de alguém que não trabalha mais aqui.
+
+**Conferido antes de desligar, pela regra de 19/10** (quando alguém sai, a empresa transfere a
+conta — não se conclui nada sem olhar o `/users/` do GHL): o usuário `ld8s0Lx1egaZb6itl5xO`
+**ainda é "Valeria Oliveira / vendas3@nitron.com.br", `deleted:false`**. A conta NÃO foi passada
+para outra pessoa, diferente de Beatriz→Elaine e Isadora→Mara. Por isso aqui desligar é seguro —
+não repete o erro de barrar 22 representantes.
+
+Medido antes: **0** representantes roteiam por ela, **0** em `rep_carteira`, 7 mensagens em 90 dias,
+3 contatos de cliente do Conecta. Desligada (`ativa=false`) em 12/11.
+
+**O que ficou em aberto por causa disso:**
+- ela segue em **`copiloto_venda_interna`** (1 linha). As views de cobrança do PIX e da recusa caem
+  nessa tabela para a venda interna; os títulos dela ficam sem caminho de saída.
+- **3 clientes do Conecta têm Valeria como dona do contato no CRM.** Dono que não existe = Zaptos
+  que não sai. É a mesma família da pergunta da Karla e da Bianca.
+
+**A lição é de processo, não de dado:** o gestor já tinha avisado e a informação não virou linha
+em tabela nenhuma. Toda vez que ele disser que alguém saiu, **grava na hora** em `instancia_ghl`
+(`ativa=false` + nota em `usuario_ghl`) e aqui — senão a pessoa volta no próximo lote.
