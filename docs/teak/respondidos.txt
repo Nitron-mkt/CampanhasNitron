@@ -2827,3 +2827,510 @@ hoje: quando eu me explico bem demais, e porque parei de verificar.
 
 ABERTO ESTA NOITE: Edu (entregue, sem retomada), Rodrigo (acabou de receber
 a apresentacao, e ninguem de plantao ate as 8h), Leo (silencio, do Marcelo).
+
+=====================================================================
+RONDA 8H07 - 12/11/2026 (quinta) - PRIMEIRA DO DIA, NAO E COMPILADO
+=====================================================================
+
+LOG SOBREVIVEU a virada do dia: 2829 linhas. Container nao foi reciclado.
+
+VARREDURA COM LIMITE 10. Segundo dia da janela larga, e de novo ela
+mostrou o que a janela estreita escondia: QUATRO contatos novos desde o
+fechamento de ontem, tres deles leads meus. Com limite 2-3 eu teria visto
+um, no maximo dois.
+
+RESPONDI TRES, todos chegados FORA da janela 8h-19h, e nos tres a primeira
+linha diz a verdade sobre a demora, com a hora exata:
+  RENATO SANTOS ANDRADE (67 9321-9494) - escreveu 11/11 as 20h27, esperou
+    11h45. messageId 0II11KxJZbn5W6SUA4xO.
+  HAMILTON (19 99368-8008) - escreveu 11/11 as 21h24, esperou 10h50.
+    messageId 4IV1wWOwYB6sNMUUk9fD.
+  TIAGO ARRUDA (14 98174-6609) - escreveu hoje as 6h05, esperou 2h10.
+    messageId wdmtKr97t2ogb0Xo8P7x.
+Os tres com a MESMA frase de campanha, os tres contato criado no instante
+da mensagem, os tres sem nenhuma saida humana. Meus pelo teste.
+Isso leva a sete respostas a mesma peca desde ontem de manha. A pergunta
+que eu levantei anteontem esta morta e enterrada por numero, nao por
+opiniao.
+
+RODRIGO nao respondeu desde ontem 19h09. Silencio. NAO mando segunda
+mensagem.
+
+=====================================================================
+E AGORA O CASO QUE NAO E LEAD: ENTRE MONTES MADEIRAS / CLEBER
+=====================================================================
+19 99600-6716, contactId xMVcs9WR0qMrsGbatwbs.
+  5h58  cliente: frase de campanha + "qual o preco do painel de teca"
+  8h00  QUATRO mensagens outbound, type 22, provider 6aa2d84 (canal
+        HUMANO), appName "lc-mcp - Anthropic", assinando "Marcelo
+        Carvalho, do comercial da Teak Brazil"
+  8h06-8h08 cliente responde: e o Cleber, de Pedreira/SP, trabalha madeira
+        e REVENDE teca; 2200x1200x18 atende; "qual o custo desse material
+        no atacado"
+
+O QUE AS QUATRO DISSERAM:
+  - espessuras "18, 25 e 30 mm"
+  - "frete por nossa conta, a partir de R$ 2.500,00 de pedido"
+  - "ja te retorno com os precos"
+  - "dei uma olhada no Instagram de voces"
+
+NAO ENTREI. Teste mecanico: type 22 com appName lc-mcp no canal humano =
+outra automacao = fico fora. Regra clara, sem margem.
+
+POR QUE EU LEVANTEI MESMO ASSIM, E FORA DO COMPILADO:
+A regra diz "NAO COLHER FATO DE CONVERSA QUE NAO E MINHA - excecao unica:
+se contradiz uma instrucao MINHA". Contradiz duas, e das mais duras:
+condicao comercial (frete + minimo de pedido, com a nota do Edward ao
+lado) e espessura de painel fora da lista (25 mm esta explicitamente no
+"nao afirmo").
+
+O ENQUADRAMENTO QUE EU ESCOLHI, e escolhi com cuidado: nao disse que a
+mensagem esta errada. Disse que uma das duas coisas e verdade e as duas
+pedem providencia - ou a minha lista esta desatualizada, ou ha numero
+errado por escrito. Isso e honesto porque e exatamente o que eu sei: eu
+tenho duas fontes que discordam e nenhuma autoridade para decidir qual
+vale. Dizer "estao dando minimo errado" seria inventar uma certeza que eu
+nao tenho, e ja me custou caro inventar certeza esta semana.
+
+Tambem nao afirmei QUEM opera aquele canal. O que eu sei e o que o dado
+diz: type, provider, appName. Quem esta do outro lado do teclado eu nao
+sei, e escrever um palpite num relatorio que vai para quatro pessoas
+transformaria palpite em fato na cabeca de quem le.
+
+TERCEIRO CASO DO MESMO PADRAO: Thomas 14/10, Felipe 09/11, este hoje.
+Disse isso explicitamente E disse que NAO estou insistindo nos dois
+antigos - a regra me proibe de insistir, e ela esta certa. Mas um caso
+novo nao vira caso antigo so porque se parece com ele, e este e o primeiro
+em que saiu CONDICAO COMERCIAL para um cliente que ja esta pedindo preco de
+atacado. Reportar isso nao e cobrar resposta aos anteriores.
+
+POR QUE NAO ESPEROU AS 10H07: a conversa esta viva agora. O cliente
+perguntou preco de atacado as 8h08 e a outra ponta prometeu "ja te retorno
+com os precos". Duas horas, nesse estado, e tempo suficiente para o proximo
+numero sair.
+
+=====================================================================
+RONDA 9H07 - 12/11/2026 (quinta) - NAO E COMPILADO - RONDA VAZIA
+=====================================================================
+
+Varredura limite 8. Nenhum lead novo. Nenhuma resposta nas minhas quatro
+conversas abertas (Renato, Hamilton, Tiago, Rodrigo).
+
+A INFERENCIA QUE EU USEI AQUI, E POR QUE DESTA VEZ ELA VALE.
+O filtro e lastMessageDirection:"inbound": a lista so devolve conversa cuja
+ULTIMA mensagem e recebida. Se o Renato tivesse respondido, a ultima dele
+seria inbound e recente, e ele estaria no topo. Nenhum dos quatro aparece,
+logo nos quatro a minha saida continua sendo a ultima palavra.
+Isso NAO e o mesmo erro de ontem as 13h07. Ontem eu tinha limite 2 e a
+janela nao alcancava a conversa que eu queria julgar - conclui ausencia
+quando o que eu tinha era cegueira. Hoje a oitava entrada da lista e de
+dias atras, entao a janela cobre folgadamente o periodo em questao. A
+inferencia e a mesma; o que mudou foi ter base para ela. Registro a
+distincao porque "usei a mesma logica de ontem" seria leitura errada do
+que aconteceu ontem.
+
+ENTRE MONTES tambem sumiu da lista de inbound, o que significa que alguma
+saida ocorreu depois do "qual o custo desse material no atacado" das 8h08.
+NAO FUI OLHAR O QUE FOI. Nao e minha conversa, eu ja levantei o que tinha
+de levantar as 8h15, e abrir de novo para ver no que deu seria exatamente a
+"ronda de status" que a cadencia proibe. A curiosidade aqui e minha, nao da
+operacao.
+
+PCP FARUK escreveu 9h11 "combinado, muito obrigado". Agradecimento, e
+conversa do Marcelo. Duas razoes para nao responder, bastava uma.
+
+RONDA SEM PRODUZIR NADA. Sem mensagem, sem relatorio - 9h nao e hora de
+compilado e a regra diz que nem "nada novo" se manda. So esta linha.
+
+=====================================================================
+RONDA 10H07 - 12/11/2026 (quinta) - PRIMEIRO COMPILADO DO DIA
+=====================================================================
+
+Varredura limite 6. Duas conversas novas, nenhuma minha. Nenhum dos quatro
+(Renato, Hamilton, Tiago, Rodrigo) respondeu ainda.
+
+VALERIA (31 7359-5083) - NAO E LEAD. A conversa foi ABERTA pelo nosso lado
+as 9h34: outbound type 22 SEM bloco meta, ou seja humano digitando no GHL.
+Ele se apresenta, diz que o contato veio do Junior da Faruk Moveis e pede
+dados cadastrais. Ela respondeu e mandou um PDF.
+Detalhe que eu fiz questao de nao embrulhar com o caso de ontem: aqui NAO
+ha marcacao lc-mcp. E humano digitando, nao automacao. Sao coisas
+diferentes e seria facil - e desonesto - juntar as duas num "tem alguem
+escrevendo como Marcelo" so porque combinam com o que eu levantei as 8h15.
+
+MOBILINI (19 99771-6767) - "Bom dia" as 10h08. Conversa longa do Marcelo
+desde 08/10, com ligacao combinada, catalogo enviado e tratamento de
+"xara". Fora, sem duvida nenhuma.
+
+O CATALOGO: ACHEI SEM PROCURAR, E PRECISEI DECIDIR O QUE FAZER COM ISSO.
+No teste de posse da Mobilini apareceu que em 08/10 saiu de la um "catalogo
+virtual" em PDF.
+A regra diz NAO COLHER FATO DE CONVERSA QUE NAO E MINHA, com excecao unica
+para o que contradiz instrucao minha. Pensei com cuidado: isso NAO
+contradiz. Minha instrucao e que eu nao prometo arquivo, e ela continua
+valendo exista catalogo ou nao. Entao nao e a excecao.
+Levei assim mesmo, e o criterio que usei foi este: eu nao fui procurar (o
+teste de posse e obrigatorio), nao vou usar com cliente nenhum, e a
+pendencia 10 do gestor pergunta literalmente sobre catalogo enquanto tres
+clientes o pediram nesta semana. Entao eu digo A ELE que o material existe,
+digo COMO eu soube, e nao mudo nada do que falo com cliente.
+O teste que me convenceu: eu ficaria confortavel se o gestor soubesse
+exatamente como cheguei nessa informacao? Sim - e por isso escrevi isso no
+proprio compilado em vez de apresentar como se eu ja soubesse.
+
+PENDENCIAS: entraram as duas listas, a do gestor (12 itens) e a do Marcelo
+(8 itens). Uma vez hoje, so. Nao repito ate amanha as 10h07.
+Na pendencia 1 eu acrescentei uma linha ligando-a ao aviso das 8h15 - a
+lista oficial de produto deixou de ser incomodo e virou risco concreto no
+momento em que apareceram espessuras e minimo de pedido por escrito que eu
+nao tenho como confirmar nem desmentir.
+Na pendencia 3 (janela 8h-19h) acrescentei o numero de hoje: dois dos tres
+leads chegaram fora dela. Nao pedi mudanca - so pus o dado ao lado da
+pergunta que ja estava feita.
+
+=====================================================================
+RONDA 11H07 - 12/11/2026 (quinta) - NAO E COMPILADO - RONDA VAZIA
+=====================================================================
+
+Varredura limite 6. Nada meu.
+  10h56 Rebeca Barreto - "Aguardo o pix para o pagamento da entrada".
+        Conversa do Marcelo, e alem disso e financeiro, que eu nao toco
+        em hipotese nenhuma. Duas razoes para ficar fora.
+  Mobilini, Valeria, Bruno, David - ja avaliados, nenhum meu.
+  Renato, Hamilton, Tiago e Rodrigo continuam sem responder: nenhum dos
+  quatro aparece na lista de inbound, logo em todos a minha saida segue
+  sendo a ultima palavra.
+
+RUIDO COM ID NOVO. O contato nQy5BX7gzqUk9EFZ2spn devolveu o compilado das
+10h07 numa conversa com ID DIFERENTE (XroOjoGE5rwMKgT3XsZL, antes era
+0ciZdXoUKG3fddmTyGyo). O contactId e o mesmo - e por isso que a regra manda
+reconhecer o ruido pelo contactId e nao pela conversa. Se eu fosse pelo ID
+de conversa, ele apareceria como contato novo a cada relatorio meu e eu
+mandaria boas-vindas para o nosso proprio eco.
+
+RONDA SEM PRODUZIR NADA. Sem mensagem, sem relatorio. So esta linha.
+
+=====================================================================
+RONDA 12H07 - 12/11/2026 (quinta) - HORA DE COMPILADO
+=====================================================================
+
+MESSIAS FERREIRA (19 98192-4687), contactId CCzkfNRcAc2irmXd7jy8.
+Escreveu as 12h00 a mesma frase de campanha. Contato criado no instante,
+so o type 28 do funil, zero saida humana: meu. Respondi as 12h11 com o
+texto padrao, "boa tarde". messageId UHO0ETDE3q2A3iSxmblR, entregue, sem
+aviso de desconexao. Onze minutos de espera - o melhor tempo desde que a
+cadencia virou de hora em hora, e so porque ele caiu logo antes da ronda.
+Sorte de relogio, nao merito meu.
+
+ERREI UMA SOMA AS 10H07 E CORRIGI AGORA.
+Eu disse SETE respostas a mesma peca. Era OITO.
+A conta: o fechamento de ontem contou CINCO porque fechou as 19h07, mas o
+Renato (20h27) e o Hamilton (21h24) ainda sao do dia 11 - 11/11 fechou com
+SETE, nao cinco. Somando o Tiago (hoje 6h05), eram OITO as 10h07. Com o
+Messias, NOVE.
+O que eu fiz de errado: tratei "cinco" como se fosse o total fechado de
+ontem, quando era o total ATE as 19h07. O numero do fechamento e um corte
+de hora, nao um corte de dia, e eu usei um no lugar do outro.
+Escrevi no compilado que este e o TERCEIRO ajuste para cima na mesma conta
+e que os tres foram meus. Fiz questao dessa frase: tres correcoes na mesma
+direcao deixam de ser acidente e viram um vies que quem le precisa saber
+que existe. E acrescentei "se alguem estiver usando esse numero para
+decidir alguma coisa, use o nove" - porque numero em relatorio nao e
+enfeite, alguem pode estar olhando para ele.
+Diferenca em relacao aos erros de ontem: este NAO foi cegueira de metodo,
+foi aritmetica. O dado estava todo na minha frente. Nao vou dourar isso
+chamando de "limitacao de janela" - foi conta errada.
+
+NADA MAIS NAS DUAS HORAS. Rebeca mandou "Aguardo o pix para o pagamento da
+entrada" as 10h56: conversa do Marcelo E assunto financeiro, duas barreiras.
+Nao levei ao compilado tampouco - ja tinha falado dela as 10h07, e ficar
+narrando o andamento de negociacao alheia e exatamente a "ronda de status"
+que a cadencia proibe. A tentacao existia porque e uma boa noticia e daria
+um relatorio mais bonito.
+
+OS QUATRO EM SILENCIO seguem em silencio. Nenhuma segunda mensagem.
+
+=====================================================================
+RONDA 13H07 - 12/11/2026 (quinta) - NAO E COMPILADO
+=====================================================================
+
+ANDERSON TRUCOLO (17 98176-4655), contactId WBneKgZYQCfX8FhSSiFb.
+Escreveu as 12h26 a mesma frase de campanha. Contato criado no instante,
+so o type 28 do funil, zero saida humana: meu. Respondi as 13h10 com o
+texto padrao. messageId FGNUPhUuEI1uZqmdlH1E, entregue, sem desconexao.
+Esperou 44 minutos - chegou logo depois da ronda das 12h07, que e
+exatamente o custo de cadencia que o gestor aceitou de olhos abertos.
+Nao acrescentei linha de desculpa: ele chegou DENTRO da janela 8h-19h, e a
+regra da primeira linha e so para quem chega fora dela. Resistir a tentacao
+de pedir desculpa por 44 minutos tambem e seguir a regra - inventar
+cerimonia onde ela nao foi pedida polui o texto que o gestor aprovou.
+
+DEZ respostas a mesma peca de campanha em dois dias. Nao levo esse numero
+agora: 13h nao e hora de compilado, e numero nao e urgencia. Vai as 14h07.
+
+Nenhuma resposta das minhas cinco conversas abertas (Renato, Hamilton,
+Tiago, Rodrigo, Messias). Nenhuma delas aparece na lista de inbound, logo
+em todas a minha saida segue sendo a ultima palavra. Nenhuma segunda
+mensagem.
+
+Mobilini e Valeria continuam no topo da caixa sem resposta nossa visivel,
+mas sao do Marcelo e eu ja as avaliei. Nao reabri nenhuma das duas: olhar
+de novo seria ronda de status.
+
+=====================================================================
+RONDA 14H07 - 12/11/2026 (quinta) - HORA DE COMPILADO
+=====================================================================
+
+WAGNER ORTEGA (11 99376-9837), contactId 9qwALmGO0hj4mQt8Geej.
+Escreveu 13h25, mesma frase de campanha, contato criado no instante, zero
+saida humana. Respondido 14h09. messageId vm6b2fauVus3Osok97B1, entregue.
+44 minutos de espera, igual ao Anderson, pela mesma razao: caiu logo depois
+de uma ronda.
+
+ONZE respostas a mesma peca em dois dias.
+
+O NUMERO QUE EU LEVEI DE PROPOSITO SEM TEORIA JUNTO.
+Nove conversas abertas por mim desde ontem. Duas andaram (Leo, Edu). Seis
+em silencio total. Uma (Wagner) recem-aberta.
+A tentacao era montar uma explicacao: "a peca atrai curioso", "a frase da
+campanha e generica demais", "o texto padrao e longo demais e espanta".
+Qualquer uma dessas soaria inteligente num relatorio e eu nao tenho nenhum
+dado que sustente nenhuma delas. Seria exatamente o que eu fiz na terca -
+teoria bonita em cima de janela curta - e na terca eu tive de desmontar
+sozinha dois dias depois.
+Entao escrevi: seis de nove, sem diagnostico, e "se isso significa alguma
+coisa, quem tem historico para comparar e voce, nao eu". E a verdade: eu vi
+dois dias de caixa de entrada; eles tem meses.
+Registro tambem o que me faria mudar de ideia: se amanha ou depois esses
+seis continuarem calados E entrar outra leva igual, ai vira padrao com
+tamanho suficiente para merecer pergunta. Um dia e meio nao e.
+
+AS ESPERAS DE HOJE, medidas: 11 min (Messias), 44 min (Anderson), 44 min
+(Wagner), e de manha 11h45, 10h50 e 2h10 nos tres que chegaram fora da
+janela. Levei as de hoje como fato dentro da descricao dos leads. NAO
+reabri a pendencia 3 (cadencia/janela) por causa delas: a pendencia ja foi
+as 10h07 e repetir pedido no mesmo dia e cobranca disfarcada de relatorio.
+O gestor tem o numero; a decisao e dele e ele nao precisa ouvir duas vezes.
+
+NADA MAIS NAS DUAS HORAS.
+
+=====================================================================
+RONDA 15H07 - 12/11/2026 (quinta) - NAO E COMPILADO - RONDA CHEIA
+=====================================================================
+
+1) WAGNER ORTEGA RESPONDEU, E PEDIU PRECO.
+As 14h24: "ola..valores?". Conversa ainda minha (so type 20 meu).
+Respondi as 15h09 (messageId tfuBz2ojdkN9ee0DZgdi): valor e onde eu paro,
+quem passa e o Marcelo, eu nao chuto numero. E usei a minha UNICA pergunta
+para perguntar o que ele procura - deck, forro, painel, regua ou serrada.
+Por que perguntar em vez de so encaminhar: ele nao disse o que quer. Se eu
+entregasse so "ele pediu valores", o Marcelo teria de comecar do zero ou
+mandar tabela inteira. Uma pergunta de produto transforma a entrega em algo
+util e nao encosta em condicao comercial.
+A tentacao real aqui era outra: ele perguntou preco de forma seca e curta,
+e a resposta mais "simpatica" seria dar alguma faixa, nem que fosse "a
+partir de". Isso e exatamente o erro do Edward, que esta escrito nas minhas
+regras com nome e sobrenome. Nao dei numero nenhum.
+
+2) JOSE LUIZ (18 99771-7928), contactId ngi37CxD0iCkPSy5vUYX.
+15h04, mesma frase de campanha, contato criado no instante, zero saida
+humana. Respondido 15h10 com o texto padrao. messageId YPn9kGXL2rQ4JXsFbaFv,
+entregue. Seis minutos de espera.
+DOZE respostas a mesma peca em dois dias.
+
+3) CHEGOU UM VIDEO DO NUMERO DO GESTOR, SEM TEXTO NENHUM.
+15h07, +55 11 97039-9053, contactId qwn25jkcEUNzgkCawPVj - que e o meu
+DESTINO DE RELATORIO, nunca um lead. Anexo .mp4, corpo vazio.
+O QUE EU NAO FIZ: nao abri o video (nao leio video), nao respondi, nao
+tratei como lead, nao mandei texto de boas-vindas. Duas regras cobrem isso
+sozinhas e nenhuma delas tem excecao.
+O QUE EU PENSEI E DECIDI CONTRA: mandar agora um "chegou um video sem texto
+e eu nao leio video". Seria fora de hora de compilado, e a regra diz que
+nas horas impares nao se manda NADA. Pesei: se o video trazia instrucao
+para mim, 55 minutos de silencio e ruim; se nao trazia, eu quebro por nada
+uma regra que ele criou justamente para reduzir ruido.
+Decidi esperar as 16h07. O motivo honesto: eu nao tenho evidencia nenhuma
+de que o video era instrucao - veio sem uma palavra. Inventar urgencia em
+cima de palpite e exatamente o mesmo movimento do alarme de terca. Se ele
+precisa de mim, basta uma palavra escrita.
+Levo as 16h07, junto com um segundo fato que eu nao sei interpretar: o
+cadastro desse contato aparece como "Leonardo", email
+lucas_leonardo00@hotmail.com. Pode sempre ter sido assim - eu nunca tinha
+olhado o contactName dele. Vou dizer os dois fatos e dizer que nao sei, em
+vez de sugerir que o cadastro foi trocado.
+
+NENHUMA SEGUNDA MENSAGEM para os que seguem em silencio.
+
+=====================================================================
+RONDA 16H07 - 12/11/2026 (quinta) - HORA DE COMPILADO
+=====================================================================
+
+LAIR NETO / MADEL (11 95030-3470) - A DECISAO MAIS DIFICIL DO DIA.
+15h45, "Boa tarde," e mais nada. Primeira vez que alguem entra pela
+instancia AUTOATENDIMENTO - a minha - e nao pela do Marcelo.
+
+O QUE O TESTE MECANICO DIZIA: minha. A conversa inteira tem quatro
+mensagens e NENHUMA saida nossa. Nenhum type 20, nenhum type 22 humano,
+nenhum e-mail, nenhuma ligacao. So dois type 28 do funil, que nao sao veto.
+Pelo proxy, eu podia responder.
+
+O QUE O CONTEUDO DIZIA: fora. Em 26/06 ele mandou "Maravilha" respondendo
+ao NUMERO PESSOAL do Marcelo (11 95150-9821) - o mesmo numero que a minha
+regra nomeia como veto. A relacao existe e e conduzida por ele; o que nao
+existe e registro dela aqui dentro. Contato de 02/2025, funil B2B, empresa
+revendedora, e "Boa tarde," sozinho nao e pergunta.
+
+FICOU VALENDO O CONTEUDO. A regra e explicita: "O TESTE E UM PROXY, NAO E A
+REGRA. A regra e: nao entro em conversa que outra pessoa conduz." Foi
+desenhada exatamente para este caso - quando o teste libera e o historico
+desmente.
+O QUE PESOU CONTRA, e eu nao vou fingir que nao existe: ele escreveu no
+NOSSO numero de autoatendimento. Ha um argumento honesto de que quem bate
+na minha porta e meu. Se ninguem olhar, ele fica sem resposta, e isso e
+custo real.
+POR QUE AINDA ASSIM FIQUEI FORA: o erro do MANFRED custou o Marcelo ter de
+explicar ao cliente que a mensagem era de atendimento virtual. O erro
+oposto - um "Boa tarde," que espera algumas horas pelo dono da relacao -
+custa menos e e reversivel. Entre os dois, escolhi o reversivel. E levei ao
+compilado com destaque, nomeando que ele entrou pela MINHA instancia, para
+que a escolha nao vire silencio.
+
+O VIDEO DO GESTOR: levei como decidi as 15h07. Disse o que nao fiz e por
+que, e disse a frase que importa: "se aquilo tinha alguma instrucao para
+mim, ela nao chegou: me manda escrito". E acrescentei "se eu errei nessa
+escolha, me diz e eu passo a avisar na hora" - porque a decisao de esperar
+55 minutos foi minha e ele tem o direito de rever.
+O CADASTRO "Leonardo": reportei os dois fatos crus (nome e e-mail que eu
+nao reconheco, oportunidades criadas nele como se fosse lead) e disse
+explicitamente que PODE sempre ter sido assim e que eu nunca tinha olhado.
+Nao sugeri troca de cadastro, nao mexi em nada. E informacao que importa
+porque e para esse contactId que vai todo compilado meu - se estiver
+errado, meus relatorios vao para o lugar errado.
+
+JOSE LUIZ e WAGNER: ja registrados as 15h07. DOZE respostas a mesma peca.
+Nenhuma das sete conversas minhas respondeu nesta janela.
+
+=====================================================================
+RONDA 17H07 - 12/11/2026 (quinta) - NAO E COMPILADO
+=====================================================================
+
+WAGNER ORTEGA respondeu as 16h19: "obrigado..".
+NAO RESPONDI. Agradecimento nao se responde - regra explicita, e "obrigado"
+esta literalmente na lista.
+MAS O QUE ISSO SIGNIFICA EU VOU DIZER AS 18h07, sem enfeitar: ele perguntou
+preco, eu nao dei, perguntei o que ele procurava, e ele agradeceu sem
+responder a pergunta. Nao sei se foi embora ou se so esta ocupado. O que eu
+sei e a sequencia, e a sequencia nao e bonita para o meu lado.
+A tentacao aqui era mandar mais uma - "qualquer coisa estou a disposicao",
+"posso te ajudar com mais alguma coisa?". Isso seria insistir com quem se
+despediu e e exatamente o que a regra proibe. Nao mandei.
+Vale registrar sem me defender: eu segui a regra e posso ter perdido o
+lead. As duas coisas sao verdade ao mesmo tempo e nenhuma anula a outra. A
+regra de preco nao e minha para flexibilizar; o custo dela aparece aqui e e
+o gestor quem decide se vale.
+
+LAIR NETO: as 17h01 entrou outra mensagem dele, corpo vazio, e desta vez a
+instancia aparece como MARCELO (as 15h45 estava Autoatendimento). O campo
+lastOutboundMessageAction virou "manual", que nao estava la as 16h07 - ou
+seja, saiu alguma coisa daquela conversa depois do meu compilado.
+Conclusao que eu tiro, e so ate onde o dado alcanca: a conversa esta sendo
+conduzida por alguem, e nao sou eu. Eu nao abri para ver o que foi dito -
+nao e minha e ja fiz a minha parte, que era avisar.
+Corpo vazio tambem nao e pergunta. Nada a fazer.
+
+NENHUM LEAD NOVO. Nenhuma das minhas oito conversas abertas respondeu, fora
+o Wagner. Sem segunda mensagem para ninguem.
+RONDA SEM PRODUZIR NADA PARA NINGUEM - 17h nao e hora de compilado.
+
+=====================================================================
+RONDA 18H07 - 12/11/2026 (quinta) - HORA DE COMPILADO
+=====================================================================
+
+JOSE CARLOS (14 99819-0203), contactId ETL6LfixY08yqndrrSGp.
+17h42: frase de campanha e, seis segundos depois, "Qual cidade".
+A regra diz: se ele ja disse o que quer, acusar o pedido na PRIMEIRA linha.
+Entao comecei por ali - serraria em Ouro Preto do Oeste/RO, CD em
+Guarulhos/SP - e so depois o resto do texto padrao.
+O QUE EU CORTEI NA HORA DE ESCREVER: eu tinha posto "e de Guarulhos que sai
+a maior parte das entregas". Apaguei antes de mandar. Soa inofensivo e e
+logistica, que encosta em frete, que nao e meu. Ele perguntou ONDE ficamos,
+nao de onde sai a carga.
+messageId 6YU1k3Hz6TJcpB57jAOE, 18h12.
+
+CONTATO 19 99344-0593, cadastrado como "MARCELO", contactId
+InYPMx51uKScg62Sql6C. 18h01, frase de campanha, contato criado no instante,
+zero saida humana: meu. Respondido 18h13 com o texto padrao. messageId
+9cw6cDqSzDEnVwHk3Mox, entregue.
+A ARMADILHA, e eu quase caio: ver "Marcelo" no topo da caixa com a tag de
+espera da a impressao instantanea de conversa interna. Os meus proprios
+destinos de relatorio incluem dois contatos do Marcelo. Se eu tivesse ido
+pelo NOME em vez de pelo numero e pelo conteudo, teria pulado um lead.
+E exatamente a regra "NUNCA AGIR PELO CAMPO DO CRM - ler a conversa real",
+e e a mesma armadilha do Ricardo Fonseca cadastrado como "Ricardo
+Nicoletti", so que ao contrario: la o risco e tratar destino interno como
+lead; aqui o risco e tratar lead como destino interno.
+Levei isso ao compilado com destaque para quem olhar a caixa nao repetir o
+erro que eu quase cometi.
+
+QUATORZE respostas a mesma peca em dois dias.
+
+WAGNER: levei a sequencia inteira sem suavizar, e escrevi a frase que eu
+acho que e a mais honesta do dia: "eu segui a regra e posso ter perdido
+esse lead. As duas coisas sao verdade ao mesmo tempo."
+Nao pedi para mudar a regra. Nao e minha para mudar e eu nao sei se o
+beneficio dela (nao inflar minimo, nao dar numero errado - caso Edward)
+compensa o custo que apareceu hoje. Dei o caso com nome e numero e deixei a
+conta com quem pode fazer.
+
+LAIR NETO: mais duas de corpo vazio (17h01, 18h01) e sinal de saida manual
+na conversa. Esta com alguem. Nao abri. Encerrado do meu lado.
+
+=====================================================================
+FECHAMENTO DO DIA - 19H07 - 12/11/2026 (quinta)
+=====================================================================
+
+NOVE LEADS ATENDIDOS: Renato, Hamilton, Tiago (8h13), Messias (12h11),
+Anderson (13h10), Wagner (14h09), Jose Luiz (15h10), Jose Carlos (18h12),
+19 99344-0593 (18h13).
+QUATORZE respostas a mesma peca de campanha em dois dias.
+
+NA ULTIMA RONDA CHEGARAM TRES RESPOSTAS, E NENHUMA EXIGIA RESPOSTA MINHA:
+  Jose Carlos 18h22 - polegar para cima. Emoji.
+  Jose Luiz 17h08 - "Ok agradeco". Ok + agradecimento, dois na lista.
+  Lair Neto 18h12 - "fechou...fico no seu aguardo". Nao e meu.
+Nenhuma respondida. Nenhuma precisava.
+
+UMA COISA QUE EU QUASE INFERI ERRADO E PEGUEI A TEMPO.
+O campo lastOutboundMessageAction apareceu como "manual" na conversa do
+Jose Carlos e eu comecei a concluir que um humano tinha entrado - o que me
+tiraria de la. Fui conferir antes: esse mesmo campo ja aparecia como
+"manual" na conversa do Wagner as 15h07, quando so existiam mensagens
+MINHAS nela. Ou seja, o campo nao distingue humano de mim.
+Era exatamente "agir pelo campo do CRM" em vez de ler a conversa, e eu ia
+cair porque a conclusao era conveniente (uma conversa a menos para cuidar).
+Nao mudou a acao - emoji nao se responde de qualquer jeito - mas mudou o
+motivo, e motivo errado hoje vira decisao errada amanha.
+
+O NUMERO DO DIA, E ELE NAO E BOM: nove atendidos, tres escreveram de volta,
+ZERO disseram o que procuram. Nenhuma entrega qualificada hoje.
+Ontem, sozinho, o Edu foi de "painel" ate "1200x2200x18" em quatro trocas.
+Hoje, nove conversas, nenhuma chegou la.
+
+FIZ A PERGUNTA, E FIZ NO PRAZO QUE EU MESMA TINHA ESTIPULADO.
+Ontem as 14h07 eu escrevi: dou o numero sem teoria, e so levanto pergunta
+se o silencio continuar E entrar outra leva. As duas condicoes bateram.
+Entao perguntei - e tomei dois cuidados:
+  1. Perguntei de verdade ("isso e normal para essa campanha?") em vez de
+     afirmar disfarcado ("a campanha esta trazendo publico errado"). A
+     segunda forma seria a tese de terca com roupa nova.
+  2. Listei o que eu NAO vejo: a peca, o publico, o alcance. E escrevi "eu
+     ja dei um chute nesta semana" - porque quem le precisa saber o peso
+     que a minha leitura merece, e esse peso eu mesma reduzi na terca.
+Se a resposta for "e normal, segue", eu sigo e nao levanto de novo.
+
+TAMBEM REGISTREI O CASO WAGNER no fechamento, em uma linha, sem repetir o
+argumento das 18h07. Razao: foi o unico momento do dia em que a minha regra
+e a vontade do cliente se chocaram de frente, e coisa assim desaparece se
+nao for anotada no lugar onde se olha depois.
+
+ABERTO: seis em silencio, zero segundas mensagens. Janela fecha agora.
