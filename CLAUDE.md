@@ -1478,3 +1478,40 @@ silêncio**. Por isso `nitronconecta_arte`.
 **O e-mail de reenvio sai da lista de quem FOI ENTREGUE**, nunca da audiência inteira: assim os
 endereços inválidos não são tentados de novo e, sobretudo, quem está **descadastrado ou com DND** não
 recebe a segunda. Respeitar opt-out não é opcional, e reenviar queima o domínio.
+
+## Instância tem PAPEL: Karla e Bianca são de COBRANÇA (12/11)
+
+Dito pelo gestor depois que o convite do Nitron Conecta saiu por elas para 91 clientes:
+*"a Karla e a Bianca são de cobranças, daí pode ser que eles nem veem direito essa comunicação
+pois elas são de cobrança"*. E a crítica que veio junto vale mais que o fato: **"no mínimo tinha
+que ter me avisado antes de usar as instâncias delas"**.
+
+Esse dado não existia em lugar nenhum do sistema. Agora existe: coluna **`instancia_ghl.papel`**
+('cobranca' | 'comercial'). Hoje são de cobrança **Karla, Bianca e Nina Financeiro**; todas as
+outras, comercial. Guardado em coluna e não em comentário justamente para a regra poder ser
+consultada por código.
+
+**A regra que falta implementar: lote de cliente que não seja de cobrança deve PULAR contato cuja
+dona é instância de cobrança** — e esses clientes recebem por e-mail, que não depende de instância.
+
+**Por que NÃO se resolve trocando o dono desses contatos.** O caminho óbvio (tirar a propriedade da
+Karla e da Bianca) quebra mais do que conserta: **83 dos 114 contatos de cliente que elas possuem
+receberam cobrança nos últimos 90 dias** (327 linhas). As campanhas de cobrança ao cliente também
+saem pelo dono (`usar_dono`), então mover esses contatos faria a cobrança deles passar a sair pela
+Elaine, Juliete e Mara — que não são de cobrança. Seria trocar um problema por outro maior, e em
+silêncio. **Decisão do gestor, em aberto.**
+
+## O rótulo da linha é que manda no teto de 2/min — não a instância que de fato envia (12/11)
+
+Armadilha achada ao preparar o Conecta por Zaptos. O `fila-processar` agrupa e limita por
+**`fila_envio.instancia`**. Em campanha de cliente quem envia é a **dona do contato** (`usar_dono`),
+então rotular todas as linhas com a mesma instância (era `Nina` nas 411) põe o lote inteiro numa
+fila só: **~7 h em vez de ~2 h**, com nove instâncias ociosas.
+
+A correção é rotular cada linha com a dona real antes de soltar — o `campanhas-enviar?lookup`
+(com `contact_id`, nunca com `fone`, que **cria** contato) devolve `dono_crm`. Medido em 12/11:
+dos 350 clientes com celular no CRM, 252 tinham dona conhecida e 98 nenhuma.
+
+**Cuidado ao ler `dono_crm: ""`:** significa "sem dono" **ou** "dono que não é instância nossa".
+Dos 98 "sem dono", **11 tinham dono de verdade** — um usuário do CRM fora do `instancia_ghl`. Só o
+`cliente-dono-nina` separa os dois casos, porque lê o `assignedTo` cru no GHL.
