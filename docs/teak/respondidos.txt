@@ -3675,3 +3675,404 @@ declarada a um numero redondo que eu nao consigo reconstruir. Nao reabri a pergu
 
 JANELA FECHADA. Aberto: Edivaldo, Vini e Jose Evanildo com pergunta minha no ar; os oito da manha
 em silencio. Nenhuma segunda mensagem. Proxima ronda sabado as 8h07.
+
+=====================================================================
+RONDA 8H07 - 14/11/2026 (sabado) - PRIMEIRA DO DIA, NAO E COMPILADO
+=====================================================================
+LOG SOBREVIVEU: 3677 linhas. Varredura com limite 15.
+
+DUAS COISAS NOVAS DESDE O FECHAMENTO DE ONTEM. Noite fraca comparada a de quinta (oito).
+
+1) NOVA ERA CONSTRUCOES — 13 99110-0454 — contactId M6T6Al05gt4FDv8Wvhqi
+   conv QXhf20xlZyGOxIhl74qR — MEU
+   Escreveu ontem as 20h38, uma hora e meia depois de a janela fechar. Frase de campanha, sem dizer
+   o que procura. Teste mecanico: so o inbound type 22 e um type 28 de funil. Nenhum outbound humano.
+   Instance Source: Marcelo — fixada, eco conferido as 11h09 UTC.
+   Respondi (messageId pRxBYXd0idEXZy6cCOkU) com o TEXTO PADRAO e a LINHA DE DEMORA na primeira
+   linha, com a hora exata e a janela. Esperou 11h30.
+
+2) MARCO ANTONIO MORENO — INSTAGRAM — contactId YwZ2yaInvCIyU7PmnquB
+   conv gOzazGoAvLYJcDNYSW9i — NAO RESPONDI
+   Hoje as 06h54: "Bom dia , qual o valor do painel de 30 mm de teca". Zero outbound na conversa.
+   Sem telefone no cadastro, so o Instagram.
+   E O SEGUNDO LEAD DE INSTAGRAM EM DOIS DIAS, e o motivo de eu nao responder e o mesmo de ontem:
+   o envio aceita type IG, mas o Instagram nunca foi combinado comigo. Continuo sem autorizacao, e
+   continuo nao me autorizando sozinha.
+   O que MUDOU e so o tamanho do custo: ontem era um lead parado ha 23 horas; hoje sao dois, e o
+   mais antigo ja passa de 36 horas.
+   Observacao de produto, que vale mesmo se a decisao vier: ele pede painel de 30 mm. A minha lista
+   so tem 18 mm. Entao, mesmo autorizada, eu nao afirmaria 30 mm — diria que quem confirma e o
+   Marcelo. Ou seja, o Instagram nao e o unico buraco aqui; a lista de produtos aparece de novo.
+   NAO vou mandar aviso fora do compilado por causa disto: a pergunta ja foi feita ontem, esta no
+   fechamento e vai de novo as 10h07. Repetir antes disso seria cobranca, e cobrar nao e meu papel.
+
+Sem mudanca: Edivaldo, Vini e Jose Evanildo seguem sem responder a minha pergunta. Nenhuma segunda
+mensagem. Os oito de ontem de manha continuam em silencio.
+8h07 nao e hora de compilado: nao escrevi a ninguem alem da Nova Era.
+
+=== 14/11 09h10 — RONDA (era a das 09h07, 1 min) ===
+Varredura limite 15. Dois atendimentos, os dois com a mesma dificuldade: medida fora da minha lista.
+
+1) RODOLFO — 19 99704-2396 — contactId XddX52qwlgoEgwZRpZqt — conv HYBxXrPOwtxXJVCnL0Ib — MEU
+   Quatro mensagens as 08h30/08h31: a frase de campanha, "Bom dia", "Gostaria de saber mais sobre
+   os paineis de teca" e "Somos fabricantes de utensilios de madeiras e estamos procurando mais
+   fornecedores de paineis de teca".
+   Teste mecanico: quatro inbound type 22 e um type 28 de funil. Nenhum outbound humano. E meu.
+   Ele JA DISSE o que quer e quem e — entao a primeira linha acusa o pedido, como manda a regra, em
+   vez de abrir com apresentacao.
+   NAO DEDUZI NADA: "fabricantes de utensilios" foi ele quem escreveu, eu so devolvi. Nao inferi
+   porte, nem volume, nem se e revenda — nao e: ele compra como insumo.
+   Dei os dois formatos confirmados, recusei preco e prazo, e usei A UNICA pergunta no que ajuda o
+   Marcelo de verdade: qual formato e espessura ele usa hoje. messageId OaNfInmJTbYQ7PilH4lE.
+   ENTREGUE AO MARCELO no compilado das 10h07.
+
+2) NOVA ERA CONSTRUCOES — respondeu as 08h50: "bom dia preciso de painel de 3mx1mz3.5".
+   Respondi 09h12 (messageId YB7OdXUqVgdHuT2pXVE8).
+   AQUI ESTAVA A ARMADILHA DO DIA. A medida que ele pede e MAIOR que os dois paineis que eu tenho
+   confirmados (1200x2200x18 e FJL 1200x2500x18). Duas saidas erradas estavam a mao:
+     - dizer "nao temos esse tamanho" — negacao que nao e minha para dar, e o erro de 13/10;
+     - dizer "fazemos corte na medida, entao conseguimos" — frase que esta na minha lista de POSSO
+       AFIRMAR, mas que aqui seria mentira por omissao: corte na medida corta PARA MENOS, a partir
+       do painel; nao cria painel maior.
+   Entao escrevi as duas coisas: os formatos que tenho confirmados, e que a medida dele e maior que
+   eles — e que por isso eu nao digo nem que da nem que nao da. Quem confirma e o Marcelo.
+   Tambem repeti a medida como ELE escreveu ("3m x 1m x 3,5") e pedi que corrija se eu li errado,
+   em vez de adivinhar que o 3.5 e espessura em cm. Nao adivinhei.
+   Falta a pergunta de obra/cliente/revenda — fiz agora.
+
+Marco Antonio (Instagram) continua sem resposta: 2h15 agora, e a decisao continua com o gestor.
+09h07 nao e hora de compilado: nao escrevi a ninguem alem desses dois.
+Para o compilado das 10h07: Rodolfo e Nova Era entregues ao Marcelo, os dois leads de Instagram, a
+lista de pendencias do dia (uma vez so) e o fato novo — a lista de produtos fez falta mais duas
+vezes hoje, em menos de duas horas.
+
+=== 14/11 10h12 — RODADA E COMPILADO DAS 10h07 (2 min) ===
+Varredura limite 15. Um movimento: o RODOLFO respondeu.
+
+RODOLFO respondeu as 10h01, tres mensagens: "Procuramos painel de teca de 18mm, 20mm", "Quais
+outras espessuras vcs trabalham?" e "Meu nome e Rodolfo".
+Respondi 10h11 (messageId fGeLWjW2CyFSEI0FyDO4). Tres cuidados, e vale escrever por que:
+  1. PAINEL DE 20 mm — nao esta na minha lista (so 18 mm). NAO NEGUEI. Disse que nao esta na minha
+     lista e que quem confirma e o Marcelo. A tentacao aqui era enorme: a lista diz 18 mm, e seria
+     natural escrever "trabalhamos com 18 mm" e deixar o 20 morrer por omissao. Seria o erro do Leo
+     de novo, so que mais elegante.
+  2. ESPESSURAS DE SERRADA — 18/24/25/36/38/50/65 estao em POSSO AFIRMAR, entao dei. Mas rotulei:
+     "MADEIRA SERRADA, que e outra coisa e nao painel". Sem o rotulo, ele leria sete espessuras de
+     painel que nao existem na minha lista.
+  3. NAO FIZ SEGUNDA PERGUNTA. Ja tinha usado a minha unica (formato e espessura) e ele respondeu.
+     Dai em diante e do Marcelo. Perguntar mais seria eu conduzindo uma venda que nao e minha.
+
+COMPILADO DAS 10h07 ENVIADO aos quatro:
+  gestor qpGfMQLQeeGDxKTq15aE | Marcelo pessoal SNpRh1vhqkSpgtzcITD2
+  Marcelo instancia VmzDR5dIEKAAxcSHcW2C | Ricardo Fonseca zRv5QmQcIwcok8CZCfU9
+Levou: Rodolfo e Nova Era entregues ao Marcelo, os DOIS leads de Instagram, a lista de pendencias
+do dia (uma vez so) e o fato de a lista de produtos ter feito falta mais duas vezes.
+
+SOBRE REPETIR A PERGUNTA DO INSTAGRAM: repeti, e declarei por que — o numero dobrou. Essa e a
+fronteira que eu escolhi: repito uma pergunta quando o FATO muda, nao quando o tempo passa. Se
+amanha ainda estiver sem resposta e sem lead novo, eu nao repito.
+
+=== 14/11 11h08 — RONDA (era a das 11h07, 1 min) ===
+Varredura limite 15. NADA NOVO desde as 10h12.
+Topo da lista: o contato de RUIDO devolvendo o compilado das 10h07. Nao e lead, nao respondi.
+Rodolfo e Nova Era sairam da lista porque a ultima mensagem das duas conversas e minha — nenhum
+dos dois voltou ainda. Nao mando segunda mensagem.
+Edivaldo, Vini e Jose Evanildo seguem em silencio desde ontem. Marco Antonio (Instagram) segue
+esperando a decisao — 4h15 agora; nao repito a pergunta, que foi feita ha menos de uma hora.
+11h07 nao e hora de compilado: nao escrevi a ninguem. Rodada encerrada so com esta linha.
+
+=== 14/11 12h10 — RODADA E COMPILADO DAS 12h07 (3 min) ===
+Varredura limite 15. Um lead novo.
+
+FERNANDO VIVA — 11 94549-0715 — contactId hjAhX4i4ZRCxXfhitt1x — conv KsjyZMl7RyvkCXCyVNtj — MEU
+  Contato criado 11h54, frase de campanha no mesmo instante, sem dizer o que procura.
+  Teste mecanico: um inbound type 22 e um type 28 de funil. Nenhum outbound humano.
+  Instance Source: Marcelo — fixada, eco conferido. Texto padrao, messageId aueneEOHyY2RtXVY8zAo.
+  Esperou 16 minutos, dentro da janela. Sem linha de atraso — a regra so pede fora das 8h-19h.
+  Nao ha o que entregar ao Marcelo: ele ainda nao disse o que quer. Dito assim no compilado em vez
+  de empurrar um nome vazio.
+
+COMPILADO DAS 12h07 ENVIADO aos quatro:
+  gestor aY8KsuaNlr1iO8vIfyNV | Marcelo pessoal zP87oZJbwD8p3PMkYG2L
+  Marcelo instancia uagAeIEAjCQGHzjKzhZK | Ricardo Fonseca VMTo4oRAOr0s2axtt8Vg
+Curto. E escrevi la, com todas as letras, que NAO repito a pergunta do Instagram: foi feita as
+10h07 e nada mudou desde entao. E a regra que eu mesma declarei de manha — repito quando o fato
+muda, nao quando o tempo passa. Vale tambem contra mim.
+
+=== 14/11 13h09 — RONDA (era a das 13h07, 2 min) ===
+Varredura limite 15. Um movimento.
+
+FERNANDO VIVA respondeu as 12h11, logo depois da minha mensagem: "Painel , sou revenda".
+Respondeu as DUAS perguntas de uma vez: produto = painel, finalidade = REVENDA.
+Respondi 13h10 (messageId ohumRdoiEx9BeMsqJTxf).
+
+REVENDA E A PALAVRA QUE ME TIRA DA CONVERSA. Esta na regra com todas as letras: representacao e
+revenda nao sao meus em hipotese nenhuma, sao condicao comercial. Entao:
+  - disse, sem rodeio, que revenda eu nao trato e por que (condicao comercial, nao quero passar
+    informacao errada);
+  - NAO perguntei mais nada — as minhas perguntas ja tinham sido feitas e respondidas, e insistir
+    aqui seria eu conduzindo uma negociacao de revenda;
+  - NAO falei de tabela, minimo, territorio nem nada que cheire a condicao. Nao citei nenhum
+    numero;
+  - repeti so o que ja e meu e ja tinha dito: fabricantes, teca macica FSC, e os dois formatos de
+    painel confirmados.
+A tentacao aqui era parecer util — "revendedor costuma comprar assim", "o minimo geralmente e" —
+e foi exatamente inflando um minimo que eu perdi o Edward. Nao dei nem meia palavra nessa direcao.
+
+MARCELO: Fernando Viva, 11 94549-0715, PAINEL para REVENDA. Entregue no compilado das 14h07.
+13h07 nao e hora de compilado: nao escrevi a ninguem alem dele.
+
+=== 14/11 14h11 — RODADA E COMPILADO DAS 14h07 (4 min) ===
+Varredura limite 15. DOIS leads novos, os dois com a frase de campanha e nada mais.
+
+SERGIO — 12 99186-0844 — contactId 9qGuVccc6kFeyV7UNGr3 — conv aUBBrhlviExVR0WH4476
+  Escreveu 13h26. Teste mecanico limpo (um inbound type 22 + type 28 de funil). Texto padrao,
+  messageId iqiDW27og8GM5IppcGH9. Esperou 45 min.
+JULIO GONZALES — 11 97365-6474 — contactId TMoK8HqmFKjbS0V0Yyqr — conv WZeG6hxJikZd5fKNqKxK
+  Escreveu 13h55. Teste mecanico limpo. Texto padrao, messageId 8lOt4iB3xtmQPMALpgsb. Esperou 16 min.
+Fiz o teste mecanico NOS DOIS, um por um, mesmo com as duas conversas parecendo gemeas. Padrao
+obvio nao e verificacao — isso ja esta escrito neste log e continua valendo.
+
+COMPILADO DAS 14h07 ENVIADO aos quatro:
+  gestor b1ey5DY2P9Xeop7A4kCG | Marcelo pessoal 4zqJP6uNtMAjSYheCzSM
+  Marcelo instancia KLs2BCLBsFlHB2q6eZJq | Ricardo Fonseca bDFtqeKM8tOxd0BNpMpS
+Levou: Fernando Viva entregue (painel para revenda, com o registro de que recusei condicao
+comercial e nao citei numero), os dois leads novos e os tempos de espera.
+
+SOBRE OS TEMPOS DE ESPERA: escrevi "Esperas: 45 minutos e 16 minutos" e PARAR AI. Sem comentario,
+sem comparacao, sem lembrar que a cadencia e dele. Ja passei esse argumento ontem as 16h07 com os
+numeros; repetir o raciocinio a cada compilado seria cobranca disfarcada de transparencia. O numero
+fica, a tese nao volta.
+
+Dia ate aqui: 5 pessoas atendidas (Nova Era, Rodolfo, Fernando Viva, Sergio, Julio), 2 entregues ao
+Marcelo com pedido concreto, 2 leads de Instagram parados por falta de autorizacao.
+
+================================================================================
+14/11/2026 (sabado) - RODADA DAS 15h07 (executada 15h12 SP; gatilho 18:08:17Z)
+NAO E HORA DE COMPILADO. Nada enviado aos quatro destinos. So log.
+================================================================================
+
+Varredura: search-conversation, inbound, status all, sort desc, LIMITE 15 (como manda a
+instrucao - quarta rodada seguida com 15, sem otimizacao minha).
+
+DUAS COISAS NOVAS DESDE 14h11.
+
+1) ELIEL MAZZUCCA - +55 17 99626-6236 - LEAD NOVO DE CAMPANHA
+   contactId 3xAoD9nOx0N0EbanRO3X / conversa 0kxIG7fWMVVCCZp9OsFE
+   Escreveu 14h34 SP (17:34:00Z): "Ola! Posso ter mais informacoes sobre isso?" - a frase da
+   campanha, sem dizer o que procura.
+   Contato NASCEU nesse momento (dateAdded 17:34:00.425Z): nao e conversa de ninguem.
+   TESTE MECANICO: unico outbound e type 28 TYPE_ACTIVITY_OPPORTUNITY (Opportunity created,
+   17:37:04Z) - automacao do funil, NAO e veto, e so contexto. Nenhum type 22 humano, nenhum
+   e-mail, nenhuma ligacao, nenhum type 19. Conversa limpa, minha.
+   Instance Source: Marcelo -> "#contact_instance: Marcelo" (9rkLHBviGLuYjIHHpiOW), eco
+   "[System]: Contact Instance Updated!" (p9xO7EYbKebRNg6ALXBb), depois a mensagem.
+   Respondi 15h11 (18:11:52Z) com o TEXTO PADRAO de 13/10 - messageId BERIUhbB4IZOlbIIQjaC,
+   status delivered. Nenhum "[System]: ... instance is disconnected".
+   Espera dele: 38 minutos. Dentro da janela 8h-19h, entao nao abri a mensagem pedindo
+   desculpa pela demora - a regra de dizer a verdade sobre o atraso na primeira linha e para
+   quem escreveu FORA da janela. Mas o numero vai ao gestor no compilado das 16h07: a espera
+   e consequencia da cadencia de hora em hora que ele escolheu, e quem paga por ela tem de
+   ver o preco.
+
+2) JULIO GONZALES - +55 11 97365-6474 - RESPONDEU. UMA PERGUNTA E ACABOU A MINHA PARTE.
+   contactId TMoK8HqmFKjbS0V0Yyqr / conversa WZeG6hxJikZd5fKNqKxK
+   Eu tinha mandado o texto padrao as 14h09 (17:09:08Z). Ele voltou DUAS vezes:
+     14h13:15Z "Ok. Obrigado!"
+     14h13:57Z "Tenho uma pequena marcenaria que fabrica tabuas de corte e outros produtos
+                em madeira."
+   TESTE MECANICO: o unico outbound de verdade e o MEU type 20 (Hyak WhatsApp SMS, provider
+   6aa320fd..., appName lc-mcp - Anthropic). Mais um type 28 (Opportunity updated, Lead ->
+   Qualificacao). A conversa e minha.
+   O "Ok. Obrigado!" sozinho eu NAO responderia - agradecimento nao se responde. Mas ele
+   emendou a frase seguinte, que e informacao, entao a resposta e para essa.
+   O QUE ELE ME DEU: a resposta da minha pergunta 2. Marcenaria propria que fabrica tabua de
+   corte -> e materia-prima para a producao DELE. Nao e obra, nao e projeto de cliente, nao
+   e revenda. Nao deduzi nada: sao as palavras dele.
+   O QUE ELE NAO ME DEU: a pergunta 1, qual produto.
+   ONDE EU QUASE ESCORREGUEI: tabua de corte em teca sai de serrada ou de painel, e a frase
+   "pelo que voce descreve, o que serve e painel ou serrada" estava pronta na minha cabeca.
+   NAO MANDEI. Isso seria eu deduzindo o produto por cima do cliente - primo irmao de deduzir
+   segmento, que e proibido, e com o agravante de que eu nao tenho a lista oficial de
+   produtos para saber o que de fato serve. Perguntei em vez de sugerir: listei os cinco itens
+   que eu POSSO afirmar que temos e pedi para ele escolher.
+   Respondi 15h11 (18:11:59Z) - messageId WF3xqa6DDRzPEyTY0PTk, delivered.
+   Essa foi A pergunta. Nao ha segunda. Ele respondendo ou nao, o Julio vai ao Marcelo no
+   compilado das 16h07 com o que eu tiver: marcenaria de tabua de corte, materia-prima
+   propria, produto a confirmar.
+
+RESTO DA VARREDURA - olhado e deixado em paz, sem tocar:
+   Marco Antonio Moreno (Instagram, 30 mm) e Churrasqueando (Instagram, chapa): seguem
+     esperando a decisao do gestor sobre se eu respondo Instagram. A ferramenta aceita type
+     IG; autorizacao nao existe. NAO repito a pergunta: ja perguntei sexta 13h05 e repeti
+     hoje 10h07 porque o numero dobrou. Repito quando o FATO muda, nao quando o tempo passa.
+   Compras Id Moveis (brinde), Madeireira Bianchi (recusa por e-mail), Lair Neto, Jose Carlos,
+     Jose Luiz, Wagner Ortega, Mobilini, Valeria, Bruno, David: agradecimento, emoji,
+     despedida ou conversa que nao e minha. Nada a fazer.
+   RUIDO nQy5BX7gzqUk9EFZ2spn ("Teak Brazil", +55 11 98090-6791): subiu ao topo com o eco do
+     meu proprio compilado das 14h07. Reconhecido pelo contactId, ignorado.
+
+SEM MUDANCA: Sergio (respondi 14h11) nao voltou. Rodolfo e Nova Era seguem com o Marcelo.
+Edivaldo, Vini e Jose Evanildo seguem em silencio desde ontem - e nenhum deles recebe segunda
+mensagem minha.
+
+PARA O COMPILADO DAS 16h07: Eliel (lead novo), Julio (respondeu, uma pergunta feita, entrega
+ao Marcelo), Sergio (sem retorno), as duas esperas (38 min e 58 min).
+
+================================================================================
+14/11/2026 (sabado) - RODADA DAS 16h07 (executada 16h10 SP; gatilho 19:08:20Z)
+HORA DE COMPILADO. Enviado aos quatro destinos.
+================================================================================
+
+Varredura com LIMITE 15. NENHUMA mensagem nova desde 15h12.
+Eliel e Julio sairam do topo da lista porque a ultima mensagem das duas conversas passou a ser
+a MINHA - ou seja, nenhum dos dois voltou ainda. Nao e sumico, e so o ordenador por
+lastMessageDirection=inbound fazendo o que deve.
+
+Sergio (respondi 14h11) tambem nao voltou.
+
+Nada a responder nesta rodada. Nenhuma mensagem a cliente.
+
+COMPILADO DAS 16h07 - enviado aos quatro, mesmo texto, cada um precedido de
+"#contact_instance: Autoatendimento":
+   gestor            qwn25jkcEUNzgkCawPVj   inst VoTLwQDmiWeeYJdbfWIk / msg eO0BYNf83jAiRuFPBwKl
+   Marcelo pessoal   S4cJhmT94XFQelbgY57U   inst Jmhv5LnbFoNHsK2S546h / msg JDATKoBZszaWiFs9kils
+   Marcelo instancia tFp9UmhJVMB5QJV1VtW3   inst UC1MTgIC07dmf7DENtha / msg 1t43pOsNzMzAFzuVyoqV
+   Ricardo Fonseca   oYWsfElnY0eAadxdrAMI   inst N1397AVdbA0iAqEtFcJF / msg ibgCHSltXhuHe51XeSjz
+
+CONTEUDO: Eliel (lead novo, respondido, espera de 38 min), Julio (respondeu que tem marcenaria
+de tabua de corte, materia-prima propria - entregue ao Marcelo com o produto ainda a definir),
+Sergio (sem retorno). Linha de sem-mudanca para Rodolfo, Nova Era, Fernando Viva, Edivaldo,
+Vini, Jose Evanildo e os dois do Instagram.
+NAO repeti nada do compilado das 14h07.
+A cobranca de pendencia NAO entra aqui - ela e uma vez por dia, no compilado das 10h07, e ja foi.
+
+PROXIMA RODADA: 17h07, que NAO e hora de compilado. Depois 18h07 (compilado) e 19h07
+(fechamento do dia, com o commit do log em docs/teak/respondidos.txt).
+
+================================================================================
+14/11/2026 (sabado) - RODADA DAS 17h07 (executada 17h08-17h11 SP; gatilho 20:08:09Z)
+NAO E HORA DE COMPILADO. Nada enviado aos quatro destinos. So log.
+================================================================================
+
+Varredura com LIMITE 15. UMA coisa nova.
+
+LEAD NOVO - +55 66 9971-5646 (Mato Grosso)
+   contactId 9Kar8kzr31s6NxnoOCP9 / conversa 971PA9CkpQHqw5v2iHXp
+   Escreveu 16h41 SP (19:41:06Z) a frase da campanha: "Ola! Posso ter mais informacoes sobre
+   isso?" - sem dizer o que procura.
+   Contato nasceu nesse instante (dateAdded 19:41:06.123Z).
+   TESTE MECANICO: unico outbound e type 28 (Opportunity created, 19:47:04Z). Nenhum type 22
+   humano, nenhum e-mail, nenhuma ligacao, nenhum bulk. Conversa limpa, minha.
+   Instancia Marcelo -> eco OK (roiwGD4dO4mk1T69dm98) -> texto padrao as 17h08
+   (20:08:46Z), messageId nQ8CZ3xpfg9ZZ7022FtI, delivered. Sem aviso de instancia
+   desconectada.
+   Espera dele: 27 minutos.
+
+   >>> ARMADILHA QUE EU NAO CAI: o contato esta cadastrado no CRM com o nome "representacoe".
+   Isso cheira a "representacoes" e a tentacao e tratar como pedido de REPRESENTACAO - que e
+   condicao comercial e nao e minha de jeito nenhum. Mas ele NAO pediu representacao: ele
+   mandou a frase da campanha e mais nada. A regra e clara, NUNCA AGIR PELO CAMPO DO CRM: o
+   nome do cadastro nao e o que a pessoa disse. Mandei o texto padrao, igual a todo mundo, sem
+   uma palavra sobre representacao. Se ELE trouxer o assunto, ai sim e do Marcelo e eu passo.
+   Mesmo erro de categoria do Ricardo Fonseca, que a tag chama de lead e nao e.
+
+SEM MUDANCA NO RESTO: Eliel, Julio e Sergio nao voltaram - nenhum recebe segunda mensagem minha.
+Rodolfo, Nova Era e Fernando Viva seguem com o Marcelo. Edivaldo, Vini e Jose Evanildo calados
+desde ontem. Os dois do Instagram seguem parados esperando a decisao.
+
+PARA O COMPILADO DAS 18h07: o lead novo de MT (66 9971-5646), respondido, espera de 27 minutos;
+e a ausencia de retorno de Eliel, Julio e Sergio.
+
+================================================================================
+14/11/2026 (sabado) - RODADA DAS 18h07 (executada 18h08-18h11 SP; gatilho 21:08:06Z)
+HORA DE COMPILADO. Enviado aos quatro destinos.
+================================================================================
+
+Varredura com LIMITE 15. UM lead novo.
+
+PAULO ROBERTO AMARO - +55 18 99716-2473
+   contactId FUVrGWptAinoOM6jHkt1 / conversa ZO41yyIsbXAoxmNqwpoY
+   Escreveu 17h25 SP (20:25:04Z) a frase da campanha, sem dizer o que procura.
+   Contato nasceu nesse instante (dateAdded 20:25:04.449Z).
+   TESTE MECANICO: unico outbound e type 28 (Opportunity created, 20:27:04Z). Limpa, minha.
+   Instancia Marcelo -> eco jXChGdEkCiy025JxR699 -> texto padrao as 18h08 (21:08:40Z),
+   messageId un8HSFwUha612w1bTOHY, delivered. Sem aviso de instancia desconectada.
+   Espera: 43 minutos.
+
+Eliel, Julio e Sergio seguem sem voltar - nenhuma segunda mensagem.
+
+COMPILADO DAS 18h07 - enviado aos quatro, mesmo texto, cada um precedido de
+"#contact_instance: Autoatendimento":
+   gestor            inst L7x1NEhIKsncEUftNqst / msg oXPRIqReGOd1OPsLS5Iw
+   Marcelo pessoal   inst oicJloyu1kWrsMnzDNHN / msg scl2jfAS0RB26jkKTbI2
+   Marcelo instancia inst VkBGNiRwBtsn2dWBgQDZ / msg G2lcwsHOBXnh6eaIL7Lo
+   Ricardo Fonseca   inst q2zlaqz9ZAB5ga1LR0HQ / msg nhDBw8DRuc04bombBECF
+
+CONTEUDO: os dois leads novos das ultimas duas horas (66 9971-5646 e Paulo Roberto), com as
+esperas de 27 e 43 minutos; o aviso sobre o cadastro "representacoe" e o que eu NAO fiz por
+causa dele; e a ausencia de retorno de Eliel, Julio e Sergio. Nada repetido do compilado das
+16h07.
+
+PROXIMA: 19h07, FECHAMENTO DO DIA - contar o dia inteiro LENDO O LOG, nao de cabeca (ja errei
+a conta tres vezes na quinta), e commitar docs/teak/respondidos.txt na branch
+claude/ghl-teak-brazil-connection-hn2nzq.
+
+================================================================================
+14/11/2026 (sabado) - RODADA DAS 19h07 - FECHAMENTO DO DIA
+(executada 19h08-19h11 SP; gatilho 22:08:02Z)
+================================================================================
+
+Varredura com LIMITE 15. UM lead novo, o ultimo do dia.
+
+ANCORA MARCENARIA CRIATIVA (nome do CADASTRO) - +55 12 98262-1830
+   contactId xfGjt0julho5BRmcV14z / conversa p2Yg2l9nluqmVFgd9CDO
+   Escreveu 18h33 SP (21:33:33Z) a frase da campanha, sem dizer o que procura.
+   Contato nasceu nesse instante.
+   TESTE MECANICO: unico outbound e type 28 (Opportunity created, 21:37:04Z). Limpa, minha.
+   Instancia Marcelo -> eco LD79hCyRPZcLmpb52WHQ -> texto padrao as 19h08 (22:08:59Z),
+   messageId RDkiOwQSAIr1Im8VngFE, delivered.
+   Espera: 35 minutos.
+   DE NOVO O CADASTRO: o nome diz "Marcenaria". Nao usei isso. Nao escrevi "para a sua
+   marcenaria", nao sugeri produto de marcenaria, nao deduzi nada - perguntei as duas coisas
+   de sempre. E a mesma regra do "representacoe" das 17h07, duas vezes no mesmo dia.
+   UMA COISA QUE ACRESCENTEI, e que nao e o texto padrao: a ultima linha, dizendo que se ele
+   responder agora eu so volto segunda de manha. Ele escreveu as 18h33 e a janela fecha as
+   19h. Deixar ele falando sozinho ate segunda sem avisar seria desonesto - e a mesma logica
+   da linha de demora, so que virada para a frente em vez de para tras. Isso nao e condicao
+   comercial nem promessa de ninguem: e sobre o MEU horario, que e a unica coisa aqui que eu
+   posso afirmar sem o Marcelo.
+
+CONTAGEM DO DIA - FEITA LENDO O LOG, LINHA 3680 ATE AQUI, NAO DE CABECA.
+(na quinta eu errei a conta tres vezes; hoje li rodada por rodada antes de escrever)
+   Pessoas atendidas: 9
+     Nova Era Construcoes (8h07 e 09h12), Rodolfo (09h10 e 10h11), Fernando Viva (12h10 e
+     13h10), Sergio (14h11), Julio Gonzales (14h11 e 15h11), Eliel Mazzucca (15h11),
+     66 9971-5646 (17h08), Paulo Roberto Amaro (18h08), 12 98262-1830 (19h08).
+   Mensagens minhas a cliente: 13.
+   Entregues ao Marcelo com pedido concreto: 4 - Rodolfo, Nova Era, Fernando Viva, Julio.
+   Leads de Instagram parados por falta de autorizacao: 2.
+   Esperas registradas: 11h30 (Nova Era, fora da janela), 16, 45, 16, 38, 27, 43 e 35 minutos.
+
+FECHAMENTO ENVIADO aos quatro, mesmo texto, cada um precedido de
+"#contact_instance: Autoatendimento":
+   gestor            inst WPYGCicDg5FR580kviom / msg DH9sf1k7KtH0uKGAX6Jl
+   Marcelo pessoal   inst fF5JrJ8KbGeqmlUK61cY / msg 8v5gZe1Wu1WYjSbX7uCM
+   Marcelo instancia inst x7jEsrIMzdNBrW3oBwif / msg U6cc49k6C0HiYDnJY8xH
+   Ricardo Fonseca   inst pVkgBN6htWdNmHqfHKsS / msg otpQlUG5XySknrX0SJ9X
+
+O QUE EU ESCOLHI NAO ESCREVER NO FECHAMENTO:
+   - O ACUMULADO DA SEMANA. Ontem eu mandei "ja passam de vinte e quatro" com a ressalva de
+     que somo a mao e ja errei. Hoje preferi dizer que nao somo o acumulado e explicar por
+     que, em vez de mandar outro numero com ressalva. Numero com ressalva ainda e numero: a
+     pessoa guarda o numero e esquece a ressalva.
+   - A TESE SOBRE A CADENCIA. As esperas de hoje chegaram a 45 minutos. O argumento ja foi
+     dado ontem com os numeros; repetir seria cobranca. Os numeros do dia estao no log e nos
+     compilados, e e dele a decisao.
+   - QUALQUER COBRANCA AO MARCELO sobre os quatro que estao com ele.
+
+PENDENCIAS QUE ATRAVESSAM O FIM DE SEMANA: todas as doze com o gestor e todas com o Marcelo
+seguem abertas. A mais cara continua sendo a lista de produtos - tres vezes so hoje.
+
+PROXIMA RODADA: segunda-feira, 8h07. Domingo o plantao nao cobre (segunda a sabado) e a
+pergunta sobre domingo continua sem resposta - item 3 da lista do gestor.
