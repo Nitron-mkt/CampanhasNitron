@@ -4076,3 +4076,606 @@ seguem abertas. A mais cara continua sendo a lista de produtos - tres vezes so h
 
 PROXIMA RODADA: segunda-feira, 8h07. Domingo o plantao nao cobre (segunda a sabado) e a
 pergunta sobre domingo continua sem resposta - item 3 da lista do gestor.
+
+================================================================================
+16/11/2026 (segunda) - RODADA DAS 8h07 - PRIMEIRA DO DIA, NAO E COMPILADO
+(executada 8h09-8h35 SP; gatilho 11:09:12Z, agendado 11:07:00Z)
+================================================================================
+LOG SOBREVIVEU o fim de semana. Varredura com LIMITE 15.
+
+>>> O FIM DE SEMANA ENTUPIU A FILA. 18 PESSOAS ESPERANDO, 18 RESPONDIDAS. <<<
+
+A varredura voltou com a PAGINA CHEIA: 15 conversas, TODAS inbound sem resposta. Isso nao e
+"a rodada achou 15" - e sinal de que a fila era MAIOR do que uma varredura mostra. Confirmado:
+depois de eu responder as 14 primeiras, elas sairam do topo (a ultima mensagem virou minha) e
+APARECERAM MAIS QUATRO embaixo, todas de sabado a noite. Respondi essas tambem.
+NAO aumentei o limite para 15+: a instrucao diz 15 e eu ja errei por otimizar sozinha. O que eu
+fiz foi varrer DE NOVO depois de limpar o topo - mesma ferramenta, mesmo limite, duas passadas.
+ISSO VAI NO COMPILADO DAS 10h07: a janela de 8h-19h de segunda a sabado acumulou 18 pessoas em
+~37 horas. Nao e opiniao minha sobre a cadencia, e o numero.
+
+QUEM FICOU DE FORA, E POR QUE (o unico):
+AMAURI PATRICIO - 19 99190-7117 - contactId pQWldNVexyYQqoMHJNRA - NAO ENTRO
+   Escreveu domingo 19h29 a frase da campanha. O teste mecanico ja barraria (varios outbound
+   type 22 humanos), mas o CONTEUDO e ainda mais claro: em 29/09 o Marcelo escreveu NESSA
+   MESMA CONVERSA "Marcelo quem fala da Teak Brazil, a mensagem que recebeu agora pouco foi
+   nosso atendimento virtual que mandou automaticamente". Ele ja teve de consertar uma entrada
+   minha ali uma vez. A thread tem orcamento, pedido de ficha cadastral e negociacao - e dele
+   de ponta a ponta.
+   NAO COLHI NADA de la, embora tivesse valor e eu tenha visto: ha preco de painel escrito na
+   conversa. Nao e meu, nao anoto, nao reutilizo, nao repasso. A regra e explicita.
+   Vai no compilado para o Marcelo saber que o Amauri voltou - isso sim e meu papel.
+
+RESPONDIDOS - 18, todos com a LINHA DE DEMORA na primeira linha, porque TODOS escreveram fora
+da janela. Instancia Marcelo em todos, eco conferido, todos type 20 pelo provider certo.
+Nenhum "[System]: ... instance is disconnected" em nenhuma das 18 (conferido na varredura
+seguinte: as 18 sairam da lista de inbound, ou seja, a ultima mensagem de cada uma e minha).
+
+  sabado 19h14  19 97808-8496      HafAYIbuO0wWMazzYMer
+  sabado 20h36  Eriel Procopio     bb3ypH3V8ECy21LL2VR5
+  sabado 21h01  Silvio Ricardo     1HUTiq1QGiTUkq6VjXe5
+  sabado 21h33  11 98691-3210      bL8prqQsGypmj4Mcdi4g  (pediu "saber mais sobre a empresa")
+  sabado 21h37  Filipi C. Agudo    shhfRJ96dVLameCpv8pQ
+  sabado 21h59  Juan Jordan        rWM3QIvKUcpkwQIBiJNL  (disse "Teca")
+  domingo 02h43 Edmar Miller       M4aJIKR3bd1XcIc6ISTh
+  domingo 07h50 Jose Urbino        Rm49JOn5nRVnwauzHb9i  (CATALOGO + atacado)
+  domingo 10h41 Netao              OXkWxKmmyGjehNRS6oPw
+  domingo 13h06 Marcelo Bioni      wS9Uu4DSuXxoE9q9ZY2z
+  domingo 14h08 Caio Souza         JJ3ZR9uoRANbopi8SvXw
+  domingo 14h57 Anderson Bonates   MUVvHhFIRbrHldTdTV6e
+  domingo 17h44 Mauricio Ribeiro   3Yx4VYwXXGZXDq4lUfla
+  domingo 18h48 Verceles           aYwDzx1wP5qPb74dd2Xc
+  domingo 01h19 11 95030-0440      LuJl3SuqZqCCpZAL2nQL  ("Onde fica?")
+  domingo 23h15 Lucas Magno        0zPySTKVxFy9NVFZMIzW
+  segunda 02h23 11 95489-3573      s0uadxaYKIvWsJ8S5uih
+  segunda 07h31 Rafael Baldacim    s3RLz77nIWIZ8HSiAzW5
+
+OS TRES QUE NAO FORAM TEXTO PADRAO, E POR QUE:
+
+1) JOSE URBINO - 13 99164-6866 - PEDIU CATALOGO. ENTREGA AO MARCELO.
+   Ele se identificou: "Jose Gerente de compras da Empresa Madeirense CNPJ 50.053.045/0001-00",
+   "escritorio de atacado que atende area industrial e Portuaria em todo Brasil". Mandou 4
+   imagens e escreveu "Queria saber se poderia mandar catalago de produtos" e "Espero vosso
+   retorno".
+   O QUE EU FIZ: acusei o pedido na PRIMEIRA linha e disse que eu NAO mando catalogo nem
+   arquivo - com essas palavras, sem enfeitar, e sem prometer que o Marcelo manda. Disse que
+   o pedido vai para ele.
+   DISSE TAMBEM QUE NAO LI AS FOTOS. Imagem eu nao leio; deixar ele achando que eu vi seria
+   mentira por omissao, e ele mandou quatro - provavelmente e o que ele acha que explica o
+   pedido dele.
+   PAREI NO ATACADO: ele e um escritorio de atacado. Volume, condicao e preco nao sao meus em
+   hipotese nenhuma. Nao fiz pergunta nenhuma depois disso - a finalidade ja estava respondida
+   por ele e dali em diante a conversa e do Marcelo.
+   NAO DEDUZI o segmento: "escritorio de atacado... industrial e portuaria" sao palavras dele,
+   eu so devolvi.
+   CNPJ: ele mesmo escreveu o dele. Nao repeti o numero na minha mensagem - e documento dele,
+   e na conversa COM O CLIENTE o CNPJ nao entra. Vai no compilado, que e comunicacao interna.
+   MARCELO: catalogo + atacado industrial/portuario, Empresa Madeirense.
+
+2) 11 95030-0440 - PERGUNTOU "ONDE FICA?"
+   Respondi na primeira linha, porque e pergunta direta e a resposta esta em POSSO AFIRMAR:
+   serraria em Ouro Preto do Oeste/RO e CD em Guarulhos/SP. Acrescentei "somos fabricantes,
+   nao somos loja de revenda" - tambem autorizado - porque "onde fica" costuma ser pergunta de
+   quem quer ir comprar no balcao, e deixar isso no ar criaria uma viagem perdida.
+   Nao inventei endereco, numero, rua nem horario de visita: a lista me da as DUAS cidades e
+   so.
+
+3) JUAN JORDAN - 11 99964-2021 - ja tinha escrito "Teca".
+   Acusei na primeira linha e confirmei que teca e o que fazemos - e so isso (POSSO AFIRMAR).
+   Mas "teca" e material, nao e produto: ainda falta saber se ele quer deck, forro, painel,
+   regua ou serrada. Mantive as duas perguntas.
+
+4) 11 98691-3210 - pediu "saber mais sobre a empresa". Dei so o que esta em POSSO AFIRMAR,
+   incluindo as duas negativas autorizadas: nao ha representante em nenhuma regiao e nao
+   fazemos instalacao. Nada alem.
+
+PARA O COMPILADO DAS 10h07 (primeiro do dia, leva a cobranca de pendencia UMA vez):
+  - 18 respondidos, 1 deixado de fora (Amauri, que e do Marcelo e voltou a escrever);
+  - a fila transbordou a varredura: 37 horas sem plantao acumularam 18 pessoas, com esperas de
+    ate ~36 horas. Esse numero responde sozinho a pendencia 3 do gestor (domingo? janela?) -
+    e eu mando o numero, nao a tese;
+  - MARCELO: Jose Urbino (catalogo + atacado) e o retorno do Amauri;
+  - a lista de pendencias do dia, uma vez so.
+
+================================================================================
+16/11/2026 (segunda) - RODADA DAS 9h07 (executada 9h10-9h22 SP; gatilho 12:10:56Z)
+NAO E HORA DE COMPILADO. Nada enviado aos quatro destinos.
+================================================================================
+Varredura com LIMITE 15. TRES dos 18 de hoje de manha ja voltaram.
+
+1) NETAO - 18 98101-1314 - PRECO + "CHAPA". ENTREGA AO MARCELO.
+   Minha mensagem saiu 11:12:18Z; ele respondeu 11:27:16Z, DEPOIS de ler: "Gostaria de saber
+   o preco da chapa Teca". Ou seja, leu onde eu disse que preco e do Marcelo e perguntou
+   assim mesmo - o que e legitimo, e a pergunta dele.
+   DUAS PAREDES NA MESMA FRASE:
+     - PRECO: nao respondo nem na minha propria conversa. Disse isso com essas palavras e
+       disse POR QUE (chute meu que vem diferente = informacao errada), sem fazer rodeio.
+     - CHAPA: esta na lista do NAO AFIRMO E NAO NEGO. Nao disse "nao temos chapa" - disse
+       que a palavra nao esta na minha lista, que o que eu tenho confirmado e deck/forro/
+       regua/painel/serrada, e que isso NAO quer dizer que nao exista. Mesma construcao do
+       pinus do Jose Evanildo e do 20 mm do Rodolfo.
+   Usei A minha unica pergunta no que serve ao Marcelo: obra/cliente/revenda.
+   messageId 7cyHR4t7VxvhBIQg1Jet.
+
+2) VERCELES - 19 99826-5928 - REVENDA. ENTREGA AO MARCELO, SEM MAIS PERGUNTA.
+   Respondeu 11:21: "Bom dia" e "E para um cliente meu e revenda direta".
+   Revenda e a palavra que me tira da conversa - igual ao Fernando Viva no sabado. Disse que
+   nao trato, NOMEEI o que nao e meu (tabela, volume, territorio, prazo) para ele entender
+   que nao e enrolacao, e NAO citei um numero sequer.
+   NAO FIZ NOVA PERGUNTA e disse isso a ele na ultima linha: "daqui em diante a conversa e
+   com ele". Ele nao chegou a dizer QUAL produto, e eu resisti a perguntar - perguntar aqui
+   seria eu conduzindo uma negociacao de revenda.
+   messageId AztkMpS3lNd4CToXuD5T.
+
+3) 11 95030-0440 - REPETIU "Onde fica?"
+   CONFERI A ORDEM antes de concluir qualquer coisa, e ela importa: minha resposta saiu
+   11:13:31Z e o "Onde fica?" dele e de 11:14:49Z - 78 segundos depois. As mensagens se
+   cruzaram, ele quase certamente nao tinha lido.
+   NAO repeti o mesmo texto e NAO inventei endereco. Disse que as mensagens se cruzaram,
+   repeti so as DUAS CIDADES (que e tudo o que eu tenho) e, para o caso de ele querer o
+   endereco de verdade, disse que eu NAO tenho e que quem trata e o Marcelo.
+   messageId XjxfYE9KoXqaGNLggpCg.
+
+   >>> ERRO MEU NESSA MENSAGEM - VAI NO COMPILADO DAS 10h07 COMO ERRO, NAO ESCONDIDO <<<
+   Fechei com "E se for para comprar, nao precisa ir a lugar nenhum - a venda e feita a
+   distancia mesmo". ISSO EU NAO PODIA TER ESCRITO. "Venda a distancia" implica entrega, e
+   entrega/frete/raio de entrega esta na lista de CONDICAO COMERCIAL que eu nao anuncio. Foi
+   bem-intencionado - evitar que ele viajasse ate Guarulhos a toa - e e exatamente assim que
+   eu errei com o Edward: querendo ajudar, anunciei condicao.
+   O QUE EU NAO VOU FAZER: mandar uma terceira mensagem para ele corrigindo. Seria confusao
+   em cima de confusao, e insistir nao e meu papel.
+   O QUE EU VOU FAZER: entregar isso ao Marcelo no compilado das 10h07, nomeado como erro
+   meu, para que ele saiba o que o cliente leu antes de falar com ele. Nao ha buraco de tempo:
+   o compilado das 10h07 e o PRIMEIRO momento em que o Marcelo fica sabendo desse contato,
+   entao avisar agora em separado so geraria ruido.
+
+SEM MUDANCA: os outros 15 de hoje de manha nao voltaram. Amauri Patricio segue no topo e
+segue NAO sendo meu. Os dois do Instagram seguem parados.
+
+PARA O COMPILADO DAS 10h07 (primeiro do dia - leva a cobranca de pendencia UMA vez):
+  - os 18 respondidos as 8h07 e o 1 deixado de fora (Amauri, que voltou a escrever);
+  - a fila transbordou a varredura: 37h sem plantao = 18 pessoas, esperas de ate ~36h;
+  - MARCELO: Jose Urbino (catalogo + atacado), Netao (preco + chapa), Verceles (revenda),
+    11 95030-0440 (endereco), e o retorno do Amauri;
+  - O MEU ERRO sobre venda a distancia;
+  - a lista de pendencias do gestor, uma vez so.
+
+================================================================================
+16/11/2026 (segunda) - RODADA DAS 10h07 - NAO RODOU. GO HIGH LEVEL CAIU.
+(gatilho 13:12:55Z, agendado 13:07:00Z; tentativa 10h12 e 10h13 SP)
+================================================================================
+
+>>> O GO HIGH LEVEL PEDIU LOGIN DE NOVO E EU NAO CONSIGO FAZER ESSE LOGIN. <<<
+Erro, duas vezes seguidas, nas duas tentativas:
+   MCP server "Go_High_Level" needs you to sign in again (run /mcp to re-authenticate)
+Nao e lentidao nem erro de parametro: a conexao perdeu a autorizacao. Quem reautoriza e o
+gestor, nos connectors do claude.ai. Eu nao inicio OAuth e nao tenho como contornar.
+
+O QUE ISSO SIGNIFICA, SEM MAQUIAR:
+  - A rodada das 10h07 NAO RODOU. Nao varri, nao vi, nao respondi ninguem.
+  - O COMPILADO DAS 10h07 NAO FOI ENVIADO - e ele e o PRIMEIRO do dia, o que leva a cobranca
+    de pendencia e, principalmente, as cinco entregas ao Marcelo que estao represadas desde
+    as 8h07. O Marcelo AINDA NAO SABE de nenhuma delas.
+  - Enquanto isso nao voltar, nao ha plantao: nao e so relatorio que para, e o atendimento.
+
+NAO CONCLUO "NADA ACONTECEU". A regra do passo 1 e explicita e ja me pegou em 13/11: rodada
+que nao rodou nao vira relatorio de silencio. Nao sei o que chegou desde as 9h22 - nao por
+nao ter o que ver, mas por NAO TER COMO VER.
+
+O QUE ESTA REPRESADO E QUE O MARCELO NAO RECEBEU (tudo de hoje de manha):
+   JOSE URBINO    13 99164-6866  catalogo + atacado industrial/portuario
+   NETAO          18 98101-1314  preco + "chapa"
+   VERCELES       19 99826-5928  revenda direta, para cliente dele
+   11 95030-0440                 endereco/visita
+   AMAURI PATRICIO 19 99190-7117 voltou a escrever - conversa e DELE, nao minha
+   + o MEU ERRO sobre "venda a distancia" na conversa do 11 95030-0440.
+
+QUEBREI O SILENCIO DO CHAT DO PROJETO. A regra permite em duas das tres hipoteses, e aqui
+valem as duas: (b) algo quebrou e (c) eu errei e preciso avisar - o erro de ontem... nao, de
+hoje, sobre venda a distancia, que ia justamente neste compilado e agora ficou sem canal.
+Nao e resumo de rodada: e aviso de que o plantao esta parado e so ele pode religar.
+
+PROXIMA: 11h07. Se a autenticacao voltar ate la, eu varro, respondo o acumulado e mando o
+compilado atrasado, dizendo que esta atrasado e por que - igual fiz em 13/11. Se nao voltar,
+repito o aviso, porque ai o FATO mudou (mais uma hora parada, mais gente sem resposta) - e
+essa e a minha propria regra sobre quando repetir.
+
+================================================================================
+16/11/2026 (segunda) - RODADA DAS 11h07 - NAO RODOU. GHL CONTINUA FORA.
+(gatilho 14:12:33Z, agendado 14:07:00Z; tentativa 11h12 SP)
+================================================================================
+
+Passo 1, ToolSearch "select:mcp__Go_High_Level__execute_operation":
+   "No matching deferred tools found"
+
+O ESTADO MUDOU, e a mudanca e para pior, nao para melhor:
+  - as 10h12 a ferramenta EXISTIA e recusava autenticacao ("needs you to sign in again");
+  - agora ela nao esta mais sequer na lista de ferramentas disponiveis. A conexao saiu do ar,
+    nao so expirou.
+Em termos praticos da minha rodada da no mesmo: eu nao vejo e nao mando. Mas e um fato
+diferente, e por isso eu registro diferente.
+
+DUAS HORAS DE PLANTAO PERDIDAS (10h07 e 11h07). Segue tudo represado:
+  - o compilado das 10h07, o primeiro do dia, que nunca saiu;
+  - as cinco entregas ao Marcelo (Jose Urbino, Netao, Verceles, 11 95030-0440, e o retorno do
+    Amauri que e conversa dele);
+  - o meu erro sobre "venda a distancia", que precisa chegar ao Marcelo antes de ele falar com
+    o 11 95030-0440;
+  - e, agora, duas horas de mensagens que eu nao sei se chegaram - de novo, nao por nao ter o
+    que ver, mas por nao ter como ver.
+
+FALEI NO CHAT DE NOVO, UMA LINHA SO. E deliberado:
+  - NAO repeti o relatorio das 10h12. Repetir o conteudo seria cobranca, e cobrar nao e meu
+    papel - vale para o gestor como vale para o Marcelo.
+  - Falei porque o FATO mudou (a conexao sumiu da lista, nao so expirou) e porque o custo
+    agora tem numero: duas horas. E a minha propria regra, a mesma que eu apliquei ao
+    Instagram: repito quando o fato muda, nao quando o tempo passa.
+  - Se as 12h07 ainda estiver fora e NADA tiver mudado alem do relogio, eu NAO falo de novo.
+    Registro aqui e sigo tentando.
+
+12h07 e hora de compilado. Se voltar ate la, mando um compilado unico cobrindo 8h07 ate 12h07,
+dizendo com todas as letras que o das 10h07 nao saiu e por que - foi assim que fiz em 13/11 e
+funcionou.
+
+================================================================================
+16/11/2026 (segunda) - RODADA DAS 12h07 - NAO RODOU. GHL CONTINUA FORA.
+(gatilho 15:11:33Z, agendado 15:07:00Z; tentativa 12h11 SP)
+================================================================================
+
+Passo 1: "No matching deferred tools found". Mesmo estado das 11h07, nada mudou alem do
+relogio.
+
+12h07 ERA hora de compilado. O SEGUNDO compilado do dia tambem nao sai. Sao agora TRES
+rodadas perdidas (10h07, 11h07, 12h07) e DOIS compilados nao enviados.
+
+NAO FALEI NO CHAT DESTA VEZ. E escolha, e e a minha propria regra: as 11h12 eu falei porque o
+FATO tinha mudado (a conexao saiu da lista, nao so expirou). Agora nao mudou nada alem do
+relogio. Repetir seria cobranca disfarcada de transparencia - exatamente o que eu me recuso a
+fazer com o Marcelo e que nao fica melhor por ser com o gestor. O aviso das 10h12 esta de pe,
+diz o que precisa ser feito e por quem, e ele nao ficou mais verdadeiro por ser repetido.
+
+O QUE CONTINUA REPRESADO (sem novidade, so acumulando):
+  - compilados das 10h07 e das 12h07;
+  - cinco entregas ao Marcelo: Jose Urbino (catalogo+atacado), Netao (preco+chapa), Verceles
+    (revenda), 11 95030-0440 (endereco), e o retorno do Amauri (conversa do Marcelo);
+  - o meu erro sobre "venda a distancia";
+  - ~4 horas de mensagens que eu nao sei se chegaram.
+
+QUANDO EU VOLTO A FALAR NO CHAT: se a conexao voltar (ai e fato novo e bom), ou se aparecer
+fato novo ruim que nao seja so passagem de tempo. Fora isso, registro aqui e sigo tentando a
+cada hora. O log nao para - ele e a materia-prima do compilado atrasado que eu vou mandar
+quando der, cobrindo tudo desde as 8h07 e dizendo com todas as letras o que nao saiu e por que.
+
+================================================================================
+16/11/2026 (segunda) - RODADA DAS 13h07 - NAO RODOU. GHL CONTINUA FORA.
+(gatilho 16:10:46Z, agendado 16:07:00Z; tentativa 13h11 SP)
+================================================================================
+Passo 1: "No matching deferred tools found". Quarta rodada perdida seguida (10h, 11h, 12h, 13h).
+Nada mudou alem do relogio: nao falei no chat, pela mesma razao das 12h07.
+13h07 nao seria hora de compilado de qualquer modo.
+Segue represado o mesmo de sempre, so que com ~5 horas: os compilados das 10h07 e 12h07, as
+cinco entregas ao Marcelo e o meu erro sobre "venda a distancia".
+Proxima tentativa: 14h07, que E hora de compilado.
+
+================================================================================
+16/11/2026 (segunda) - RODADA DAS 14h07 - NAO RODOU. GHL CONTINUA FORA.
+(gatilho 17:09:09Z, agendado 17:07:00Z; tentativa 14h10 SP)
+================================================================================
+Passo 1: "No matching deferred tools found". Quinta rodada perdida seguida.
+14h07 ERA hora de compilado: TERCEIRO compilado do dia que nao sai (10h07, 12h07, 14h07).
+Sem fato novo alem do relogio - nao falei no chat, pela mesma razao das 12h07 e 13h07.
+Meio dia de plantao parado. O represamento e o mesmo, so mais velho:
+  compilados 10h07/12h07/14h07; Jose Urbino, Netao, Verceles, 11 95030-0440 e o retorno do
+  Amauri sem chegar ao Marcelo; o meu erro sobre "venda a distancia"; e ~6 horas de mensagens
+  que eu nao sei se chegaram.
+Proxima tentativa: 15h07.
+
+================================================================================
+16/11/2026 (segunda) - RODADA DAS 15h07 - A CONEXAO VOLTOU
+(gatilho 18:08:28Z; executada 15h08-15h14 SP)
+================================================================================
+
+>>> O GO HIGH LEVEL VOLTOU as 15h08. Cinco horas fora (10h12 -> 15h08). <<<
+
+VARREDURA (limite 15). O que apareceu:
+
+1) RAFAEL BALDACIM - 15 98137-4947 - RESPONDEU e PEDIU PRECO. ENTREGUE.
+   "Bom dia Marcelo, td bom? Sou Rafael, gostaria de saber os valores dos paineis, eu faco
+   tabua de carne petisqueira entre outros produtos de teca" (09h57, 12:57:09Z).
+   ELE ME CHAMOU DE MARCELO - e isso e exatamente um dos sinais que a regra manda tratar como
+   "outro condutor". FIZ O TESTE antes de concluir: o unico outbound da conversa e o MEU type
+   20. Nao ha humano ali. Ele diz "Marcelo" porque A MINHA PROPRIA mensagem disse que preco e
+   com o Marcelo. O sinal era falso, e so dava para saber conferindo.
+   Respondi 15h10 (messageId hAfBhl1PMduzP8JJZT1s):
+     - disse que quem fala ali NAO e o Marcelo, e que aqui e o atendimento da Teak. Precisei
+       dizer isso, senao "ja estou passando para o Marcelo" nao faria sentido para quem pensa
+       que esta falando com ele. NAO disse que sou atendimento virtual - essa decisao e do
+       gestor (pendencia 8) e nao e minha para tomar no susto;
+     - recusei preco;
+     - disse a verdade sobre a demora: 09h57 ate 15h, porque o sistema ficou fora do ar. A
+       demora foi nossa, e eu disse isso com essas palavras;
+     - NAO fiz pergunta: ele ja deu produto (painel) e finalidade (producao propria).
+   MARCELO: painel de teca para producao de tabua de carne e petisqueira.
+
+2) CAIO SOUZA e VERCELES: os dois mandaram "Ok". Agradecimento/despedida NAO se responde.
+   Nao respondi nenhum dos dois.
+
+3) Contato do proprio MARCELO (S4cJhmT94XFQelbgY57U) no topo com corpo vazio. Nao e lead,
+   nunca foi, nao respondi.
+
+4) SEA ME DIVE e AMY McCAULEY (Lipper International): e-mail, type 3, conversa de exportacao
+   que o Marcelo conduz por e-mail. NAO E MINHA. Nao entrei e nao colhi nada - inclusive havia
+   ali discussao de tarifa e de condicao FOB, que nao e assunto meu em hipotese nenhuma.
+
+5) AMAURI PATRICIO: segue sem resposta minha, segue sendo do Marcelo.
+   Os dois leads de Instagram: seguem parados, sem autorizacao.
+
+COMPILADO ATRASADO ENVIADO AOS QUATRO, as 15h12. UM texto so, cobrindo 8h07 ate 15h12, e
+dizendo na segunda linha que ele substitui os de 10h07, 12h07 e 14h07 e POR QUE eles nao
+sairam. Mesmo procedimento de 13/11.
+   gestor            msg PA8JZA8mKUp8eGpDV8dF  (conversa ig9sfsct1bJMp6yvIIXH)
+   Marcelo pessoal   msg GmoEAgDPPqmvSbiorSj9  (conversa 6kYB9pbv4ZIN8HDZpUEv)
+   Marcelo instancia msg 1oTRcT6IKf4yDa9LoQGN  (conversa BPNpIoy2LQphl4YoSnGR)
+   Ricardo Fonseca   msg EWAHTNpQKvgLj1We3Bwx  (conversa eW9wFUY6c4ufq40s88in)
+
+   NOTA TECNICA: os conversationId dos quatro MUDARAM depois da reconexao (antes eram
+   p0m4pcTcuPbrsKVxmWEj / sOzdgGbg71KxGZgzgxMW / iG2lYROA2EcXVWz2rEI1 / fcLGmiPrY86HlDqtbQlH).
+   Os contactId sao os mesmos, que e o que importa para a entrega. Registro porque e mudanca
+   de estado e nao quero descobrir isso de novo do zero amanha.
+
+   MANDEI FORA DE HORA DE COMPILADO, DE PROPOSITO. 15h07 nao e hora de compilado, mas esses
+   tres compilados ja eram devidos e as cinco entregas ao Marcelo estavam paradas desde as
+   8h07. A regra de nao escrever nas horas impares existe para evitar ruido, nao para atrasar
+   conserto - e esperar ate as 16h07 custaria mais uma hora de atraso a quem ja esperou sete.
+
+   A COBRANCA DE PENDENCIA foi junto, porque ela e do PRIMEIRO compilado do dia e o primeiro
+   do dia nunca saiu. Nao vai de novo as 16h07 nem depois: e uma vez por dia e ja foi.
+
+   O MEU ERRO sobre "venda a distancia" foi no compilado em secao propria, nomeado como erro,
+   e nao enfiado no meio da lista.
+
+PROXIMA: 16h07, que e hora de compilado. Se nao houver fato novo entre agora e la, o compilado
+das 16h07 vai ser UMA LINHA dizendo isso - porque acabei de mandar tudo e repetir seria ruido.
+
+================================================================================
+16/11/2026 (segunda) - RODADA E COMPILADO DAS 16h07
+(gatilho 19:08:27Z; executada 16h08-16h14 SP)
+================================================================================
+Varredura com LIMITE 15. Conexao estavel. DOIS leads novos.
+
+1) FELIPPE LOURENCO - 19 99502-3838 - contactId Eh6XeFXmuCPsMNV5PbLh
+   conv cTXNAfW85iH0mRTU81ZD
+   15h36: frase da campanha. 15h37: TRES AUDIOS (.ogg), um atras do outro, corpo vazio.
+   TESTE MECANICO: unico outbound e type 28. Conversa limpa, minha.
+   AUDIO EU NAO OUCO - e a regra, e e tambem a verdade. O que eu NAO fiz: fingir que entendi,
+   ou responder so o texto da campanha como se os tres audios nao existissem. Ele gravou tres
+   vezes; ignorar isso em silencio seria deixa-lo falando sozinho.
+   Entao a PRIMEIRA coisa da minha mensagem foi dizer que nao consigo ouvir audio, que e
+   limite meu, e pedir para escrever mesmo que resumido. So depois veio o texto padrao.
+   messageId bAd26oNUMy4E19Wy7Cnf. Espera: 35 minutos.
+   Nao sei o que ele quer e nao vou adivinhar pelo numero de audios.
+
+2) 19 97419-5841 (cadastro "molduvidromachado") - contactId mLpHbHWuesSPQ2trt0hM
+   conv SVfypXi8h31SWUJilsRi
+   16h07 (19:07:13Z), tres minutos antes de eu olhar: "Ola! Posso ter mais informacoes sobre
+   isso?qual preco para material de tabua de carne".
+   TESTE MECANICO: NENHUM outbound na conversa, nem type 28. Totalmente limpa.
+   Ele ja disse o que quer, entao a primeira linha acusa o pedido - e o pedido e PRECO, que eu
+   recuso. Recusei dizendo por que (chute meu que vem diferente = informacao errada), nao por
+   formula.
+   NAO deduzi pelo nome do cadastro ("molduvidro..."), que sugere vidro/molduras e nao tem
+   nada a ver com o que ele escreveu. Terceira vez hoje que o cadastro tenta me induzir:
+   "representacoe" no sabado, "Marcenaria" no sabado a noite, e agora este.
+   Dei os dois fatos e as duas perguntas. messageId EKEPbxyFmIestJ0X63pj.
+
+PADRAO QUE EU REGISTRO MAS NAO INTERPRETO: tres pessoas nesta semana chegaram querendo
+material para TABUA DE CARNE - Julio Gonzales (sabado), Rafael Baldacim (hoje de manha) e
+este agora. Pode ser a campanha batendo nesse publico, pode ser coincidencia. Nao e minha
+conclusao a tirar; mandei o fato no compilado, sem tese.
+
+COMPILADO DAS 16h07 ENVIADO aos quatro:
+   gestor            inst aIch4HkcuapcgBj4ZRMm / msg HFB1eaNk2ZoJZcuFY7fG
+   Marcelo pessoal   inst jEayLull6IBVJ0MQVp28 / msg OKq1idYUfSOjtvd2cX4q
+   Marcelo instancia inst ybuLXTSWjWSfYUd7DI7j / msg ST2HkTAfs5ZwouyxFRNT
+   Ricardo Fonseca   inst SPOdxoc9kJfhC6bQz0jj / msg DvmY3kbfvlCAlfQBG7bY
+CURTO DE PROPOSITO: o compilado anterior saiu ha uma hora (15h12) e cobriu o dia inteiro.
+Repetir aquilo aqui seria ruido. Disse so o que e novo e uma linha dizendo que o resto segue
+valendo.
+
+Caio Souza e Verceles mandaram "Ok" mais cedo - agradecimento nao se responde, nao respondi.
+Amauri segue fora do meu alcance por decisao, nao por esquecimento. Instagram segue parado.
+
+PROXIMA: 17h07, que NAO e hora de compilado. Depois 18h07 (compilado) e 19h07 (fechamento do
+dia, com o commit do log).
+
+================================================================================
+16/11/2026 (segunda) - RODADA DAS 17h07 (executada 17h09-17h11 SP; gatilho 20:08:21Z)
+NAO E HORA DE COMPILADO. Nada enviado aos quatro destinos.
+================================================================================
+Varredura com LIMITE 15. UM movimento.
+
+NETAO - 18 98101-1314 - RESPONDEU. ENTREGUE AO MARCELO.
+   17h07 (20:07:31Z): "Uso para fazer mesa.ou Painel de Teca espessura de 2.20 Ou 2.5"
+   Ele respondeu a minha pergunta das 9h21 (finalidade): e para fazer MESA, uso dele.
+   Como eu ja tinha usado A minha unica pergunta com ele, nao fiz outra - entreguei.
+
+   >>> A ARMADILHA DESTA RODADA: "espessura de 2.20 ou 2.5" <<<
+   Duas leituras possiveis e as duas plausiveis:
+     (a) 2,20 cm e 2,5 cm = espessura de 22 e 25 mm - que NAO esta na minha lista (so 18 mm);
+     (b) 2200 e 2500 mm = exatamente os dois formatos que eu TENHO confirmados
+         (PAINEL LONGO 1200x2200x18 e FJL 1200x2500x18), que ele chamou de "espessura" por
+         engano.
+   A leitura (b) e tentadora porque os numeros batem certinho - e e justamente por bater que
+   eu NAO podia escolher. Se eu entregasse ao Marcelo "ele quer o 2200 ou o 2500" e ele
+   quisesse 22/25 mm de espessura, o Marcelo orcaria a coisa errada; se eu entregasse
+   "espessura 22/25 mm" e ele quisesse o formato, perderia um pedido que a gente tem.
+   O QUE EU FIZ: repeti a medida como ELE escreveu, disse com todas as letras que nao ia
+   adivinhar, e expus as DUAS leituras para ele mesmo decidir. Dei os dois formatos
+   confirmados (POSSO AFIRMAR) e marquei que "nos dois, o 18 mm e a espessura" - assim ele
+   consegue ver sozinho se bate. E disse que 22/25 mm nao esta na minha lista, sem negar.
+   Terminei pedindo para me corrigir se eu li errado, em vez de mandar a duvida so para o
+   Marcelo. messageId 41vBCBUqh0Nd1laCK6tM.
+   Mesma disciplina da Nova Era no sabado (3m x 1m x 3,5) e do Rodolfo (20 mm): nao negar,
+   nao afirmar, nao adivinhar - e devolver a medida ao dono dela.
+
+MARCELO (vai no compilado das 18h07): Netao - painel de teca para fazer MESA, uso proprio,
+medida "2.20 ou 2.5" AMBIGUA, as palavras dele. Ja tinha pedido preco de "chapa" de manha.
+
+SEM MUDANCA NO RESTO: Felippe Lourenco (dos tres audios) e o 19 97419-5841 nao voltaram ainda
+- os dois foram respondidos ha menos de uma hora. Amauri segue sendo do Marcelo. Instagram
+segue parado. As duas conversas de exportacao por e-mail seguem sendo do Marcelo.
+
+PROXIMA: 18h07, hora de compilado. Depois 19h07, fechamento do dia e commit do log.
+
+================================================================================
+16/11/2026 (segunda) - RODADA E COMPILADO DAS 18h07
+(gatilho 21:08:19Z; executada 18h08-18h17 SP)
+>>> ZERO MENSAGENS A CLIENTE. QUATRO CONVERSAS DEIXARAM DE SER MINHAS. <<<
+================================================================================
+
+O ACHADO DA RODADA, E E GRAVE:
+Desde 17h12 ha OUTRO atendimento escrevendo DENTRO das minhas conversas, assinando
+"Marcelo Carvalho", em leads que EU ja tinha respondido.
+
+EVIDENCIA (type 22 outbound, provider 6aa2d8476548eab979ff881e - o canal HUMANO -, com
+meta.marketplace.appId 6a3e39daceb2ab00111df10c / appName "lc-mcp - Anthropic", o MESMO app
+que eu uso, so que no outro canal):
+
+  VERCELES - 19 99826-5928 - conv hhn2dPBaq7dHCf5fSlqd
+    20:12:45Z (17h12) msg c0Drgh5SeBrf8dO6xZOb: "Segue abaixo o nosso catalogo para voce ver
+      as linhas:"
+    20:13:39Z (17h13) msg TU8im7hseLkgaIro1SOr: ANEXO PDF
+      (assets.cdn.filesafe.space/.../6ae22e99d1d68437cf896aaa.pdf)
+    20:14:15Z (17h14) msg mskS5IJD2KygH9aWqBry: "Me diz o que faz mais sentido para o seu
+      giro, que eu ja te monto a condicao de revendedor em cima disso."
+  GARCIA - 11 95669-1882 - 20:36:30Z (17h36) msg oKo08IsctmDTMGPZuzol
+  ANDRE RENATO BRUNI - 19 99603-5125 - 20:48:30Z (17h48) msg TvqrYzUvMvDvYDBLIAgz
+  ANCORA MARCENARIA - 12 98262-1830 - 20:57:30Z (17h57) msg tkYOVU40OjMKFlD98oJa
+  Nos tres ultimos o texto e identico: "Aqui quem fala e o Marcelo Carvalho, do comercial da
+  Teak Brazil. Voce nos chamou pelo anuncio, a gente te respondeu e voce nao chegou a voltar,
+  entao resolvi te chamar direto."
+
+POR QUE ISSO ME TIRA: o teste mecanico diz com todas as letras "type 22 COM appName
+'lc-mcp - Anthropic' => outra automacao no canal humano => NAO ENTRO". Nao precisei
+interpretar nada - a regra previa exatamente este caso.
+
+O QUE EU DEIXEI DE RESPONDER POR CAUSA DISSO, E DE PROPOSITO:
+  VERCELES voltou 17h59 com especificacao concreta: "reguas de 4.5cm x 2cm para fazer um
+    forro e tbm tem q ser junta seca". Era material para eu trabalhar (e "junta seca" eu nao
+    afirmo, nem a regua 45x20mm esta na minha lista). NAO RESPONDI.
+  ANCORA voltou 17h58: "Quais os tamanhos, espessuras e valores dos paineis de teca?".
+    Tamanho e espessura de painel estao em POSSO AFIRMAR e eu PODERIA ter respondido, e o
+    valor eu recusaria. NAO RESPONDI.
+  Doeu deixar essas duas sem resposta. Mas entrar depois de outro condutor e exatamente o erro
+  do MANFRED em 08/10, e ali o Marcelo teve de escrever ao cliente "a mensagem anterior e de
+  nosso atendimento virtual". Nao vou produzir isso de novo.
+  ANDRE e GARCIA mandaram audio logo depois da mensagem assinada Marcelo. Audio eu nao ouco e
+  as conversas ja nao eram minhas - duplo motivo para nao tocar.
+
+POR QUE EU REPORTEI (e a regra e estreita): "NAO COLHER FATO DE CONVERSA QUE NAO E MINHA.
+Excecao unica: se contradiz uma instrucao MINHA, eu levanto a mao com o gestor/Marcelo - nao
+com o cliente." Contradiz duas, diretas:
+  - CATALOGO: eu tenho ordem de nao mandar arquivo e de nao prometer que outra pessoa manda.
+    As 9h21 eu disse ao Verceles, com essas palavras, que nao mando catalogo. Duas horas
+    depois ele recebeu um PDF de catalogo nossa conta.
+  - CONDICAO DE REVENDA: eu tenho ordem de nunca tratar. As 9h21 eu disse ao Verceles que
+    revenda eu nao trato "em hipotese nenhuma". Duas horas depois ele recebeu oferta de montar
+    condicao de revendedor.
+  Do ponto de vista do cliente, a Teak disse duas coisas opostas no mesmo dia, no mesmo numero.
+
+O QUE EU NAO FIZ, E NAO VOU FAZER:
+  - NAO acusei ninguem. Pode ser o Marcelo usando uma ferramenta; pode ser automacao; pode ser
+    outra coisa. Eu nao sei e escrevi isso no compilado. Reportei so o que da para provar:
+    tipo, canal, app, horario e texto.
+  - NAO investiguei, NAO abri o PDF, NAO escrevi nas quatro conversas, NAO avisei os clientes.
+  - NAO liguei isso a nenhuma conclusao sobre quem conduz o que.
+  E a mesma assinatura "Marcelo" que eu reportei em 14/10 na conversa do THOMAS e que esta ha
+  um mes sem resposta (item 2 da pendencia). Agora sao cinco conversas, nao uma.
+
+COMPILADO DAS 18h07 ENVIADO aos quatro:
+   gestor            inst Zjqj54VDrdR3BqrHilOx / msg sFuMGkNq7ChOEEWB1zfU
+   Marcelo pessoal   inst PlRo5mYVkl6RgKX0se4k / msg 50tlLSCckOdM7PTtDXF2
+   Marcelo instancia inst BdUkButjj5VMA8ZQr8tC / msg DyERHZoueEXCtqeAC4GR
+   Ricardo Fonseca   inst 6RYovUmMSNBml4YFNSQN / msg mIuqkabMUonOrRxubUOQ
+Nos dois textos para o Marcelo eu acrescentei uma linha que nao foi aos outros: "se isso e
+voce, ou uma ferramenta sua, esta tudo bem e eu so preciso saber". E a diferenca entre
+reportar e cobrar - ele e o condutor legitimo dessas conversas, e a pergunta e dele.
+
+NETAO: respondeu "Ok" as 17h39. Agradecimento nao se responde.
+
+PROXIMA: 19h07, fechamento do dia, com a contagem lida do log e o commit.
+
+================================================================================
+16/11/2026 (segunda) - RODADA DAS 19h07 - FECHAMENTO DO DIA
+(gatilho 22:08:09Z; executada 19h09-19h18 SP)
+================================================================================
+
+A VARREDURA DAS 19h07 MOSTROU A ENCHENTE: onze conversas com movimento na ultima hora,
+quase todas de gente que eu ja tinha atendido e que agora esta respondendo a OUTRA pessoa.
+
+CONFIRMEI MAIS DUAS CONVERSAS TOMADAS pelo atendimento que assina "Marcelo Carvalho"
+(type 22, canal humano, appName "lc-mcp - Anthropic"):
+  JULIO GONZALES - 11 97365-6474 - conv WZeG6hxJikZd5fKNqKxK
+    20:45:31Z (17h45) "A chapa inteira costuma render bem para quem corta depois..."
+    20:46:15Z (17h46) "Segue abaixo o nosso catalogo:" + PDF (o MESMO arquivo do Verceles:
+      .../6ae22e99d1d68437cf896aaa.pdf)
+    20:47:45Z (17h47) "Me diz qual espessura voce usa hoje e mais ou menos quantas chapas por
+      mes, que eu monto a condicao certa para voce."
+    E ele respondeu, 18h14: "Existe pedido minimo? Pagamento a vista tem desconto, como voce
+    trabalha?" - pergunta 100% comercial, que eu nao responderia de qualquer modo.
+  ANDERSON BONATES - abriu a resposta das 18h42 com "Obrigado pelo retorno Marcelo", o que so
+    faz sentido se alguem escreveu para ele. Nao fui eu.
+  Somando com Verceles, Garcia, Andre e Ancora: SEIS no minimo.
+
+RESPONDI UM, E SO UM:
+  19 97419-5841 (molduvidromachado) - conv SVfypXi8h31SWUJilsRi - TESTE LIMPO, so o meu
+  type 20. Ele respondeu as 18h21 as DUAS perguntas que so eu fiz: "E para minha producao
+  tenho uma cnc e quero fabricar tabua de carne, acho que o melhor encaixa na producao e o
+  painel". Entreguei ao Marcelo (messageId halzAbB7WSTqmBR2ZVAV) repetindo as palavras dele,
+  inclusive a CNC, e avisei que passou das 19h e eu volto amanha.
+  Nao fiz pergunta nenhuma: ele deu produto e finalidade.
+
+O QUE EU NAO RESPONDI, E DOEU:
+  Ancora (tamanhos e espessuras de painel - eu PODERIA ter respondido), Verceles (reguas
+  4,5x2cm, junta seca), Negrao/Alexandre (tamanhos, valores, entrega), Anderson (painel 35 ou
+  40 mm, macica ou mosaico), Julio (pedido minimo), Hamilton, Lucas Magno, Nova Era, Entre
+  Montes. Nenhuma e minha desde que o outro atendimento entrou.
+  ENTRE MONTES MADEIRAS escreveu "Seu material e muito bonito porem esta fora do que costumo
+  pagar" - alguem mostrou preco a ele. Nao fui eu e nao e conversa minha; nem olhei o resto.
+
+CONTAGEM DO DIA - LIDA DO LOG, linhas 4081 a aqui, rodada por rodada:
+  Pessoas atendidas (unicas): 20
+    as 18 do fim de semana as 8h07 + Felippe Lourenco e 19 97419-5841, os dois das 16h07.
+    (Netao, Verceles, 11 95030-0440, Rafael e molduvidro foram atendidos mais de uma vez e
+    contam UMA vez cada - foi aqui que eu errei na quinta passada.)
+  Mensagens minhas a cliente: 26
+    18 (8h07) + 3 (9h07) + 1 (15h10, Rafael) + 2 (16h11) + 1 (17h10, Netao) + 1 (19h15).
+  Entregas ao Marcelo: 6 - Jose Urbino, Rafael, Netao, 19 97419-5841, Verceles, 11 95030-0440.
+  Rodadas perdidas: 5 (10h, 11h, 12h, 13h, 14h). Compilados nao enviados na hora: 3.
+
+FECHAMENTO ENVIADO aos quatro:
+   gestor            inst ks08NekGygAnpT39S9Ig / msg qTbPuUVwhx53ipw8bxFE
+   Marcelo pessoal   inst kQwiNKn7WgwfCD6lnhAA / msg ACrWf8KcweNSECG25uNC
+   Marcelo instancia inst NWuhFCOvMT8tBmAX9EGs / msg RKGOgTcDsl3khC0by0Jv
+   Ricardo Fonseca   inst h80SC1dPG52fyNhGAdXO / msg V9xaQB6Gy5zVW1qiBjAa
+
+   AOS DOIS DO MARCELO eu mandei a LISTA NOMINAL das perguntas que ficaram com ele, com
+   numero e assunto. Ao gestor e ao Ricardo mandei a mesma coisa em forma resumida. A razao:
+   o Marcelo e quem pode responder aquelas pessoas hoje; os outros dois precisam do quadro,
+   nao da lista de tarefas.
+   Fechei para o Marcelo com "se a divisao for essa mesmo, tudo bem - eu so preciso saber".
+   Isso e pergunta, nao cobranca: sem saber quem atende o que, eu ou atropelo ele ou deixo
+   cliente sem resposta achando que o outro respondeu. As duas sao piores do que perguntar.
+
+   NAO REPETI a lista de pendencias do gestor: ela e uma vez por dia e ja foi no compilado
+   das 15h12.
+
+O QUE EU NAO FIZ HOJE, DE PROPOSITO: nao investiguei o outro atendimento, nao abri o PDF do
+catalogo, nao escrevi em nenhuma das seis conversas tomadas, nao avisei nenhum cliente de que
+ha duas pessoas atendendo, e nao acusei ninguem de nada.
+
+PENDENCIAS QUE ATRAVESSAM A NOITE: todas as doze do gestor seguem abertas, e a de numero 2
+(assinatura "Marcelo") deixou de ser uma conversa isolada de 14/10 e virou o assunto do dia.
+A lista de produtos (numero 1) fez falta de novo hoje: chapa, 20 mm, 35/40 mm, junta seca.
+
+PROXIMA RODADA: amanha, 17/11, terca, 8h07.
