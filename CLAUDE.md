@@ -654,6 +654,47 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   de todos os projetos do banco, nao so os da Nitron. Quando um cron "roda e nada acontece", olhar
   `net._http_response.error_msg` antes de culpar a funcao.
 
+## Nitron Conecta — a ultima chamada por e-mail (16/11)
+
+- **O convite JA tinha ido por e-mail duas vezes antes de alguem pedir "manda por e-mail tambem".**
+  585 clientes em 09/11 (`nitronconecta`) e 575 em 11/11 (`nitronconecta_arte`) — **584 enderecos
+  unicos**, os dois em HTML de verdade, nao o texto do Zaptos colado. O que saiu so por Zaptos foram
+  os 243 de 12/11, e esses sao subconjunto dos mesmos 584. Antes de montar "o e-mail que falta",
+  conferir `fila_envio` por campanha E canal: a leitura de que um canal nao foi usado estava errada.
+- **A audiencia do evento e `nitronconecta_apto`: 922 clientes, TODOS em SP, raio de 0 a 60 km de
+  Guarulhos.** E evento presencial — quem mora longe nao e publico, por mais que fature.
+- **O evento rendeu 11 inscricoes para 45 vagas** (15/dia em 16, 17 e 18/11), 27 pessoas com
+  acompanhantes. Tres e-mails e um Zaptos para 584 clientes deram 11 confirmacoes: **~1,9%**. Serve
+  de regua para o proximo evento — nao superestimar conversao de convite presencial.
+- **Campanha de ultima chamada NAO reconvida para o dia que ja acabou.** O dia 16 terminava as 17h e
+  a fila foi enfileirada as 18h; o texto abre dizendo que o evento comecou e que restam terca (17) e
+  quarta (18). Mandar "venha hoje" depois do fim do expediente e o erro mais caro que esse e-mail
+  podia ter.
+- **Nao se publica o numero de vagas livres.** "Ultimas vagas" com 23 de 30 livres e mentira; dizer
+  o numero real conta ao cliente que ninguem foi. Fica o "apenas 15 empresas por data", que e
+  verdade e ja estava aprovado. A urgencia honesta e a data acabar, nao a vaga faltar.
+- **As tres travas do publico, e por que cada uma existe:** fora as linhas de TESTE (o e-mail do
+  gestor entra na contagem de `publico='cliente'` porque os testes foram gravados assim — 584 vira
+  583), fora quem tambem aparece como `publico='rep'` (regra permanente: campanha de cliente nao vai
+  para representante), e fora quem **ja se inscreveu** (`conecta_inscricao`), que sao 2 dos 11. Alvo
+  final: **581**, um por endereco.
+- **Sem link de descadastro, igual aos dois anteriores.** O marcador `{{email.unsubscribe_link}}` ja
+  saiu cru numa campanha, e nao da para confirmar que ele resolve por este caminho sem um envio de
+  teste. Com 581 destinos, nao se arrisca o marcador quebrado por um rodape.
+- **Conferir o teste pelo `get-email-by-id`, nao pelo `resultado` da fila.** `resultado='ok email'`
+  so diz que o GHL aceitou. O teste de 16/11 (mensagem `8SUFAbMnQoDppRH3Y8JT`) voltou
+  `status: delivered`, remetente `Nitron <comercial@crm.nitron.com.br>`, provider **mailgun**, e o
+  corpo entregue identico ao enviado. E a mesma licao de 26/08, no canal e-mail.
+- **A previa da conversa no CRM mostra o ALT da imagem, nao o assunto.** O `lastMessageBody` comecava
+  com "Nitron Conecta — 16, 17 ou 18 de novembro", que e o texto alternativo da arte — parecia que o
+  assunto novo nao tinha pegado. Nao confundir previa com assunto; o assunto esta em
+  `meta.email.subject`.
+- **A lista de topicos sai grudada na versao TEXTO PURO** (`•Bate-Papo...•Tendencias...`), porque e
+  montada em tabela. No HTML sai certo. Vale para os e-mails de 11/11 e 16/11 igual — nao e defeito
+  novo, mas se um dia o texto puro importar, a lista precisa de `\n` proprio.
+- Fonte do HTML: `app/conecta-email3.html`, com marcadores de INICIO/FIM do que vai em
+  `fila_envio.corpo`. Campanha: `nitronconecta_ultima`.
+
 ## Landing "Nitron Direto" (campanhas.nitron.com.br) — o lead ja chega com CNPJ e CEP (05/11)
 
 - **A LP mora no Replit** (app "Nitron Campaign Landing", publicada em `campanhas.nitron.com.br`) e
