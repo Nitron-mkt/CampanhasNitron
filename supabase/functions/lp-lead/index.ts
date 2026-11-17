@@ -261,22 +261,27 @@ Deno.serve(async (req) => {
     if (req.method === "OPTIONS") return j({ ok: true });
     if (req.method !== "POST") return j({ ok: false, erro: "use POST" }, 405);
 
-    // O segredo identifica o SERVIDOR da LP. Nao e chave de banco: existe so para um POST forjado
-    // nao virar contato no CRM e linha de lead.
-    const esperado = Deno.env.get("LP_TOKEN") || "";
-    if (!esperado) return j({ ok: false, erro: "LP_TOKEN nao configurado nesta funcao" }, 500);
-    if ((req.headers.get("x-lp-token") || "") !== esperado) return j({ ok: false, erro: "nao autorizado" }, 401);
-
     const u = new URL(req.url);
+    const esperado = Deno.env.get("LP_TOKEN") || "";
+    const daLp = !!esperado && (req.headers.get("x-lp-token") || "") === esperado;
+    // Quem opera o banco ja pode tudo: aceitar a chave de servico aqui nao abre porta nova, e e o
+    // unico jeito de conferir o segredo do Forca por SQL sem ninguem colar chave em lugar nenhum.
+    const daCasa = !!srvKey() && (req.headers.get("Authorization") || "") === "Bearer " + srvKey();
 
     // `?forca=auth` confere SO a credencial do Forca de Vendas: pede o token e devolve se veio.
-    // Existe para testar o segredo sem abrir pedido nenhum — abrir pedido cria cadastro e numero
-    // no ERP de verdade, e isso nao e coisa de teste.
+    // NAO abre pedido — abrir pedido cria cadastro e numero no ERP de verdade, e isso nao e coisa
+    // de teste. Por isso ela aceita tambem a chave de servico: nao cria nada.
     if (u.searchParams.get("forca") === "auth") {
+      if (!daLp && !daCasa) return j({ ok: false, erro: "nao autorizado" }, 401);
       if (!Deno.env.get("CRM_PEDIDO_SECRET")) return j({ ok: false, forca: "CRM_PEDIDO_SECRET nao configurado nesta funcao" });
       try { const t = await forcaToken(); return j({ ok: !!t, forca: t ? "autenticado" : "sem token" }); }
       catch (e) { return j({ ok: false, forca: String(e).slice(0, 300) }); }
     }
+
+    // O segredo identifica o SERVIDOR da LP. Nao e chave de banco: existe so para um POST forjado
+    // nao virar contato no CRM e linha de lead. Cadastro so entra por ele.
+    if (!esperado) return j({ ok: false, erro: "LP_TOKEN nao configurado nesta funcao" }, 500);
+    if (!daLp) return j({ ok: false, erro: "nao autorizado" }, 401);
 
     const dry = u.searchParams.get("dry") === "1";
     const b = await req.json().catch(() => ({} as any));
