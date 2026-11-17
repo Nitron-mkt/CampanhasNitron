@@ -29,24 +29,10 @@
 //    que JA existe nao tem o dono mexido — e se alguem do time assumir depois, o dono muda e o
 //    `campanhas-enviar` passa a recusar a saudacao automatica, que e a protecao que importa.
 //
-// O QUE ELA PASSOU A FAZER EM 17/11: entregar o cadastro ao FORCA DE VENDAS. Ordem do gestor —
-// "o cliente vem da campanha, manda os dados da LP para o forca e la ele vai fazer tudo". A
-// `vendas.nitron.com.br` abre PEDIDO DE VERDADE no ERP (numero de pedido, esteira do
-// AD_STATUFORCA) e devolve o link. Vai SO O CADASTRO: nenhum item, nenhuma cesta — quem monta o
-// mix e a tela do Forca, como o lojista ja ve no link de hoje.
-//   - Sem `CRM_PEDIDO_SECRET` a funcao nao tenta nada e anota o motivo no resumo do lead. Isso e
-//     de proposito: da para publicar antes de o segredo existir sem quebrar a ponte.
-//   - O protocolo e gravado ANTES de qualquer espera. Cada consulta a ele empurra o processamento
-//     do outro lado, entao e o protocolo que permite terminar depois o que nao coube na janela.
-//   - `entrega` so vai com o NUMERO do endereco. Enquanto a LP nao coletar numero e complemento
-//     (pedido ao Replit em 17/11), o pedido nasce no endereco da Receita — que no lojista costuma
-//     ser o fiscal, nao o deposito. Melhor isso do que endereco pela metade.
-//
 // Uso:
 //   POST /lp-lead            header `x-lp-token: <LP_TOKEN>`
-//   body { nome, email, whatsapp, cnpj, cep, ramo, consentimento, numero?, complemento?, origem?, protocolo? }
-//   ?dry=1 na query       ve o que seria gravado, sem gravar
-//   ?forca=auth na query  confere so a credencial do Forca de Vendas, sem abrir pedido nenhum
+//   body { nome, email, whatsapp, cnpj, cep, ramo, consentimento, origem?, protocolo? }
+//   ?dry=1 na query  ve o que seria gravado, sem gravar
 //
 // Deploy: supabase functions deploy lp-lead --no-verify-jwt
 //   (verify_jwt FALSE: quem chama e o servidor da LP, que se identifica pelo LP_TOKEN. Publicar
@@ -168,121 +154,18 @@ async function praca(cep: string, ms = 6000): Promise<{ cidade: string; uf: stri
   } catch { return { erro: "ViaCEP fora do ar" }; }
 }
 
-// ---- FORCA DE VENDAS: abre o cadastro/pedido no ERP ------------------------------------------
-// O processo, pelas palavras do gestor em 17/11: "o cliente vem da campanha, manda os dados da LP
-// para o forca e la ele vai fazer tudo". Entao aqui NAO vai item nenhum — so o cadastro. Quem
-// monta o mix e a tela do Forca de Vendas, como o lojista ja ve no link de hoje.
-const FORCA_BASE = "https://vendas.nitron.com.br";
-const FORCA_ID = "crm-nitron";
-
-// O token vale 60 min. Guardar na instancia evita um /auth por lead; se a instancia morre, o
-// proximo pede outro. Nunca persistir isso em tabela: e credencial.
-let forcaTok: { t: string; exp: number } | null = null;
-
-async function forcaToken(): Promise<string | null> {
-  const seg = Deno.env.get("CRM_PEDIDO_SECRET") || "";
-  if (!seg) return null;                                     // sem segredo a funcao nao tenta nada
-  if (forcaTok && forcaTok.exp > Date.now() + 60_000) return forcaTok.t;
-  const r = await fetch(`${FORCA_BASE}/api/crm/auth`, {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ client_id: FORCA_ID, client_secret: seg }),
-    signal: AbortSignal.timeout(20_000),
-  });
-  if (!r.ok) throw new Error(`auth ${r.status}: ${(await r.text()).slice(0, 160)}`);
-  const d = await r.json();
-  if (!d?.access_token) throw new Error("auth sem access_token");
-  forcaTok = { t: d.access_token, exp: Date.now() + (Number(d.expires_in) || 3600) * 1000 };
-  return forcaTok.t;
-}
-
-type ForcaOut = {
-  protocolo?: string; pedido?: number; link?: string; validade?: string;
-  erro?: string; pulado?: string;
-};
-
-// `guardaProtocolo` grava o ORC-xxxx ASSIM QUE ELE EXISTE, antes de qualquer espera. Motivo: o
-// documento diz que cada consulta ao protocolo EMPURRA o processamento. Se a janela acabar antes
-// de o pedido ficar pronto, o protocolo e a unica coisa que permite terminar depois — sem ele o
-// trabalho ja feito do lado deles fica orfao e o lojista nao recebe link nenhum.
-async function forcaAbrir(
-  dados: { cnpj: string; contato: string; email: string; whatsapp: string; cep: string; numero: string; complemento: string },
-  guardaProtocolo: (p: string) => Promise<void>,
-): Promise<ForcaOut> {
-  let tok: string | null;
-  try { tok = await forcaToken(); } catch (e) { return { erro: String(e).slice(0, 200) }; }
-  if (!tok) return { pulado: "CRM_PEDIDO_SECRET nao configurado" };
-
-  const H = { Authorization: "Bearer " + tok, "Content-Type": "application/json" };
-  // `entrega` so vai INTEIRA. A API pede cep+numero+complemento; sem o numero o objeto nao se
-  // sustenta e o pedido nasce no endereco da Receita, que no lojista costuma ser o fiscal e nao o
-  // deposito. Enquanto a LP nao coletar o numero, e melhor nao mandar entrega nenhuma do que
-  // mandar uma pela metade.
-  const corpo: any = { cnpj: dados.cnpj, contato: dados.contato, email: dados.email, whatsapp: dados.whatsapp };
-  if (dados.numero) {
-    corpo.entrega = { cep: dados.cep, numero: dados.numero.slice(0, 10),
-                      ...(dados.complemento ? { complemento: dados.complemento.slice(0, 30) } : {}) };
-  }
-
-  let d: any;
-  try {
-    const r = await fetch(`${FORCA_BASE}/api/crm/orcamento`, {
-      method: "POST", headers: H, body: JSON.stringify(corpo), signal: AbortSignal.timeout(120_000),
-    });
-    d = await r.json().catch(() => ({}));
-    // O POST responde 202 nos DOIS casos (processando e pronto): quem manda e o campo `status`,
-    // nao o codigo HTTP. Ler o HTTP aqui faria "processando" parecer sucesso final.
-    if (!r.ok && !d?.protocolo) return { erro: `POST ${r.status}: ${String(d?.mensagem || d?.erro || "").slice(0, 160)}` };
-  } catch (e) { return { erro: "POST: " + String(e).slice(0, 180) }; }
-
-  const protocolo = String(d?.protocolo || "");
-  if (protocolo) { try { await guardaProtocolo(protocolo); } catch { /* o pedido importa mais que o carimbo */ } }
-  if (d?.status === "pronto") return { protocolo, pedido: d.pedido, link: d.link, validade: d.validade };
-  if (d?.status === "erro")   return { protocolo, erro: `${d.erro}: ${String(d.mensagem || "").slice(0, 200)}` };
-  if (!protocolo) return { erro: "a API nao devolveu protocolo" };
-
-  // Consulta ate ficar pronto. Teto de ~100s: a edge function corta em 150s de ociosidade e o
-  // resto do enriquecimento ainda precisa caber. O que nao fechar aqui fecha numa passada depois,
-  // pelo protocolo que ja esta gravado.
-  const ate = Date.now() + 100_000;
-  while (Date.now() < ate) {
-    await new Promise((s) => setTimeout(s, 10_000));
-    try {
-      const g = await fetch(`${FORCA_BASE}/api/crm/orcamento/${protocolo}`, { headers: H, signal: AbortSignal.timeout(120_000) });
-      const e = await g.json().catch(() => ({}));
-      if (e?.status === "pronto") return { protocolo, pedido: e.pedido, link: e.link, validade: e.validade };
-      if (e?.status === "erro")   return { protocolo, erro: `${e.erro}: ${String(e.mensagem || "").slice(0, 200)}` };
-    } catch { /* uma consulta que falha nao encerra: a proxima empurra de novo */ }
-  }
-  return { protocolo, erro: "ainda processando quando a janela acabou — consultar o protocolo de novo" };
-}
-
 Deno.serve(async (req) => {
   try {
     if (req.method === "OPTIONS") return j({ ok: true });
     if (req.method !== "POST") return j({ ok: false, erro: "use POST" }, 405);
 
-    const u = new URL(req.url);
-    const esperado = Deno.env.get("LP_TOKEN") || "";
-    const daLp = !!esperado && (req.headers.get("x-lp-token") || "") === esperado;
-    // Quem opera o banco ja pode tudo: aceitar a chave de servico aqui nao abre porta nova, e e o
-    // unico jeito de conferir o segredo do Forca por SQL sem ninguem colar chave em lugar nenhum.
-    const daCasa = !!srvKey() && (req.headers.get("Authorization") || "") === "Bearer " + srvKey();
-
-    // `?forca=auth` confere SO a credencial do Forca de Vendas: pede o token e devolve se veio.
-    // NAO abre pedido — abrir pedido cria cadastro e numero no ERP de verdade, e isso nao e coisa
-    // de teste. Por isso ela aceita tambem a chave de servico: nao cria nada.
-    if (u.searchParams.get("forca") === "auth") {
-      if (!daLp && !daCasa) return j({ ok: false, erro: "nao autorizado" }, 401);
-      if (!Deno.env.get("CRM_PEDIDO_SECRET")) return j({ ok: false, forca: "CRM_PEDIDO_SECRET nao configurado nesta funcao" });
-      try { const t = await forcaToken(); return j({ ok: !!t, forca: t ? "autenticado" : "sem token" }); }
-      catch (e) { return j({ ok: false, forca: String(e).slice(0, 300) }); }
-    }
-
     // O segredo identifica o SERVIDOR da LP. Nao e chave de banco: existe so para um POST forjado
-    // nao virar contato no CRM e linha de lead. Cadastro so entra por ele.
+    // nao virar contato no CRM e linha de lead.
+    const esperado = Deno.env.get("LP_TOKEN") || "";
     if (!esperado) return j({ ok: false, erro: "LP_TOKEN nao configurado nesta funcao" }, 500);
-    if (!daLp) return j({ ok: false, erro: "nao autorizado" }, 401);
+    if ((req.headers.get("x-lp-token") || "") !== esperado) return j({ ok: false, erro: "nao autorizado" }, 401);
 
+    const u = new URL(req.url);
     const dry = u.searchParams.get("dry") === "1";
     const b = await req.json().catch(() => ({} as any));
 
@@ -292,10 +175,6 @@ Deno.serve(async (req) => {
     const cnpj = digits(b?.cnpj);
     const cep = digits(b?.cep);
     const email = String(b?.email || "").trim().toLowerCase();
-    // Campos de ENTREGA. Pedidos a LP em 17/11; enquanto ela nao os mandar, chegam vazios e o
-    // objeto `entrega` simplesmente nao vai — nao se manda endereco pela metade.
-    const numero = String(b?.numero || "").trim().slice(0, 10);
-    const complemento = String(b?.complemento || "").trim().slice(0, 30);
 
     const falta: string[] = [];
     if (nome.split(" ").length < 2 || nome.length < 3) falta.push("nome e sobrenome");
@@ -378,14 +257,6 @@ Deno.serve(async (req) => {
 
     // ---- 3. o resto, em segundo plano ----
     const completar = async () => {
-      // O Forca comeca JUNTO com o resto: ele e o mais lento (POST ~1 min mais as consultas) e
-      // nao depende de nada do enriquecimento — so dos dados do formulario. Esperar o CNAE para
-      // so entao comecar jogaria fora um minuto por lead.
-      const forcaP = forcaAbrir(
-        { cnpj, contato: nome, email, whatsapp: fone, cep, numero, complemento },
-        async (p) => { if (leadId) await rest(`copiloto_lead?id=eq.${leadId}`, { method: "PATCH", body: JSON.stringify({ forca_protocolo: p, forca_em: new Date().toISOString() }) }); },
-      ).catch((e) => ({ erro: String(e).slice(0, 200) } as ForcaOut));
-
       const rc = await ramoDoCnpj(cnpj);
       const temRamo = rc && !(rc as any).fim ? (rc as Ramo) : null;
       const ramo = (temRamo?.ramo && TEM_CESTA.test(temRamo.ramo)) ? temRamo.ramo
@@ -456,16 +327,8 @@ Deno.serve(async (req) => {
         }
       }
 
-      const forca = await forcaP;
-
       const patch: any = {
         contact_id: contactId,
-        forca_protocolo: forca.protocolo || null,
-        forca_pedido: forca.pedido || null,
-        forca_link: forca.link || null,
-        forca_validade: forca.validade || null,
-        forca_erro: forca.erro || forca.pulado || null,
-        forca_em: new Date().toISOString(),
         empresa: temRamo?.razao || null,
         razao_social: temRamo?.razao || null,
         cidade: pOk?.cidade || temRamo?.cidade || null,
@@ -487,10 +350,6 @@ Deno.serve(async (req) => {
           tagsAplicadas.length ? `Tags: ${tagsAplicadas.join(", ")}.` : "",
           oportErro ? `ATENCAO: nao abri a oportunidade no funil (${oportErro}).` : "",
           "CNPJ e CEP ja estao preenchidos: o link de pedido pode sair na primeira resposta.",
-          forca.pedido ? `FORCA DE VENDAS: pedido ${forca.pedido} aberto no ERP, link valido ate ${forca.validade}.` : "",
-          forca.erro ? `ATENCAO: o Forca de Vendas nao abriu o pedido (${forca.erro}).` : "",
-          forca.pulado ? `Forca de Vendas nao chamado: ${forca.pulado}.` : "",
-          numero ? "" : "Entrega NAO enviada: a landing ainda nao coleta o numero do endereco, entao o pedido nasce no endereco da Receita.",
         ].filter(Boolean).join(" ").slice(0, 900),
         atualizado: new Date().toISOString(),
       };
