@@ -121,7 +121,16 @@ Deno.serve(async (req) => {
         // deixando o original orfao no pipeline antigo. Pego na previa de 17/11, antes de aplicar.
         const s = await ghl("GET", `/opportunities/search?locationId=${LOC}&contactId=${L.contact_id}&status=all&limit=20`);
         const sd = await s.json().catch(() => ({} as any));
-        const ops: any[] = sd?.opportunities || [];
+        // A BUSCA TEM DE FALAR QUANDO FALHA. `sd?.opportunities || []` transforma 401, 403 e
+        // qualquer erro em "este contato nao tem card" — e a funcao entao CRIA um segundo, que e
+        // exatamente o estrago que ela existe para evitar. Em 17/11 a busca voltou vazia duas
+        // vezes seguidas e so a previa impediu 29 duplicatas. Sem conferir `ok`, nao se decide.
+        if (!s.ok || !Array.isArray(sd?.opportunities)) {
+          feito.push({ lead: L.id, nome: nomeCard, acao: "busca falhou",
+                       http: s.status, detalhe: JSON.stringify(sd).slice(0, 220) });
+          continue;
+        }
+        const ops: any[] = sd.opportunities;
         // Prefere a que ja esta no pipeline novo; senao, a mais recente de qualquer um.
         const op = ops.find((o) => o.pipelineId === PIPE) || ops[0] || null;
 
