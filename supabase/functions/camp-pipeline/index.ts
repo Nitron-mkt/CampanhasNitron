@@ -119,7 +119,11 @@ Deno.serve(async (req) => {
         // O parametro e `locationId`, NAO `location_id`. Com o nome errado a busca devolve lista
         // vazia em vez de erro — e a funcao concluiria "nao tem card" e criaria um segundo,
         // deixando o original orfao no pipeline antigo. Pego na previa de 17/11, antes de aplicar.
-        const s = await ghl("GET", `/opportunities/search?locationId=${LOC}&contactId=${L.contact_id}&status=all&limit=20`);
+        // OS DOIS PARAMETROS SAO SNAKE_CASE: `location_id` e `contact_id`. A propria API diz, em
+        // 422: "property locationId should not exist / location_id must be a string". Nao se
+        // guie pelo `meta.nextPageUrl` que ela devolve — ele vem com `locationId=` e e pista
+        // falsa; foi por ele que eu troquei o certo pelo errado em 17/11.
+        const s = await ghl("GET", `/opportunities/search?location_id=${LOC}&contact_id=${L.contact_id}&status=all&limit=20`);
         const sd = await s.json().catch(() => ({} as any));
         // A BUSCA TEM DE FALAR QUANDO FALHA. `sd?.opportunities || []` transforma 401, 403 e
         // qualquer erro em "este contato nao tem card" — e a funcao entao CRIA um segundo, que e
