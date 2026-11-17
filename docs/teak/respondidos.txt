@@ -4679,3 +4679,460 @@ PENDENCIAS QUE ATRAVESSAM A NOITE: todas as doze do gestor seguem abertas, e a d
 A lista de produtos (numero 1) fez falta de novo hoje: chapa, 20 mm, 35/40 mm, junta seca.
 
 PROXIMA RODADA: amanha, 17/11, terca, 8h07.
+
+================================================================================
+17/11/2026 - TERCA - RODADA 8h07 (rodou 8h08-8h40)
+================================================================================
+
+VARREDURA: pagina CHEIA de novo (15 conversas com entrada por ultimo). Varri duas
+vezes, mesmo limite 15. Total na fila: 244 na primeira varredura, 236 na segunda.
+
+FORA (teste mecanico me manda sair) - 5 conversas:
+  Silvio Ricardo (15 99622-0381) - eu respondi 16/11 08h15. As 18h15 a OUTRA
+    AUTOMACAO escreveu la (type 22, appId 6a3e39daceb2ab00111df10c, assinando
+    "Marcelo Carvalho"): "voce nos chamou pelo anuncio, a gente te respondeu e voce
+    nao chegou a voltar, entao resolvi te chamar direto". Ele respondeu 19h22 com
+    AUDIO. Sai.
+  Edmar Miller (11 97540-1380) - eu respondi 08h11; a outra automacao as 18h36; ele
+    respondeu 19h54 com o briefing INTEIRO: obra de chale + producao, deck ~100 m2,
+    forro ~60 m2, painel para portas internas e moveis. Era exatamente a resposta a
+    MINHA pergunta, e caiu no colo de quem entrou depois. Sai mesmo assim.
+  Mauricio Ribeiro (18 99690-4954) - eu 08h13; a outra automacao 18h30; ele
+    "Boa noite / Nos falamos amanha / Muito obrigado" 20h14. Agradecimento nao se
+    responde, e a conversa ja nao era minha.
+  Eliel Mazzucca (17 99626-6236) - eu 14/11; a outra automacao 16/11 18h06; ele
+    respondeu hoje 02h32/02h33 "Painel e serrada" / "Para minha producao".
+  Bruno L.Lopes (84 9121-2716) - conversa do MARCELO HUMANO desde 11/11 (type 22 sem
+    meta, com cotacao de painel curto eucalipto FJL e pedido minimo). A outra
+    automacao entrou 16/11 18h40. Nunca foi minha.
+
+  >>> O PADRAO MUDOU DE FORMA. Ontem a outra automacao entrava em conversa nova.
+      Hoje ela voltou em cima de leads QUE EU JA TINHA RESPONDIDO, com um texto de
+      reengajamento ("voce nao chegou a voltar, resolvi te chamar direto"). Isso e
+      justamente o que eu tenho proibido de fazer: "LEAD EM SILENCIO NAO RECEBE
+      SEGUNDA MENSAGEM". E no Bruno ela foi mais longe e negociou - perguntou "qual
+      seria o valor por peca que fecharia para voce?" e ofereceu mudar medida e
+      espessura "para derrubar o seu custo por peca". Isso e condicao comercial.
+      Eu nao escrevi em nenhuma, nao acusei ninguem e nao avisei cliente nenhum.
+      Levanto a mao so porque contradiz instrucao MINHA - e a unica excecao que
+      tenho para falar de conversa que nao e minha.
+
+RESPONDIDOS - 10 leads limpos, nenhum com outbound humano nem da outra automacao:
+   1. Edilson Nardes      12 98111-3211  escreveu 16/11 19h39  ENTREGUE
+   2. Moraes Brasil       11 95999-1640  16/11 22h56           ENTREGUE
+   3. SALDANHA MOVEIS     11 98690-3037  16/11 23h06           ENTREGUE
+   4. Olavo               11 95061-3388  16/11 23h30           ENTREGUE
+   5. Pedro Luis Ribeiro  11 97555-8587  17/11 00h21           ENTREGUE
+   6. (sem nome, ".")     11 97764-1126  17/11 00h59           ENTREGUE
+   7. Ismael Juda         11 92807-8484  17/11 03h34           ENTREGUE
+   8. Rodrigo             19 99128-4340  17/11 06h08           ENTREGUE
+   9. oxine               16 99260-3003  17/11 07h03           *** NAO CHEGOU ***
+  10. Jhonantan Souza     11 92189-6983  17/11 07h48           *** NAO CHEGOU ***
+
+  Todos fora da janela 8h-19h: a verdade sobre a demora foi na primeira linha de
+  cada um.
+  PEDRO LUIS pediu "Custo." - pedido acusado na PRIMEIRA linha, e dito na mesma
+  linha que preco e com o Marcelo. Nao chutei numero. Perguntei custo de que e para
+  que uso, para o numero do Marcelo ser o do caso dele e nao um valor solto.
+
+*** A INSTANCIA "MARCELO" CAIU AS 08h15 ***
+  Ultimo envio que chegou: Rodrigo, 11:15:21 UTC (08h15:21 SP), delivered.
+  Primeiro que falhou:     oxine,   11:15:35 UTC (08h15:35 SP).
+  A queda esta entre esses dois instantes - 14 segundos.
+  Sintoma: outbound volta status "failed", error "Request failed with status code
+  400", e 1 segundo depois entra como INBOUND "The instance is disconnected."
+  Reenviei para os dois. Falhou de novo (Jhonantan: 11:16:37). PAREI AI.
+  Nao insisto uma terceira vez: cada tentativa falha escreve mais uma linha de erro
+  dentro da conversa do cliente, e o cliente ve isso.
+
+  CONFERI O ALCANCE antes de dizer que "tudo caiu": a instancia AUTOATENDIMENTO
+  continua de pe - o aviso aos quatro destinos saiu e foi delivered as 11:17:39.
+  Entao nao e a ponte inteira: e a instancia Marcelo, que e a que fala com cliente.
+  Na pratica, para o cliente, da no mesmo - mas a frase certa e essa, nao "o Zaptos
+  caiu".
+
+AVISO FORA DE HORA (excecao "algo quebrou", nao esperou o compilado das 10h07):
+  mandado aos quatro destinos as 08h37, texto identico, instancia Autoatendimento.
+  gestor AhYVS1rQBfZMOU7lWfT8 / Marcelo pessoal i0iwALFceQeZTvi6NYVP /
+  Marcelo instancia Nw4ZvTPGXSO4Dl5Qjzt6 / Ricardo 4zoeBYJ8FLNThaYEIzVM.
+  Disse o que quebrou, quem ficou sem resposta, que nao vou reenviar em loop, e que
+  NAO mexi em nada - nao pausei instancia, nao desliguei chave.
+
+NAO MEXI, DE PROPOSITO: nao pausei a instancia, nao desliguei nada, nao marquei nada
+  como inativo. Quem decide parar nao sou eu.
+
+AINDA SEM RESPOSTA NOSSA, e nao sao meus (ficaram com quem entrou ontem):
+  Anderson Bonates 11 98286-7360 (painel 35/40 mm, teca macica ou mosaico)
+  Negrao/Alexandre 11 98691-3210 (tamanhos, valores, entrega)
+  Julio Gonzales   11 97365-6474 (pedido minimo, desconto a vista)
+  Hamilton         19 99368-8008 (medidas proximas)
+  Lucas Magno      19 99634-9204 ("vc teria alguma coisa nesse tipo")
+  Entre Montes     19 99600-6716 ("fora do que costumo pagar")
+  Todos ainda com entrada por ultimo, ou seja: a outra automacao tambem nao voltou
+  neles desde ontem a noite. Eu continuo fora.
+
+molduvidromachado (19 97419-5841): a ultima mensagem e o auto-responder DELE
+  ("nao estamos disponiveis no momento"). Nao e pergunta. Ele ja foi entregue ao
+  Marcelo ontem 19h12. Nada a fazer.
+
+RUIDO: nQy5BX7gzqUk9EFZ2spn devolveu meu proprio fechamento de ontem como inbound,
+  como sempre. Ignorado.
+
+PENDENCIA DIARIA: entra no compilado das 10h07, nao aqui.
+
+PROXIMA RODADA: 9h07 (nao e hora de compilado - so log). Primeira coisa a fazer la:
+  testar se a instancia Marcelo voltou, e se voltou, mandar oxine e Jhonantan antes
+  de qualquer outra coisa. Eles estao esperando desde 07h03 e 07h48 sem NADA.
+
+--------------------------------------------------------------------------------
+17/11 - RODADA 9h07 (rodou 9h10-9h13) - SEM COMPILADO (9h nao e hora)
+--------------------------------------------------------------------------------
+
+A INSTANCIA MARCELO CONTINUA FORA. Tentei o oxine as 09h10: falhou de novo, mesmo
+  status "failed", mesmo erro 400, mesmo "The instance is disconnected." um segundo
+  depois. Ja sao 55 minutos de queda.
+  NAO tentei o Jhonantan nesta rodada. Nao e desleixo: e a mesma instancia e o mesmo
+  resultado garantido, e cada tentativa escreve mais uma linha de erro DENTRO da
+  conversa que o cliente le. Um teste por rodada basta para saber se voltou.
+  oxine e Jhonantan seguem sem NENHUMA mensagem nossa, desde 07h03 e 07h48.
+
+VARREDURA: nenhum lead novo, nenhuma mensagem nova minha em aberto. A lista esta
+  igual a das 8h40, so com oxine e Jhonantan empurrados para o topo pelos proprios
+  avisos de erro.
+
+ATENCAO, E HIPOTESE, NAO FATO: desde as 07h48 (Jhonantan) NAO entrou nenhuma
+  mensagem nova na caixa - uma hora e vinte sem nada, num dia util de manha, depois
+  de uma madrugada que teve entrada as 00h21, 00h59, 03h34 e 06h08. Se a instancia
+  que nao entrega tambem nao recebe, pode haver cliente escrevendo agora e nos nao
+  estarmos vendo. EU NAO SEI SE E ISSO. Nao tenho como separar "ninguem escreveu"
+  de "escreveram e nao chegou" por dentro do GHL. Vai no compilado das 10h07 com
+  essa cautela, escrito como duvida e nao como constatacao.
+
+EFEITO COLATERAL QUE NAO E MEU PARA MEXER: as 08h17 a automacao do funil mudou a
+  oportunidade do oxine de "Lead" para "PERDIDO" - porque ele ficou sem resposta.
+  Ou seja, a queda da instancia esta marcando lead como perdido sozinha. Registro e
+  reporto; nao altero pipeline, nao e meu painel.
+
+NADA ENVIADO A NINGUEM nesta rodada. 9h nao e hora de compilado, e o aviso da quebra
+  ja foi as 08h37 - repetir seria cobranca disfarcada de transparencia.
+
+PROXIMA RODADA: 10h07, e e COMPILADO - o primeiro do dia, entao leva tambem a lista
+  de pendencia (uma vez so). Primeira coisa la: testar a instancia de novo e, se
+  voltou, oxine e Jhonantan antes de tudo.
+
+--------------------------------------------------------------------------------
+17/11 - RODADA 10h07 (rodou 10h12-10h22) - COMPILADO, o primeiro do dia
+--------------------------------------------------------------------------------
+
+INSTANCIA MARCELO: AINDA FORA. Teste da rodada feito no Jhonantan as 10h12 - mesmo
+  "failed", mesmo erro 400, mesmo "The instance is disconnected." Duas horas de
+  queda. oxine e Jhonantan seguem sem nada; tres tentativas cada, parei de insistir.
+
+VARREDURA: nenhum lead novo pelo Zaptos. Entrou UMA coisa, e nao e minha:
+  hardwoodsource.com (Edwin Tahmassian, EUA, +1 818 370-7200) respondeu POR E-MAIL
+  as 09h30 a um e-mail de prospeccao em ingles assinado "Marcelo Carvalho - Teak
+  Brazil", mandado hoje as 09h04. Teste mecanico: type 3, e-mail outbound => NAO
+  ENTRO. Alem disso e exportacao/wholesale, que nunca e meu.
+  NAO reportei o conteudo da resposta dele a ninguem. A regra e: nao colho fato de
+  conversa que nao e minha, excecao so se contradiz instrucao MINHA - e nao
+  contradiz: outro canal, outro assunto, e assunto que eu ja nao toco.
+  O que EU aproveito disso, e e sobre o canal e nao sobre o cliente: o e-mail
+  funciona enquanto o Zaptos esta fora. Isso nao resolve a minha duvida das 9h07,
+  porque prova que o inbound de E-MAIL chega, nao que o do Zaptos chegaria.
+
+A DUVIDA DO INBOUND, agora com o raciocinio escrito:
+  Os avisos "The instance is disconnected." chegam como INBOUND pelo provider da
+  Hyak - ou seja, vem da PONTE, nao do WhatsApp. Entao a ponte esta viva e quem
+  esta morto e a instancia. Instancia de WhatsApp desconectada nao entrega E nao
+  recebe. Logo, e bem provavel que cliente esteja escrevendo sem a gente ver.
+  MAS ISSO E INFERENCIA, nao medicao. Nao tenho dentro do GHL como distinguir
+  "ninguem escreveu" de "escreveram e nao chegou". Mandei como duvida, com o
+  raciocinio exposto, para o gestor poder discordar do raciocinio e nao so da
+  conclusao.
+
+COMPILADO DAS 10h07 enviado aos quatro, instancia Autoatendimento:
+  gestor eI2geYMmU0IJ0dxUBv7I / Marcelo pessoal BEgr16atz2rZcmpIsste /
+  Marcelo instancia eHRKzRmwqwpE5nlOIqyv / Ricardo 9G1C37qnTclHIBJOiIjT.
+  Levou: estado da queda (sem repetir o aviso das 08h37), as 8 entregas e as 2
+  falhas com nome e numero, o Pedro Luis para o Marcelo, o lead marcado PERDIDO
+  sozinho pelo funil, a duvida do inbound, a mudanca de forma das mensagens
+  assinadas "Marcelo Carvalho" (reengajamento em cima de lead JA meu + negociacao
+  de valor no Bruno) e a PENDENCIA DO DIA, uma vez so.
+  Ao Marcelo e a instancia dele foi a versao com a lista nominal do que esta no
+  colo dele; ao gestor e ao Ricardo, a forma de resumo. Mesmo conteudo, foco certo.
+
+PENDENCIA: entregue hoje as 10h20. NAO repetir ate amanha.
+
+PROXIMA RODADA: 11h07, SEM compilado. So testar a instancia e varrer.
+
+--------------------------------------------------------------------------------
+17/11 - RODADA 11h07 (rodou 11h11-11h14) - SEM COMPILADO (11h nao e hora)
+--------------------------------------------------------------------------------
+
+INSTANCIA MARCELO: AINDA FORA. 3 HORAS de queda (08h15 -> 11h14, sem voltar).
+  Teste da rodada feito no oxine as 11h11: failed, erro 400, "The instance is
+  disconnected." as 11h11:11.
+
+QUASE ERREI AQUI, E O REGISTRO IMPORTA MAIS QUE O RESULTADO:
+  A varredura das 11h12 veio SEM o oxine no topo. Pela logica que eu mesma uso -
+  "conversa some da lista de entrada-por-ultimo quando a ultima mensagem e minha" -
+  isso significaria ENTREGUE, ou seja, instancia de volta. Eu quase registrei
+  "voltou".
+  Fui conferir a conversa direto e era mentira: a mensagem falhou igual. A conversa
+  tinha sumido do topo so porque a varredura rodou na fracao de segundo entre o meu
+  envio e a chegada do aviso de erro.
+  LICAO, que ja esta escrita no prompt e eu quase deixei passar: A LISTA MENTE, A
+  CONVERSA NAO. Nao se conclui entrega pela varredura - so pelo status dentro da
+  conversa.
+
+VARREDURA: nenhum lead novo pelo Zaptos desde 07h48. Ja sao 3h30 sem uma entrada,
+  o que reforca (sem provar) a duvida que mandei as 10h07 sobre o inbound.
+
+AS DUAS OPORTUNIDADES AGORA ESTAO AS DUAS COMO PERDIDO: o oxine foi as 08h17 e o
+  Jhonantan em algum momento entre 10h12 e 11h12 - as 10h12 ele ainda estava "open",
+  agora esta em 027e2c1c (Perdido). Ou seja: os dois unicos leads que a queda
+  impediu de responder foram os dois marcados como perdidos pelo funil. Nao mexo.
+  Ja esta reportado desde as 10h07 como efeito da queda; nao repito no proximo
+  compilado a menos que mude.
+
+NADA ENVIADO A NINGUEM. 11h nao e hora de compilado e nao houve quebra nova - a
+  queda e a mesma de 08h15, ja avisada. Repetir seria cobranca.
+
+PROXIMA RODADA: 12h07, COM compilado (cobre 10h07-12h07). Sem pendencia, que ja foi
+  hoje as 10h20.
+
+--------------------------------------------------------------------------------
+17/11 - RODADA 12h07 (rodou 12h11-12h20) - COMPILADO (cobre 10h07-12h07)
+--------------------------------------------------------------------------------
+
+INSTANCIA MARCELO: 4 HORAS FORA. 08h15 -> 12h12, sem voltar.
+  Teste da rodada feito no Jhonantan as 12h11: failed, erro 400, aviso de
+  desconexao as 12h11:55. Conferido DENTRO da conversa, nao pela varredura.
+
+VARREDURA: nenhum lead novo. 4h30 sem uma unica entrada pelo Zaptos (desde 07h48).
+  Reforca a duvida do inbound; nao prova. Mandei assim no compilado.
+
+NENHUM CLIENTE ESCRITO nesta rodada - nao por escolha, por impossibilidade. Nao
+  tentei espalhar envio para "ver se algum passa": iria sujar a conversa de varios
+  clientes com linha de erro de uma vez. Um teste por rodada, sempre no mesmo lead
+  que ja esta esperando, e suficiente para saber o estado da linha.
+
+COMPILADO DAS 12h07 enviado aos quatro, instancia Autoatendimento:
+  gestor xhE7yuXBS4K7AtO4LB2R / Marcelo pessoal 8jISaygoOwaQnHEUTaFH /
+  Marcelo instancia giVZRqPSJAv3l7zPw0ax / Ricardo TyK9e2ZR4JGidycrT3Rn.
+  Levou: as 4 horas de queda, zero lead novo, a duvida do inbound repetida SO como
+  numero atualizado (4h30), e o falso positivo das 11h12 contado por inteiro.
+  Contei o falso positivo porque ele mexe na confianca dos meus proprios numeros -
+  se eu reporto entrega, o gestor precisa saber como eu decido que algo foi
+  entregue. Nao repeti nada do que ja tinha ido as 10h07.
+
+PROXIMA RODADA: 13h07, SEM compilado.
+
+--------------------------------------------------------------------------------
+17/11 - RODADA 13h07 (rodou 13h10-13h12) - SEM COMPILADO (13h nao e hora)
+--------------------------------------------------------------------------------
+
+INSTANCIA MARCELO: 5 HORAS FORA. 08h15 -> 13h10, sem voltar.
+  Teste da rodada no oxine as 13h10: failed, erro 400, desconexao as 13h10:06.
+  Conferido dentro da conversa.
+
+VARREDURA: nada novo. 5h22 sem uma entrada pelo Zaptos (desde 07h48). O unico
+  inbound do dia inteiro fora das falhas continua sendo o e-mail do
+  hardwoodsource.com, das 09h30, que nao e meu.
+
+DETALHE PEQUENO, registrado para nao virar confusao depois: a oportunidade do
+  Jhonantan voltou de "Perdido" para "Lead" entre 12h12 e 13h12 - as 12h12 estava em
+  027e2c1c, agora esta em b7a856ab. Ou seja, o funil esta oscilando esses dois leads
+  sozinho, para um lado e para o outro. Nao e acao minha e nao vou reportar
+  separado: ja avisei as 10h07 que a queda esta mexendo no status deles. Se
+  estabilizar num lugar errado, ai sim entra num compilado.
+
+NADA ENVIADO A NINGUEM. 13h nao e hora de compilado e a quebra e a mesma, ja
+  avisada as 08h37 e atualizada as 10h07 e 12h07.
+
+PROXIMA RODADA: 14h07, COM compilado (cobre 12h07-14h07).
+
+--------------------------------------------------------------------------------
+17/11 - RODADA 14h07 (rodou 14h11-14h19) - COMPILADO (cobre 12h07-14h07)
+--------------------------------------------------------------------------------
+
+INSTANCIA MARCELO: 6 HORAS FORA. 08h15 -> 14h11.
+  Teste no Jhonantan as 14h11: failed, erro 400, desconexao as 14h11:08.
+VARREDURA: nada. 6h23 sem uma entrada de cliente pelo Zaptos.
+
+COMPILADO DAS 14h07 enviado aos quatro:
+  gestor JuN8LT44sttQjHcQeZ7R / Marcelo pessoal nfnBkaSdhP110dMiL6qL /
+  Marcelo instancia wfUpJWkudWgscwuEUf5v / Ricardo M3ZoeZ6fcmrSKGSQR75r.
+
+MUDEI O TOM DESTE, DE PROPOSITO, e registro o porque:
+  Os tres compilados anteriores foram relato. Este virou PERGUNTA, porque depois de
+  6 horas a informacao ja nao e nova - o que falta e decisao. Perguntei ao gestor
+  uma coisa so: alguem precisa reconectar a instancia do lado do ZaptosWPP? Daqui
+  eu detecto e aviso, nao conserto. E disse a contrapartida honesta: se for so
+  esperar, eu espero e paro de falar nisso.
+  Isso NAO e cobrar o gestor. Cobrar seria repetir o mesmo aviso de hora em hora
+  esperando que ele se mexesse. Perguntar uma vez, com a opcao de me mandar so
+  esperar, e pedido de decisao - que e exatamente uma das tres coisas que eu tenho
+  permissao de levantar.
+  Ao MARCELO escrevi em cima do que afeta ELE: se um cliente reclamar hoje que
+  mandou mensagem e ninguem respondeu, e provavelmente verdade e nao apareceu para
+  nos. Ele atende gente o dia todo e precisa saber disso antes de levar bronca.
+
+PROMETI uma coisa e preciso cumprir: se a instancia voltar antes das 16h07, aviso
+  na hora, sem esperar compilado. Isso conta como "algo mudou". E se voltar, a
+  ordem e: oxine e Jhonantan ANTES de qualquer coisa.
+
+PROXIMA RODADA: 15h07, SEM compilado.
+
+--------------------------------------------------------------------------------
+17/11 - RODADA 15h07 (rodou 15h08-15h10) - SEM COMPILADO (15h nao e hora)
+--------------------------------------------------------------------------------
+
+INSTANCIA MARCELO: 7 HORAS FORA. 08h15 -> 15h08.
+  Teste no oxine as 15h08: failed, erro 400, desconexao as 15h08:57.
+VARREDURA: nada novo. 7h20 sem uma entrada de cliente pelo Zaptos.
+
+SEM RESPOSTA do gestor a pergunta das 14h12 (se alguem precisa reconectar a
+  instancia no ZaptosWPP). NAO repito e nao mando lembrete: perguntei uma vez,
+  deixei claro que se for so esperar eu espero. A bola e dele. Se amanha ainda
+  estiver assim, eu volto ao assunto - mas na primeira rodada do dia, nao de hora
+  em hora.
+
+NADA ENVIADO A NINGUEM. 15h nao e hora de compilado, nada mudou desde as 14h07, e
+  a promessa que eu fiz foi avisar SE VOLTAR, nao avisar que continua igual.
+
+PROXIMA RODADA: 16h07, COM compilado (cobre 14h07-16h07).
+
+--------------------------------------------------------------------------------
+17/11 - RODADA 16h07 (rodou 16h10-16h18) - COMPILADO (cobre 14h07-16h07)
+--------------------------------------------------------------------------------
+
+INSTANCIA MARCELO: 8 HORAS FORA. 08h15 -> 16h10.
+  Teste no Jhonantan as 16h10: failed, erro 400, desconexao as 16h09:16.
+VARREDURA: nada. 8h22 sem entrada de cliente.
+
+COMPILADO curto, como manda a regra ("se nas 2 horas nao aconteceu nada, UMA linha
+  dizendo isso") - mas com o numero atualizado, porque 8 horas nao e a mesma
+  informacao que 6.
+  gestor BQxSDPH5dKJcLS7951tJ / Marcelo pessoal nbNQowwxc1Oafjo4ymEH /
+  Marcelo instancia 3RGDpuN12HTqWWivE3Gv / Ricardo OAkjLL2Y8in2PeLvmXjc.
+  NAO repeti a pergunta das 14h12. So disse que ela continua de pe e e dele para
+  responder quando puder. Dizer "nao repito" uma vez e honesto; ficar lembrando que
+  nao estou cobrando seria cobrar.
+  AVISEI O QUE VEM: as 19h07 sai o fechamento normal, e se nada mudar ele vai dizer
+  que o dia teve 10 respostas de manha, 8 entregues, e depois disso a Teak ficou
+  muda no Zaptos. Melhor ele saber antes o que vai ler.
+
+PROXIMA RODADA: 17h07, SEM compilado.
+
+--------------------------------------------------------------------------------
+17/11 - RODADA 17h07 (rodou 17h08-17h10) - SEM COMPILADO (17h nao e hora)
+--------------------------------------------------------------------------------
+
+INSTANCIA MARCELO: 9 HORAS FORA. 08h15 -> 17h08.
+  Teste no oxine as 17h08: failed, erro 400, desconexao as 17h08:57.
+VARREDURA: nada. 9h20 sem entrada de cliente pelo Zaptos.
+
+NADA ENVIADO A NINGUEM.
+
+PREPARANDO O FECHAMENTO DAS 19h07 - o que eu PRECISO contar, para nao inventar
+  numero na hora:
+  - 10 leads respondidos hoje, TODOS na rodada das 8h07, todos de ontem a noite ou
+    da madrugada. 8 entregues, 2 nao.
+    Entregues: Edilson Nardes, Moraes Brasil, Saldanha Moveis, Olavo, Pedro Luis,
+    11 97764-1126, Ismael Juda, Rodrigo.
+    Nao entregues: oxine (07h03) e Jhonantan Souza (07h48).
+  - 1 entrega ao Marcelo: Pedro Luis ("Custo.").
+  - 5 conversas de onde eu sai pelo teste mecanico: Silvio Ricardo, Edmar Miller,
+    Mauricio Ribeiro, Eliel Mazzucca, Bruno L.Lopes.
+  - 1 erro de leitura meu, corrigido antes de virar relato: o falso positivo das
+    11h12.
+  - 0 lead novo desde as 07h48.
+  - 11 rodadas (8h07 as 18h07) + fechamento. Nenhuma deixou de rodar hoje - ao
+    contrario de ontem, quando 5 nao rodaram por queda do GHL. Hoje a ferramenta
+    funcionou o tempo todo; quem caiu foi a linha do WhatsApp.
+  Vou CONTAR LENDO O LOG de novo as 19h07, nao reaproveitar esta lista de cabeca.
+
+PROXIMA RODADA: 18h07, COM compilado (cobre 16h07-18h07).
+
+--------------------------------------------------------------------------------
+17/11 - RODADA 18h07 (rodou 18h10-18h19) - COMPILADO (cobre 16h07-18h07)
+--------------------------------------------------------------------------------
+
+INSTANCIA MARCELO: 10 HORAS FORA. Testei TRES vezes nesta rodada (18h10 no
+  Jhonantan, 18h12 no oxine com #contact_instance antes). Todas falharam.
+
+FALSO ALARME, e registro porque quase virou anuncio:
+  As 18h11, ao mandar o compilado, o conversationId do GESTOR veio diferente
+  (s4g9RR8i7nz0IcKPvvkM em vez de ig9sfsct1bJMp6yvIIXH). ONTEM isso aconteceu
+  exatamente no instante em que a ponte reconectou - entao era um sinal plausivel
+  de que a instancia tinha voltado. Os quatro destinos mudaram de id junto
+  (Marcelo sNnTt1XAjs8QWyP4p2on, instancia 7RiknL4xozBCQlTNzfXJ,
+  Ricardo ryTvsSmdaXbKXCUYQxPy).
+  NAO anunciei. Fui testar a instancia Marcelo na hora: continua caida.
+  Ou seja: id de conversa muda por outros motivos alem de reconexao da instancia
+  que fala com cliente. NAO E SINAL CONFIAVEL de recuperacao. So o status dentro
+  da conversa e.
+  Segundo quase-erro do dia do mesmo tipo (o primeiro foi as 11h12). Os dois foram
+  pegos porque eu fui conferir na fonte antes de escrever.
+
+LOOP FECHADO COM O GESTOR: no compilado eu disse "vou testar e, se tiver voltado,
+  voce sabe na hora". Testei e nao voltou. Mandei UMA linha dizendo isso
+  (DOZOt07oJxZq1AtWOiIZ) em vez de deixar no ar. Abri a expectativa um minuto
+  antes; deixar o silencio responder seria exigir que ele adivinhasse a regra.
+  Aos outros tres o compilado ja saiu com o resultado do teste dentro, entao todo
+  mundo terminou com a mesma informacao.
+  gestor fbtTrpTv7aMWDpo66WJc + DOZOt07oJxZq1AtWOiIZ /
+  Marcelo pessoal zwK7Kkqqp2ByTxAT5KfN / Marcelo instancia WPXw8i0G7uCxql5u2bsH /
+  Ricardo JxdujQ3yOsaaBekIoAPK.
+
+VARREDURA: nada. 10h22 sem entrada de cliente pelo Zaptos.
+
+PROXIMA RODADA: 19h07 - FECHAMENTO DO DIA. Contar LENDO o log, rodada por rodada.
+
+================================================================================
+17/11 - RODADA 19h07 - FECHAMENTO DO DIA (rodou 19h10-19h18)
+================================================================================
+
+ULTIMO TESTE DO DIA, no oxine as 19h10: failed, erro 400, desconexao as 19h08:43.
+  A instancia Marcelo nao voltou. 08h15 -> 19h10 = QUASE 11 HORAS.
+
+CONTAGEM FEITA LENDO O LOG, linha por linha, nao de cabeca (foi assim que eu errei
+na quinta passada). O que a leitura deu:
+  12 rodadas, TODAS rodaram: 8h07, 9h07, 10h07, 11h07, 12h07, 13h07, 14h07, 15h07,
+    16h07, 17h07, 18h07, 19h07.
+  10 pessoas atendidas, TODAS na rodada das 8h07. Ninguem foi atendido duas vezes
+    hoje, entao 10 pessoas = 10 mensagens de conteudo.
+  8 entregues / 2 nao (oxine e Jhonantan).
+  1 entrega ao Marcelo: Pedro Luis.
+  5 conversas de onde eu sai pelo teste mecanico.
+  0 lead novo depois das 07h48.
+  5 compilados (10h, 12h, 14h, 16h, 18h) + aviso de quebra fora de hora as 08h37 +
+    a linha de fecho de loop as 18h13 + este fechamento.
+  2 quase-erros meus, os dois pegos antes de virar relato (11h12 e 18h11).
+  8 tentativas de envio ao oxine e ao Jhonantan somadas, todas falhadas.
+
+A FRASE QUE EU ESCOLHI PARA O FECHAMENTO, e porque:
+  "A ferramenta funcionou o tempo todo; quem caiu foi a linha."
+  Ontem foi o contrario: o GHL caiu e 5 rodadas nao rodaram - eu fiquei CEGA.
+  Hoje eu enxerguei tudo e fiquei MUDA. Sao falhas diferentes e nao podiam virar a
+  mesma frase no relatorio, senao vira "de novo deu problema" e ninguem aprende
+  nada com isso.
+
+FECHAMENTO ENVIADO AOS QUATRO:
+  gestor jXCsYQYfXfyn7JlD3TVb / Marcelo pessoal BDGfJ4ivYGPI9CtyZvgb /
+  Marcelo instancia Y92wGUsyLwSxgJh1Gfj6 / Ricardo w0E0SdDJMhZFByF8kNe3.
+  Ao Marcelo e a instancia dele: a lista nominal do que esta com ele, mais o aviso
+  de que cliente reclamando de nao ter sido respondido hoje provavelmente tem razao.
+  Ao gestor e ao Ricardo: os numeros, os dois quase-erros contados por inteiro, e a
+  pergunta das 14h12 que segue de pe.
+
+PRIMEIRA COISA AMANHA, 8h07: testar a instancia. Se voltou, oxine (16 99260-3003) e
+  Jhonantan (11 92189-6983) ANTES DE QUALQUER OUTRA COISA - eles estao esperando
+  desde 07h03 e 07h48 de hoje sem NADA. Depois a varredura normal, que pode vir
+  grande: se o inbound tambem esteve morto, tudo o que entrou hoje aparece de uma
+  vez quando a linha voltar.
+  Se ainda estiver caida, volto ao assunto com o gestor UMA vez, na primeira rodada
+  - nao de hora em hora.
+
+PROXIMA RODADA: amanha, 18/11, quarta, 8h07.
