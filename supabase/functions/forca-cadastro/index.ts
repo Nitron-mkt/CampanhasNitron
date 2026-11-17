@@ -172,6 +172,47 @@ Deno.serve(async (req) => {
     const acao = u.searchParams.get("acao") || "";
     const dry = u.searchParams.get("dry") === "1" || acao === "fila";
 
+    // ---- ?acao=avulso: chama a API com UM CNPJ qualquer, sem tocar na fila de leads -----------
+    // Serve para ver o que a API faz com cliente que JA e da casa: atendido por representante,
+    // inativo ha anos, com Clube vigente. E chamada DE VERDADE — se a API nao recusar, nasce
+    // pedido no ERP. O resultado fica em `forca_teste` para a decisao nao depender de memoria.
+    if (acao === "avulso") {
+      const cnpj = digits(u.searchParams.get("cnpj"));
+      const contato = (u.searchParams.get("contato") || "").trim();
+      const email = (u.searchParams.get("email") || "").trim().toLowerCase();
+      const whatsapp = digits(u.searchParams.get("whatsapp"));
+      const caso = (u.searchParams.get("caso") || "").slice(0, 40);
+      const razao = (u.searchParams.get("razao") || "").slice(0, 200);
+      const codparc = Number(u.searchParams.get("codparc") || 0) || null;
+      if (cnpj.length !== 14 || !contato || !email || whatsapp.length < 10) {
+        return j({ ok: false, erro: "avulso exige cnpj(14), contato, email e whatsapp" }, 400);
+      }
+      const t0 = Date.now();
+      const H = { Authorization: "Bearer " + (await forcaToken()), "Content-Type": "application/json" };
+      const r = await fetch(`${FORCA_BASE}/api/crm/orcamento`, {
+        method: "POST", headers: H, body: JSON.stringify({ cnpj, contato, email, whatsapp }),
+        signal: AbortSignal.timeout(120_000),
+      });
+      let d = await r.json().catch(() => ({} as any));
+      let consultas = 0;
+      // Consulta ate fechar. Cada GET empurra o processamento do outro lado.
+      while (d?.protocolo && d?.status === "processando" && consultas < 8) {
+        await new Promise((s) => setTimeout(s, 12_000));
+        consultas++;
+        const g = await fetch(`${FORCA_BASE}/api/crm/orcamento/${d.protocolo}`, { headers: H, signal: AbortSignal.timeout(120_000) });
+        const e = await g.json().catch(() => ({} as any));
+        if (e?.status) d = { ...d, ...e };
+        if (d.status !== "processando") break;
+      }
+      const seg = Math.round((Date.now() - t0) / 100) / 10;
+      const reg = { caso, codparc, razao, cnpj, contato, email, whatsapp,
+                    protocolo: d?.protocolo || null, pedido: d?.pedido || null, link: d?.link || null,
+                    validade: d?.validade || null, erro: d?.erro || null,
+                    mensagem: d?.mensagem || null, consultas, segundos: seg };
+      await rest("forca_teste", { method: "POST", body: JSON.stringify(reg) });
+      return j({ ok: true, caso, razao, http: r.status, status: d?.status || null, segundos: seg, consultas, ...reg });
+    }
+
     const origens = (await cfg("forca_origens", "nitron-direto-lp%,lp-nitron%")).split(",").map((s) => s.trim()).filter(Boolean);
     const filtroOrigem = "(" + origens.map((o) => `origem.ilike.${o}`).join(",") + ")";
     const sel = "id,nome,cnpj,cep,fone,email,contact_id,empresa,forca_protocolo,forca_pedido,forca_erro,criado";
