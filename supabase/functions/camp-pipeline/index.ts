@@ -116,7 +116,10 @@ Deno.serve(async (req) => {
       try {
         // Procura a oportunidade do contato EM QUALQUER pipeline: o lead pode ter nascido no
         // "Novos Clientes", que era para onde a landing apontava ate hoje.
-        const s = await ghl("GET", `/opportunities/search?location_id=${LOC}&contactId=${L.contact_id}&status=all&limit=20`);
+        // O parametro e `locationId`, NAO `location_id`. Com o nome errado a busca devolve lista
+        // vazia em vez de erro — e a funcao concluiria "nao tem card" e criaria um segundo,
+        // deixando o original orfao no pipeline antigo. Pego na previa de 17/11, antes de aplicar.
+        const s = await ghl("GET", `/opportunities/search?locationId=${LOC}&contactId=${L.contact_id}&status=all&limit=20`);
         const sd = await s.json().catch(() => ({} as any));
         const ops: any[] = sd?.opportunities || [];
         // Prefere a que ja esta no pipeline novo; senao, a mais recente de qualquer um.
