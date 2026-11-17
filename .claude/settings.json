@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "permissions": {
+    "allow": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Edit",
+      "Write",
+
+      "Bash(git *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(sed *)",
+      "Bash(grep *)",
+      "Bash(rg *)",
+      "Bash(find *)",
+      "Bash(wc *)",
+      "Bash(diff *)",
+      "Bash(sort *)",
+      "Bash(uniq *)",
+      "Bash(jq *)",
+      "Bash(md5sum *)",
+      "Bash(date *)",
+      "Bash(echo *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(curl *)",
+      "Bash(python3 *)",
+      "Bash(node *)",
+      "Bash(sleep *)",
+      "Bash(for *)",
+      "Bash(command -v *)",
+
+      "mcp__Supabase__execute_sql",
+      "mcp__Supabase__list_tables",
+      "mcp__Supabase__list_edge_functions",
+      "mcp__Supabase__get_edge_function",
+      "mcp__Supabase__get_project",
+      "mcp__Supabase__get_project_url",
+      "mcp__Supabase__get_publishable_keys",
+      "mcp__Supabase__get_advisors",
+      "mcp__Supabase__query_logs",
+      "mcp__Supabase__list_migrations",
+      "mcp__Supabase__search_docs",
+
+      "mcp__Go_High_Level__search_operations",
+      "mcp__Go_High_Level__describe_operation",
+      "mcp__Go_High_Level__execute_operation",
+      "mcp__Go_High_Level__list_locations",
+
+      "mcp__Sankhya__sankhya_query",
+      "mcp__Sankhya__sankhya_describe_view",
+      "mcp__Sankhya__sankhya_list_views",
+      "mcp__Sankhya__sankhya_list_reports",
+      "mcp__Sankhya__sankhya_run_report",
+
+      "ToolSearch",
+      "SendUserFile",
+      "Monitor"
+    ],
+    "deny": [
+      "Bash(rm -rf /*)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git reset --hard *)",
+      "Bash(chmod 777 *)"
+    ]
+  }
+}
