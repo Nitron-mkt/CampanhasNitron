@@ -1,5 +1,26 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+
+  "//": [
+    "Allowlist das chamadas de rotina desta operacao. O gestor pediu duas vezes (17 e 18/11) para",
+    "parar de perguntar a cada passo. A regra que segui para montar esta lista:",
+    "",
+    "ENTRA o que e reversivel, ou o que ja tem trava propria dentro da funcao chamada.",
+    "FICA DE FORA o que e irreversivel, o que gasta dinheiro, e o que fala com CLIENTE.",
+    "",
+    "Por isso `deploy_edge_function` entra (publicar de novo desfaz, e o fonte esta no git) e",
+    "`delete_branch`, `pause_project` e `publish_app` do Replit NAO entram.",
+    "",
+    "O que CONTINUA perguntando mesmo estando aqui, e isso nao e defeito:",
+    "  - `execute_sql` com comando destrutivo (DELETE, DROP, TRUNCATE): a propria ferramenta pede",
+    "    confirmacao, independente desta lista. Leitura e INSERT/UPDATE/ALTER passam direto.",
+    "  - `publish_app` do Replit: a ferramenta recusa sozinha como 'Production Deploy'.",
+    "",
+    "O que esta lista NAO afrouxa, porque mora no CLAUDE.md e vale acima dela: nao travar campanha,",
+    "nao desligar `email_ativo`, nao mexer em chave, e nada de novo falando sozinho com lojista sem",
+    "a chave E o cron ligados de proposito."
+  ],
+
   "permissions": {
     "allow": [
       "Read",
@@ -7,6 +28,11 @@
       "Glob",
       "Edit",
       "Write",
+      "ToolSearch",
+      "SendUserFile",
+      "Monitor",
+      "WebFetch",
+      "WebSearch",
 
       "Bash(git *)",
       "Bash(ls *)",
@@ -23,28 +49,35 @@
       "Bash(uniq *)",
       "Bash(jq *)",
       "Bash(md5sum *)",
+      "Bash(sha256sum *)",
       "Bash(date *)",
       "Bash(echo *)",
+      "Bash(printf *)",
       "Bash(mkdir *)",
       "Bash(cp *)",
       "Bash(mv *)",
       "Bash(curl *)",
       "Bash(python3 *)",
       "Bash(node *)",
-      "Bash(sleep *)",
       "Bash(for *)",
       "Bash(command -v *)",
+      "Bash(env *)",
 
       "mcp__Supabase__execute_sql",
-      "mcp__Supabase__list_tables",
-      "mcp__Supabase__list_edge_functions",
+      "mcp__Supabase__apply_migration",
+      "mcp__Supabase__deploy_edge_function",
       "mcp__Supabase__get_edge_function",
+      "mcp__Supabase__list_edge_functions",
+      "mcp__Supabase__list_tables",
+      "mcp__Supabase__list_migrations",
+      "mcp__Supabase__list_extensions",
+      "mcp__Supabase__generate_typescript_types",
       "mcp__Supabase__get_project",
       "mcp__Supabase__get_project_url",
       "mcp__Supabase__get_publishable_keys",
+      "mcp__Supabase__get_organization",
       "mcp__Supabase__get_advisors",
       "mcp__Supabase__query_logs",
-      "mcp__Supabase__list_migrations",
       "mcp__Supabase__search_docs",
 
       "mcp__Go_High_Level__search_operations",
@@ -58,16 +91,43 @@
       "mcp__Sankhya__sankhya_list_reports",
       "mcp__Sankhya__sankhya_run_report",
 
-      "ToolSearch",
-      "SendUserFile",
-      "Monitor"
+      "mcp__Replit__list_apps",
+      "mcp__Replit__search_apps",
+      "mcp__Replit__resolve_app_by_name",
+      "mcp__Replit__list_app_files",
+      "mcp__Replit__read_app_file",
+      "mcp__Replit__get_publish_status",
+      "mcp__Replit__update_app_using_prompt",
+
+      "mcp__github__get_file_contents",
+      "mcp__github__list_commits",
+      "mcp__github__list_branches",
+      "mcp__github__pull_request_read",
+      "mcp__github__list_pull_requests",
+
+      "mcp__META_MCP__ads_get_ad_accounts",
+      "mcp__META_MCP__ads_get_ad_entities",
+      "mcp__META_MCP__ads_insights_performance_trend",
+
+      "mcp__Microsoft_365__outlook_email_search"
     ],
+
     "deny": [
       "Bash(rm -rf /*)",
       "Bash(git push --force *)",
       "Bash(git push -f *)",
       "Bash(git reset --hard *)",
-      "Bash(chmod 777 *)"
+      "Bash(chmod 777 *)",
+
+      "mcp__Supabase__pause_project",
+      "mcp__Supabase__restore_project",
+      "mcp__Supabase__create_project",
+      "mcp__Supabase__delete_branch",
+      "mcp__Supabase__merge_branch",
+      "mcp__Supabase__reset_branch",
+
+      "mcp__Replit__publish_app",
+      "mcp__Replit__create_app_from_prompt"
     ]
   }
 }
