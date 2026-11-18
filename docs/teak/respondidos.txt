@@ -5136,3 +5136,505 @@ PRIMEIRA COISA AMANHA, 8h07: testar a instancia. Se voltou, oxine (16 99260-3003
   - nao de hora em hora.
 
 PROXIMA RODADA: amanha, 18/11, quarta, 8h07.
+
+================================================================================
+18/11/2026 - QUARTA - RODADA 8h07 (rodou 8h10-8h19)
+================================================================================
+
+LOG INTACTO. Conferi antes de tudo: o arquivo sobreviveu a virada do dia
+  (288.291 bytes, igual a copia commitada ontem). Nao houve buraco para avisar.
+
+A INSTANCIA MARCELO CONTINUA FORA. Agora sao 27 HORAS: 17/11 08h15 -> 18/11 08h10,
+  a noite inteira incluida. Teste feito no oxine as 08h10: failed, erro 400,
+  desconexao as 08h10:16. Nona tentativa a ele.
+
+VARREDURA (limite 15, pagina NAO estava cheia): NENHUM lead novo. A mensagem de
+  cliente mais recente da caixa inteira continua sendo a do Jhonantan, de ontem as
+  07h48. Sao MAIS DE 24 HORAS sem uma unica entrada.
+  Isso pesa muito a favor da hipotese do inbound morto - num canal que recebia lead
+  as 00h21, 00h59, 03h34 e 06h08 na madrugada anterior, uma noite inteira com zero
+  e implausivel como comportamento de clientes. Mas CONTINUO sem poder provar por
+  dentro do GHL, e escrevi assim: "continuo sem poder provar, mas a duvida ficou bem
+  mais pesada". Nao transformei em fato por conveniencia.
+
+VOLTEI AO ASSUNTO COM O GESTOR - UMA VEZ, como eu disse ontem que faria
+  Mandei aos quatro, instancia Autoatendimento:
+  gestor TBBj2igxDrMWNB05Ixkc / Marcelo pessoal mlLwL56ucZ3Ozxacq8t7 /
+  Marcelo instancia mc0XkMyl9HZP3nipen9G / Ricardo bCBYQ3PFE81o384KQs2A.
+  Abri dizendo que so voltaria uma vez e que esta e a vez. Repeti a pergunta das
+  14h12 de ontem e dei a saida honesta: se a resposta for "esta sendo tratado, so
+  aguarde", eu paro de levantar o assunto DE VEZ.
+  Isso nao e cobranca. Cobranca e repetir ate o outro ceder. Aqui eu disse quando ia
+  falar, falei na hora marcada, e ofereci um jeito de encerrar o assunto.
+  Nao e hora de compilado (8h07 nao e), mas a excecao "algo quebrou" cobre: a queda
+  atravessar a noite e virar segundo dia e fato novo, nao repeticao do de ontem.
+
+AO MARCELO escrevi o que afeta ELE: se cliente procurar por telefone, e-mail ou
+  Instagram dizendo que mandou mensagem e ninguem respondeu, e provavelmente
+  verdade - e pode nem ter aparecido no CRM. Ele precisa disso antes de levar bronca
+  por desatencao que nao houve.
+
+NAO MEXI EM NADA. Nao pausei instancia, nao desliguei chave, nao alterei campanha,
+  nao toquei no pipeline - nem nos dois leads que o funil marcou como perdidos
+  sozinho ontem.
+
+PROXIMA RODADA: 9h07, sem compilado. So testar e varrer. O proximo compilado e as
+  10h07 e leva a pendencia do dia.
+
+--------------------------------------------------------------------------------
+18/11 - RODADA 9h07 (rodou 9h09-9h11) - SEM COMPILADO (9h nao e hora)
+--------------------------------------------------------------------------------
+
+INSTANCIA MARCELO: 28 HORAS FORA. 17/11 08h15 -> 18/11 09h09.
+  Teste no Jhonantan as 09h09: failed, erro 400, desconexao as 09h09:20.
+  Alternei o alvo de proposito (ontem oxine/Jhonantan em rodadas alternadas, hoje
+  igual): assim os dois recebem, no fim, o mesmo numero de tentativas, e nenhum dos
+  dois acumula mais linhas de erro visiveis que o outro.
+
+VARREDURA: nada. Mais de 25 horas sem entrada de cliente.
+
+NADA ENVIADO A NINGUEM. Ja falei hoje as 8h12, que era a UNICA vez que eu disse que
+  ia voltar ao assunto. Agora e silencio ate o compilado das 10h07, que e hora
+  marcada e leva a pendencia do dia.
+  Se eu mandasse algo agora seria exatamente a cobranca que eu disse que nao faria -
+  40 minutos depois de prometer que nao insistiria.
+
+PROXIMA RODADA: 10h07, COM compilado. Primeiro do dia: leva a pendencia, uma vez so.
+
+--------------------------------------------------------------------------------
+18/11 - RODADA 10h07 (rodou 10h12-10h20) - COMPILADO, o primeiro do dia
+--------------------------------------------------------------------------------
+
+INSTANCIA MARCELO: 29 HORAS FORA. Teste no oxine as 10h12: failed, erro 400.
+VARREDURA: nada. Mais de 26 horas sem entrada de cliente.
+
+UMA TENSAO QUE EU TIVE DE RESOLVER, e registro porque pode voltar:
+  As 8h12 eu disse ao gestor que so levantaria a reconexao UMA vez hoje. As 10h07 a
+  pendencia do dia vence - e a reconexao e, por definicao, uma pendencia com ele.
+  Mandar a lista com o item parecia reperguntar; tirar o item da lista parecia
+  esconder.
+  RESOLVI ASSIM: o item entra na lista, numerado como os outros, mas com a ressalva
+  escrita ANTES da lista - "esse eu ja te perguntei hoje as 8h12 e disse que nao
+  perguntaria de novo; ele entra so para nao sumir do registro, nao estou
+  reperguntando".
+  O registro fica completo e a palavra que eu dei continua valendo. Se eu tivesse
+  omitido, em duas semanas ninguem lembraria que isso existiu.
+
+AO MARCELO mandei a LISTA INTEIRA do que esta com ele, consolidada de 16, 17 e do
+  que e mais antigo, num lugar so - e disse explicitamente que NAO e cobranca, e
+  para ele nao ter que cacar isso espalhado em varias mensagens minhas. Com a linha
+  caida, nenhum desses pode ser respondido por mim de qualquer forma, e varios ja
+  nao eram meus.
+
+ENVIADOS: gestor zs7lSfya2Mu9QPDg6epM / Marcelo pessoal 0SHiJlpOVZXuIf3kMfUQ /
+  Marcelo instancia aEI9Ph2FFptKcwctt4My / Ricardo o0s9OJdLvpXOpnWmvIZE.
+
+PENDENCIA DO DIA: entregue. NAO repetir ate amanha.
+
+PROXIMA RODADA: 11h07, SEM compilado.
+
+--------------------------------------------------------------------------------
+18/11 - RODADA 11h07 (rodou 11h10-11h14) - SEM COMPILADO (11h nao e hora)
+--------------------------------------------------------------------------------
+
+CORRECAO DE ROTULO MEU: as idempotencyKeys destes dois envios sairam com "1211" e
+  "1113". A rodada e a das 11h07 (disparo 14h07 UTC = 11h07 SP). Errei o rotulo na
+  chave, nao a hora da rodada. As chaves sao so etiqueta - nao mudam o envio nem o
+  horario real - mas registro para quem ler o log depois nao se perder.
+
+*** O COMPORTAMENTO DA LINHA MUDOU - E NAO E A MESMA COISA QUE TER VOLTADO ***
+  Nas 9 tentativas anteriores (17/11 08h15 ate hoje 10h12) o padrao era SEMPRE:
+    status "failed", error "Request failed with status code 400",
+    from "Hyak WhatsApp SMS", e 1-2s depois um inbound "The instance is
+    disconnected."
+  Agora, nos DOIS envios desta rodada (Jhonantan 11h10, oxine 11h11):
+    status "PENDING", SEM campo error, from "Teak Brazil" (e nao "Hyak WhatsApp
+    SMS"), e NENHUM aviso de desconexao ate agora.
+  Reli a conversa do Jhonantan um minuto depois: continuava "pending".
+
+  O QUE EU NAO VOU FAZER: anunciar que a instancia voltou. "Pending" NAO e
+  "delivered". E a regra que eu mesma fixei ontem depois de dois falsos positivos -
+  entrega so se prova pelo status dentro da conversa, e o status diz "pendente",
+  que e literalmente "ainda nao se sabe".
+  Pode ser fila que vai sair; pode ser mensagem presa num limbo novo. As duas
+  leituras cabem no que eu vejo.
+
+  O QUE EU VOU FAZER: esperar ate a rodada das 12h07, que e hora de compilado, e
+  olhar em que estado essas duas mensagens pararam. Se virarem "delivered", eu
+  conto que voltou E que oxine e Jhonantan finalmente receberam. Se virarem
+  "failed", conto que foi mais um jeito de falhar. Nos dois casos eu reporto um
+  FATO RESOLVIDO, nao um estado intermediario que obriga o gestor a torcer junto.
+
+NAO MANDEI NADA A NINGUEM. 11h nao e hora de compilado, e o que eu tenho agora nao
+  e nem quebra nova nem boa noticia confirmada - e ambiguidade. Ambiguidade a gente
+  resolve antes de reportar, nao durante.
+
+PROXIMA RODADA: 12h07, COM compilado. Primeira coisa: ver o status final destas
+  duas mensagens.
+
+================================================================================
+18/11 - RODADA 12h07 (rodou 12h11-12h22) - COMPILADO - *** A LINHA VOLTOU ***
+================================================================================
+
+FIM DA QUEDA: 17/11 08h15 -> 18/11 ~11h10. POUCO MAIS DE 27 HORAS.
+
+COMO EU SOUBE, e esta parte importa mais que a noticia:
+  As 11h10 o sintoma mudou (failed -> pending). NAO ANUNCIEI. Esperei a rodada
+  seguinte para ver em que estado as mensagens pararam. Deu certo:
+  - Jhonantan: status DELIVERED as 11h11:12. E ele RESPONDEU as 11h27: "Ok".
+  - oxine: status SENT as 11h11:34. Saiu sem erro, mas sem confirmacao de entrega
+    no aparelho. Reportei exatamente assim - "sent", nao "chegou".
+  Se eu tivesse anunciado as 11h10, teria acertado por sorte. Esperar uma hora para
+  reportar um fato resolvido, em vez de um estado intermediario, foi a decisao certa
+  mesmo que o resultado tivesse sido o mesmo.
+
+O "Ok" DO JHONANTAN: nao respondi. "ok" esta na lista do que nao se responde, junto
+  com obrigado/valeu/emoji. Ele recebeu, reconheceu, e ainda nao disse o que quer.
+  Lead que nao pede nada nao recebe segunda mensagem minha.
+
+LEAD NOVO - o primeiro em 27 horas:
+  TORO DESIGN - Murilo Deneno, 19 99905-9990, contato mSPWVExyBdiFQkfOjNQ4,
+  conversa 8iz1J1tJQz1Yj9ZwFudW. Escreveu "Bom dia!" as 10h55.
+  Teste mecanico: so o inbound dele + type 28 do funil. Limpo, e meu.
+  Respondido as 12h13 (zGR11ufoUcH0brOTocVf / vLPec7eznMz5xMm0Tv3H), texto padrao,
+  com a verdade sobre a demora logo na primeira linha.
+
+*** CORRECAO DA MINHA PROPRIA HIPOTESE - E A PARTE QUE EU MAIS PRECISO ACERTAR ***
+  Eu vinha dizendo, com cuidado mas repetidamente, que o inbound provavelmente
+  tambem estava morto e que podia ter cliente escrevendo sem a gente ver.
+  A mensagem do Toro chegou as 10h55 - ou seja, perto de quando a linha comecou a se
+  recuperar, e NAO no meio das 27 horas.
+  Isso ENCAIXA com a hipotese: silencio total enquanto caida, primeira entrada assim
+  que voltou. Mas encaixar nao e provar. Eu continuo sem saber se alguem escreveu
+  durante a queda e se perdeu.
+  Escrevi isso nos compilados do gestor e do Ricardo com essas palavras: "continua
+  sem prova, e eu nao vou passar a tratar como fato so porque agora combina".
+  A tentacao aqui era real: a hipotese agora parece confirmada, e seria comodo
+  declarar vitoria. Mas a evidencia nova e compativel com ela, nao demonstrativa
+  dela - e a diferenca entre as duas coisas e exatamente o que me mantem util.
+
+ENCERREI A PENDENCIA DA RECONEXAO por conta propria, sem esperar resposta: disse ao
+  gestor que a pergunta de ontem 14h12 / hoje 8h12 nao precisa mais de resposta. "Se
+  alguem reconectou, obrigada; se voltou sozinha, melhor ainda." Pergunta que perdeu
+  o objeto se encerra - nao fica pendurada na lista enfeitando.
+
+ENVIADOS: gestor RfzZb3IbAIogCVeeCVsS / Marcelo pessoal Ww1ZhBTXyFDEUqlsgt3w /
+  Marcelo instancia tvBpS9L5DJcihZnY9Mg5 / Ricardo EptFxsSMy2JS1uQj3Zrw.
+
+NAO E MEU, visto na varredura e deixado em paz: Clark Boat Yard (EUA) respondeu por
+  E-MAIL a prospeccao em ingles. type 3 => nao entro, e e exportacao.
+
+PROXIMA RODADA: 13h07, sem compilado. Ritmo normal de volta. Esperar fila represada
+  NAO e garantido - ate agora entrou um lead so.
+
+--------------------------------------------------------------------------------
+18/11 - RODADA 13h07 (rodou 13h10-13h17) - SEM COMPILADO (13h nao e hora)
+--------------------------------------------------------------------------------
+
+A linha segue de pe. Rodada movimentada - o represamento veio, so que pequeno.
+
+1) *** O OXINE RECEBEU E RESPONDEU *** - e isso FECHA a duvida do compilado das
+   12h07, onde eu disse que o status dele era "sent" e que eu nao diria que chegou.
+   Chegou: as 12h13 ele escreveu "Preciso de assoalho para mesanino de chale,
+   forracao para chale" + uma FOTO.
+   Ou seja: "sent" acabou sendo entrega real. Eu estava certa em nao afirmar antes,
+   e agora posso afirmar porque a resposta DELE e a prova - nao o campo de status.
+   Depois de 29 horas esperando, ele nao so recebeu como trouxe pedido concreto.
+
+   RESPONDI (OUzFHoYJeotWlBDcfUiq) com tres cuidados:
+   - ACUSEI O PEDIDO NA PRIMEIRA LINHA ("assoalho para mezanino e forracao para
+     chale - anotado").
+   - DISSE QUE NAO VEJO A FOTO, e pedi para descrever em palavras ou guardar para o
+     Marcelo. Nao fingi que vi.
+   - SEPAREI o que eu posso afirmar do que eu nao posso:
+       FORRO -> afirmei: teca, larguras 70 e 90, 12 mm. Esta na minha lista.
+       ASSOALHO e MEZANINO -> NAO afirmei e NAO neguei. Os dois estao explicitamente
+         na lista do "nao afirmo e tambem nao nego". Escrevi que quem responde e o
+         Marcelo e que prefiro dizer isso a "inventar uma resposta bonita e errada".
+     A tentacao aqui era real: forracao/forro/assoalho sao palavras vizinhas, e seria
+     facil deixar o forro puxar o assoalho junto. Sao coisas diferentes e so uma esta
+     autorizada.
+   PARA O MARCELO: oxine (16 99260-3003) - assoalho para mezanino de chale +
+     forracao. Entra no compilado das 14h07.
+
+2) TORO DESIGN respondeu "Aqui" e "Obrigado" as 12h52. NAO RESPONDI.
+   "Obrigado" esta na lista do que nao se responde. E "Aqui" sozinho nao e pedido -
+   ele nao respondeu nenhuma das minhas duas perguntas. Lead que recebeu e nao disse
+   o que quer nao leva segunda mensagem minha.
+
+3) O MARCELO mandou um VIDEO as 12h30, logo depois do meu compilado. Eu nao leio
+   video. AVISEI NA HORA (swbgkcT1VUMnGVJyNYBy), fora de hora de compilado, e
+   expliquei a ele por que nao esperei: se tivesse orientacao ali, ele perderia uma
+   hora achando que eu tinha recebido.
+   Deixei explicito que nao e cobranca nem pressa, e que se era so para eu ver ele
+   pode ignorar. Nao cobrar o Marcelo continua valendo - mas dizer "o que voce me
+   mandou nao me alcanca" nao e cobranca, e informacao que so eu tenho.
+
+4) Clark Boat Yard (EUA) respondeu por e-mail de novo: "We do purchase teak, but not
+   that often". type 3, exportacao - NAO E MEU, nao toquei, nao reportei o conteudo.
+
+PROXIMA RODADA: 14h07, COM compilado. Leva: o oxine fechado (recebeu + pediu
+  assoalho/mezanino/forracao, entregue ao Marcelo), o Toro sem pedido, e o video que
+  eu nao consigo ler.
+
+--------------------------------------------------------------------------------
+18/11 - RODADA 14h07 (rodou 14h10-14h18) - COMPILADO (cobre 12h07-14h07)
+--------------------------------------------------------------------------------
+
+VARREDURA: nada novo desde 13h17. A linha segue de pe.
+
+COMPILADO DAS 14h07 enviado aos quatro:
+  gestor u3DJtY0OxHBJqMgO7mnf / Marcelo pessoal vOzRehQI4JcPDlmHL72I /
+  Marcelo instancia 4LA7NsXjNz6frnIA1Dqz / Ricardo JxEiNDj2xDxpUa3FPmt3.
+
+ABRI O COMPILADO FECHANDO A PENDENCIA QUE EU MESMA DEIXEI as 12h07:
+  "O oxine recebeu - e a prova nao e o status, e ele."
+  Isso importa como metodo: eu reportei uma incerteza duas horas antes e voltei para
+  resolve-la explicitamente, em vez de deixar o gestor descobrir sozinho que ficou
+  por isso mesmo. Incerteza anunciada e divida; divida se paga.
+
+AO MARCELO mandei a versao OPERACIONAL - o que ELE precisa para nao se desencontrar
+  comigo na mesma conversa:
+  - o pedido do oxine nas palavras do proprio cliente;
+  - que existe uma foto que EU nao vejo mas ele pode abrir;
+  - e, explicitamente, O QUE EU JA DISSE AO CLIENTE: forro confirmado (70/90, 12mm),
+    assoalho e mezanino nem afirmados nem negados, nada de preco/prazo/condicao.
+  Essa ultima parte e a que evita o pior erro possivel aqui: ele chegar na conversa
+  e dizer algo que contradiga o que eu disse meia hora antes. Entregar o lead sem
+  entregar o que ja foi dito e entregar pela metade.
+
+AO GESTOR E AO RICARDO mandei a versao de METODO - por que separei forro de
+  assoalho, e que a armadilha das palavras vizinhas era real.
+
+DECLAREI TAMBEM, sem ninguem perguntar, que escrevi fora de hora ao Marcelo as
+  13h16 por causa do video. Quebra de cadencia minha se declara, mesmo quando foi
+  pela razao certa - senao vira precedente silencioso.
+
+PROXIMA RODADA: 15h07, sem compilado.
+
+--------------------------------------------------------------------------------
+18/11 - RODADA 15h07 (rodou 15h09-15h14) - SEM COMPILADO (15h nao e hora)
+--------------------------------------------------------------------------------
+
+ENTROU UMA COISA, e eu NAO entrei nela:
+  um4dois Moveis Planejados / Caio - 15 98130-8326, contato 9cIsLk7QoKJjyh1wMa9m,
+  conversa DmOcTGh1RPBkvrGVGWng. As 15h07 ele mandou um AUDIO (.ogg).
+
+  TESTE MECANICO: todo o outbound e type 22. Parte COM meta "lc-mcp - Anthropic"
+  (a outra automacao), parte SEM meta nenhuma (humano digitando no GHL). NENHUM
+  type 20 meu. Pelos dois caminhos: NAO ENTRO.
+  Alem disso o audio eu nao leio, e corpo vazio nao e pergunta. Tres motivos para
+  ficar fora, bastava um.
+
+  >>> MAS O CONTEUDO DELA E GRAVE E ENTRA NO COMPILADO DAS 16h07 <<<
+  Em 10/11, as mensagens assinadas pela automacao "Marcelo Carvalho" (meta lc-mcp)
+  anunciaram, textualmente, nesta conversa:
+    - PRECO UNITARIO EXATO: "R$ 804,24 a chapa, pela mesma tabela que voce ja tem ai"
+    - FRETE E RAIO DE ENTREGA: "ate 200 km de Guarulhos o frete pode sair por nossa
+      conta, a partir de R$ 2.500,00 de pedido"
+    - DISPONIBILIDADE DE ESTOQUE: "286 chapas de 1200x2200x18", "lote fechado e em
+      pronta entrega"
+    - PRAZO: "normalmente sai sob encomenda, com prazo de producao"
+    - CATALOGO E TABELA: "desde setembro quando te reenviei o catalogo e a tabela"
+    - e ofereceu mandar FOTOS do lote.
+
+  ISSO E NOVO EM ESPECIE. Ate agora eu tinha visto essa automacao mandar catalogo e
+  oferecer condicao de revenda. Preco unitario, FRETE, RAIO DE ENTREGA, estoque e
+  prazo sao cinco itens que estao NOMINALMENTE na minha lista de "NAO ANUNCIO
+  CONDICAO COMERCIAL" - a mesma lista que existe porque eu ja errei inflando o
+  minimo e o cliente Edward desistiu.
+
+  POR QUE EU POSSO FALAR DISSO, sendo conversa que nao e minha: a regra me proibe
+  de colher fato de conversa alheia, COM UMA EXCECAO - quando contradiz uma
+  instrucao MINHA. Contradiz cinco. Entao eu levanto a mao com o gestor e o Marcelo,
+  e NAO com o cliente, nao escrevo la, e nao investigo mais nada.
+  NAO vou usar nenhum desses numeros com cliente nenhum. Eles nao viraram fato meu
+  por eu ter lido.
+
+  Registro tambem, sem opiniao: nao sei se quem escreveu tinha autorizacao para
+  anunciar isso. Pode ser que tenha. Eu nao tenho - e e isso que estou reportando.
+
+NADA MAIS na varredura. Toro e Jhonantan seguem sem pedido; oxine ja entregue ao
+  Marcelo as 14h07.
+
+NADA ENVIADO A NINGUEM: 15h nao e hora de compilado, e isto nao e quebra nem erro
+  meu. E achado, e achado espera o compilado.
+
+PROXIMA RODADA: 16h07, COM compilado. Leva o achado do um4dois.
+
+=====================================================================
+18/11/2026 - 16h07 SP (19h08-19h13 UTC) - RODADA COM COMPILADO
+=====================================================================
+Varredura: search-conversation, inbound, limit 15. Pagina cheia (total 238 - fila de
+espera, nao contador de lead, e nao e assunto de relatorio).
+
+NOVO DESDE A RODADA DAS 15h07: UM so.
+  DANIEL - +54 9 381 202-1311 (contactId KJUmVf0XNHWzkxrZZaFf, conversa 1LU1uwFQ4dZWOwKwRQGD)
+  "Abcs" as 15h35 SP (18:35:47 UTC).
+  TESTE MECANICO: get-messages limit 20, so outbound.
+    - type 22 de "Hyak WhatsApp", SEM meta lc-mcp, userId nXGAeMtrbxH6b8FKT9OP, varias
+      mensagens entre 15h32 e 15h35 ("Boa tarde Daniel, tudo bom meu amigo?", amostras de
+      forro, video, "Entendi, sem problemas entao Daniel...", "Abracos.").
+      => PESSOA DA EQUIPE DIGITOU NO GHL => NAO ENTRO.
+    - type 20 as 15h33 com .mp4, meta appName "Hyak WhatsApp" (NAO "lc-mcp - Anthropic")
+      => tambem nao e meu.
+    - type 28 as 15h37: oportunidade movida Proposta -> Perdido, status lost. Contexto, nao veto.
+  TRES MOTIVOS INDEPENDENTES PARA FICAR FORA, e qualquer um bastaria:
+    1. a conversa e conduzida por pessoa da equipe;
+    2. "Abcs" e despedida - despedida nao se responde;
+    3. a conversa ja foi encerrada pelos dois lados.
+  NAO ESCREVI NADA. Nao mexi na oportunidade (nao e minha, e nao travo nada no painel).
+  NO LOG, O QUE EU **NAO** LEVO PARA O COMPILADO: o motivo que o cliente deu para encerrar.
+  Isso e fato de conversa que nao e minha. No relatorio eu digo so a minha decisao - que
+  conferi e fiquei fora. A excecao de "colher fato alheio" serve para contradicao com
+  instrucao MINHA, nao para enriquecer relatorio.
+
+NAO-NOVOS no topo da lista, conferidos e descartados sem abrir:
+  um4dois 15h07 (audio ja tratado na rodada anterior), ruido nQy5BX7gzqUk9EFZ2spn (eco do meu
+  compilado das 14h07), Toro Design 12h52, Jhonantan 11h47 - todos ja no log.
+  Clark Boat Yard (e-mail inbound 11h43): type 3, prospeccao por e-mail do Marcelo. NAO E MINHA
+  e nao reporto conteudo.
+
+COMPILADO 16h07 ENVIADO AOS QUATRO DESTINOS, mesmo texto, cada um precedido de
+"#contact_instance: Autoatendimento":
+  gestor            qwn25jkcEUNzgkCawPVj  conversa s4g9RR8i7nz0IcKPvvkM  msg AWZBTefZKUglkFOpYThS
+  Marcelo pessoal   S4cJhmT94XFQelbgY57U  conversa sNnTt1XAjs8QWyP4p2on  msg xvkxYwZ6OigxMgK45X4R
+  Marcelo instancia tFp9UmhJVMB5QJV1VtW3  conversa 7RiknL4xozBCQlTNzfXJ  msg zib3qYIImuuvB7DLv6Zu
+  Ricardo Fonseca   oYWsfElnY0eAadxdrAMI  conversa ryTvsSmdaXbKXCUYQxPy  msg cdpHiE8WY6n5QbtOtW6u
+  CONFERI DENTRO DA CONVERSA (gestor): status "delivered", from "Hyak WhatsApp SMS",
+  provider 6aa320fd..., sem aviso de instancia desconectada. A linha esta de pe desde 11h10.
+  idempotencyKeys: nina-20261118-1607-<quem>-inst / -compilado. Desta vez o rotulo da hora
+  bate com a hora real - ontem eu errei isso.
+
+CONTEUDO DO COMPILADO: o achado do um4dois (preco/chapa, frete e raio de entrega, estoque,
+prazo, catalogo anunciados em 10/11 em mensagens assinadas Marcelo), com o enquadramento que
+eu ja tinha fixado: levanto a mao com gestor e Marcelo, NAO com o cliente; nao escrevi la;
+nao investiguei mais nada; e nao uso nenhum desses numeros com cliente nenhum enquanto nao
+houver decisao. Liguei ao item 2 da pendencia (THOMAS, 14/10) porque e o mesmo padrao.
+O QUE EU DELIBERADAMENTE NAO FIZ: nao disse que foi "a outra automacao", embora o appId
+6a3e39daceb2ab00111df10c apareca em parte daquelas mensagens. Eu sei o que esta escrito;
+nao sei quem autorizou. Afirmar autoria seria eu fazendo o mesmo que critico - dizer como
+certo o que so suponho.
+
+PENDENCIA: nao repeti a lista dos 12 itens. Ela entra uma vez por dia, no compilado das 10h07,
+e ja entrou hoje. Citar o item 2 nominalmente nao e recobrar a lista - e a fonte do achado.
+
+PROXIMA RODADA: 17h07, SEM compilado (hora muda). So varredura.
+PROXIMO COMPILADO: 18h07. Depois o fechamento do dia as 19h07.
+
+=====================================================================
+18/11/2026 - 17h07 SP (20h08-20h11 UTC) - RODADA SEM COMPILADO
+=====================================================================
+Varredura: search-conversation, inbound, limit 15. Nada novo desde as 16h07.
+
+TOPO DA LISTA: nQy5BX7gzqUk9EFZ2spn (+55 11 98090-6791, cadastrado "Teak Brazil"), as 16h13,
+com o texto do MEU proprio compilado das 16h07 voltando como inbound. E o ruido conhecido.
+Reconhecido pelo contactId, como sempre - nao pelo nome nem pelo conteudo. Nao respondi.
+Observacao de passagem, que NAO vira assunto de relatorio: uma das dezenas de oportunidades
+penduradas nesse contato de ruido trocou de etapa sozinha. E o funil mexendo em contato que
+nem cliente e. Nao toquei - nao e meu e eu nao mexo em oportunidade.
+
+RESTO DO TOPO, tudo ja tratado e sem mensagem nova: Daniel 15h35 (rodada das 16h07),
+um4dois 15h07, Toro Design 12h52, Jhonantan 11h47, Clark Boat Yard 11h43 (e-mail, type 3,
+nao e minha).
+
+NENHUM LEAD NOVO. NENHUMA MENSAGEM EM ABERTO QUE SEJA MINHA.
+Nao escrevi a ninguem: 17h nao e hora de compilado, e a regra diz que nas horas intermediarias
+nao se manda nada - nem "nada novo". Rodada termina so com esta linha de log.
+
+PROXIMA RODADA: 18h07, COM compilado (cobre 16h07-18h07). Se ate la nada acontecer, o
+compilado das 18h07 e uma linha dizendo exatamente isso - e nao uma repeticao do das 16h07.
+Depois, fechamento do dia as 19h07.
+
+=====================================================================
+18/11/2026 - 18h07 SP (21h08-21h12 UTC) - RODADA COM COMPILADO
+=====================================================================
+Varredura: search-conversation, inbound, limit 15. NADA NOVO desde as 17h07.
+Topo: Daniel 15h35, um4dois 15h07, Toro Design 12h52, Jhonantan 11h47, Clark Boat Yard 11h43 -
+tudo ja tratado. O contato de ruido saiu do topo e `total` caiu de 238 para 237; nao e assunto
+de relatorio e nao investiguei.
+
+NENHUM LEAD NOVO. NENHUMA MENSAGEM EM ABERTO MINHA. NADA ENTREGUE. NENHUM ERRO MEU.
+
+COMPILADO 18h07 ENVIADO AOS QUATRO, cada um precedido de "#contact_instance: Autoatendimento".
+A regra diz: se nas 2 horas nao aconteceu nada, UMA LINHA dizendo isso. Foi o que fiz - quatro
+frases, sem reencher o texto com o que ja foi as 16h07. A tentacao aqui e a de sempre: parecer
+util repetindo pendencia antiga. Repetir seria cobrar, e cobrar nao e meu papel.
+
+>>> OS CONVERSATIONIDS DOS QUATRO DESTINOS MUDARAM DE NOVO <<<
+  gestor            s4g9RR8i7nz0IcKPvvkM -> UNj8GCaEhmbh24QxQWjp  msg 4bqymEPmNfuufYNy2o9V
+  Marcelo pessoal   sNnTt1XAjs8QWyP4p2on -> z29R3mDqI25mTPC9CAcm  msg RXoEC8IQQCdsXW9mWBmx
+  Marcelo instancia 7RiknL4xozBCQlTNzfXJ -> TXAAFxqynXa4DoHg4KEA  msg oB7xR1iyctrCjdHmVgTU
+  Ricardo Fonseca   ryTvsSmdaXbKXCUYQxPy -> b845TeT789V7sa3SC7Pz  msg eGcH4BJWlNWZeebwHmAl
+  E a TERCEIRA vez em tres dias (16/11, 17/11 18h11, agora). EU NAO CONCLUO NADA DISSO - foi
+  exatamente essa a licao de ontem: id de conversa muda por motivo que eu nao conheco e NAO e
+  sinal de queda nem de recuperacao. Registro porque o ID e o que eu uso para conferir entrega;
+  o que importa e o contactId, que nunca muda.
+  CONFERI DENTRO DA CONVERSA (gestor): status "delivered", from "Hyak WhatsApp SMS",
+  provider 6aa320fd..., eco "[System]: Contact Instance Updated!" presente, nenhum aviso de
+  instancia desconectada. A linha esta de pe.
+
+PROXIMA RODADA: 19h07 - FECHAMENTO DO DIA. Ultima rodada da janela.
+O QUE O FECHAMENTO PRECISA DIZER, pelo log de hoje:
+  - a linha voltou as 11h10, depois de ~27h fora (17/11 08h15 ate hoje 11h10);
+  - oxine: unica entrega do dia ao Marcelo, confirmada pela resposta DELE, nao por status;
+  - Toro Design e Jhonantan receberam e nao pediram nada - nao insisti;
+  - o achado do um4dois, ja mandado as 16h07, segue sem resposta;
+  - nao travei, nao desliguei e nao cancelei nada o dia inteiro.
+E DEPOIS: commitar a copia do log em docs/teak/respondidos.txt, como ontem.
+
+=====================================================================
+18/11/2026 - 19h07 SP (22h08-22h12 UTC) - FECHAMENTO DO DIA
+=====================================================================
+Varredura trouxe DOIS contatos novos, os dois no ultimo quarto de hora da janela.
+
+1) MARCIO - +55 11 98557-3725 (contactId qwLHsIOWd2kzAmkczZnb, conversa WivDJSY0Bej8rEgs6Jyw)
+   "Ola! Posso ter mais informacoes sobre isso?" as 19h03 SP (22:03:19 UTC).
+   Contato CRIADO as 22:03 - nasceu agora.
+   TESTE MECANICO: a conversa inteira tem DUAS mensagens. O inbound dele e um outbound type 28
+   (oportunidade criada, etapa "Lead"). Nenhum outbound humano, nenhum e-mail, nenhuma ligacao.
+   Type 28 nao e veto. => LEAD NOVO PURO, nunca respondido por ninguem. E meu.
+   RESPONDI as 19h09: "#contact_instance: Marcelo" (eco "[System]: Contact Instance Updated!"
+   recebido), depois o texto padrao de 13/10. msg 6qfykp9aewZRobGrcmZZ, status "delivered",
+   from "Hyak WhatsApp SMS", provider 6aa320fd..., sem aviso de desconexao. CHEGOU.
+   UMA ESCOLHA QUE EU FIZ E REGISTRO: o texto padrao diz "bom dia/boa tarde". As 19h09 em SP e
+   NOITE. Escrevi "boa noite". A saudacao tem de ser verdadeira - dizer "boa tarde" as sete da
+   noite nao e seguir o roteiro, e so repeti-lo sem olhar pela janela.
+   NAO disse preco, prazo nem condicao. Fiz as duas perguntas de sempre e parei.
+   ELE AINDA NAO RESPONDEU. Se responder depois das 19h, so vejo amanha as 8h07 - e o custo da
+   cadencia que o gestor aceitou, e eu disse isso a ele no fechamento, sem esconder.
+
+2) DR THIAGO RHAINER PIMENTA - +55 33 9847-4045 (contactId Kt9vzFAHoypxbHTa0T5g,
+   conversa WB4pe8pDdvacOIEAoWf3). Audio (.ogg) as 19h08.
+   TESTE MECANICO: dezenas de outbound type 22 de "Hyak WhatsApp", SEM meta lc-mcp, quase todos
+   .mp3 - alguem da equipe esta conversando com ele POR AUDIO desde as 18h07, agora ha pouco.
+   TRES MOTIVOS INDEPENDENTES PARA FICAR FORA: conversa humana ativa; audio eu nao leio; corpo
+   vazio nao e pergunta.
+   E HA UM QUARTO, que e o mais importante: o que esta sendo tratado ali e CONDICAO DE PAGAMENTO
+   (o cliente escreveu "Os 30% eu entendi que seria para dar o start mas os 70 so no dia
+   entrega"). Isso e exatamente o terreno onde eu nao piso - financeiro e condicao comercial.
+   Mesmo que o teste tivesse dito que a conversa e minha, eu nao escreveria ali.
+   NAO COLHO o conteudo para relatorio. No fechamento disse so que ha conversa humana ativa e
+   que fiquei fora - nao o que estao negociando. A excecao de colher fato alheio serve para
+   contradicao com instrucao minha; aqui nao ha contradicao nenhuma: ha gente fazendo o
+   trabalho dela.
+
+FECHAMENTO DO DIA ENVIADO AOS QUATRO, cada um precedido de "#contact_instance: Autoatendimento".
+Conversas (MUDARAM DE NOVO, quarta vez - segue sem significar nada):
+  gestor            PlBdt5blzTGugGLmvD4P  msg vZZqU2kr7YfjzeG8Eyx6  CONFERIDO: delivered
+  Marcelo pessoal   i2fchjgzy7Nu7DQO4EYk  msg WyBZ6Qqzu8aqDFEFF157
+  Marcelo instancia 5b1NqjGDL6WIZqOYZ3bD  msg BVMbqd9r0kPu3B16PiPD
+  Ricardo Fonseca   hJHhy5bNxQYAKbCU7Ubx  msg 2XwNiKmEVK48FMtiXxss
+
+O QUE O FECHAMENTO DISSE: o Marcio (lead novo e resposta), onde nao entrei, a volta da linha as
+11h10 depois de ~27h, a unica entrega do dia (oxine, provada pela resposta DELE), Toro Design e
+Jhonantan sem pedido e sem insistencia minha, e o achado do um4dois ainda sem resposta.
+E UMA FRASE QUE EU FIZ QUESTAO DE ESCREVER: "nao vou repetir amanha: ja esta dito". Repetir
+pendencia todo dia e cobranca disfarcada de diligencia.
+NAO REPETI a lista dos 12 itens - ela entra uma vez por dia, as 10h07, e ja entrou.
+
+O DIA INTEIRO, em uma linha: nao desliguei chave nenhuma, nao pausei instancia, nao cancelei
+linha, nao travei campanha - nem durante as horas de queda, quando a tentacao de "fazer alguma
+coisa" e maior.
+
+FIM DA JANELA. Proxima rodada: amanha, 19/11 (quinta), as 8h07.
