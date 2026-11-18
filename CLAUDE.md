@@ -695,6 +695,169 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
 - Fonte do HTML: `app/conecta-email3.html`, com marcadores de INICIO/FIM do que vai em
   `fila_envio.corpo`. Campanha: `nitronconecta_ultima`.
 
+## O FLUXO NOVO: do lead ao pedido no FORÇA DE VENDAS (17–18/11) — substitui a página de pedido
+
+Ordem do gestor em 17/11: *"o cliente vem da campanha, manda os dados da LP para o força e lá ele
+vai fazer tudo"* e, no fim do dia, *"a partir de agora a nina tem que fazer o fluxo que falamos
+hoje, apenas isso, o que tinha mudamos tudo a partir de hoje"*. **Este é o caminho único.**
+
+```
+META / Google ──► LANDING (campanhas.nitron.com.br) ──┐
+              └─► Nina (Zaptos) ─────────────────────┤  CNPJ + CEP + E-MAIL numa frase só
+                                                      ▼
+                      `forca-cadastro` → POST vendas.nitron.com.br/api/crm/orcamento
+                                                      ▼
+                      PEDIDO DE VERDADE no ERP (nº + link, validade 7 dias)
+                                                      ▼
+                      link entregue por Zaptos pela instância da NINA
+                                                      ▼
+                      45 min sem resposta → `forca-cutucar` pergunta o que houve
+```
+
+### O que mudou em cada peça
+
+| peça | o que faz hoje |
+|---|---|
+| `link_pedido` (ferramenta da Nina) | **não devolve mais URL.** Marca `copiloto_lead.forca_pedir_em` e manda a Nina dizer que o acesso está sendo preparado |
+| `forca-cadastro` | abre o pedido, acha o e-mail, **entrega o link por Zaptos** |
+| `forca-cutucar` | pergunta 45 min depois, só a quem não respondeu |
+| `camp-pipeline` | move o card no pipeline **Leads das Campanhas** |
+
+**Voltar atrás é UPDATE, sem deploy:** `copiloto_config.link_pagina_antiga='sim'` faz o
+`link_pedido` voltar a montar a URL da página de hoje.
+
+### A API de pedidos, e o que ela cobra
+
+`POST /api/crm/auth` (token 60 min) → `POST /api/crm/orcamento` → `GET /api/crm/orcamento/{protocolo}`.
+
+- **O POST responde 202 NOS DOIS CASOS** (`processando` e `pronto`): quem manda é o campo `status`,
+  **nunca o código HTTP**. Ler o HTTP faz "processando" parecer conclusão.
+- **Cada GET EMPURRA o processamento do outro lado.** É por isso que a varredura existe: ela volta e
+  termina o que ficou pela metade. Uma chamada inline tem uma janela só e desiste.
+- **Grave o `protocolo` ANTES de qualquer outra coisa.** Sem ele o trabalho já feito do lado deles
+  fica órfão e não há como terminar depois.
+- `verify_jwt` continua **true** aqui — quem chama é cron com chave de serviço, não o lojista.
+
+### As três proteções da API, e por que NÃO são perda
+
+`CLIENTE_COM_REPRESENTANTE`, `CLIENTE_CLUBE` e `CADASTRO_RECUSADO`. Nos quatro testes com cliente
+antigo, **4 de 4** caíram nas duas primeiras, em 0,8 a 2,9 s, sem abrir pedido. **A página de hoje
+não tem nenhuma trava dessas** — 5 clientes com representante já receberam link de compra direta por
+ela. Jogar esses casos em "perdido" no funil esconderia que a trava funciona; por isso eles têm
+etapa própria.
+
+- **A regra do Clube é a CODTAB do cadastro, não o contrato.** Tabelas 153 (CLUBE NITRON VAREJO 8%),
+  155 (ATACADO 6%) e 159 (RED 153). **544 clientes PJ ativos estão em tabela de Clube e a nossa base
+  só conhece 108 contratos** — cinco vezes menos. Isso afeta toda campanha que usa `clube_vig_dias`.
+  Medido em `AD_VW_COM_CADCLIENTES`. Eu errei duas vezes aqui: previ que a LOJAS PRADO abriria pedido
+  (voltou `CLIENTE_CLUBE`) e depois expliquei por "o contrato está na matriz" — a BSC VARIEDADES
+  desmentiu. **A CODTAB é que manda.**
+
+### `ERRO_ERP: Insc. Estadual, deve ser informada` — 4 leads travados, e NÃO temos campo para isso
+
+Quatro cadastros pararam aí em 09–15/11, todos MEI/firma individual ("64.738.629 ROSELI VERGANI
+RITTER"). O corpo que a API aceita é `cnpj, contato, email, whatsapp` (+ `entrega`) — **não há onde
+mandar a IE nem "ISENTO"**. Enquanto não houver, esses leads não viram pedido. Pendente com o time
+da `vendas.nitron.com.br`.
+
+### O e-mail: era o pedágio do fluxo, e agora tem TRÊS fontes
+
+A API exige e-mail — *"não pode ser opcional, até para cadastrar no CRM"* (gestor, 17/11). Medido:
+dos leads da Nina, **268 tinham CNPJ, 75 tinham CEP e ZERO tinham e-mail**; no CRM, **5 contatos de
+anúncio em 100**. Sem procurar o dado, a maioria do fluxo parava.
+
+Hoje ele é procurado em: a linha do lead → o contato do CRM → **a conversa** (`emailDaConversa`, só
+mensagem `inbound`), e o que for achado é gravado **nos dois** (`copiloto_lead.email` e o contato do
+CRM). `email_origem` guarda de onde veio.
+
+**O `copiloto-lead` já EXTRAÍA o e-mail da assinatura da landing do Google e JOGAVA FORA** — a
+`acelera()` montava `acl.email` e só `acl.cnpj` e `acl.nome` eram consumidos. Corrigido em 18/11 com
+`emailDoTexto()`, ao lado do `cepDoTexto()` e do `cnpjDoTexto()`. Domínio nosso nunca conta como
+e-mail de cliente: senão o cadastro nasceria no nosso próprio endereço.
+
+### O custo de pedir mais um dado é conhecido — e a cura é a FRASE ÚNICA
+
+Link em **49%** dos leads sem trava, **40%** com CNPJ+endereço, **22%** com o CEP junto. O que fez o
+Cassio (lead 617) ir embora **não foi a quantidade de dados, foi a VOLTA** — ele entregou quatro e
+ainda ouviu outra pergunta. Por isso os três vão numa frase só (lição 441).
+
+### O texto do link é escrito em CÓDIGO, não pelo modelo
+
+`textoDoLink()` carrega pedido mínimo, os 10% acima de R$ 5.000 e a validade. É a mesma lição de
+16/09 e de 23/10: número na boca da IA sem conta atrás vira promessa que ninguém cumpre. A Nina
+**não repete número nenhum** depois (lição 442).
+
+### Os 5% do PIX: promessa com data, e SEM tela que a cumpra
+
+| chave | valor | para quê |
+|---|---|---|
+| `pix_desconto_ativo` | `nao` | **nasce desligada** |
+| `pix_desconto_pct` | `5` | o percentual |
+| `pix_desconto_ate` | `2026-11-21` | a frase some sozinha passada a data |
+| `pix_desconto_min` | `5000` | o pedido, já com os 10%, tem de passar disso |
+
+Conferido na página do pedido 1711837: **os 5% não existem na tela**; o −10% aparece por item. O PIX
+com desconto é gerado **à mão**. Ligar a chave cria obrigação manual que hoje ninguém é avisado de
+cumprir — por isso ela está `nao`, e ligar é decisão do gestor. Quando ligada, cada promessa fica
+carimbada em `copiloto_lead.forca_pix_em`, para quem receber o pedido saber que ela foi feita.
+
+### As travas do envio do link, e o motivo medido de cada uma
+
+- **`forca_link_enviar`** nasce `nao`. Lição de 16/09.
+- **`forca_link_janela_h` (36h)** conta do **maior entre `criado` e `forca_pedir_em`** — um lead de
+  semanas atrás que a Nina acabou de atender **é** o fluxo novo e não pode ser calado pela janela.
+  Sem a janela, a primeira rodada mandaria mensagem para **21 leads parados há até uma semana de uma
+  vez só**: isso não é o fluxo novo, é disparo frio.
+- **`forca_link_em` é gravado ANTES do envio** — lição do `toques` (02/10) e do `reativa_em` (03/11).
+  O erro vai para `forca_link_erro`.
+- **`forca-cutucar` nasce desligada E sem cron.** Uma linha de configuração não pode ser a única
+  coisa entre o silêncio e um disparo.
+- **A cutucada NÃO afirma que ele não pediu.** Não dá para saber: o sinal seria o `AD_STATUFORCA` do
+  Sankhya (`ELAB_CLIENTE` = montando; qualquer outro = enviou), e **edge function não alcança o
+  Sankhya**. Então ela só toca em quem **não respondeu nada** depois do link, e pergunta se conseguiu
+  abrir — pergunta que continua verdadeira mesmo se ele já tiver enviado o pedido.
+
+### Pipeline **Leads das Campanhas** (`Ddc2boEemLbeixx6xmIA`)
+
+Criado pelo gestor em 17/11; 29 cards migrados do "Novos Clientes". **Só existe etapa que algum
+sinal move sozinho** — etapa que depende de alguém arrastar card morre em duas semanas.
+
+| etapa | chave em `copiloto_config` | o que move |
+|---|---|---|
+| Lead Novo | `camp_etapa_lead_novo` | a linha existe |
+| Dados completos | `camp_etapa_dados` | CNPJ (14) + e-mail |
+| Pedido aberto no Força | `camp_etapa_pedido_aberto` | `forca_pedido` |
+| Link entregue | `camp_etapa_link` | `forca_link_em` |
+| Representante ou Clube | `camp_etapa_rep_clube` | `forca_erro` com as duas recusas |
+| Montando / Enviado / Faturado | `camp_etapa_montando/enviado/faturado` | **ainda sem sinal** — dependem do `AD_STATUFORCA` |
+
+### GHL: três armadilhas medidas em 17/11
+
+- **`/opportunities/search` é snake_case: `location_id` e `contact_id`.** A própria API diz, em 422:
+  *"property locationId should not exist / location_id must be a string"*. **Não se guie pelo
+  `meta.nextPageUrl`** que ela devolve — ele vem com `locationId=` e é **pista falsa**. Foi por ele
+  que eu troquei o certo pelo errado.
+- **`sd?.opportunities || []` transforma erro em fato.** Com o parâmetro errado a busca voltava lista
+  vazia, a função concluía "este contato não tem card" e criaria **29 duplicatas**. Só a prévia
+  impediu. **Quando uma busca volta vazia e isso não bate com o que se sabe do sistema, o próximo
+  passo é MOSTRAR O HTTP, não trocar um palpite por outro.**
+- **`/opportunities/upsert` casa por (pipeline, contato)** — chamar com pipeline novo cria card novo
+  e deixa o antigo órfão. Para MOVER: `PUT /opportunities/{id}` com `pipelineId` + `pipelineStageId`.
+  Para abandonar: `PUT /opportunities/{id}/status` com `{status:"abandoned"}`.
+
+### Publicar o `copiloto-lead`: não existe CLI aqui, e o arquivo tem 97 KB
+
+Não há `supabase` CLI nesta sessão — a única porta é o `deploy_edge_function`, que exige mandar o
+arquivo **inteiro** numa chamada. Por isso: **feche o cron (`copiloto-lead-5min`, jobid 147) antes
+de publicar e reabra depois**, e **confira o md5 do publicado contra o do repositório** logo em
+seguida (`get_edge_function` devolve o conteúdo em arquivo quando é grande). Sem a janela fechada,
+um erro de transcrição fica no ar atendendo lead até alguém notar — e não há rollback barato.
+
+**Em 18/11 o publicado era a v31 (90.646 bytes) e o repositório tinha 92.471: duas correções de
+06/11 nunca tinham subido** — a precedência do CNPJ (o que a pessoa digitou vence o `CF_CNPJ` velho
+do CRM) e a soltura do `ultima_msg_id` quando o envio é recusado por motivo técnico. **Confira
+sempre antes de publicar**: o que está no ar pode ser mais velho do que o repositório.
+
 ## Landing "Nitron Direto" (campanhas.nitron.com.br) — o lead ja chega com CNPJ e CEP (05/11)
 
 - **A LP mora no Replit** (app "Nitron Campaign Landing", publicada em `campanhas.nitron.com.br`) e
@@ -924,6 +1087,8 @@ confundir com as outras, inclusive porque estamos mandando apenas para a galera 
 - **Publicar o painel:** `POST host-upload?path=gestor.html` com o **HTML cru no corpo** e o caminho
   na query — não JSON. **Confira o md5 publicado antes de subir:** há outro chat editando o mesmo
   arquivo, e sobrescrever o trabalho dele já aconteceu.
+- **SUPERADO EM 17/11 — ver "O FLUXO NOVO: do lead ao pedido no FORÇA DE VENDAS". A ferramenta
+  `link_pedido` não monta mais URL nenhuma; o que segue vale como história da regra e do CEP.**
 - **O link de pedido só sai com CNPJ E ENDEREÇO** (`copiloto-lead` v18, 26/10). Ordem do gestor, e
   ela **inverte** a de 20/10 ("mande o link — não espere ele pedir e não espere o CNPJ"), que a Nina
   cumpria à risca: o Luís Carlos (lead 529) pediu "catálogo com os preços", recebeu o link, abriu e
@@ -935,6 +1100,9 @@ confundir com as outras, inclusive porque estamos mandando apenas para a galera 
   deploy: `copiloto_config.link_exige_cnpj` / `link_exige_endereco`. Colunas novas em
   `copiloto_lead`: `endereco`, `cep`, `pagamento`. **A regra do CIF ainda não existe** — o gestor
   disse que passa a informação; por ora o endereço é só colhido.
+- **A CESTA DEIXOU DE SER NOSSA EM 17/11: quem monta o mix é a tela do Força de Vendas.** O CNAE
+  continua sendo apurado e gravado (`ramo_cnae`), e o CEP continua resolvendo cidade/UF e frete —
+  o que saiu de cena foi a cesta de `pedido_base` no link. O resto deste item segue valendo.
 - **O CNAE DO CNPJ DECIDE A CESTA, e os dois dados são pedidos JUNTOS** (`copiloto-lead` v21,
   03/11). Ordem do gestor depois de ler a conversa do Cassio (lead 617) inteira: *"o CNPJ tem que
   ser pedido para consultar o tipo de empresa que é e depois passar o mix correto, depois disso o
