@@ -9,11 +9,12 @@
 //   Lead Novo               linha existe
 //   Dados completos         CNPJ (14) e e-mail na mao — e o que a API de pedidos exige
 //   Pedido aberto no Forca  `forca_pedido` preenchido
+//   Link entregue           `forca_link_em` — a mensagem com o link saiu (sinal criado em 17/11)
 //   Representante ou Clube  `forca_erro` com CLIENTE_COM_REPRESENTANTE ou CLIENTE_CLUBE
 //
-// As etapas seguintes (Link entregue, Montando o pedido, Pedido enviado, Ganho) dependem de
-// sinais que ainda nao estao ligados: o envio do link, e o AD_STATUFORCA do Sankhya. Elas NAO
-// sao escritas aqui ate o sinal existir — card que anda sozinho sem motivo e pior que card parado.
+// As etapas seguintes (Montando o pedido, Pedido enviado, Ganho) dependem do AD_STATUFORCA do
+// Sankhya, que uma edge function nao alcanca daqui. Elas NAO sao escritas ate o sinal existir —
+// card que anda sozinho sem motivo e pior que card parado.
 //
 // POR QUE "Representante ou Clube" NAO E PERDA: quando a API recusa, o sistema FUNCIONOU — ele
 // protegeu quem ja atende o cliente. Nos quatro testes com cliente antigo, 4 de 4 cairam ai.

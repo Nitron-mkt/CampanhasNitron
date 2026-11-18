@@ -31,10 +31,10 @@
 //    medimos o pedagio: dos leads da Nina, 268 tinham CNPJ, 75 tinham CEP e ZERO tinham e-mail na
 //    nossa tabela; no CRM, 5 contatos de anuncio em 100. Ou seja: sem procurar na conversa, a
 //    maioria do fluxo para aqui.
-//    O `copiloto-lead` ja EXTRAI o e-mail da assinatura da landing do Google (`acelera()`, linha
-//    175) e simplesmente JOGA FORA — `acl.cnpj` e `acl.nome` sao usados, `acl.email` nao. Esta
-//    funcao fecha esse vao de fora, sem publicar por cima da funcao que esta atendendo: le a
-//    conversa, pega o e-mail que o LOJISTA escreveu, grava na `copiloto_lead` E no contato do CRM.
+//    O `copiloto-lead` ja EXTRAI o e-mail da assinatura da landing do Google (`acelera()`) e ate
+//    17/11 simplesmente JOGAVA FORA — `acl.cnpj` e `acl.nome` eram usados, `acl.email` nao. Esta
+//    funcao e a rede do lado de ca: le a conversa, pega o e-mail que o LOJISTA escreveu, grava na
+//    `copiloto_lead` E no contato do CRM.
 //    So mensagem INBOUND conta: endereco nosso que aparece num e-mail de saida nao e do cliente.
 //
 // 2) O LINK E ENTREGUE POR ZAPTOS. Ate a v2 o pedido nascia no ERP e o link morria numa coluna —
@@ -42,9 +42,10 @@
 //    minimo, a regra dos 10% e a validade do link.
 //    TRES TRAVAS, cada uma por um motivo medido:
 //      - `forca_link_enviar` nasce 'nao'. Ligar e UPDATE. Licao de 16/09.
-//      - `forca_link_janela_h` (36h): so recebe link quem e RECENTE. Sem isso a primeira rodada
-//        mandaria mensagem para 13 leads parados ha ate uma semana de uma vez so — isso nao e o
-//        fluxo novo, e um disparo frio, e foi exatamente o que 16/09 proibiu.
+//      - `forca_link_janela_h` (36h): so recebe link quem esta ATIVO — e a janela conta do maior
+//        entre `criado` e `forca_pedir_em`, porque um lead de semanas atras que a Nina acabou de
+//        atender E o fluxo novo. Sem a janela, a primeira rodada mandaria mensagem a 21 leads
+//        parados ha ate uma semana de uma vez so: isso nao e o fluxo novo, e um disparo frio.
 //      - `forca_link_em` e gravado ANTES do envio. E a licao do `toques` (02/10) e do `reativa_em`
 //        (03/11): contador escrito depois de um envio que leva 12s de checagem cruza com a rodada
 //        seguinte e manda a mesma mensagem duas vezes. O erro, se houver, vai para `forca_link_erro`.
@@ -152,7 +153,7 @@ async function emailDoCrm(contactId: string): Promise<string> {
 
 // O e-mail que o LOJISTA escreveu. So inbound: o que sai e nosso.
 // Cobre de quebra a assinatura da landing do Google ("Origem: Campanha Acelera Nitron / E-mail: ..."),
-// que chega como primeira mensagem DELE — o mesmo dado que o `copiloto-lead` extrai e descarta.
+// que chega como primeira mensagem DELE.
 async function emailDaConversa(contactId: string): Promise<string> {
   try {
     const rc = await ghl("GET", `/conversations/search?locationId=${LOC}&contactId=${contactId}&limit=1`);
@@ -227,7 +228,7 @@ function textoDoLink(L: any, c: Cfg, pix: boolean): string {
 type Lead = { id: number; nome: string; cnpj: string; cep: string; fone: string; email: string | null;
               contact_id: string | null; empresa: string | null; forca_protocolo: string | null;
               forca_pedido: number | null; forca_link: string | null; forca_validade: string | null;
-              forca_link_em: string | null; criado: string };
+              forca_link_em: string | null; forca_pedir_em: string | null; criado: string };
 
 async function patch(id: number, campos: Record<string, unknown>) {
   await rest(`copiloto_lead?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(campos) });
