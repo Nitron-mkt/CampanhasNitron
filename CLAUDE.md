@@ -760,6 +760,32 @@ RITTER"). O corpo que a API aceita é `cnpj, contato, email, whatsapp` (+ `entre
 mandar a IE nem "ISENTO"**. Enquanto não houver, esses leads não viram pedido. Pendente com o time
 da `vendas.nitron.com.br`.
 
+### O lead barrado na Inscrição Estadual recebe resposta (`forca-avisar`, 18/11)
+
+Ordem do gestor: *"quando acontecer de barrar na Inscrição Estadual tem que mandar para o lead que
+não consegue continuar com o pedido"*. Antes disso ele ficava em **silêncio**: a varredura passava a
+pulá-lo e a Nina seguia dizendo "já estou preparando o seu acesso" a cada chamada do `link_pedido`.
+
+- **O texto é escrito em CÓDIGO.** Ele diz "não consigo seguir com o pedido" — motivo improvisado ou
+  prazo inventado ali é o erro de 16/09.
+- **Ele PERGUNTA em vez de acusar.** Dos quatro primeiros barrados, **três eram empresa de serviço**
+  (contabilidade 6920-6/01, consultoria 7020-4/00, apoio administrativo 8219-9/99) e **um era
+  lojista de verdade** (comércio varejista, 4789-0/05). Empresa de serviço não tem IE porque não
+  comercializa mercadoria — ali o ERP está certo. A mesma frase serve aos dois sem mentir.
+- **SÓ CLIENTE NOVO**, dito pelo gestor na mesma conversa: *"não é para fazer teste nem disparo
+  desse novo link para esses clientes que já vieram"*. Duas travas: a janela de 36h **e** um corte
+  fixo por data (`forca_aviso_desde`, 18/11 18h09). A janela anda com o relógio; o corte é linha no
+  chão, e nem o `?lead=` fura. Alargar para trás é UPDATE, e é decisão do gestor.
+- **Função própria, não um bloco na `forca-cadastro`**: aquela roda de 5 em 5 min abrindo pedido de
+  verdade no ERP, e 38 KB de transcrição por cima dela para acrescentar uma mensagem é risco sem
+  motivo. Cron `forca-avisar-20min` (jobid 261), 9h–20h de SP, sem domingo.
+- **Quando ele responder com a IE, a Nina abre tarefa** (lição 445): ela repete o número para ele
+  conferir, chama `passar_comercial` com o dado no resumo — porque quem refaz o cadastro é uma
+  pessoa e o número não pode morrer na conversa — e **não promete hora**.
+- **A API não tem campo de Inscrição Estadual.** O corpo aceito é `cnpj, contato, email, whatsapp`
+  (+ `entrega`). Enquanto não houver, o lojista legítimo barrado depende de alguém refazer o
+  cadastro à mão. Pendente com o time da `vendas.nitron.com.br`.
+
 ### O e-mail: era o pedágio do fluxo, e agora tem TRÊS fontes
 
 A API exige e-mail — *"não pode ser opcional, até para cadastrar no CRM"* (gestor, 17/11). Medido:
@@ -871,11 +897,14 @@ sempre antes de publicar**: o que está no ar pode ser mais velho do que o repos
 | `forca-cadastro-5min` | 258 | `*/5 * * * *` | abre o pedido no Força e **entrega o link** |
 | `camp-pipeline-hora` | 259 | `17 * * * *` | move os cards |
 | `forca-cutucar-15min` | 260 | `*/15 12-22 * * 1-6` | a cutucada de 45 min |
+| `forca-avisar-20min` | 261 | `*/20 12-22 * * 1-6` | responde a quem barrou na Inscrição Estadual |
 
 Chaves ligadas: `forca_ativo`, `forca_link_enviar`, `forca_cutuca_ativo`, `link_exige_email`.
 Chaves desligadas de propósito: `pix_desconto_ativo` (`nao`), `link_pagina_antiga` (`nao`).
 Lições novas no prompt (entram sem deploy): **441** (os três dados numa frase só), **442** (a Nina
-não monta mais o link), **443** (cliente da casa não recebe acesso, e isso não é erro).
+não monta mais o link), **443** (cliente da casa não recebe acesso, e isso não é erro), **444** (ela
+não oferece desconto por PIX — isso é falado à mão, quando faz parte da estratégia) e **445** (o que
+fazer quando o lojista mandar a Inscrição Estadual).
 
 ## Landing "Nitron Direto" (campanhas.nitron.com.br) — o lead ja chega com CNPJ e CEP (05/11)
 
