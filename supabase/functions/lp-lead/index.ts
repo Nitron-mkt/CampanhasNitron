@@ -175,6 +175,15 @@ Deno.serve(async (req) => {
     const cnpj = digits(b?.cnpj);
     const cep = digits(b?.cep);
     const email = String(b?.email || "").trim().toLowerCase();
+    // NUMERO E COMPLEMENTO (18/11). A LP passou a coletar os dois e ate aqui eles chegavam no
+    // corpo do POST e caiam no chao — a ponte simplesmente nao os lia. Sao o que falta para o
+    // pedido nascer no endereco de ENTREGA e nao no endereco fiscal da Receita, que no lojista
+    // costuma ser o escritorio do contador e nao o deposito. Conferido em 18/11 no bundle
+    // publicado da LP: ela manda `numero` e `complemento` no mesmo POST.
+    // Continuam OPCIONAIS aqui, de proposito: a validacao do servidor nao pode ficar mais dura
+    // que a da LP — se um dia o formulario mudar, cadastro recusado e lead perdido.
+    const numero = String(b?.numero || "").trim().slice(0, 10);
+    const complemento = String(b?.complemento || "").trim().slice(0, 30);
 
     const falta: string[] = [];
     if (nome.split(" ").length < 2 || nome.length < 3) falta.push("nome e sobrenome");
@@ -234,6 +243,10 @@ Deno.serve(async (req) => {
       tipo_loja: String(b?.ramo_nome || "").slice(0, 120) || null,
       atualizado: agora,
     };
+    // so entram quando vieram preenchidos: este mesmo objeto vira PATCH de um lead que ja existe,
+    // e gravar null por cima apagaria o endereco que ele deu no cadastro anterior.
+    if (numero) baseRow.numero = numero;
+    if (complemento) baseRow.complemento = complemento;
     let leadId: number | null = null;
     {
       const q = await rest(`copiloto_lead?select=id&fone=eq.${encodeURIComponent(fone)}&order=id.desc&limit=1`);

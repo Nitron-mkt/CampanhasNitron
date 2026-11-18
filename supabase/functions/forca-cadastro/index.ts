@@ -228,10 +228,49 @@ function textoDoLink(L: any, c: Cfg, pix: boolean): string {
 type Lead = { id: number; nome: string; cnpj: string; cep: string; fone: string; email: string | null;
               contact_id: string | null; empresa: string | null; forca_protocolo: string | null;
               forca_pedido: number | null; forca_link: string | null; forca_validade: string | null;
-              forca_link_em: string | null; forca_pedir_em: string | null; criado: string };
+              forca_link_em: string | null; forca_pedir_em: string | null; criado: string;
+              numero: string | null; complemento: string | null; forca_tarefa_id: number | null };
 
 async function patch(id: number, campos: Record<string, unknown>) {
   await rest(`copiloto_lead?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(campos) });
+}
+
+// QUANDO O OUTRO LADO RECUSA, ALGUEM TEM DE FICAR SABENDO.
+// Sem isto o lead entra num vao: a `forca-cadastro` pula quem tem `forca_erro`, e a Nina continua
+// dizendo "ja estou preparando seu acesso" a cada vez que chama o `link_pedido` — um acesso que
+// nunca vai chegar. E a doenca de 16/09 outra vez: a IA afirmando o que o sistema nao cumpre.
+// CLIENTE_COM_REPRESENTANTE e CLIENTE_CLUBE ficam de FORA: ali o sistema funcionou, o lead tem
+// dono, e o funil ja mostra isso na etapa propria — abrir tarefa para eles seria ruido.
+// Uma tarefa por lead (`forca_tarefa_id`), para a rodada seguinte nao empilhar a mesma coisa.
+const RECUSA_ESPERADA = /CLIENTE_COM_REPRESENTANTE|CLIENTE_CLUBE/i;
+async function tarefaDeErro(L: Lead, erro: string) {
+  if (L.forca_tarefa_id || RECUSA_ESPERADA.test(erro)) return;
+  try {
+    const det = [
+      L.empresa ? "Loja: " + L.empresa : null,
+      "Contato: " + L.nome,
+      L.cnpj ? "CNPJ: " + digits(L.cnpj) : "Sem CNPJ",
+      L.email ? "E-mail: " + L.email : null,
+      L.fone ? "WhatsApp: " + digits(L.fone) : null,
+      "",
+      "O cadastro no Forca de Vendas foi RECUSADO: " + erro.slice(0, 300),
+      "",
+      "Enquanto isto nao for resolvido o lojista NAO recebe o acesso de compra, e a Nina nao tem",
+      "como abrir o pedido dele. Resolver pelo cadastro, ou avisar que este lead sai do fluxo.",
+      L.contact_id ? "Conversa: https://app.gohighlevel.com/v2/location/" + LOC + "/contacts/detail/" + L.contact_id : null,
+    ].filter(Boolean).join("\n");
+    const r = await rest("copiloto_tarefas", {
+      method: "POST", headers: { Prefer: "return=representation" },
+      body: JSON.stringify({
+        area: "comercial", tipo: "forca-cadastro-recusado",
+        acao: ("Cadastro recusado no Forca: " + (L.empresa || L.nome || "lead")).slice(0, 500),
+        detalhe: det.slice(0, 1500), cliente_nome: L.empresa || L.nome || null,
+        contact_id: L.contact_id || null, origem: "nina-lead", prioridade: 2,
+      }),
+    });
+    const id = r.ok ? (await r.json())[0]?.id ?? null : null;
+    if (id) await patch(L.id, { forca_tarefa_id: id });
+  } catch { /* o erro do cadastro ja esta gravado; a tarefa e o extra */ }
 }
 
 // ---- abre (ou termina de abrir) o pedido de UM lead -------------------------------------------
@@ -249,7 +288,9 @@ async function tratar(L: Lead): Promise<Record<string, unknown>> {
       return { lead: L.id, nome: L.nome, acao: "terminado", pedido: e.pedido, validade: e.validade };
     }
     if (e?.status === "erro") {
-      await patch(L.id, { forca_erro: `${e.erro}: ${String(e.mensagem || "").slice(0, 200)}`, forca_em: agora });
+      const msg = `${e.erro}: ${String(e.mensagem || "").slice(0, 200)}`;
+      await patch(L.id, { forca_erro: msg, forca_em: agora });
+      await tarefaDeErro(L, msg);
       return { lead: L.id, nome: L.nome, acao: "recusado", erro: e.erro, mensagem: e.mensagem };
     }
     return { lead: L.id, nome: L.nome, acao: "ainda processando", protocolo: L.forca_protocolo };
@@ -276,7 +317,17 @@ async function tratar(L: Lead): Promise<Record<string, unknown>> {
     return { lead: L.id, nome: L.nome, acao: "sem e-mail" };
   }
 
-  const corpo = { cnpj: digits(L.cnpj), contato: L.nome.slice(0, 100), email, whatsapp: digits(L.fone) };
+  // O OBJETO `entrega` SO VAI QUANDO TEM NUMERO (18/11). Sem ele o pedido nasce no endereco da
+  // Receita, que no lojista costuma ser o escritorio do contador e nao o deposito — e foi por isso
+  // que a LP passou a pedir numero e complemento. Mandar `entrega` com o CEP sozinho nao resolve
+  // nada e ainda arrisca o outro lado recusar por endereco incompleto: ou vai inteiro, ou nao vai.
+  const corpo: Record<string, unknown> = { cnpj: digits(L.cnpj), contato: L.nome.slice(0, 100), email, whatsapp: digits(L.fone) };
+  const cepEnt = digits(L.cep);
+  const numEnt = String(L.numero || "").trim().slice(0, 10);
+  if (cepEnt.length === 8 && numEnt) {
+    const cplEnt = String(L.complemento || "").trim().slice(0, 30);
+    corpo.entrega = { cep: cepEnt, numero: numEnt, ...(cplEnt ? { complemento: cplEnt } : {}) };
+  }
   const r = await fetch(`${FORCA_BASE}/api/crm/orcamento`, {
     method: "POST", headers: H, body: JSON.stringify(corpo), signal: AbortSignal.timeout(120_000),
   });
@@ -299,7 +350,9 @@ async function tratar(L: Lead): Promise<Record<string, unknown>> {
     return { lead: L.id, nome: L.nome, acao: "pronto na hora", protocolo: d.protocolo, pedido: d.pedido, email_de: fonte };
   }
   if (d.status === "erro") {
-    await patch(L.id, { forca_erro: `${d.erro}: ${String(d.mensagem || "").slice(0, 200)}` });
+    const msg = `${d.erro}: ${String(d.mensagem || "").slice(0, 200)}`;
+    await patch(L.id, { forca_erro: msg });
+    await tarefaDeErro(L, msg);
     return { lead: L.id, nome: L.nome, acao: "recusado", erro: d.erro, mensagem: d.mensagem };
   }
   return { lead: L.id, nome: L.nome, acao: "aberto, processando", protocolo: d.protocolo, email_de: fonte };
@@ -433,7 +486,7 @@ Deno.serve(async (req) => {
     }
 
     const filtroOrigem = await filtro();
-    const sel = "id,nome,cnpj,cep,fone,email,contact_id,empresa,forca_protocolo,forca_pedido,forca_link,forca_validade,forca_link_em,forca_erro,criado";
+    const sel = "id,nome,cnpj,cep,fone,email,contact_id,empresa,numero,complemento,forca_protocolo,forca_pedido,forca_link,forca_validade,forca_link_em,forca_erro,forca_tarefa_id,criado";
 
     if (acao === "status") {
       const q = await rest(`copiloto_lead?select=${sel}&or=${filtroOrigem}&limit=1000`);
