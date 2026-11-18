@@ -889,6 +889,69 @@ um erro de transcrição fica no ar atendendo lead até alguém notar — e não
 do CRM) e a soltura do `ultima_msg_id` quando o envio é recusado por motivo técnico. **Confira
 sempre antes de publicar**: o que está no ar pode ser mais velho do que o repositório.
 
+### A Nina fala de MIX, nao de "acesso" (18/11)
+
+Ordem do gestor: *"nessa parte, ja estou preparando seu acesso, mude o contexto e fale que ja esta
+preparando o mix do cliente e vem com a resposta num instante."* O lojista nao quer saber do nosso
+processo — ele quer saber que a lista de produtos DA LOJA DELE esta sendo montada.
+
+Mora em **quatro lugares, e os quatro mudaram juntos** (e o mesmo cuidado dos R$ 3.500 e dos 10%):
+a licao **442** (banco, entra sem deploy), a descricao da ferramenta `link_pedido`, o `o_que_fazer`
+que ela devolve e as duas linhas de prompt do `copiloto-lead` (a do fluxo e a do toque de
+seguimento). Texto da ferramenta e licao discordando e o modelo escolhendo um dos dois.
+
+### O gestor e avisado quando um lead trava na Inscricao Estadual (18/11)
+
+Ordem dele: *"alem de avisar o cliente o que planejou ai de resposta, voce pode me avisar tambem
+quando esse lead travar."* O aviso interno vive na propria `forca-avisar`, com chave propria
+(`forca_aviso_gestor`, nasce `sim`) e marca propria (`copiloto_lead.forca_aviso_gestor_em`, gravada
+ANTES do envio). Vai para quem tem `avisar=true` em `copiloto_responsaveis`, deduplicado por
+telefone, com o **CNPJ em linha propria** como toda comunicacao interna daqui.
+
+- **E independente do aviso ao lojista.** Se `forca_aviso_ativo` for desligada, ou se o lead cair
+  fora da janela de 36h, o aviso interno sai do mesmo jeito: saber que um lead travou nao tem prazo
+  de validade. A mensagem **diz** se o lojista ja foi respondido ou se esta em silencio — e a
+  primeira pergunta de quem recebe.
+- **O que ele NAO fura e o corte fixo `forca_aviso_desde`** (18/11 18h09). Os quatro que ja estavam
+  barrados antes da regra nascer foram reportados a mao e nao viram disparo retroativo. Conferido na
+  previa: `barrados_na_ie: 4`, `a_avisar: 0` nas duas filas.
+
+### Os 22 orcamentos de 17/11: EU NAO CONSIGO APAGAR, e so UM virou pedido
+
+Pedido do gestor em 18/11 ("apague todos que fizeram"). **Nao da, por nenhuma das duas portas:** o
+MCP do Sankhya e somente leitura ("Comandos de escrita/DDL sao bloqueados") e a API do Forca so tem
+`auth`, `POST orcamento` e `GET orcamento/{protocolo}` — nao ha endpoint de cancelar.
+
+Conferido em `AD_VW_COM_PEDIDOS`: dos 22 numeros, **so o 1711837 existe como pedido de venda**
+(COSTA & SILVA, codparc 230368, vendedor 67 AUTO ATEND., PENDENTE, 56 itens, R$ 10.071,44). Os
+outros 21 nao aparecem na view, o que bate com orcamento ainda em elaboracao do lado do Forca — mas
+**isso nao da para confirmar daqui**: `AD_STATUFORCA` nao esta em view liberada.
+
+**Nenhum deles e CNPJ inventado** — sao leads reais da landing do Google. O que foi teste foi a
+RODADA, nao o cliente. E **ninguem recebeu link** (`forca_link_em` vazio nos 22). A lista com
+numero, CNPJ e loja esta em `docs/forca-pedidos-abertos-17-11.md`. Depois de cancelados, limpar
+`forca_pedido`/`forca_protocolo` na `copiloto_lead`, senao a varredura segue achando que aqueles
+leads ja tem pedido aberto.
+
+### Publicar o `copiloto-lead` sem CLI: duas armadilhas medidas em 18/11
+
+1. **O `\uXXXX` que eu escrevo no deploy chega como o CARACTERE, nao como a sequencia.** O
+   `norm()` e o `semAcento()` usam `/[\u0300-\u036f]/` — combinantes literais no fonte. Trocar por
+   escapes para transcrever com seguranca funcionou do meu lado e **a ferramenta de deploy desfez a
+   troca**: o publicado voltou a ter os caracteres literais. Nao e defeito (o resultado e o mesmo
+   regex), mas explica md5 diferente sem nenhum erro de transcricao.
+2. **`\"` dentro de string Python vira `"` — e quebra a string do TypeScript.** Editando a
+   descricao da `link_pedido` por script, `Fale de MIX, nao de \"acesso\"` virou `nao de "acesso"`
+   DENTRO de uma string de aspas duplas: TypeScript invalido. O **repositorio** ficou quebrado e o
+   publicado ficou certo, porque no JSON do deploy o escape sobreviveu. So a comparacao byte a byte
+   apareceu com isso. Depois do deploy, **alinhe o fonte ao publicado**, nao o contrario.
+
+O ritual continua o mesmo e nao se pula nenhum passo: fechar o cron 147
+(`select cron.alter_job(147, active := false);` — `update cron.job` da `permission denied`),
+publicar, comparar md5 do `get_edge_function` com o do arquivo, rodar `?dry=1&limite=1` pelo
+`pg_net` para ver se a funcao sobe, e so entao reabrir o cron. Em 18/11 o publicado virou a **v33**
+(98.161 bytes, md5 `967a027b1b555f7c5f7467e4865636d9`).
+
 ### O estado em que isto ficou (18/11)
 
 | cron | jobid | quando | o que faz |
@@ -899,7 +962,8 @@ sempre antes de publicar**: o que está no ar pode ser mais velho do que o repos
 | `forca-cutucar-15min` | 260 | `*/15 12-22 * * 1-6` | a cutucada de 45 min |
 | `forca-avisar-20min` | 261 | `*/20 12-22 * * 1-6` | responde a quem barrou na Inscrição Estadual |
 
-Chaves ligadas: `forca_ativo`, `forca_link_enviar`, `forca_cutuca_ativo`, `link_exige_email`.
+Chaves ligadas: `forca_ativo`, `forca_link_enviar`, `forca_cutuca_ativo`, `link_exige_email`,
+`forca_aviso_gestor`.
 Chaves desligadas de propósito: `pix_desconto_ativo` (`nao`), `link_pagina_antiga` (`nao`).
 Lições novas no prompt (entram sem deploy): **441** (os três dados numa frase só), **442** (a Nina
 não monta mais o link), **443** (cliente da casa não recebe acesso, e isso não é erro), **444** (ela

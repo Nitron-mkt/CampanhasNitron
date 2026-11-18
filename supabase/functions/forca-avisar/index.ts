@@ -28,6 +28,16 @@
 // e UM era lojista de verdade (comercio varejista de saneantes, CNAE 4789-0/05). A mesma frase tem
 // de servir aos dois sem mentir para nenhum.
 //
+// E O GESTOR TAMBEM E AVISADO. Ordem dele em 18/11: "alem de avisar o cliente (...) voce pode me
+// avisar tambem quando esse lead travar". O aviso interno vai para quem tem `avisar=true` em
+// `copiloto_responsaveis` (o gestor e a Camyla), deduplicado por telefone, e e INDEPENDENTE do
+// aviso ao lojista: se a chave do lojista estiver desligada, ou se o lead cair fora da janela de
+// 36h, o aviso interno sai do mesmo jeito — saber que um lead travou nao tem prazo de validade.
+// O que ele NAO fura e o corte fixo `forca_aviso_desde`, pela mesma razao do outro: os quatro que
+// ja estavam barrados antes da regra nascer foram reportados a mao, e nao viram disparo retroativo.
+// O CNPJ vai em LINHA PROPRIA, como em toda comunicacao interna deste projeto: por nome fantasia
+// ninguem acha a empresa no sistema, por CNPJ acha.
+//
 // Uso (chave de servico no Authorization):
 //   ?dry=1      quem receberia, com o texto pronto, sem mandar nada
 //   ?limite=N   manda ate N (respeita `forca_aviso_lote`)
@@ -75,6 +85,17 @@ async function enviar(contact_id: string, texto: string, instancia: string) {
   return await r.json().catch(() => ({ ok: false, motivo: "resposta ilegivel do campanhas-enviar" }));
 }
 
+// O responsavel nao tem contact_id nesta tabela — o `campanhas-enviar` resolve o contato pelo
+// numero. Mesma porta do espelho do repasse.
+async function enviarFone(fone: string, texto: string, instancia: string) {
+  const r = await fetch(URL_() + "/functions/v1/campanhas-enviar", {
+    method: "POST", headers: { Authorization: "Bearer " + srvKey(), "Content-Type": "application/json" },
+    body: JSON.stringify({ canal: "whatsapp", texto, instancia, fone }),
+    signal: AbortSignal.timeout(90_000),
+  });
+  return await r.json().catch(() => ({ ok: false, motivo: "resposta ilegivel do campanhas-enviar" }));
+}
+
 async function patch(id: number, campos: Record<string, unknown>) {
   await rest(`copiloto_lead?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(campos) });
 }
@@ -97,6 +118,49 @@ function textoDoAviso(L: { nome: string }): string {
   ].join("\n");
 }
 
+// O AVISO INTERNO. Curto de proposito: quem le ja tem o CRM para o detalhe, o que falta e SABER
+// que o lead travou — e por que travou, para nao procurar defeito onde nao ha. Diz tambem se o
+// lojista ja foi respondido, porque "ele ficou sabendo?" e a primeira pergunta de quem recebe.
+function textoGestor(L: any, avisado: boolean): string {
+  const doc = String(L.cnpj || "").replace(/\D/g, "");
+  return [
+    "Lead travou no cadastro — INSCRICAO ESTADUAL",
+    "",
+    L.empresa ? "Loja: " + L.empresa : "Contato sem loja informada",
+    doc.length === 14
+      ? "CNPJ: " + doc.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5")
+      : (doc ? "Documento: " + doc : "Sem documento informado"),
+    L.nome ? "Contato: " + L.nome : null,
+    "Lead #" + L.id,
+    "",
+    "O ERP recusou o cadastro pedindo a Inscricao Estadual do CNPJ e nao encontrou, entao o pedido dele NAO foi aberto. A API nao tem campo para mandar a IE — quem resolve e uma pessoa refazendo o cadastro.",
+    "",
+    avisado
+      ? "O lojista ja recebeu retorno da Nina: ela explicou que sem a IE nao da para seguir e pediu o numero, ou que ele diga se a empresa e isenta."
+      : "O lojista AINDA NAO recebeu retorno (o aviso automatico esta desligado ou ele esta fora da janela) — ele esta em silencio.",
+    "",
+    "Se ele responder com a IE, a Nina repete o numero para ele conferir e abre tarefa no comercial.",
+  ].filter((x) => x !== null).join("\n");
+}
+
+async function avisarInternos(L: any, avisado: boolean, inst: string) {
+  const out: any[] = [];
+  try {
+    const q = await rest("copiloto_responsaveis?select=nome,fone,avisar&avisar=is.true");
+    const resp: any[] = q.ok ? await q.json() : [];
+    const vistos = new Set<string>();
+    for (const r of resp) {
+      const f = String(r.fone || "").replace(/\D/g, "");
+      const k = f.slice(-8);                       // o gestor aparece em duas areas; avisar uma vez
+      if (!f || !k || vistos.has(k)) continue;
+      vistos.add(k);
+      const e: any = await enviarFone(f, textoGestor(L, avisado), inst);
+      out.push({ quem: r.nome, ok: !!e?.ok, motivo: e?.ok ? undefined : String(e?.motivo || "").slice(0, 160) });
+    }
+  } catch (e) { out.push({ erro: String(e).slice(0, 160) }); }
+  return out;
+}
+
 Deno.serve(async (req) => {
   try {
     const auth = req.headers.get("Authorization") || "";
@@ -112,6 +176,9 @@ Deno.serve(async (req) => {
     const lote = Math.max(1, Math.min(Number(u.searchParams.get("limite") || await cfg("forca_aviso_lote", "3")) || 3, 10));
     const inst = await cfg("forca_link_instancia", "Nina");
     const ligado = (await cfg("forca_aviso_ativo", "nao")).toLowerCase() === "sim";
+    // O aviso INTERNO tem chave propria: o gestor pediu em 18/11 para ser avisado quando um lead
+    // travar, e isso nao deve morrer junto com a mensagem ao lojista se ela for desligada.
+    const ligadoGestor = (await cfg("forca_aviso_gestor", "sim")).toLowerCase() === "sim";
 
     // Hora de Sao Paulo, fixa. Esta mensagem e iniciativa NOSSA e e uma noticia ruim: nao chega as
     // 2 da manha, e nao chega no domingo.
@@ -125,10 +192,10 @@ Deno.serve(async (req) => {
     // A mesma porta da `forca-cadastro`: lead da landing OU lead que a Nina encaminhou.
     const origens = (await cfg("forca_origens", "nitron-direto-lp%,lp-nitron%")).split(",").map((x) => x.trim()).filter(Boolean);
     const filtro = "(" + [...origens.map((o) => `origem.ilike.${o}`), "forca_pedir_em.not.is.null"].join(",") + ")";
-    const sel = "id,nome,empresa,cnpj,contact_id,forca_erro,forca_aviso_em,forca_pedir_em,criado";
+    const sel = "id,nome,empresa,cnpj,contact_id,forca_erro,forca_aviso_em,forca_aviso_gestor_em,forca_pedir_em,criado";
     const url = soLead
       ? `copiloto_lead?select=${sel}&id=eq.${soLead}`
-      : `copiloto_lead?select=${sel}&or=${filtro}&forca_erro=not.is.null&forca_aviso_em=is.null` +
+      : `copiloto_lead?select=${sel}&or=${filtro}&forca_erro=not.is.null` +
         `&descartado_em=is.null&contact_id=not.is.null&order=criado.desc&limit=200`;
     const q = await rest(url);
     const todos: any[] = q.ok ? await q.json() : [];
@@ -156,30 +223,43 @@ Deno.serve(async (req) => {
     const quando = (L: any) =>
       Math.max(new Date(L.criado || 0).getTime(), new Date(L.forca_pedir_em || 0).getTime());
     const recente = (L: any) => quando(L) >= corte && quando(L) >= desde;
-    const cands = soLead ? doIE.filter((L: any) => quando(L) >= desde) : doIE.filter(recente);
-    const foraDaJanela = doIE.length - cands.length;
+    const naJanela = soLead ? doIE.filter((L: any) => quando(L) >= desde) : doIE.filter(recente);
+    const foraDaJanela = doIE.length - naJanela.length;
+    // A marca de "ja avisado" saiu do SQL e virou filtro aqui: sao DUAS filas com marcas
+    // diferentes, e o PostgREST so aceita um `or=` por consulta — ele ja e das origens.
+    const cands = naJanela.filter((L: any) => !L.forca_aviso_em);
     const fila = cands.slice(0, lote);
 
-    if (dry || !ligado || (fora && !soLead)) {
+    // A FILA DO AVISO INTERNO E OUTRA, e de proposito: ela NAO olha a janela de 36h. Saber que um
+    // lead travou nao tem prazo de validade, e um lead que barrou enquanto o cron estava parado
+    // continua sendo noticia. O corte fixo (`forca_aviso_desde`) vale aqui igual.
+    const gCands = doIE.filter((L: any) => quando(L) >= desde && !L.forca_aviso_gestor_em);
+    const gFila = gCands.slice(0, lote);
+
+    if (dry || (!ligado && !ligadoGestor) || (fora && !soLead)) {
       return j({
         ok: true, previa: true, ligado, instancia: inst, janela_h: janelaH,
         fora_do_horario: fora || undefined,
         barrados_na_ie: doIE.length, a_avisar: cands.length, fora_da_janela: foraDaJanela,
         so_a_partir_de: desdeTxt || "sem corte configurado",
         motivo: ligado ? null : "forca_aviso_ativo nao esta 'sim' — ligar e UPDATE em copiloto_config",
+        aviso_ao_gestor: { ligado: ligadoGestor, a_avisar: gCands.length,
+                           fila: gFila.map((L) => ({ lead: L.id, empresa: L.empresa,
+                                                     texto: textoGestor(L, !!L.forca_aviso_em) })) },
         fila: fila.map((L) => ({ lead: L.id, nome: L.nome, empresa: L.empresa,
                                  erro: String(L.forca_erro || "").slice(0, 120), texto: textoDoAviso(L) })),
       });
     }
 
     const feito: Record<string, unknown>[] = [];
-    for (const L of fila) {
+    const jaAvisado = new Set<number>();
+    for (const L of (ligado ? fila : [])) {
       // ANTES do envio, como em todo o resto do projeto: o envio leva 12s de checagem de entrega,
       // e duas rodadas que se cruzam mandariam a mesma noticia duas vezes. (`toques`, 02/10.)
       await patch(L.id, { forca_aviso_em: new Date().toISOString(), forca_aviso_erro: null });
       try {
         const env = await enviar(L.contact_id, textoDoAviso(L), inst);
-        if (env?.ok) feito.push({ lead: L.id, nome: L.nome, acao: "avisado" });
+        if (env?.ok) { jaAvisado.add(L.id); feito.push({ lead: L.id, nome: L.nome, acao: "avisado" }); }
         else {
           await patch(L.id, { forca_aviso_erro: String(env?.motivo || "recusado").slice(0, 300) });
           feito.push({ lead: L.id, nome: L.nome, acao: "recusado", motivo: env?.motivo });
@@ -189,9 +269,22 @@ Deno.serve(async (req) => {
         feito.push({ lead: L.id, nome: L.nome, acao: "erro", detalhe: String(e).slice(0, 200) });
       }
     }
+    // O AVISO AO GESTOR, depois. Vem por ultimo de proposito: assim ele ja diz se o lojista foi
+    // respondido nesta mesma rodada. A marca e gravada ANTES do envio, como a do lojista.
+    const internos: Record<string, unknown>[] = [];
+    for (const L of (ligadoGestor ? gFila : [])) {
+      await patch(L.id, { forca_aviso_gestor_em: new Date().toISOString() });
+      try {
+        internos.push({ lead: L.id, empresa: L.empresa,
+                        para: await avisarInternos(L, !!L.forca_aviso_em || jaAvisado.has(L.id), inst) });
+      } catch (e) { internos.push({ lead: L.id, erro: String(e).slice(0, 200) }); }
+    }
+
     return j({ ok: true, instancia: inst, barrados_na_ie: doIE.length,
                avisados: feito.filter((f) => f.acao === "avisado").length,
-               restam: cands.length - fila.length, fora_da_janela: foraDaJanela, feito });
+               restam: cands.length - fila.length, fora_da_janela: foraDaJanela, feito,
+               aviso_ao_gestor: { ligado: ligadoGestor, feito: internos,
+                                  restam: Math.max(0, gCands.length - gFila.length) } });
   } catch (e) {
     return j({ ok: false, erro: String(e).slice(0, 400) }, 500);
   }
