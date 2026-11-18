@@ -803,15 +803,20 @@ carimbada em `copiloto_lead.forca_pix_em`, para quem receber o pedido saber que 
 
 ### As travas do envio do link, e o motivo medido de cada uma
 
-- **`forca_link_enviar`** nasce `nao`. Lição de 16/09.
+- **`forca_link_enviar`** nasceu `nao` e foi **ligada em 18/11**, depois de a prévia mostrar que
+  nada entrava na janela — ou seja, ligar não disparou nada para ninguém, só abriu o caminho para
+  os leads novos. Desligar é UPDATE.
 - **`forca_link_janela_h` (36h)** conta do **maior entre `criado` e `forca_pedir_em`** — um lead de
   semanas atrás que a Nina acabou de atender **é** o fluxo novo e não pode ser calado pela janela.
   Sem a janela, a primeira rodada mandaria mensagem para **21 leads parados há até uma semana de uma
   vez só**: isso não é o fluxo novo, é disparo frio.
 - **`forca_link_em` é gravado ANTES do envio** — lição do `toques` (02/10) e do `reativa_em` (03/11).
   O erro vai para `forca_link_erro`.
-- **`forca-cutucar` nasce desligada E sem cron.** Uma linha de configuração não pode ser a única
-  coisa entre o silêncio e um disparo.
+- **`forca-cutucar` nasceu desligada e sem cron** (a regra de 16/09: uma linha de configuração não
+  pode ser a única coisa entre o silêncio e um disparo). Em 18/11 as DUAS foram ligadas:
+  `forca_cutuca_ativo='sim'` e o cron `forca-cutucar-15min` (jobid 260, `*/15 12-22 * * 1-6`).
+  A audiência dela é fechada por construção — só quem recebeu o link do Força nas últimas 48h e
+  não respondeu — e o teto é **uma** mensagem por lead.
 - **A cutucada NÃO afirma que ele não pediu.** Não dá para saber: o sinal seria o `AD_STATUFORCA` do
   Sankhya (`ELAB_CLIENTE` = montando; qualquer outro = enviou), e **edge function não alcança o
   Sankhya**. Então ela só toca em quem **não respondeu nada** depois do link, e pergunta se conseguiu
@@ -857,6 +862,20 @@ um erro de transcrição fica no ar atendendo lead até alguém notar — e não
 06/11 nunca tinham subido** — a precedência do CNPJ (o que a pessoa digitou vence o `CF_CNPJ` velho
 do CRM) e a soltura do `ultima_msg_id` quando o envio é recusado por motivo técnico. **Confira
 sempre antes de publicar**: o que está no ar pode ser mais velho do que o repositório.
+
+### O estado em que isto ficou (18/11)
+
+| cron | jobid | quando | o que faz |
+|---|---|---|---|
+| `copiloto-lead-5min` | 147 | `*/5 0,9-23 * * *` | a Nina atende e dá o toque de seguimento |
+| `forca-cadastro-5min` | 258 | `*/5 * * * *` | abre o pedido no Força e **entrega o link** |
+| `camp-pipeline-hora` | 259 | `17 * * * *` | move os cards |
+| `forca-cutucar-15min` | 260 | `*/15 12-22 * * 1-6` | a cutucada de 45 min |
+
+Chaves ligadas: `forca_ativo`, `forca_link_enviar`, `forca_cutuca_ativo`, `link_exige_email`.
+Chaves desligadas de propósito: `pix_desconto_ativo` (`nao`), `link_pagina_antiga` (`nao`).
+Lições novas no prompt (entram sem deploy): **441** (os três dados numa frase só), **442** (a Nina
+não monta mais o link), **443** (cliente da casa não recebe acesso, e isso não é erro).
 
 ## Landing "Nitron Direto" (campanhas.nitron.com.br) — o lead ja chega com CNPJ e CEP (05/11)
 
