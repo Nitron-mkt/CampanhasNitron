@@ -56,6 +56,14 @@
 //    erro de 16/09 com dinheiro no meio. E a promessa fica REGISTRADA (`forca_pix_em`): o PIX com
 //    desconto e gerado a mao, entao quem receber o pedido precisa saber que ela foi feita.
 //
+// ============================ v5 (18/11) — O ENDERECO DE ENTREGA =============================
+// A LP passou a coletar NUMERO e COMPLEMENTO, e ate 18/11 os dois chegavam no POST da ponte e
+// caiam no chao. Agora a `lp-lead` os grava e esta funcao manda o objeto `entrega` — que e o que
+// faz o pedido nascer no endereco de ENTREGA e nao no endereco fiscal da Receita, que no lojista
+// costuma ser o escritorio do contador. E, quando o ERP recusa o cadastro por outro motivo que
+// nao representante/Clube, abre TAREFA: sem ela o lead ficava num vao, com a Nina prometendo um
+// acesso que nunca chegaria.
+//
 // O QUE AINDA NAO VAI: o objeto `entrega`. A API aceita cep + numero + complemento, e a landing
 // ainda nao coleta numero nem complemento (pedido ao Replit em 17/11). Sem o numero o endereco
 // nao se sustenta e o pedido nasce no endereco da Receita — que no lojista costuma ser o fiscal,
@@ -521,7 +529,7 @@ Deno.serve(async (req) => {
       return j({ ok: true, previa: true, filtro: filtroOrigem, lote, limite,
         terminar: pendentes.length, abrir: novos.length,
         fila: fila.map((l) => ({ lead: l.id, nome: l.nome, empresa: l.empresa, cnpj: digits(l.cnpj),
-                                 tem_email: !!l.email, protocolo: l.forca_protocolo })) });
+                                 tem_email: !!l.email, tem_numero: !!l.numero, protocolo: l.forca_protocolo })) });
     }
 
     const ativo = (await cfg("forca_ativo", "nao")).toLowerCase();
