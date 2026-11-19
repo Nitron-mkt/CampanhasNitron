@@ -80,3 +80,53 @@ um beco — dá para encaminhar nominalmente.
 Nada do fluxo foi tocado: chaves, crons e funções seguem como em `docs/forca-estado-19-11.md`.
 A `forca-teste` v4 continua publicada e é inofensiva por padrão (`"teste": true`). O parâmetro
 `?teste=0` existe e é a chamada de verdade — não usar sem ordem explícita.
+
+---
+
+# Adendo: e o cliente que está numa tabela de preço diferente?
+
+Pergunta do gestor. Tem duas metades, e só uma é respondível pelo modo teste.
+
+## Metade 1 — tabela diferente NÃO barra nada
+
+Testados dois clientes na **PV0004 TABELA ESPECIAL RED (CODTAB 13)**, parados há 211 e 212 dias:
+
+| cliente | CNPJ | tabela | resultado |
+|---|---|---|---|
+| TRES RIOS CASA & MODAS (RJ) | 54535200000178 | 13 ESPECIAL RED | ✅ `passaria: true` · `cadastro: aproveita` |
+| MINI PRECO (MG) | 71469951000152 | 13 ESPECIAL RED | ✅ `passaria: true` · `cadastro: aproveita` |
+
+As travas olham **só** duas coisas: compra nos últimos 180 dias e Clube ativo. A tabela do
+cadastro não entra na decisão de abrir ou não.
+
+## Metade 2 — mas a tabela dele NÃO é usada no preço
+
+A seção 8 do contrato diz "preço da **tabela do canal**", e isso se confirma na base: medidos
+**387 pedidos reais do canal Acelera desde 01/09**, o canal substitui a tabela do cadastro pela
+tabela Gestor. O mapeamento observado é **RED × não-RED**, e não tem exceção nos 387:
+
+| tabela que o canal gravou | tabelas de cadastro que caem nela | pedidos |
+|---|---|---|
+| **194** GESTOR VAREJO | 0 padrão (255) · 153 Clube varejo (9) · 150 padrão SP (6) · 102 FOB Nordeste (5) · 155 Clube atacado (2) · 194 (2) · 200 Amazon (1) | **280** |
+| **195** GESTOR RED 194 | 13 ESPECIAL RED (98) · 195 (4) · 159 Clube RED (2) · 165 Clube RED atacado (1) · 83 RED 102 Nordeste (1) · 151 CANINDE RED (1) | **107** |
+
+O par que fecha a regra: **102 (FOB Especial Nordeste) → 194**, mas **83 (RED 102 Especial
+Nordeste) → 195**. É a mesma praça; o que muda é o RED.
+
+**O ponto a confirmar com o fiscal/comercial.** O `CLAUDE.md` já registra que a **195 é exatamente
+metade da 194** — tabela derivada. Então cliente em cadastro RED tem o pedido gravado numa tabela
+de valor absoluto pela metade, enquanto a página de pedido publica `194 / 0,90` para todo mundo.
+Isso provavelmente é construção fiscal (a diferença voltando como imposto na nota), **mas eu não
+sei o motivo e não vou afirmar que sei**. Se não for, é lojista vendo um preço e sendo faturado
+noutro — e é o tipo de erro que só aparece no faturamento.
+
+## O que eu NÃO consigo responder daqui
+
+**Qual preço exato esse lojista veria na tela.** Duas portas, as duas fechadas:
+
+- o modo teste não devolve `valor` (nem `mix`), como já registrado acima;
+- os orçamentos do Força **não aparecem nas views liberadas do Sankhya** — procurei os 22 números
+  por `NUNOTA` e depois por `CODPARC`, e `AD_VW_COM_PEDIDOS` devolveu zero linhas nas duas. O que
+  se vê ali é o pedido depois de virar pedido de venda, não o orçamento em elaboração.
+
+Então: ou eles implementam o `valor` da seção 5, ou só abrindo um pedido de verdade.
