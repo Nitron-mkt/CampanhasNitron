@@ -654,6 +654,92 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   de todos os projetos do banco, nao so os da Nitron. Quando um cron "roda e nada acontece", olhar
   `net._http_response.error_msg` antes de culpar a funcao.
 
+## O 4o e-mail da Nitron-Mob, e tres coisas que o registro dizia errado (19/11)
+
+- **O 3o e-mail FOI disparado, pelo CRM — e eu afirmei que nao.** Procurei em `fila_envio` e numa
+  tabela de envio daqui, e **campanha do GHL nao passa por nenhum dos dois**: foi exatamente o que
+  o gestor mandou fazer em 12/11 (concentrar no CRM, que tem relatorio de abertura e clique). O
+  erro de metodo e o que vale guardar: **procurei onde eu saberia olhar, nao onde ele mandou
+  disparar.** Quando a resposta for "nao ha registro", a primeira pergunta e por qual caminho a
+  coisa saiu — nao se ela saiu.
+- **O 1o e-mail NUNCA PAROU de sair.** O cron `nitronmob-rampa-5min` (jobid 194, `*/5 12-20 * * 1-5`)
+  continua ativo e goteja para quem ainda entra na `nitronmob_apto`. O total ja nao e 5.511, e
+  **5.607**, com envios em 09, 10, 11, 13, 16, 17 e 18/11. Volume baixo (1 a 25 por dia) e rejeicao
+  boa, entao nao e incendio — mas quem for medir a cadencia tem de saber que a onda 1 nao fechou.
+- **Existe um cron `nitronmob-nina-10min` (jobid 196) ATIVO** que nao estava em lugar nenhum deste
+  arquivo: a Nina respondendo quem responde ao e-mail do Mob. Documentar ou desligar e decisao do
+  gestor.
+
+### A linha VENDE, e o numero nao se publica
+
+Medido no Sankhya em 19/11 (`AD_VW_COM_VENDAS`, as 13 refs): **22 clientes, 24 notas, 400 pecas,
+R$ 35.491,04** desde 20/08, com venda no proprio dia 19/11. Recorte por janela:
+
+| janela | clientes | faturamento |
+|---|---|---|
+| antes do 1o e-mail (20/08 a 19/10) | 13 | R$ 24.841,76 |
+| entre o 1o e o 2o (20/10 a 03/11) | 3 | R$ 2.295,00 |
+| do 2o e-mail para ca (04/11 a 19/11) | 6 | R$ 8.354,28 |
+
+**22 em ~4.800 nao se publica** — e a mesma regra do Nitron Conecta: dizer o numero real conta ao
+cliente que quase ninguem comprou. E **nao da para atribuir** a venda ao e-mail: atribuicao envio →
+pedido continua nao existindo (pendencia 4). O que o recorte permite dizer e so que a cadencia nao
+travou nada.
+
+### `nitronmob-disparar4` — a maquina do 4o e-mail
+
+Tabela `nitronmob_envio4`, view `nitronmob_apto4`, mesmo padrao provado do 2o. **Nasce desligada e
+sem cron** (`nitronmob4_ativo='nao'`).
+
+- **A audiencia parte da TAG, nao da tabela de envio**, e isso e medido: a onda 2 so alcancou 1.500
+  dos ~4.823 elegiveis, entao **3.300 clientes receberam o 1o e nunca o 2o**. Encadear por envio os
+  deixaria de fora do 4o tambem. Sao **4.806 aptos** — 7 que clicaram, 726 que abriram, 4.073 so
+  entregues — fora quem deu `failed` em qualquer uma das duas ondas.
+- **Nao existe `nitronmob-disparar3` de proposito.** O 3o saiu pela campanha do GHL e nunca teve
+  funcao aqui. O numero segue o **E-MAIL**, nao a funcao.
+- **Duas recusas novas, e as duas valem na previa:** sem assunto definido (`nitronmob4_assunto`
+  ainda e `<<DEFINIR>>`) e sem arte em `nitronmob_arte` nome `email4`, a funcao nao manda. E a licao
+  do `raspagem_assinatura_fone` — placeholder chegando em 4.800 caixas nao tem desfazimento.
+- Teto do dia **1.000**, o ultimo degrau provado (0,91% de rejeicao). A regra continua sendo
+  **dobrar, nao pular**.
+
+### O texto do 4o: `app/nitronmob-email4.html`
+
+Ordem do gestor em 19/11: *"e apenas uma sequencia, mas nao ultimo"* — entao **nada de "fechando a
+serie"**. O 3o ja tinha anunciado "Tres e-mails, uma decisao", e o 4o **assume isso na primeira
+linha** ("Eu disse que eram tres e-mails. Ficou faltando a parte pratica") em vez de fingir que nao
+disse.
+
+**O angulo e o PEDIDO JA MONTADO:** tres combinacoes fechadas, com referencia, quantidade e total.
+Todas as tres passam dos R$ 5.000 **de proposito** — e ai que os 10% entram sozinhos, e assim o
+e-mail nao precisa de asterisco. **Abaixo de R$ 5.000 o valor por peca e 11,11% MAIOR que o da
+tabela que o 3o e-mail publicou**, e essa frase esta no corpo: esconde-la seria repetir o erro de
+23/10 em escala maior.
+
+| combinacao | o que e | pecas | total | na vitrine |
+|---|---|---|---|---|
+| A — a linha inteira | 1 fardo de cada um dos 13 | 52 | R$ 5.212,60 | R$ 10.279,48 |
+| B — so prateleiras | 2 fardos de 6 refs (P2, P3, M3, M4, G3, G4) | 48 | R$ 5.359,36 | R$ 10.559,52 |
+| C — o basico, com volume | Arara, Kit M, Org P e G, Prat P3 | 60 | R$ 5.251,28 | R$ 10.399,40 |
+
+**Nenhum numero e novo.** Sao a Tabela Gestor 194 e as revendas sugeridas que o 1o e o 3o e-mail ja
+publicaram. A combinacao A reproduz exatamente o R$ 5.791,78 → R$ 5.212,60 do 3o e-mail, e e isso
+que valida a tabela inteira; as tres dao 1,97x a 1,98x na vitrine.
+
+**Cada combinacao tem o proprio botao de WhatsApp, com a letra ja escrita na mensagem** — o lojista
+nao precisa explicar o que quer, e o comercial recebe a escolha pronta.
+
+**Conferido antes de existir**, pelas armadilhas ja conhecidas: maior palavra visivel **14
+caracteres** (o limite e ~80, a licao de 20/10), o `{{email.unsubscribe_link}}` aparece **uma vez e
+dentro do `href`**, os unicos valores em R$ no texto sao os seis calculados, e as quatro imagens
+respondem 200.
+
+- **A miniatura NAO pode herdar o `.stack img {width:100%}` do e-mail anterior.** Aquela regra serve
+  para foto de hero; num selo de 200px ela inflava a imagem para a largura inteira e o e-mail ia a
+  **3.795px de altura**. Com `.thumb {max-width:220px}` caiu para **2.976px**. Renderizado em 640px
+  e em **555px** (o painel de leitura do gestor, onde o 1o e-mail quebrou): uma coluna, sem estouro
+  horizontal em nenhum dos dois.
+
 ## Nitron Conecta — a ultima chamada por e-mail (16/11)
 
 - **O convite JA tinha ido por e-mail duas vezes antes de alguem pedir "manda por e-mail tambem".**
