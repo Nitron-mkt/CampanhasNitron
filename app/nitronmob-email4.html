@@ -20,8 +20,10 @@
     /* O painel de leitura do gestor tem ~555px: tudo que depende de duas colunas TEM de empilhar
        sozinho. Por isso coluna fluida (inline-block + max-width), nunca largura fixa em td. */
     @media screen and (max-width:640px) {
-      .container { width:100% !important }
-      .pad { padding-left:22px !important; padding-right:22px !important }
+      /* A ESTRUTURA NAO DEPENDE DAQUI. O container ja nasce fluido (width:100% + max-width)
+         e as colunas sao inline-block com max-width, que quebram sozinhas. Estas regras so
+         afinam o respiro — se o editor do CRM remover o <style>, o e-mail continua inteiro. */
+      .pad { padding-left:18px !important; padding-right:18px !important }
       .stack { display:block !important; width:100% !important; max-width:100% !important }
       /* A MINIATURA NAO ACOMPANHA O EMPILHAMENTO. No e-mail anterior a regra era
          `.stack img {width:100%}`, que serve para uma foto de hero — aqui ela inflava um selo de
@@ -47,8 +49,8 @@
     <tr>
       <td align="center" style="padding:0;">
         <!--[if mso]><table role="presentation" align="center" width="640"><tr><td><![endif]-->
-        <table role="presentation" class="container" width="640" cellpadding="0" cellspacing="0" border="0"
-          style="width:640px;max-width:640px;background-color:#ffffff;">
+        <table role="presentation" class="container" width="100%" cellpadding="0" cellspacing="0" border="0"
+          style="width:100%;max-width:640px;background-color:#ffffff;">
 
           <!-- TOPO -->
           <tr>
@@ -61,7 +63,7 @@
 
           <!-- ABERTURA -->
           <tr>
-            <td class="pad" style="padding:34px 35px 8px;font-family:Arial,Helvetica,sans-serif;">
+            <td class="pad" style="padding:30px 24px 8px;font-family:Arial,Helvetica,sans-serif;">
               <div style="font-size:11px;letter-spacing:2px;font-weight:800;color:#0b9299;">
                 NITRON-MOB &nbsp;/&nbsp; O PEDIDO J&Aacute; MONTADO
               </div>
@@ -83,7 +85,7 @@
 
           <!-- POR QUE AS TRES PASSAM DOS 5.000 -->
           <tr>
-            <td class="pad" style="padding:20px 35px 4px;font-family:Arial,Helvetica,sans-serif;">
+            <td class="pad" style="padding:18px 24px 4px;font-family:Arial,Helvetica,sans-serif;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
                 bgcolor="#f2f7f6" style="background-color:#f2f7f6;">
                 <tr>
@@ -101,7 +103,7 @@
 
           <!-- ============================ COMBINACAO A ============================ -->
           <tr>
-            <td class="pad" style="padding:26px 35px 0;font-family:Arial,Helvetica,sans-serif;">
+            <td class="pad" style="padding:24px 24px 0;font-family:Arial,Helvetica,sans-serif;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
                 style="border:1px solid #e3ebeb;">
                 <tr>
@@ -139,12 +141,12 @@
                       <tr>
                         <td style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#60737a;">
                           Total do pedido<br>
-                          <span class="big" style="font-size:26px;line-height:32px;font-weight:800;color:#0b9299;">R$ 5.212,60</span>
+                          <span class="big" style="font-size:26px;line-height:32px;font-weight:800;color:#0b9299;">R$&nbsp;5.212,60</span>
                         </td>
                         <td align="right"
                           style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#60737a;">
                           Na vitrine, pela revenda sugerida<br>
-                          <span style="font-size:17px;line-height:24px;font-weight:800;color:#183843;">R$ 10.279,48</span>
+                          <span style="font-size:17px;line-height:24px;font-weight:800;color:#183843;">R$&nbsp;10.279,48</span>
                         </td>
                       </tr>
                     </table>
@@ -165,7 +167,7 @@
 
           <!-- ============================ COMBINACAO B ============================ -->
           <tr>
-            <td class="pad" style="padding:18px 35px 0;font-family:Arial,Helvetica,sans-serif;">
+            <td class="pad" style="padding:16px 24px 0;font-family:Arial,Helvetica,sans-serif;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
                 style="border:1px solid #e3ebeb;">
                 <tr>
@@ -203,12 +205,12 @@
                       <tr>
                         <td style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#60737a;">
                           Total do pedido<br>
-                          <span class="big" style="font-size:26px;line-height:32px;font-weight:800;color:#0b9299;">R$ 5.359,36</span>
+                          <span class="big" style="font-size:26px;line-height:32px;font-weight:800;color:#0b9299;">R$&nbsp;5.359,36</span>
                         </td>
                         <td align="right"
                           style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#60737a;">
                           Na vitrine, pela revenda sugerida<br>
-                          <span style="font-size:17px;line-height:24px;font-weight:800;color:#183843;">R$ 10.559,52</span>
+                          <span style="font-size:17px;line-height:24px;font-weight:800;color:#183843;">R$&nbsp;10.559,52</span>
                         </td>
                       </tr>
                     </table>
@@ -229,7 +231,7 @@
 
           <!-- ============================ COMBINACAO C ============================ -->
           <tr>
-            <td class="pad" style="padding:18px 35px 0;font-family:Arial,Helvetica,sans-serif;">
+            <td class="pad" style="padding:16px 24px 0;font-family:Arial,Helvetica,sans-serif;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
                 style="border:1px solid #e3ebeb;">
                 <tr>
@@ -268,12 +270,12 @@
                       <tr>
                         <td style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#60737a;">
                           Total do pedido<br>
-                          <span class="big" style="font-size:26px;line-height:32px;font-weight:800;color:#0b9299;">R$ 5.251,28</span>
+                          <span class="big" style="font-size:26px;line-height:32px;font-weight:800;color:#0b9299;">R$&nbsp;5.251,28</span>
                         </td>
                         <td align="right"
                           style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#60737a;">
                           Na vitrine, pela revenda sugerida<br>
-                          <span style="font-size:17px;line-height:24px;font-weight:800;color:#183843;">R$ 10.399,40</span>
+                          <span style="font-size:17px;line-height:24px;font-weight:800;color:#183843;">R$&nbsp;10.399,40</span>
                         </td>
                       </tr>
                     </table>
@@ -295,7 +297,7 @@
           <!-- NAO E PACOTE FECHADO -->
           <tr>
             <td bgcolor="#fff8dc" class="pad"
-              style="background-color:#fff8dc;padding:19px 34px;margin-top:0;font-family:Arial,Helvetica,sans-serif;">
+              style="background-color:#fff8dc;padding:19px 24px;margin-top:0;font-family:Arial,Helvetica,sans-serif;">
               <div style="font-weight:800;color:#173b44;font-size:15px;line-height:21px;">Nenhuma delas &eacute; pacote fechado</div>
               <div style="font-size:13px;line-height:21px;color:#4d6169;padding-top:5px;">
                 S&atilde;o pontos de partida. Se a sua loja vende mais um tamanho do que outro, o comercial troca os
@@ -308,7 +310,7 @@
           <!-- CTA -->
           <tr>
             <td align="center" bgcolor="#087e88" class="pad"
-              style="background-color:#087e88;padding:33px 35px 37px;font-family:Arial,Helvetica,sans-serif;">
+              style="background-color:#087e88;padding:30px 24px 34px;font-family:Arial,Helvetica,sans-serif;">
               <div style="font-size:27px;line-height:33px;font-weight:800;color:#ffffff;">A, B ou C?</div>
               <div style="padding-top:10px;color:#e5f5f5;font-size:14px;line-height:22px;">
                 Responda este e-mail com a letra, ou chame no WhatsApp. A gente confirma o prazo e a entrega da sua

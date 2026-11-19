@@ -662,6 +662,15 @@ Os itens 2, 3 e 4 continuam **em aberto** no código.
   erro de metodo e o que vale guardar: **procurei onde eu saberia olhar, nao onde ele mandou
   disparar.** Quando a resposta for "nao ha registro", a primeira pergunta e por qual caminho a
   coisa saiu — nao se ela saiu.
+  **Medido depois, e e assim que se acha disparo de campanha daqui:** o
+  `export-messages-by-location` do GHL (`channel=Email`, `startDate`/`endDate`) devolve as
+  mensagens e um `total` por janela. O 3o e-mail saiu em **12/11 as 14:49** (quinta, o mesmo dia
+  em que a tag foi aplicada), assunto *"Nitron-Mob | A linha inteira, com a conta na mao"*,
+  remetente `Nitron <comercial@crm.nitron.com.br>`, e cada mensagem traz **`source: "campaign"`** —
+  e esse campo que distingue campanha de envio por API. Volume: **5.147 e-mails no dia 12**, contra
+  ~1.200 num dia normal, o que bate com os 4.806 da tag.
+  **Cuidado com o `status` do export: vem `sent` em todas.** Nao e entrega — e a mesma licao de
+  26/08. Entrega real so pelo `get-email-by-id` ou pelo relatorio da campanha no CRM.
 - **O 1o e-mail NUNCA PAROU de sair.** O cron `nitronmob-rampa-5min` (jobid 194, `*/5 12-20 * * 1-5`)
   continua ativo e goteja para quem ainda entra na `nitronmob_apto`. O total ja nao e 5.511, e
   **5.607**, com envios em 09, 10, 11, 13, 16, 17 e 18/11. Volume baixo (1 a 25 por dia) e rejeicao
@@ -736,9 +745,18 @@ respondem 200.
 
 - **A miniatura NAO pode herdar o `.stack img {width:100%}` do e-mail anterior.** Aquela regra serve
   para foto de hero; num selo de 200px ela inflava a imagem para a largura inteira e o e-mail ia a
-  **3.795px de altura**. Com `.thumb {max-width:220px}` caiu para **2.976px**. Renderizado em 640px
-  e em **555px** (o painel de leitura do gestor, onde o 1o e-mail quebrou): uma coluna, sem estouro
-  horizontal em nenhum dos dois.
+  **3.795px de altura**. Com `.thumb {max-width:220px}` caiu para **2.976px**.
+- **O LAYOUT NAO PODE DEPENDER DO BLOCO `<style>` — e o do 3o e-mail dependia.** O editor de
+  campanha do CRM as vezes remove o `<style>`, e e nele que moram as media queries. Testado: com o
+  container em `width="640"` fixo, **sem o `<style>` o e-mail ESTOURA na horizontal** num painel de
+  555px — exatamente o defeito de 20/10, por outra porta. O conserto nao e CSS melhor, e tirar a
+  dependencia: container `width="100%"` com `max-width:640px`, respiro lateral de 24px fixo no
+  proprio `style=` da celula, e colunas em `inline-block` com `max-width`, que **quebram sozinhas**
+  sem media query. A media query fica como enfeite.
+  **Conferido nos quatro cenarios**, todos sem estouro horizontal: com `<style>` a 640px e a 555px,
+  e **sem `<style>`** a 555px e a 380px (celular). Quem for montar e-mail novo testa os quatro.
+- **`R$ 5.212,60` quebra entre o simbolo e o numero em tela estreita.** Em 380px o "R$" ia para uma
+  linha e o valor para outra. `R$&nbsp;5.212,60` resolve, e vale para todo preco em e-mail.
 
 ## Nitron Conecta — a ultima chamada por e-mail (16/11)
 
