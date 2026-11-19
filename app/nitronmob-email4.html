@@ -9,7 +9,7 @@
   <meta name="x-apple-disable-message-reformatting">
   <meta name="format-detection" content="telephone=no,address=no,email=no,date=no">
   <meta name="color-scheme" content="light">
-  <title>Nitron-Mob | O pedido já montado</title>
+  <title>Nitron-Mob | Qual tamanho para cada cliente</title>
   <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
   <style>
     body { margin:0; padding:0; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100% }
@@ -17,31 +17,25 @@
     img { border:0; outline:0; text-decoration:none; -ms-interpolation-mode:bicubic }
     a[x-apple-data-detectors] { color:inherit !important; text-decoration:none !important }
 
-    /* O painel de leitura do gestor tem ~555px: tudo que depende de duas colunas TEM de empilhar
-       sozinho. Por isso coluna fluida (inline-block + max-width), nunca largura fixa em td. */
+    /* A ESTRUTURA NAO DEPENDE DAQUI. O container nasce fluido (width:100% + max-width) e as
+       colunas sao inline-block com max-width, que quebram sozinhas. Se o editor do CRM remover
+       o bloco <style>, o e-mail continua inteiro — testado a 640, 555 e 380px. */
     @media screen and (max-width:640px) {
-      /* A ESTRUTURA NAO DEPENDE DAQUI. O container ja nasce fluido (width:100% + max-width)
-         e as colunas sao inline-block com max-width, que quebram sozinhas. Estas regras so
-         afinam o respiro — se o editor do CRM remover o <style>, o e-mail continua inteiro. */
       .pad { padding-left:18px !important; padding-right:18px !important }
       .stack { display:block !important; width:100% !important; max-width:100% !important }
-      /* A MINIATURA NAO ACOMPANHA O EMPILHAMENTO. No e-mail anterior a regra era
-         `.stack img {width:100%}`, que serve para uma foto de hero — aqui ela inflava um selo de
-         200px para a largura inteira e o e-mail passava de 3.700px de altura. */
-      .thumb { max-width:220px !important; margin:0 auto !important }
-      .thumbwrap { text-align:center !important; padding:16px 0 0 !important }
+      .thumb { max-width:210px !important; margin:0 auto !important }
+      .thumbwrap { text-align:center !important; padding:14px 0 0 !important }
       .h1 { font-size:26px !important; line-height:32px !important }
-      .big { font-size:28px !important; line-height:34px !important }
     }
   </style>
 </head>
 
 <body style="margin:0;padding:0;background-color:#eef3f3;">
 
-  <!-- Preheader: o que aparece na lista de e-mails, depois do assunto. Fica escondido no corpo. -->
+  <!-- Preheader: o que aparece na caixa de entrada logo depois do assunto. -->
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">
-    Três combinações fechadas, todas acima dos R$ 5.000 — ou seja, com os 10% já aplicados.
-    Escolha uma e a gente fecha.
+    P, M ou G, com 2, 3 ou 4 n&iacute;veis: nove prateleiras para nove espa&ccedil;os diferentes.
+    Veja qual indicar para cada cliente.
   </div>
 
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
@@ -65,245 +59,269 @@
           <tr>
             <td class="pad" style="padding:30px 24px 8px;font-family:Arial,Helvetica,sans-serif;">
               <div style="font-size:11px;letter-spacing:2px;font-weight:800;color:#0b9299;">
-                NITRON-MOB &nbsp;/&nbsp; O PEDIDO J&Aacute; MONTADO
+                NITRON-MOB &nbsp;/&nbsp; COMO ESCOLHER O TAMANHO
               </div>
               <div class="h1"
                 style="padding-top:12px;font-size:31px;line-height:38px;font-weight:800;color:#183843;">
-                Voc&ecirc; n&atilde;o precisa montar<br>o pedido do zero.
+                Nove prateleiras.<br>Cada cliente leva a sua.
               </div>
               <div style="padding-top:14px;font-size:15px;line-height:24px;color:#526b73;">
-                Voc&ecirc; j&aacute; viu a linha, viu onde ela cabe na loja e recebeu a tabela com o valor de cada
-                item. O que costuma travar daqui em diante n&atilde;o &eacute; pre&ccedil;o &mdash; &eacute; decidir
-                <strong style="color:#183843;">o que pedir</strong>.
+                A Prateleira Multiuso &eacute; o cora&ccedil;&atilde;o da Nitron-Mob: <strong
+                  style="color:#183843;">nove das treze refer&ecirc;ncias da linha</strong>. S&atilde;o tr&ecirc;s
+                tamanhos &mdash; P, M e G &mdash; e, em cada um, a op&ccedil;&atilde;o de 2, 3 ou 4 n&iacute;veis.
               </div>
               <div style="padding-top:12px;font-size:15px;line-height:24px;color:#526b73;">
-                Ent&atilde;o esta semana a gente montou. S&atilde;o tr&ecirc;s pedidos fechados, com
-                refer&ecirc;ncia, quantidade e total. Escolha o que tem a ver com a sua loja e responda com a
-                letra &mdash; o resto a gente resolve.
+                Quem decide o tamanho n&atilde;o &eacute; o cat&aacute;logo: &eacute; o espa&ccedil;o que o cliente
+                tem em casa. Esta semana, um guia r&aacute;pido para a sua equipe indicar a certa de primeira.
               </div>
             </td>
           </tr>
 
-          <!-- POR QUE AS TRES PASSAM DOS 5.000 -->
+          <!-- ============================ 01 / P ============================ -->
           <tr>
-            <td class="pad" style="padding:18px 24px 4px;font-family:Arial,Helvetica,sans-serif;">
+            <td class="pad" style="padding:26px 24px 0;font-family:Arial,Helvetica,sans-serif;">
+              <div style="font-size:11px;letter-spacing:2px;font-weight:800;color:#8ba0a6;">01 / TAMANHO P</div>
+              <div style="padding-top:5px;font-size:21px;line-height:27px;font-weight:800;color:#183843;">
+                Para o canto que sobrou
+              </div>
+              <div style="padding-top:7px;font-size:14px;line-height:22px;color:#526b73;">
+                O cliente que chega dizendo &ldquo;eu s&oacute; tenho um cantinho&rdquo;. Entre a m&aacute;quina e a
+                parede, ao lado da pia, no banheiro, num escrit&oacute;rio pequeno. &Eacute; o tamanho que cabe onde
+                nada mais cabia.
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="pad" style="padding:14px 24px 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                style="border:1px solid #e3ebeb;">
+                <tr>
+                  <td style="padding:0;">
+                    <div style="font-size:0;">
+                      <div class="stack thumbwrap" style="display:inline-block;width:100%;max-width:190px;vertical-align:top;">
+                        <img class="thumb" src="https://produto.nitron.com.br/862_004_N03-01.jpg"
+                          alt="Prateleira Multiuso P Nitron-Mob" width="190"
+                          style="display:block;width:100%;max-width:190px;height:auto;border:0;" />
+                      </div>
+                      <div class="stack"
+                        style="display:inline-block;width:100%;max-width:444px;vertical-align:top;font-family:Arial,Helvetica,sans-serif;">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                          style="font-family:Arial,Helvetica,sans-serif;">
+                          <tr>
+                            <td style="padding:14px 18px 6px;font-size:13px;line-height:19px;color:#173b44;font-weight:800;">
+                              Prateleira Multiuso P
+                              <span style="font-weight:400;color:#8ba0a6;">&nbsp;&middot;&nbsp; madeira pinus</span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding:0 18px 14px;">
+                              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                                style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;">
+                                <tr>
+                                  <td style="padding:6px 0;border-top:1px solid #eef3f3;color:#4d6169;">2 n&iacute;veis<br>
+                                    <span style="font-size:11px;color:#8ba0a6;">REF. 861.004.N03</span></td>
+                                  <td align="right" style="padding:6px 0;border-top:1px solid #eef3f3;color:#0b9299;font-weight:800;">R$&nbsp;66,09<br>
+                                    <span style="font-size:11px;font-weight:400;color:#8ba0a6;">revenda R$&nbsp;129,99</span></td>
+                                </tr>
+                                <tr>
+                                  <td style="padding:6px 0;border-top:1px solid #eef3f3;color:#4d6169;">3 n&iacute;veis<br>
+                                    <span style="font-size:11px;color:#8ba0a6;">REF. 862.004.N03</span></td>
+                                  <td align="right" style="padding:6px 0;border-top:1px solid #eef3f3;color:#0b9299;font-weight:800;">R$&nbsp;97,07<br>
+                                    <span style="font-size:11px;font-weight:400;color:#8ba0a6;">revenda R$&nbsp;189,99</span></td>
+                                </tr>
+                                <tr>
+                                  <td style="padding:6px 0;border-top:1px solid #eef3f3;color:#4d6169;">4 n&iacute;veis<br>
+                                    <span style="font-size:11px;color:#8ba0a6;">REF. 863.004.N03</span></td>
+                                  <td align="right" style="padding:6px 0;border-top:1px solid #eef3f3;color:#0b9299;font-weight:800;">R$&nbsp;125,36<br>
+                                    <span style="font-size:11px;font-weight:400;color:#8ba0a6;">revenda R$&nbsp;249,99</span></td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ============================ 02 / M ============================ -->
+          <tr>
+            <td class="pad" style="padding:26px 24px 0;font-family:Arial,Helvetica,sans-serif;">
+              <div style="font-size:11px;letter-spacing:2px;font-weight:800;color:#8ba0a6;">02 / TAMANHO M</div>
+              <div style="padding-top:5px;font-size:21px;line-height:27px;font-weight:800;color:#183843;">
+                O que serve para quase tudo
+              </div>
+              <div style="padding-top:7px;font-size:14px;line-height:22px;color:#526b73;">
+                Quando o cliente n&atilde;o sabe explicar o espa&ccedil;o, o M costuma resolver. Quarto, hall,
+                cozinha, home office. &Eacute; o mais f&aacute;cil de indicar quando o cliente n&atilde;o sabe
+                medir o espa&ccedil;o &mdash; e por isso um bom candidato a ficar montado na loja.
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="pad" style="padding:14px 24px 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                style="border:1px solid #e3ebeb;">
+                <tr>
+                  <td style="padding:0;">
+                    <div style="font-size:0;">
+                      <div class="stack thumbwrap" style="display:inline-block;width:100%;max-width:190px;vertical-align:top;">
+                        <img class="thumb" src="https://produto.nitron.com.br/859_004_N03-01.jpg"
+                          alt="Prateleira Multiuso M Nitron-Mob" width="190"
+                          style="display:block;width:100%;max-width:190px;height:auto;border:0;" />
+                      </div>
+                      <div class="stack"
+                        style="display:inline-block;width:100%;max-width:444px;vertical-align:top;font-family:Arial,Helvetica,sans-serif;">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                          style="font-family:Arial,Helvetica,sans-serif;">
+                          <tr>
+                            <td style="padding:14px 18px 6px;font-size:13px;line-height:19px;color:#173b44;font-weight:800;">
+                              Prateleira Multiuso M
+                              <span style="font-weight:400;color:#8ba0a6;">&nbsp;&middot;&nbsp; madeira pinus</span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding:0 18px 14px;">
+                              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                                style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;">
+                                <tr>
+                                  <td style="padding:6px 0;border-top:1px solid #eef3f3;color:#4d6169;">2 n&iacute;veis<br>
+                                    <span style="font-size:11px;color:#8ba0a6;">REF. 858.004.N03</span></td>
+                                  <td align="right" style="padding:6px 0;border-top:1px solid #eef3f3;color:#0b9299;font-weight:800;">R$&nbsp;70,80<br>
+                                    <span style="font-size:11px;font-weight:400;color:#8ba0a6;">revenda R$&nbsp;139,99</span></td>
+                                </tr>
+                                <tr>
+                                  <td style="padding:6px 0;border-top:1px solid #eef3f3;color:#4d6169;">3 n&iacute;veis<br>
+                                    <span style="font-size:11px;color:#8ba0a6;">REF. 859.004.N03</span></td>
+                                  <td align="right" style="padding:6px 0;border-top:1px solid #eef3f3;color:#0b9299;font-weight:800;">R$&nbsp;104,06<br>
+                                    <span style="font-size:11px;font-weight:400;color:#8ba0a6;">revenda R$&nbsp;199,99</span></td>
+                                </tr>
+                                <tr>
+                                  <td style="padding:6px 0;border-top:1px solid #eef3f3;color:#4d6169;">4 n&iacute;veis<br>
+                                    <span style="font-size:11px;color:#8ba0a6;">REF. 860.004.N03</span></td>
+                                  <td align="right" style="padding:6px 0;border-top:1px solid #eef3f3;color:#0b9299;font-weight:800;">R$&nbsp;134,50<br>
+                                    <span style="font-size:11px;font-weight:400;color:#8ba0a6;">revenda R$&nbsp;269,99</span></td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ============================ 03 / G ============================ -->
+          <tr>
+            <td class="pad" style="padding:26px 24px 0;font-family:Arial,Helvetica,sans-serif;">
+              <div style="font-size:11px;letter-spacing:2px;font-weight:800;color:#8ba0a6;">03 / TAMANHO G</div>
+              <div style="padding-top:5px;font-size:21px;line-height:27px;font-weight:800;color:#183843;">
+                Para quem precisa guardar de verdade
+              </div>
+              <div style="padding-top:7px;font-size:14px;line-height:22px;color:#526b73;">
+                &Aacute;rea de servi&ccedil;o, despensa, garagem, dep&oacute;sito da pr&oacute;pria loja. &Eacute;
+                o que o cliente procura quando a caixa de papel&atilde;o j&aacute; virou m&oacute;vel.
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="pad" style="padding:14px 24px 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                style="border:1px solid #e3ebeb;">
+                <tr>
+                  <td style="padding:0;">
+                    <div style="font-size:0;">
+                      <div class="stack thumbwrap" style="display:inline-block;width:100%;max-width:190px;vertical-align:top;">
+                        <img class="thumb" src="https://produto.nitron.com.br/856_004_N03-01.jpg"
+                          alt="Prateleira Multiuso G Nitron-Mob" width="190"
+                          style="display:block;width:100%;max-width:190px;height:auto;border:0;" />
+                      </div>
+                      <div class="stack"
+                        style="display:inline-block;width:100%;max-width:444px;vertical-align:top;font-family:Arial,Helvetica,sans-serif;">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                          style="font-family:Arial,Helvetica,sans-serif;">
+                          <tr>
+                            <td style="padding:14px 18px 6px;font-size:13px;line-height:19px;color:#173b44;font-weight:800;">
+                              Prateleira Multiuso G
+                              <span style="font-weight:400;color:#8ba0a6;">&nbsp;&middot;&nbsp; madeira pinus</span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding:0 18px 14px;">
+                              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                                style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;">
+                                <tr>
+                                  <td style="padding:6px 0;border-top:1px solid #eef3f3;color:#4d6169;">2 n&iacute;veis<br>
+                                    <span style="font-size:11px;color:#8ba0a6;">REF. 855.004.N03</span></td>
+                                  <td align="right" style="padding:6px 0;border-top:1px solid #eef3f3;color:#0b9299;font-weight:800;">R$&nbsp;79,09<br>
+                                    <span style="font-size:11px;font-weight:400;color:#8ba0a6;">revenda R$&nbsp;149,99</span></td>
+                                </tr>
+                                <tr>
+                                  <td style="padding:6px 0;border-top:1px solid #eef3f3;color:#4d6169;">3 n&iacute;veis<br>
+                                    <span style="font-size:11px;color:#8ba0a6;">REF. 856.004.N03</span></td>
+                                  <td align="right" style="padding:6px 0;border-top:1px solid #eef3f3;color:#0b9299;font-weight:800;">R$&nbsp;116,56<br>
+                                    <span style="font-size:11px;font-weight:400;color:#8ba0a6;">revenda R$&nbsp;229,99</span></td>
+                                </tr>
+                                <tr>
+                                  <td style="padding:6px 0;border-top:1px solid #eef3f3;color:#4d6169;">4 n&iacute;veis<br>
+                                    <span style="font-size:11px;color:#8ba0a6;">REF. 857.004.N03</span></td>
+                                  <td align="right" style="padding:6px 0;border-top:1px solid #eef3f3;color:#0b9299;font-weight:800;">R$&nbsp;151,64<br>
+                                    <span style="font-size:11px;font-weight:400;color:#8ba0a6;">revenda R$&nbsp;299,99</span></td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- E OS NIVEIS? -->
+          <tr>
+            <td class="pad" style="padding:26px 24px 0;font-family:Arial,Helvetica,sans-serif;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
                 bgcolor="#f2f7f6" style="background-color:#f2f7f6;">
                 <tr>
-                  <td style="padding:17px 20px;font-size:13px;line-height:21px;color:#4d6169;">
-                    <strong style="color:#173b44;">As tr&ecirc;s passam dos R$ 5.000 de prop&oacute;sito.</strong>
-                    &Eacute; a partir desse valor que os <strong style="color:#173b44;">10% entram sozinhos</strong>,
-                    e os totais abaixo j&aacute; s&atilde;o com o desconto aplicado. Abaixo de R$ 5.000 o pedido
-                    continua valendo &mdash; o m&iacute;nimo de f&aacute;brica &eacute; R$ 3.500 &mdash; s&oacute; que
-                    a&iacute; o valor por pe&ccedil;a fica 11,11% maior que o da tabela.
+                  <td style="padding:18px 20px;">
+                    <div style="font-weight:800;color:#173b44;font-size:15px;line-height:21px;">
+                      E os n&iacute;veis, como explicar?
+                    </div>
+                    <div style="padding-top:8px;font-size:13px;line-height:21px;color:#4d6169;">
+                      <strong style="color:#173b44;">2 n&iacute;veis</strong> &mdash; quando o cliente quer uma
+                      superf&iacute;cie de apoio e um lugar embaixo. Discreto, cabe sob a janela, sob a bancada.<br>
+                      <strong style="color:#173b44;">3 n&iacute;veis</strong> &mdash; o equil&iacute;brio entre
+                      guardar e n&atilde;o pesar visualmente no ambiente. Serve para quase todo c&ocirc;modo da casa.<br>
+                      <strong style="color:#173b44;">4 n&iacute;veis</strong> &mdash; para aproveitar o
+                      p&eacute;-direito. Mesma &aacute;rea no ch&atilde;o, mais coisa guardada.
+                    </div>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
 
-          <!-- ============================ COMBINACAO A ============================ -->
-          <tr>
-            <td class="pad" style="padding:24px 24px 0;font-family:Arial,Helvetica,sans-serif;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                style="border:1px solid #e3ebeb;">
-                <tr>
-                  <td bgcolor="#183843" style="background-color:#183843;padding:14px 20px;">
-                    <div style="font-size:11px;letter-spacing:2px;font-weight:800;color:#8ba0a6;">COMBINA&Ccedil;&Atilde;O A</div>
-                    <div style="padding-top:4px;font-size:21px;line-height:26px;font-weight:800;color:#ffffff;">A linha inteira</div>
-                    <div style="padding-top:3px;font-size:13px;line-height:19px;color:#b9cdd1;">
-                      Para quem quer a se&ccedil;&atilde;o completa montada de uma vez
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:0;">
-                    <!-- coluna fluida: empilha sozinha em painel estreito -->
-                    <div style="font-size:0;">
-                      <div class="stack thumbwrap" style="display:inline-block;width:100%;max-width:200px;vertical-align:top;">
-                        <img src="https://produto.nitron.com.br/850_004_N03-01.jpg" alt="Arara de Roupas Nitron-Mob"
-                          class="thumb" width="200" style="display:block;width:100%;max-width:200px;height:auto;border:0;" />
-                      </div>
-                      <div class="stack"
-                        style="display:inline-block;width:100%;max-width:436px;vertical-align:top;font-family:Arial,Helvetica,sans-serif;">
-                        <div style="padding:16px 20px;font-size:13px;line-height:21px;color:#4d6169;">
-                          <strong style="color:#173b44;">1 fardo de cada um dos 13 itens.</strong><br>
-                          Arara de Roupas &middot; Organizador Multiuso P e G &middot; Kit Suporte Decorativo (M)
-                          &middot; as nove Prateleiras Multiuso (P, M e G, de 2 a 4 n&iacute;veis).
-                          <div style="padding-top:9px;color:#60737a;">13 refer&ecirc;ncias &middot; 13 fardos &middot; 52 pe&ccedil;as</div>
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td bgcolor="#f7fafa" style="background-color:#f7fafa;padding:15px 20px;">
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#60737a;">
-                          Total do pedido<br>
-                          <span class="big" style="font-size:26px;line-height:32px;font-weight:800;color:#0b9299;">R$&nbsp;5.212,60</span>
-                        </td>
-                        <td align="right"
-                          style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#60737a;">
-                          Na vitrine, pela revenda sugerida<br>
-                          <span style="font-size:17px;line-height:24px;font-weight:800;color:#183843;">R$&nbsp;10.279,48</span>
-                        </td>
-                      </tr>
-                    </table>
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                      style="margin-top:13px;">
-                      <tr>
-                        <td bgcolor="#FFD500" align="center" style="background-color:#FFD500;">
-                          <a href="https://wa.me/5511960390203?text=Ol%C3%A1%21%20Quero%20a%20COMBINA%C3%87%C3%83O%20A%20da%20Nitron-Mob%20%28a%20linha%20inteira%29." target="_blank"
-                            style="display:block;color:#173b44;text-decoration:none;font-size:14px;font-weight:800;padding:14px 20px;font-family:Arial,Helvetica,sans-serif;">QUERO A COMBINA&Ccedil;&Atilde;O A &rarr;</a>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- ============================ COMBINACAO B ============================ -->
-          <tr>
-            <td class="pad" style="padding:16px 24px 0;font-family:Arial,Helvetica,sans-serif;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                style="border:1px solid #e3ebeb;">
-                <tr>
-                  <td bgcolor="#074d57" style="background-color:#074d57;padding:14px 20px;">
-                    <div style="font-size:11px;letter-spacing:2px;font-weight:800;color:#8ba0a6;">COMBINA&Ccedil;&Atilde;O B</div>
-                    <div style="padding-top:4px;font-size:21px;line-height:26px;font-weight:800;color:#ffffff;">S&oacute; prateleiras</div>
-                    <div style="padding-top:3px;font-size:13px;line-height:19px;color:#b9cdd1;">
-                      Para quem j&aacute; vende organiza&ccedil;&atilde;o e quer profundidade
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:0;">
-                    <div style="font-size:0;">
-                      <div class="stack thumbwrap" style="display:inline-block;width:100%;max-width:200px;vertical-align:top;">
-                        <img src="https://produto.nitron.com.br/856_004_N03-01.jpg" alt="Prateleira Multiuso Nitron-Mob"
-                          class="thumb" width="200" style="display:block;width:100%;max-width:200px;height:auto;border:0;" />
-                      </div>
-                      <div class="stack"
-                        style="display:inline-block;width:100%;max-width:436px;vertical-align:top;font-family:Arial,Helvetica,sans-serif;">
-                        <div style="padding:16px 20px;font-size:13px;line-height:21px;color:#4d6169;">
-                          <strong style="color:#173b44;">2 fardos de cada uma destas seis:</strong><br>
-                          Prateleira P &middot; 2 n&iacute;veis &nbsp;|&nbsp; P &middot; 3 n&iacute;veis<br>
-                          Prateleira M &middot; 3 n&iacute;veis &nbsp;|&nbsp; M &middot; 4 n&iacute;veis<br>
-                          Prateleira G &middot; 3 n&iacute;veis &nbsp;|&nbsp; G &middot; 4 n&iacute;veis
-                          <div style="padding-top:9px;color:#60737a;">6 refer&ecirc;ncias &middot; 12 fardos &middot; 48 pe&ccedil;as</div>
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td bgcolor="#f7fafa" style="background-color:#f7fafa;padding:15px 20px;">
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#60737a;">
-                          Total do pedido<br>
-                          <span class="big" style="font-size:26px;line-height:32px;font-weight:800;color:#0b9299;">R$&nbsp;5.359,36</span>
-                        </td>
-                        <td align="right"
-                          style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#60737a;">
-                          Na vitrine, pela revenda sugerida<br>
-                          <span style="font-size:17px;line-height:24px;font-weight:800;color:#183843;">R$&nbsp;10.559,52</span>
-                        </td>
-                      </tr>
-                    </table>
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                      style="margin-top:13px;">
-                      <tr>
-                        <td bgcolor="#FFD500" align="center" style="background-color:#FFD500;">
-                          <a href="https://wa.me/5511960390203?text=Ol%C3%A1%21%20Quero%20a%20COMBINA%C3%87%C3%83O%20B%20da%20Nitron-Mob%20%28s%C3%B3%20prateleiras%29." target="_blank"
-                            style="display:block;color:#173b44;text-decoration:none;font-size:14px;font-weight:800;padding:14px 20px;font-family:Arial,Helvetica,sans-serif;">QUERO A COMBINA&Ccedil;&Atilde;O B &rarr;</a>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- ============================ COMBINACAO C ============================ -->
-          <tr>
-            <td class="pad" style="padding:16px 24px 0;font-family:Arial,Helvetica,sans-serif;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                style="border:1px solid #e3ebeb;">
-                <tr>
-                  <td bgcolor="#0b9299" style="background-color:#0b9299;padding:14px 20px;">
-                    <div style="font-size:11px;letter-spacing:2px;font-weight:800;color:#cfe8ea;">COMBINA&Ccedil;&Atilde;O C</div>
-                    <div style="padding-top:4px;font-size:21px;line-height:26px;font-weight:800;color:#ffffff;">O b&aacute;sico, com volume</div>
-                    <div style="padding-top:3px;font-size:13px;line-height:19px;color:#dff1f2;">
-                      Poucas refer&ecirc;ncias, mais pe&ccedil;as de cada uma
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:0;">
-                    <div style="font-size:0;">
-                      <div class="stack thumbwrap" style="display:inline-block;width:100%;max-width:200px;vertical-align:top;">
-                        <img src="https://produto.nitron.com.br/852_004_N03-01.jpg" alt="Organizador Multiuso G Nitron-Mob"
-                          class="thumb" width="200" style="display:block;width:100%;max-width:200px;height:auto;border:0;" />
-                      </div>
-                      <div class="stack"
-                        style="display:inline-block;width:100%;max-width:436px;vertical-align:top;font-family:Arial,Helvetica,sans-serif;">
-                        <div style="padding:16px 20px;font-size:13px;line-height:21px;color:#4d6169;">
-                          Arara de Roupas &mdash; 3 fardos (12 pe&ccedil;as)<br>
-                          Kit Suporte Decorativo (M) &mdash; 3 fardos (12 pe&ccedil;as)<br>
-                          Organizador Multiuso P &mdash; 4 fardos (16 pe&ccedil;as)<br>
-                          Organizador Multiuso G &mdash; 3 fardos (12 pe&ccedil;as)<br>
-                          Prateleira P &middot; 3 n&iacute;veis &mdash; 2 fardos (8 pe&ccedil;as)
-                          <div style="padding-top:9px;color:#60737a;">5 refer&ecirc;ncias &middot; 15 fardos &middot; 60 pe&ccedil;as</div>
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td bgcolor="#f7fafa" style="background-color:#f7fafa;padding:15px 20px;">
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#60737a;">
-                          Total do pedido<br>
-                          <span class="big" style="font-size:26px;line-height:32px;font-weight:800;color:#0b9299;">R$&nbsp;5.251,28</span>
-                        </td>
-                        <td align="right"
-                          style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#60737a;">
-                          Na vitrine, pela revenda sugerida<br>
-                          <span style="font-size:17px;line-height:24px;font-weight:800;color:#183843;">R$&nbsp;10.399,40</span>
-                        </td>
-                      </tr>
-                    </table>
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                      style="margin-top:13px;">
-                      <tr>
-                        <td bgcolor="#FFD500" align="center" style="background-color:#FFD500;">
-                          <a href="https://wa.me/5511960390203?text=Ol%C3%A1%21%20Quero%20a%20COMBINA%C3%87%C3%83O%20C%20da%20Nitron-Mob%20%28o%20b%C3%A1sico%2C%20com%20volume%29." target="_blank"
-                            style="display:block;color:#173b44;text-decoration:none;font-size:14px;font-weight:800;padding:14px 20px;font-family:Arial,Helvetica,sans-serif;">QUERO A COMBINA&Ccedil;&Atilde;O C &rarr;</a>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- NAO E PACOTE FECHADO -->
+          <!-- DICA PARA A EQUIPE (formato que o 2o e-mail ja usou) -->
           <tr>
             <td bgcolor="#fff8dc" class="pad"
               style="background-color:#fff8dc;padding:19px 24px;margin-top:0;font-family:Arial,Helvetica,sans-serif;">
-              <div style="font-weight:800;color:#173b44;font-size:15px;line-height:21px;">Nenhuma delas &eacute; pacote fechado</div>
+              <div style="font-weight:800;color:#173b44;font-size:15px;line-height:21px;">
+                Uma dica para a sua equipe de vendas
+              </div>
               <div style="font-size:13px;line-height:21px;color:#4d6169;padding-top:5px;">
-                S&atilde;o pontos de partida. Se a sua loja vende mais um tamanho do que outro, o comercial troca os
-                itens e refaz a conta na hora &mdash; mantendo o pedido acima dos R$ 5.000 para os 10% continuarem
-                valendo. Pedir metade tamb&eacute;m d&aacute;: o m&iacute;nimo de f&aacute;brica &eacute; R$ 3.500.
+                Antes de mostrar o produto, fa&ccedil;a uma pergunta s&oacute;: <strong
+                  style="color:#173b44;">&ldquo;onde voc&ecirc; quer colocar?&rdquo;</strong> A resposta j&aacute;
+                entrega o tamanho e o n&uacute;mero de n&iacute;veis &mdash; e o cliente sai com a pe&ccedil;a certa,
+                que &eacute; o que evita troca depois.
               </div>
             </td>
           </tr>
@@ -312,16 +330,18 @@
           <tr>
             <td align="center" bgcolor="#087e88" class="pad"
               style="background-color:#087e88;padding:30px 24px 34px;font-family:Arial,Helvetica,sans-serif;">
-              <div style="font-size:27px;line-height:33px;font-weight:800;color:#ffffff;">A, B ou C?</div>
+              <div style="font-size:26px;line-height:32px;font-weight:800;color:#ffffff;">
+                Qual grade faz sentido<br>para a sua loja?
+              </div>
               <div style="padding-top:10px;color:#e5f5f5;font-size:14px;line-height:22px;">
-                Responda este e-mail com a letra, ou chame no WhatsApp. A gente confirma o prazo e a entrega da sua
-                regi&atilde;o e fecha.
+                Converse com o nosso comercial, monte a sua combina&ccedil;&atilde;o de tamanhos e confirme as
+                condi&ccedil;&otilde;es do seu pedido.
               </div>
               <table role="presentation" align="center" style="margin:22px auto 0;">
                 <tr>
                   <td bgcolor="#FFD500" align="center" style="background-color:#FFD500;">
-                    <a href="https://wa.me/5511960390203?text=Ol%C3%A1%21%20Recebi%20o%20e-mail%20das%20combina%C3%A7%C3%B5es%20da%20Nitron-Mob%20e%20quero%20falar%20sobre%20o%20meu%20pedido." target="_blank"
-                      style="display:inline-block;background:#FFD500;color:#173b44;text-decoration:none;font-size:14px;font-weight:800;padding:16px 23px;">FALAR COM O COMERCIAL &rarr;</a>
+                    <a href="https://wa.me/5511960390203?text=Ol%C3%A1%21%20Quero%20falar%20sobre%20as%20Prateleiras%20Multiuso%20da%20linha%20Nitron-Mob." target="_blank"
+                      style="display:inline-block;background:#FFD500;color:#173b44;text-decoration:none;font-size:14px;font-weight:800;padding:16px 23px;">CONVERSAR COM O COMERCIAL &rarr;</a>
                   </td>
                 </tr>
               </table>
@@ -348,8 +368,7 @@
           <tr>
             <td align="center" bgcolor="#f7f9f9"
               style="background-color:#f7f9f9;padding:20px 24px 24px;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:18px;color:#7a888d;word-break:break-word;overflow-wrap:break-word;">
-              Comunica&ccedil;&atilde;o comercial Nitron. Valores de f&aacute;brica por pe&ccedil;a, sem frete &mdash; a
-              entrega da sua regi&atilde;o entra no fechamento do pedido. Condi&ccedil;&otilde;es sujeitas &agrave;
+              Comunica&ccedil;&atilde;o comercial Nitron. Valores e condi&ccedil;&otilde;es sujeitos &agrave;
               confirma&ccedil;&atilde;o com o representante.<br />Para deixar de receber essas mensagens,
               <a href="{{email.unsubscribe_link}}" style="color:#7a888d;text-decoration:underline;">clique aqui</a>.<!--[if mso]><p style="margin:0;line-height:8px;mso-line-height-rule:exactly;font-size:8px;background:#f7f9f9;">&nbsp;</p><![endif]-->
             </td>
