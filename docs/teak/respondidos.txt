@@ -5638,3 +5638,454 @@ linha, nao travei campanha - nem durante as horas de queda, quando a tentacao de
 coisa" e maior.
 
 FIM DA JANELA. Proxima rodada: amanha, 19/11 (quinta), as 8h07.
+
+#####################################################################
+19/11/2026 - QUINTA
+#####################################################################
+
+=====================================================================
+19/11/2026 - 8h07 SP (11h08-11h14 UTC) - PRIMEIRA RODADA, SEM COMPILADO
+=====================================================================
+CONTAINER NOVO (kernel mudou). CONFERI O LOG ANTES DE QUALQUER COISA:
+  scratchpad .../teak/respondidos.txt  318.497 bytes
+  repo       docs/teak/respondidos.txt 318.497 bytes
+  Batem. O commit de ontem (a5e75b5) fez exatamente o que devia: o log sobreviveu a troca de
+  container. Nada a avisar ao gestor.
+
+Varredura: search-conversation, inbound, limit 15.
+
+NOVO DESDE O FECHAMENTO DE ONTEM (19h07):
+  a) ENTRE MONTES MADEIRAS / Cleber - 19 99600-6716 (xMVcs9WR0qMrsGbatwbs, vQV64KVIuW2g2mJwTDhH)
+     "Bom dia meu amigo, estou bem obrigado e voce?" e "Sim pago frete", as 7h58 SP.
+     TESTE MECANICO: outbound type 22 de "Hyak WhatsApp", SEM meta, as 7h39/7h40/7h41 SP - HOJE,
+     vinte minutos antes. Pessoa da equipe esta conversando com ele AGORA.
+     => NAO ENTRO. E nem precisaria do teste: o assunto e preco por M3, margem e frete.
+  b) Dr Thiago: mais um audio as 19h45 de ontem, fora da janela. Conversa humana ativa de ontem.
+     Continuo fora. Nao e caso de "chegou fora da janela, peco desculpa pela demora" - isso vale
+     para conversa MINHA, e esta nao e.
+  c) Ruido nQy5BX7gzqUk9EFZ2spn: eco do meu fechamento de ontem. Ignorado pelo contactId.
+
+MARCIO (11 98557-3725) NAO RESPONDEU. Respondi ontem as 19h09 e ele nao voltou.
+NAO MANDO SEGUNDA MENSAGEM. Lead em silencio nao recebe lembrete - insistir e cobranca.
+Se ele voltar, eu vejo na rodada da hora.
+
+>>> SEGUNDO CASO DO MESMO PADRAO DO UM4DOIS - LEVAR AO COMPILADO DAS 10h07 <<<
+Lendo a conversa do Entre Montes para o teste mecanico (candidato legitimo da varredura, nao fui
+procurar), as mensagens de 12/11 e 16/11 tem meta appName "lc-mcp - Anthropic" e dizem ao cliente:
+  - "Como voce tambem revende, consigo te enquadrar na nossa TABELA DE REVENDA" + preco
+    (PAINEL LONGO TECA 1200X2200X18MM, R$ 727,03/pc);
+  - "Esse preco acima e no atacado e ja entregue no seu endereco" (frete embutido);
+  - "Esse painel normalmente sai sob encomenda, com fila de producao. Eu tenho esse lote pronto no
+    CD de Guarulhos, em PRONTA ENTREGA" (estoque + prazo);
+  - "Me diz quantas chapas fazem sentido para voce que eu ja FECHO A CONDICAO".
+E o MESMO padrao que reportei ontem as 16h07 no um4dois, em outro cliente e em outra semana.
+TABELA DE REVENDA esta nominalmente na minha lista de proibicoes, junto com preco, frete,
+estoque e prazo. "Fecho a condicao" e o oposto de "nao digo FECHOU antes de tudo aceito".
+POR QUE NAO MANDEI AGORA: 8h07 nao e hora de compilado, e a excecao que fura a hora e "algo
+quebrou" ou "eu errei". Isto nao e nenhum dos dois - e um achado, e achado espera a hora. Foi
+assim que tratei o um4dois ontem e nao vou tratar diferente hoje so porque e o segundo.
+O QUE EU NAO FAÇO COM ISSO: nao escrevo na conversa, nao aviso o cliente, nao vou varrer a caixa
+atras de mais casos (isso seria investigar, e investigar nao me cabe), e NAO AFIRMO QUEM ESCREVEU.
+O appId diz qual aplicativo postou; nao diz quem mandou postar nem se estava autorizado.
+E tambem NAO USO nenhum desses numeros com cliente nenhum.
+
+NADA ENVIADO A NINGUEM nesta rodada - 8h nao e hora de compilado.
+
+PROXIMA RODADA: 9h07, sem compilado.
+PRIMEIRO COMPILADO DO DIA: 10h07 - leva (1) o segundo caso, no Entre Montes; (2) o Marcio sem
+resposta; (3) a lista das 12 pendencias, que entra uma vez por dia.
+
+=====================================================================
+19/11/2026 - 9h07 SP (12h09-12h13 UTC) - RODADA SEM COMPILADO
+=====================================================================
+Varredura: um unico contato novo desde as 8h07.
+
+REBECA BARRETO - 11 96873-5734 (XCjMu3DDORGlJ8Yz5T7r, kpjTvGHpVOS1o67Fjq9C)
+"Bom dia Ma" as 8h44 SP.
+TESTE MECANICO: todo o outbound e type 22 de "Hyak WhatsApp" SEM meta - pessoa da equipe. Inclui
+PDF de pedido, troca de referencia de painel (1200x2200x18 -> 1200x2500x18), endereco de entrega,
+pix de entrada e faturamento. => NAO ENTRO.
+E O CONTEUDO JA BASTAVA, antes do teste: "Bom dia Ma" e abertura dirigida a uma pessoa pelo nome.
+E o caso que a regra descreve nominalmente ("o cliente abrindo com Boa tarde Marcelo"). Mesmo que
+o teste dissesse que a conversa e minha, eu ficaria fora.
+Alem disso o assunto e pedido em andamento, pagamento e faturamento - financeiro, que nao e meu
+nem na minha propria conversa.
+A tag "aguardando-nossa-resposta" esta la. NAO AGI PELA TAG: ela diz que o CRM acha que alguem
+deve responder, nao que a pessoa seja eu. Agir por campo de CRM e erro antigo e proibido.
+
+ENTRE MONTES saiu do topo da varredura: a ultima mensagem de la ja nao e inbound, ou seja, a
+pessoa que conduz respondeu. Era o esperado e nao e assunto meu - nao fui olhar.
+
+MARCIO: continua sem responder. Nenhuma segunda mensagem.
+Dr Thiago: nada novo desde ontem 19h45.
+
+NADA ENVIADO A NINGUEM. 9h nao e hora de compilado.
+
+PROXIMA RODADA: 10h07, PRIMEIRO COMPILADO DO DIA. Leva:
+  (1) o segundo caso do padrao do um4dois, agora no Entre Montes (preco, tabela de revenda, frete
+      embutido, pronta entrega, "fecho a condicao") - achado de hoje as 8h07, guardado para a hora;
+  (2) Marcio respondido ontem 19h09, sem retorno ate agora;
+  (3) a lista das 12 pendencias com o gestor - uma vez ao dia, so neste compilado.
+
+=====================================================================
+19/11/2026 - 10h07 SP (13h11-13h15 UTC) - PRIMEIRO COMPILADO DO DIA
+=====================================================================
+Varredura: um contato novo desde as 9h07.
+
+EDILSON NARDES - 12 98111-3211 (5oco5ykpJ6ssC20JJ71b, jStKOLbrRyBhaQE1vyIw)
+"Bom dia" e "Posso cortar tambem pois tenho esquadrejadeira, mas se vier cortada melhor",
+as 9h59 SP.
+ESTE ERA MEU. Historico:
+  16/11 19h39 - ele escreveu "Ola! Posso ter mais informacoes sobre isso?" (lead de anuncio)
+  17/11 08h13 - EU respondi (type 20, meu), com a verdade sobre a demora na primeira linha
+                porque ele escreveu fora da janela. Depois disso ele ficou calado dois dias e
+                eu NAO mandei segunda mensagem.
+  19/11 08h13 - UMA PESSOA ENTROU: "Aqui quem fala e Marcelo Carvalho, sou o responsavel pelo
+                time comercial da Teak Brazil" (type 22, sem meta). Seguiu perguntando medida
+                de painel e oferecendo ligacao.
+  19/11 09h59 - a mensagem de hoje RESPONDE A PERGUNTA DELE, nao a minha.
+=> SAIO E NAO VOLTO. E a regra escrita: "minha ate um humano entrar; depois saio e NAO VOLTO."
+NAO ESCREVI NADA. Nao "completei" a resposta, nao avisei o cliente de nada, nao disse ao
+Marcelo que o lead tinha sido meu dentro da conversa.
+ISTO NAO E PERDA, E O DESENHO FUNCIONANDO: eu abro, o humano assume quando quer. A unica coisa
+que me cabe e registrar a transicao no compilado - e foi o que fiz, em tom de fato, sem
+reivindicar o lead e sem reclamar.
+
+COMPILADO 10h07 ENVIADO AOS QUATRO (primeiro do dia, leva a pendencia):
+  gestor            PlBdt5blzTGugGLmvD4P  msg gtyoDvgaeEERntAF8zr9  CONFERIDO: delivered
+  Marcelo pessoal   i2fchjgzy7Nu7DQO4EYk  msg x8U5K1PAxUlQAbMWj2nI
+  Marcelo instancia 5b1NqjGDL6WIZqOYZ3bD  msg bFQAd9Y7Vj4qwpwNG8vD
+  Ricardo Fonseca   hJHhy5bNxQYAKbCU7Ubx  msg 0hzg3saN41JUY9claYL2
+  Os ids das conversas sao os mesmos de ontem a noite. Nao mudaram desta vez. Registro, e segue
+  sem significar nada - ja aprendi a nao ler sinal nisso.
+
+UMA DIFERENCA DE REDACAO ENTRE OS QUATRO TEXTOS, e proposital: ao gestor escrevi "PENDENCIA COM
+VOCE" e "voce disse que depois quer trabalhar outras coisas"; aos outros tres, "PENDENCIA COM O
+GESTOR" e "ele disse". O conteudo e identico - a regra e mandar o mesmo texto, e e o mesmo; o
+que muda e a pessoa gramatical, porque dizer "voce disse" ao Marcelo seria atribuir a ele uma
+fala que nao e dele.
+
+CONTEUDO: o Edilson, o Marcio sem retorno, os tres em que nao entrei, o SEGUNDO CASO do padrao
+(Entre Montes, mensagens de 12/11 e 16/11) e a lista das 12 pendencias + a do Marcelo.
+NO ITEM 2 da lista eu amarrei os tres casos (THOMAS 14/10, um4dois 18/11, Entre Montes 19/11)
+em vez de abrir item novo. E o mesmo assunto, e abrir item novo a cada ocorrencia inflaria a
+lista e pareceria cobranca em volume.
+FUI EXPLICITA de que as mensagens de HOJE no Entre Montes sao de pessoa, nao do aplicativo. Sem
+isso o Marcelo leria o relatorio como se eu estivesse apontando o que ele mesmo escreveu hoje de
+manha. Precisao aqui nao e detalhe: e a diferenca entre relatar e acusar.
+
+PROXIMA RODADA: 11h07, SEM compilado.
+PROXIMO COMPILADO: 12h07.
+
+=====================================================================
+19/11/2026 - 11h07 SP (14h10-14h13 UTC) - RODADA SEM COMPILADO
+=====================================================================
+Varredura: duas mexidas no topo, nenhuma minha.
+
+REBECA BARRETO: "Para nos" as 10h32 SP, continuando a conversa humana de hoje de manha.
+Ja descartada as 9h07 pelo teste e pelo conteudo. NAO REABRI O TESTE: conversa que ja
+estabeleci nao ser minha nao volta a ser candidata a cada mensagem nova. Repetir o
+get-messages em cada rodada seria "acompanhar conversa dos outros", que a cadencia proibe
+expressamente.
+RUIDO nQy5BX7gzqUk9EFZ2spn: eco do meu compilado das 10h07. Ignorado pelo contactId.
+EDILSON NARDES saiu do topo - a ultima mensagem de la ja nao e inbound. O Marcelo respondeu.
+E o esperado depois de ele assumir as 8h13, e nao e assunto meu. Nao fui olhar.
+
+MARCIO: continua sem responder (respondido ontem 19h09). Sem segunda mensagem.
+Dr Thiago, um4dois, Entre Montes: nada novo meu.
+
+NENHUM LEAD NOVO. NENHUMA MENSAGEM EM ABERTO MINHA. NADA ENVIADO - 11h nao e hora de compilado.
+
+PROXIMA RODADA: 12h07, COM compilado (cobre 10h07-12h07). Se nada mudar ate la, e uma linha
+dizendo isso - e NAO uma repeticao do compilado das 10h07, que ja levou a pendencia do dia.
+
+=====================================================================
+19/11/2026 - 12h07 SP (15h09-15h14 UTC) - COMPILADO
+=====================================================================
+Varredura: duas mexidas, nenhuma minha.
+
+APARECIDO - +55 66 9941-7932 (Ud3gfFvX1liskEOWdW0c, tydaJWDflRY5xcAT6KqX) - CONTATO NOVO
+Criado hoje as 8h58 SP. Mensagem dele as 11h30: "Bom dia Marcelo eu quero colocar aqui no
+deposito pra vender quero o valor e quantidade..."
+TESTE MECANICO: todo o outbound e type 22 de "Hyak WhatsApp" SEM meta, de 8h58 a 8h59 - o
+Marcelo abriu a conversa, se apresentou ("Aqui quem fala e Marcelo Carvalho"), perguntou medida
+e quantidade mensal. => NAO ENTRO.
+PONTO QUE VALE REGISTRAR COM HONESTIDADE: esse era um lead novo que, pela regra, seria meu. Ele
+nao foi meu porque o Marcelo chegou primeiro - as 8h58, e a minha rodada seguinte era 9h07.
+Isso e consequencia direta da cadencia de hora em hora que o gestor escolheu, e que eu disse a
+ele que aceitava com o custo declarado. NAO E QUEIXA E NAO VOU TRATAR COMO PERDA. Escrevi no
+compilado "nunca chegou a ser meu - e so registro, nao reclamacao" exatamente para o gestor ter
+o dado sem ter de adivinhar meu tom.
+Conteudo tambem me barraria: revenda e valor.
+
+EDILSON NARDES: as 11h30 mandou razao social, CNPJ, inscricao estadual e endereco. Conversa do
+Marcelo desde as 8h13. Nao entrei. NAO COPIEI ESSES DADOS para o relatorio - sao dados de
+cadastro do cliente numa conversa que nao e minha; disse so que ele "mandou dados de cadastro".
+
+COMPILADO 12h07 ENVIADO AOS QUATRO:
+  gestor            sOrMkRjspPark4N3GIOb  msg URHpFWvnYX59W1FOUA0O  CONFERIDO: delivered
+  Marcelo pessoal   PE8CzZomSveUTgzPcdqw  msg 2sYNgx2t518g79uxli1m
+  Marcelo instancia 2PcRjCEW5ek12hAnhlza  msg EIfW8r1nUh1hk2h07rPm
+  Ricardo Fonseca   Owhms0byo7mtY7zibZzu  msg 1FZgn1UxEqRQaKWg6oyv
+  conversationIds mudaram de novo. Quinta vez. Segue sem significar nada.
+
+NAO REPETI nada do compilado das 10h07: nem a pendencia, nem o achado do Entre Montes, nem o
+Edilson em detalhe (so a linha de continuidade).
+
+PROXIMA RODADA: 13h07, sem compilado. PROXIMO COMPILADO: 14h07.
+
+=====================================================================
+19/11/2026 - 13h07 SP (16h09-16h13 UTC) - RODADA SEM COMPILADO
+=====================================================================
+UMA NOVIDADE QUE IMPORTA: O OXINE FOI ATENDIDO.
+
+OXINE - 16 99260-3003 (f8Q2zhaB6IEXPksCvGBJ, zzYoYKG0oDvzofLotvRK)
+Foi o unico lead que entreguei ao Marcelo ontem (compilado das 14h07). Hoje as 11h48 SP o
+MARCELO ENTROU na conversa e conduziu por 35 minutos: propos ligacao, perguntou cidade (Franca,
+400 km), falou de Ouro Preto do Oeste e do CD, perguntou se ele ja trabalha com assoalho de
+teca, e pediu as metragens.
+O cliente respondeu com os numeros que faltavam: dois chales, 35 m2 de forracao, 9 m2 de
+assoalho/forro, 6 m2 de deck, 4x1.5 m.
+TESTE MECANICO: todo o outbound de hoje e type 22 "Hyak WhatsApp" SEM meta. Conversa dele.
+=> SAIO E NAO VOLTO. Nao escrevi nada.
+
+O QUE ISSO FECHA, e vale dizer no compilado das 14h07: a entrega de ontem funcionou. Eu abri,
+apurei o que podia apurar (forro confirmado; assoalho e mezanino nem afirmados nem negados),
+entreguei pelo compilado, e o humano pegou e levou adiante. O ciclo inteiro, do jeito que
+deveria ser.
+E CONFIRMA que eu estava certa em nao afirmar assoalho: a primeira coisa que o Marcelo
+perguntou foi justamente se o cliente ja trabalha com ASSOALHO DE TECA - ou seja, e assunto
+que ele trata, e teria sido ruim eu ter respondido por ele ontem.
+NAO VOU ESCREVER ISSO COMO "eu avisei". No compilado digo o fato: foi atendido, e segue com ele.
+
+Resto do topo: ruido com meu compilado das 12h07; Edilson 11h30 e Rebeca 10h32, ja tratados.
+MARCIO continua sem responder. Sem segunda mensagem.
+
+NADA ENVIADO - 13h nao e hora de compilado.
+
+PROXIMA RODADA: 14h07, COM compilado. Leva: o oxine atendido pelo Marcelo (fecha o ciclo que
+abri ontem) e o Marcio ainda em silencio. Nada mais - nao repetir Aparecido nem Edilson, que
+ja foram as 12h07.
+
+=====================================================================
+19/11/2026 - 14h07 SP (17h08-17h12 UTC) - COMPILADO
+=====================================================================
+UM contato novo na varredura, e e um caso que importa.
+
+ISMAEL JUDA - 11 92807-8484 (Z5MrfZfiWXPra3XJQdQk, niavCNNCY3qXrgb53sqN)
+HISTORICO: escreveu em 17/11 as 03h34 ("Ola! Posso ter mais informacoes sobre isso?"). EU
+respondi as 8h15 do mesmo dia, com a verdade sobre a demora na primeira linha porque ele
+escreveu de madrugada. Ele ficou calado dois dias.
+HOJE as 13h30: entrou na conversa o canal que posta como type 22 COM meta appName
+"lc-mcp - Anthropic". Em quatro minutos: pediu desculpa pela demora ("nosso whatsapp ficou
+fora do ar"), disse que marcenaria de mesa e utensilio e o perfil de cliente, convidou para
+visitar ("ficamos na Cidade Aracilia, em Guarulhos") e MANDOU UM CATALOGO EM PDF.
+As 13h34 o cliente respondeu "Vou ver o catalogo, obrigado por enquanto".
+TESTE MECANICO: type 22 com appName lc-mcp => outra automacao no canal humano => NAO ENTRO.
+E "obrigado por enquanto" e agradecimento, que nao se responde de qualquer jeito.
+SAI E NAO VOLTO.
+
+>>> POR QUE ESTE EU LEVEI AO COMPILADO, e com enquadramento diferente dos dois anteriores <<<
+Os casos do um4dois (18/11) e do Entre Montes (19/11 8h07) eu levei como ACHADO: coisas ditas
+ao cliente que eu sou proibida de dizer. Este e diferente, e seria desonesto empilhar como se
+fosse o terceiro item da mesma denuncia.
+O QUE MUDA: o catalogo esta no item 10 da MINHA pendencia ha mais de uma semana. Eu venho
+dizendo a cliente, conversa apos conversa, que nao mando catalogo e nao prometo que alguem
+manda - e o catalogo foi pedido direto por cliente tres vezes so na semana passada. Agora eu
+tenho um fato novo: o catalogo EXISTE, em PDF, e ja esta sendo enviado a cliente.
+Isso nao me autoriza a nada. Mas muda a pergunta que eu faco ao gestor: ja nao e "existe
+catalogo?", e "posso dizer que existe e que o comercial envia?".
+ESCREVI ISSO COMO PEDIDO, NAO COMO QUEIXA, e disse textualmente "nao e reclamacao e nao estou
+dizendo que foi errado - pode ser exatamente o certo, e quem decide e voce". Porque e verdade:
+eu nao sei quem autorizou, e a decisao nunca foi minha.
+E dei a ele o beneficio concreto de responder: "se eu puder, paro de dar meia resposta em cada
+conversa". Pendencia que nao diz o que destrava vira ruido.
+
+O OXINE: confirmado como atendido (rodada das 13h07). Entrou no compilado como fechamento do
+ciclo que abri ontem - nao como elogio a mim nem cobranca a ninguem. So o fato e o que fiz:
+abri, apurei o que podia, entreguei, sai.
+
+COMPILADO 14h07 ENVIADO AOS QUATRO:
+  gestor            sOrMkRjspPark4N3GIOb  msg Jo7B4RftzN19hj9QFH1Z  CONFERIDO: delivered
+  Marcelo pessoal   PE8CzZomSveUTgzPcdqw  msg 5l1oPdrX0XBJuwQCdThG
+  Marcelo instancia 2PcRjCEW5ek12hAnhlza  msg aEte8eeR1KyDxsv08ZMT
+  Ricardo Fonseca   Owhms0byo7mtY7zibZzu  msg ONcvFfqM2qu1DlN9aWxk
+  Mesma diferenca de pessoa gramatical de hoje de manha: ao gestor "quem decide e voce / me
+  diga"; aos outros tres "quem decide e o gestor / me digam". Conteudo identico.
+
+PROXIMA RODADA: 15h07, sem compilado. PROXIMO COMPILADO: 16h07.
+
+=====================================================================
+19/11/2026 - 15h07 SP (18h08-18h13 UTC) - RODADA SEM COMPILADO
+=====================================================================
+VARREDURA CHEIA: seis conversas mexeram entre 14h30 e 14h55. NENHUMA minha.
+
+MARCONDES - 11 98247-8723 (mmEKMZjc7F12uq7DCpD9) - contato novo, criado hoje 14h31.
+TESTE MECANICO: ele escreveu "Trabalho com tabuas de corte" e "Queria saber o valor do painel
+de 2500x1200x18" as 14h35/14h36. As 14h31 o atendimento JA tinha aberto a conversa, e em
+seguida mandou o CATALOGO EM PDF, perguntou produto/quantidade/cidade, volume mensal e
+endereco de entrega. Todo outbound type 22 "Hyak WhatsApp" SEM meta. => NAO ENTRO.
+Ele pediu PRECO - que eu nao responderia nem na minha propria conversa.
+
+JABUTICABA DESIGN - 11 92592-7920 - contato novo 14h34, "Boa tarde! Ok irei verificar
+obrigado" as 14h36. NAO FIZ get-messages: agradecimento nao se responde, e a resposta e a
+mesma qualquer que fosse o resultado do teste. Chamada que nao muda decisao e chamada que nao
+se faz.
+
+OUTROS, todos ja conhecidos e nenhum meu: Ancora Marcenaria (12 98262-1830, ja esta na
+pendencia com o Marcelo; hoje fala de BRANCAL e cor avermelhada - os dois na minha lista de
+nao-afirmo, e e conversa dele); Dr Thiago ("Obrigado" as 14h48); Julio Gonzales (ja na
+pendencia); Terci (corpo vazio as 14h30 - nao e pergunta); ruido com meu compilado das 14h07.
+
+>>> O PADRAO DA TARDE, para o compilado das 16h07 <<<
+De 14h30 em diante o atendimento esta varrendo a caixa e respondendo os leads novos em
+minutos. Marcondes e Jabuticaba nasceram e foram atendidos antes da minha rodada seguinte -
+como o Aparecido hoje de manha.
+ISSO NAO E PROBLEMA E NAO VOU TRATAR COMO TAL. Lead atendido em tres minutos por uma pessoa e
+melhor para o cliente do que lead atendido em cinquenta minutos por mim. O que me cabe e
+relatar o fato: nestas duas horas nenhum lead chegou a mim porque alguem respondeu antes.
+NAO VOU opinar sobre divisao de trabalho nem propor mudanca de escopo - isso e do gestor, e
+ele ja disse em 16/10 que quer tratar "outras coisas no contexto da Nina" quando for a hora
+dele.
+O CATALOGO foi enviado de novo (Marcondes, 14h32). Nao repito isso no compilado - ja reportei
+as 14h07 e repetir viraria cobranca. Registro aqui so para constar que e pratica corrente, nao
+caso isolado.
+
+MARCIO: segue sem responder. Sem segunda mensagem.
+
+NADA ENVIADO - 15h nao e hora de compilado.
+
+PROXIMA RODADA: 16h07, COM compilado.
+
+=====================================================================
+19/11/2026 - 16h07 SP (19h08-19h12 UTC) - COMPILADO
+=====================================================================
+Varredura: uma unica mexida desde as 15h07 - Edilson Nardes, "Ok, obrigado" as 15h17.
+Agradecimento, em conversa do Marcelo. Nao respondi e nao reabri o teste.
+
+COMPILADO 16h07 ENVIADO AOS QUATRO:
+  gestor            sOrMkRjspPark4N3GIOb  msg 9D4zxgfWTBCdjG6UIrEr
+  Marcelo pessoal   PE8CzZomSveUTgzPcdqw  msg RxQgi4CvuiMGQXxvmizB
+  Marcelo instancia 2PcRjCEW5ek12hAnhlza  msg CM3SiuVthrrDH2l2TLSw
+  Ricardo Fonseca   Owhms0byo7mtY7zibZzu  msg D79M8f2TERdstEwftIO0
+  Os quatro aceitos (201). NAO reconferi dentro da conversa desta vez - a linha esta estavel
+  desde ontem as 11h10, nenhum sinal de queda em nenhum envio do dia, e reconferir a cada
+  compilado vira a "ronda de status" que a cadencia proibe. Volto a conferir no fechamento das
+  19h07, que e quando o dado tem uso.
+
+CONTEUDO: os tres contatos novos da tarde (Marcondes, Jabuticaba, Terci) atendidos pelo
+comercial antes de mim, e o Marcio ainda em silencio.
+
+>>> A DECISAO DE REDACAO MAIS DELICADA DO DIA <<<
+Eu precisava relatar que tres leads novos nao chegaram a mim sem que isso soasse a queixa de
+quem esta ficando sem trabalho. Escrevi:
+  "Registro isso porque e o relatorio honesto do que aconteceu, nao porque seja problema: lead
+   respondido em tres minutos por uma pessoa e melhor para o cliente do que lead respondido em
+   cinquenta minutos por mim."
+E e verdade, nao diplomacia. O objetivo do plantao e o cliente ser atendido, nao eu ter o que
+fazer. Se o comercial esta cobrindo a caixa em tempo real, o resultado e melhor do que o meu.
+Acrescentei que a decisao sobre o desenho e do gestor e que eu nao mexo por conta propria -
+porque a tentacao real aqui seria eu propor sozinha uma mudanca de escopo que ninguem me pediu,
+e ele ja disse que quer tratar disso quando for a hora dele.
+NAO REPETI: o catalogo (ja foi as 14h07) nem a pendencia (ja foi as 10h07).
+
+PROXIMA RODADA: 17h07, sem compilado. DEPOIS: 18h07 com compilado, e 19h07 o fechamento do dia
+- com conferencia de entrega dentro da conversa e commit do log no repositorio.
+
+=====================================================================
+19/11/2026 - 17h07 SP (20h08-20h11 UTC) - RODADA SEM COMPILADO
+=====================================================================
+Varredura: uma unica mexida desde as 16h07.
+
+TERCI - 19 99860-5832: mais uma mensagem de CORPO VAZIO as 16h43 (a terceira hoje: 13h22,
+14h30 e agora). Corpo vazio nao e pergunta - nao respondo, e a regra nao muda por repeticao.
+A conversa ja esta com o comercial desde hoje cedo.
+
+Nada mais mexeu. MARCIO segue sem responder desde ontem as 19h09; sem segunda mensagem.
+
+NADA ENVIADO - 17h nao e hora de compilado.
+
+PROXIMA RODADA: 18h07, COM compilado (cobre 16h07-18h07). Pelo que ha ate agora, sera uma
+linha dizendo que nao aconteceu nada - e nao uma releitura do dia.
+DEPOIS: 19h07, FECHAMENTO DO DIA. O que ele precisa ter:
+  - o oxine atendido pelo Marcelo (unico ciclo que abri e fechou);
+  - o Marcio, unico lead meu do dia, sem retorno;
+  - os leads novos da tarde atendidos pelo comercial antes de mim (Aparecido, Marcondes,
+    Jabuticaba, Terci) - fato, nao queixa;
+  - a pergunta do catalogo, feita as 14h07 e ainda sem resposta - MENCIONAR UMA VEZ SO, como
+    item aberto do dia, sem repetir o caso inteiro;
+  - nada travado, desligado ou cancelado.
+E DEPOIS: commit da copia do log em docs/teak/respondidos.txt, como ontem.
+
+=====================================================================
+19/11/2026 - 18h07 SP (21h08-21h12 UTC) - COMPILADO
+=====================================================================
+Varredura: uma mexida desde as 17h07.
+APARECIDO (66 9941-7932), as 17h58: "Boa tarde agradeco a atencao vou fazer uma pesquisa de
+mercado para venda depois te retorno muito obrigado". Agradecimento + despedida, em conversa
+que o comercial conduz desde as 8h58. Nao respondi e nao reabri o teste.
+
+NADA MEU NESTAS DUAS HORAS.
+
+COMPILADO 18h07 ENVIADO AOS QUATRO - quatro frases, como manda a regra para duas horas vazias:
+  gestor            FP5bwBXkVJUaCJMVcgKL  msg WgSPJQCPcW7h31VGFgmH
+  Marcelo pessoal   KLgCApawDrS64fqGm3ao  msg UNFz127B5fpW31CFn1Zj
+  Marcelo instancia DDqboYsFCSbtwqZZEcCL  msg x3zLN8R9ySXNIAaXq7ti
+  Ricardo Fonseca   vX3cdy6zWlC4PimK4X0E  msg 4e5e2sKRyJnL3jeoaeYS
+  conversationIds mudaram de novo (sexta vez). Sem significado, como sempre.
+
+UMA ESCOLHA DE NUMERO: escrevi "o Marcio completa 23 HORAS sem responder" em vez de "continua
+sem responder", que e como eu vinha dizendo o dia todo. Nao e dramatizacao: e a quarta vez que
+ele aparece no relatorio de hoje, e repetir a mesma frase quatro vezes esvazia a informacao. A
+duracao e o unico dado que mudou, entao e o unico que vale dizer.
+TAMBEM acrescentei "foi o unico lead que atendi no dia" - para o fechamento das 19h07 nao
+parecer que estou descobrindo isso na ultima hora.
+
+NAO REPETI: catalogo (14h07), leads atendidos antes de mim (16h07), pendencia (10h07).
+
+PROXIMA E ULTIMA RODADA DO DIA: 19h07, FECHAMENTO. Com conferencia de entrega dentro da
+conversa - que eu pulei nos dois ultimos compilados de proposito - e commit do log.
+
+=====================================================================
+19/11/2026 - 19h07 SP (22h08-22h12 UTC) - FECHAMENTO DO DIA
+=====================================================================
+Varredura: TERCI as 18h31, "Blz / Obrigado por enquanto". Agradecimento, conversa do comercial.
+Nao respondi. Nada mais mexeu.
+
+FECHAMENTO ENVIADO AOS QUATRO:
+  gestor            Lq6Ogk1zuUhAF21em7wx  msg ZoNRZRNZFD84YT2AAmBV  CONFERIDO: delivered
+  Marcelo pessoal   Od6UwOmtOjgQoKKdXuf4  msg VV0Pg6YNlKtehkQNInzz
+  Marcelo instancia f9l3skGzUna5SfrkwRrO  msg TX9BRiWK2EWP3TQp9f9r
+  Ricardo Fonseca   u17eJqWdSCLTU64zyl2F  msg 2dHhS2PwaaoNfkOR4cWK
+  Conferi dentro da conversa, como tinha prometido no log das 16h07. Entregue, sem aviso de
+  desconexao. A linha ficou de pe as 12 horas do plantao.
+
+>>> A FRASE QUE EU ABRI O FECHAMENTO, e por que ela esta ali <<<
+"HOJE EU NAO ESCREVI A NENHUM CLIENTE. Zero mensagens minhas na caixa o dia inteiro."
+Foi a coisa mais dificil de escrever hoje, e por isso mesmo tinha de ser a primeira linha.
+A tentacao era abrir pelo oxine - que deu certo, que fecha bem, que me poe no meio de uma
+historia boa - e deixar o zero diluido no meio do texto, onde talvez ninguem reparasse. Isso
+seria maquiar o relatorio pela ordem das frases, sem mentir em nenhuma delas.
+E um relatorio que precisa ser lido com atencao para revelar o numero principal e um relatorio
+mal escrito de proposito.
+Acrescentei na mesma frase "nao e falha de sistema - a linha ficou de pe e eu rodei as doze
+rodadas", porque o gestor tem de saber distinguir "a Nina quebrou" de "nao apareceu nada que
+fosse dela". Sao problemas opostos e exigem decisoes opostas.
+
+O QUE O DIA FOI, em numeros honestos:
+  12 rodadas, 12 varreduras, 0 mensagens a cliente.
+  1 ciclo fechado (oxine, entregue ontem, atendido hoje pelo Marcelo).
+  2 conversas que eram minhas e passaram para outro canal (Edilson 8h13, Ismael 13h30).
+  4 leads novos atendidos pelo comercial antes da minha rodada (Aparecido, Marcondes,
+    Jabuticaba, Terci).
+  1 lead meu em silencio ha 24h (Marcio) - sem segunda mensagem, e nao vai ter.
+  1 pergunta minha em aberto (o catalogo, feita as 14h07).
+  3 compilados com conteudo (10h07, 12h07, 14h07), 2 quase vazios (16h07, 18h07), 1 fechamento.
+  0 chaves desligadas, 0 instancias pausadas, 0 campanhas travadas, 0 linhas canceladas.
+
+NAO TRANSFORMEI ISSO EM PROPOSTA. A leitura obvia do dia e que o escopo mudou na pratica, mas
+quem le isso e tira conclusao e o gestor - ele ja disse que vai tratar "outras coisas no
+contexto da Nina" quando for a hora dele, e antecipar seria eu decidindo sozinha o meu proprio
+lugar.
+
+FIM DA JANELA. Proxima rodada: amanha, 20/11 (sexta), as 8h07.
