@@ -714,10 +714,23 @@ sem cron** (`nitronmob4_ativo='nao'`).
 
 ### O texto do 4o: `app/nitronmob-email4.html`
 
-Ordem do gestor em 19/11: *"e apenas uma sequencia, mas nao ultimo"* — entao **nada de "fechando a
-serie"**. O 3o ja tinha anunciado "Tres e-mails, uma decisao", e o 4o **assume isso na primeira
-linha** ("Eu disse que eram tres e-mails. Ficou faltando a parte pratica") em vez de fingir que nao
-disse.
+**A CADENCIA E SEMANAL, E O E-MAIL NAO CONTA E-MAIL.** Ordem do gestor em 19/11, em dois passos:
+primeiro *"e apenas uma sequencia, mas nao ultimo"*, depois *"nao precisa citar a quantidade de
+emails, pois vao ser bem mais, possivelmente ate o final do ano (...) pensando que e uma
+comunicacao semanal"*.
+
+Isso mata duas tentacoes de uma vez. **Nada de "fechando a serie"** — e **nada de numerar**, nem
+para brincar com o numero anterior. Meu primeiro rascunho abria com "Eu disse que eram tres
+e-mails. Ficou faltando a parte pratica": era elegante e seria uma divida, porque o 4o vira 10o ate
+dezembro. Numero de e-mail envelhece; a cadencia, nao.
+
+**Como fica:** o titulo vende o beneficio ("Voce nao precisa montar o pedido do zero"), o corpo
+ancora no tempo e nao na contagem ("entao ESTA SEMANA a gente montou"), e o fecho sustenta o
+habito sem prometer pauta: *"Toda semana a gente manda uma coisa pratica da linha. Semana que vem
+tem mais."* Conteudo prometido e divida; quem define a pauta e o gestor.
+
+O recap dos e-mails anteriores continua — "voce ja viu a linha, viu onde ela cabe na loja e recebeu
+a tabela" —, e isso **nao** e contar: e dizer o que ele ja sabe, que e o que da continuidade.
 
 **O angulo e o PEDIDO JA MONTADO:** tres combinacoes fechadas, com referencia, quantidade e total.
 Todas as tres passam dos R$ 5.000 **de proposito** — e ai que os 10% entram sozinhos, e assim o
