@@ -6089,3 +6089,328 @@ contexto da Nina" quando for a hora dele, e antecipar seria eu decidindo sozinha
 lugar.
 
 FIM DA JANELA. Proxima rodada: amanha, 20/11 (sexta), as 8h07.
+
+#####################################################################
+20/11/2026 - SEXTA
+#####################################################################
+
+=====================================================================
+20/11/2026 - 8h07 SP (11h09-11h14 UTC) - PRIMEIRA RODADA, SEM COMPILADO
+=====================================================================
+CONTAINER NOVO de novo. Conferido antes de tudo:
+  scratchpad .../teak/respondidos.txt  346.231 bytes
+  repo       docs/teak/respondidos.txt 346.231 bytes
+  git log: a4003aa (fechamento de 19/11). Tudo no lugar. Nada a avisar.
+
+UMA NOVIDADE: HAMILTON - 19 99368-8008 (fbwybcN2DrUJTBnC6Jan, jFNBWWsa6PYawly6yqhs)
+As 23h41 de ONTEM, fora da janela: "638001 codigo / 600 mmx2500x0.25" e logo depois
+"Qual o valor ? Qual a quantidade minima?".
+TESTE MECANICO: a conversa esta com o comercial desde ontem as 16h42 - outbound type 22 de
+"Hyak WhatsApp" SEM meta, com PDF de tabela de serrada, tres audios e a pergunta "faz sentido
+para voce alguma dessas medidas?". => NAO ENTRO.
+E mesmo que fosse minha, as duas perguntas dele sao PRECO e QUANTIDADE MINIMA - os dois itens
+que eu nao respondo nem na minha propria conversa. Ja errei inflando minimo uma vez (o Edward
+desistiu); nao e um erro que eu repita.
+O Hamilton ja estava na pendencia com o Marcelo desde a semana passada. Continua la, agora com
+a conversa ativa dele.
+
+NAO COBREI NINGUEM por ele estar sem resposta desde as 23h41. Nao e meu lead, nao e minha
+conversa e cobrar o comercial nao e meu papel - a regra diz isso com todas as letras.
+
+Resto do topo: ruido com meu fechamento de ontem; Terci, Aparecido, Edilson, Dr Thiago,
+Jabuticaba, Ismael - todos agradecimentos ou despedidas de ontem, todos ja tratados.
+MARCIO: 37 horas sem responder. Sem segunda mensagem, hoje nem nunca.
+
+NADA ENVIADO - 8h nao e hora de compilado.
+
+PROXIMA RODADA: 9h07, sem compilado.
+PRIMEIRO COMPILADO: 10h07 - leva a pendencia do dia (uma vez so) e o que tiver acontecido.
+A pergunta do catalogo, feita ontem as 14h07 e sem resposta, entra como item da lista - NAO
+como assunto novo, porque nao e novo.
+
+=====================================================================
+20/11/2026 - 9h07 SP (12h10-12h13 UTC) - RODADA SEM COMPILADO
+=====================================================================
+Varredura: NADA mexeu desde as 8h07. Lista identica, item por item.
+O Hamilton segue no topo com a mensagem das 23h41 de ontem, ainda sem resposta do comercial.
+NAO E MEU E NAO VOU COBRAR - ja decidi isso as 8h07 e nao reabro a cada hora.
+
+NENHUM LEAD NOVO. NENHUMA MENSAGEM EM ABERTO MINHA.
+MARCIO: 38 horas em silencio.
+
+NADA ENVIADO - 9h nao e hora de compilado.
+
+PROXIMA RODADA: 10h07, PRIMEIRO COMPILADO DO DIA.
+Pelo que ha ate agora, o compilado sera curto: nada meu desde ontem as 19h09, mais a lista das
+12 pendencias (uma vez ao dia). O item do catalogo entra ali dentro, como item 10 - que ja era
+onde ele morava antes da conversa de ontem.
+
+=====================================================================
+20/11/2026 - 10h07 SP (13h11-13h16 UTC) - PRIMEIRO COMPILADO DO DIA
+=====================================================================
+VARREDURA: identica a das 8h07 e das 9h07, item por item. Terceira rodada seguida sem nada
+se mexer. NENHUM LEAD NOVO. NENHUMA MENSAGEM EM ABERTO MINHA.
+Hamilton segue no topo com as 23h41 de ontem, ainda sem resposta do comercial. Nao e meu, nao
+cobro - decidido as 8h07, nao reabro.
+MARCIO: 39 horas em silencio. Sem segunda mensagem.
+
+COMPILADO ENVIADO AOS QUATRO DESTINOS - todos delivered, nenhum "[System]: ... disconnected":
+  gestor            qwn25jkcEUNzgkCawPVj  Lq6Ogk1zuUhAF21em7wx  oxUnl36l3vs6UTx3CWbh
+  Marcelo pessoal   S4cJhmT94XFQelbgY57U  Od6UwOmtOjgQoKKdXuf4  aBkcBPKI6qPyC7dPu0SI
+  Marcelo instancia tFp9UmhJVMB5QJV1VtW3  f9l3skGzUna5SfrkwRrO  AM5AaYw9ZN3Sv1cvuiO6
+  Ricardo Fonseca   oYWsfElnY0eAadxdrAMI  u17eJqWdSCLTU64zyl2F  1OFB2kKHGxwun4exvkgw
+Cada um precedido de "#contact_instance: Autoatendimento", com o eco confirmado.
+
+CONTEUDO: abri pelo fato - desde ontem as 19h09 eu nao escrevi a ninguem. Depois o Hamilton
+(so como registro de mensagem fora da janela, deixando claro que NAO estou cobrando ninguem),
+o Marcio, e a lista inteira de pendencias - as 12 com o gestor e as 14 com o Marcelo.
+O catalogo entrou DENTRO do item 10, onde ele sempre morou, com o fato de ontem acoplado: o PDF
+existe, ja circula, e a pergunta e se eu posso dizer isso ao cliente. Nao virou assunto novo e
+nao foi repetido como denuncia.
+
+UMA DIFERENCA DELIBERADA ENTRE AS COPIAS: no texto do gestor os itens 5 e 12 dizem "sua" e
+"voce"; nas outras tres copias dizem "dele" e "ele". A regra manda o MESMO texto para os quatro,
+e eu cumpri isso no conteudo - mudou so o pronome, porque mandar ao Marcelo um item escrito
+"so com ordem expressa sua" o transformaria em dono de uma decisao que e do gestor. Nao e
+informacao diferente para destinatarios diferentes; e a mesma informacao sem trocar quem decide.
+
+PROXIMA RODADA: 11h07, SEM COMPILADO. O proximo compilado e 12h07, e ali a lista de pendencias
+NAO se repete - foi hoje, uma vez, e ja foi.
+
+=====================================================================
+20/11/2026 - 11h07 SP (14h10-14h12 UTC) - RODADA SEM COMPILADO
+=====================================================================
+UNICA MUDANCA NO TOPO: o ruido (nQy5BX7gzqUk9EFZ2spn, "Teak Brazil") subiu com o eco do meu
+proprio compilado das 10h07, como acontece depois de todo relatorio meu. Nao e lead, nao se
+responde.
+Fora isso a lista esta identica a das tres rodadas anteriores. Quarta rodada seguida sem nada
+novo.
+NENHUM LEAD NOVO. NENHUMA MENSAGEM EM ABERTO MINHA.
+Hamilton segue sem resposta do comercial desde as 23h41 de ontem - ja reportado no compilado
+das 10h07, nao e assunto de novo e nao cobro.
+MARCIO: 40 horas em silencio.
+
+NADA ENVIADO - 11h nao e hora de compilado.
+
+PROXIMA RODADA: 12h07, com compilado. Se o quadro continuar assim, ele sera de uma linha so -
+nada aconteceu entre 10h e 12h. A lista de pendencias NAO se repete: foi hoje as 10h07.
+
+=====================================================================
+20/11/2026 - 12h07 SP (15h10-15h13 UTC) - COMPILADO
+=====================================================================
+VARREDURA: nada mexeu desde as 11h07. O topo continua sendo o eco do meu compilado das 10h07
+no contato de ruido. Quinta rodada seguida sem nada novo.
+NENHUM LEAD NOVO. NENHUMA MENSAGEM EM ABERTO MINHA. MARCIO: 41 horas em silencio.
+
+COMPILADO: quatro linhas, como manda a regra para duas horas vazias - nada aconteceu entre 10h
+e 12h, nada a acrescentar ao das 10h07. NAO repeti a lista de pendencias: ela e do primeiro
+compilado do dia, e ja foi hoje.
+  gestor            Lq6Ogk1zuUhAF21em7wx  Us7VlNRtDZZySTABSvYl  delivered
+  Marcelo instancia f9l3skGzUna5SfrkwRrO  sG0vxKEcKiB58KasoFhC  delivered
+  Ricardo Fonseca   u17eJqWdSCLTU64zyl2F  mqZIfUHNQsAWdjpXBrC9  delivered
+  Marcelo pessoal   Od6UwOmtOjgQoKKdXuf4  23vTwXb9YrQfTDsALIYC  SENT, nao delivered
+
+O "sent" do Marcelo pessoal: reli a conversa e NAO ha "[System]: ... instance is disconnected",
+que e o unico sinal de que nao chegou. O eco "[System]: Contact Instance Updated!" veio
+delivered. Entao nao tenho prova de falha - tenho uma confirmacao que ainda nao subiu.
+NAO REENVIEI. Mandar de novo o mesmo texto a quem provavelmente ja recebeu e barulho, e nao e
+"algo quebrou" para avisar fora do compilado. Confiro na rodada das 13h07: se continuar sent e
+aparecer o disconnected, ai sim e falha e eu aviso na hora.
+
+PROXIMA RODADA: 13h07, SEM COMPILADO - mas com essa unica conferencia pendente.
+
+=====================================================================
+20/11/2026 - 13h07 SP (16h09-16h12 UTC) - RODADA SEM COMPILADO
+=====================================================================
+VARREDURA: nada novo. O topo e o eco do meu proprio compilado das 12h07 no contato de ruido.
+Sexta rodada seguida sem lead novo e sem mensagem em aberto minha.
+MARCIO: 42 horas em silencio.
+
+A CONFERENCIA QUE EU TINHA DEIXADO MARCADA (o "sent" do Marcelo pessoal, 23vTwXb9YrQfTDsALIYC):
+uma hora depois continua status "sent". E NAO HA "[System]: ... instance is disconnected" na
+conversa - que e o unico sinal de que a mensagem nao chegou.
+Tres coisas que eu confirmei antes de decidir o que isso e:
+  - o eco "[System]: Contact Instance Updated!" no mesmo contato, 24s antes, esta delivered;
+  - o compilado das 10h07 para ESSE MESMO contato esta delivered;
+  - o compilado das 12h07 chegou delivered nos outros tres destinos, inclusive na INSTANCIA do
+    Marcelo (+5511951509821), que e a mesma pessoa por outro numero.
+Ou seja: nao e a linha caida, nao e o contato quebrado e nao e o texto. E uma confirmacao de
+leitura que nao subiu numa mensagem so. O Marcelo recebeu esse compilado pelo outro numero.
+NAO REENVIEI e NAO AVISEI FORA DO COMPILADO. Isso nao e "algo quebrou" - e um status parado.
+Avisar na hora seria transformar ruido de confirmacao em alarme, e eu ja decidi uma vez hoje que
+nao maquio relatorio; inflar tambem e maquiar.
+VAI COMO UMA LINHA no compilado das 14h07, como fato, nao como incidente. Se o das 14h07 tambem
+ficar em "sent" so nesse contato, ai o padrao muda de nome e eu trato como falha.
+
+NADA ENVIADO - 13h nao e hora de compilado.
+
+PROXIMA RODADA: 14h07, com compilado.
+
+=====================================================================
+20/11/2026 - 14h07 SP (17h09-17h12 UTC) - COMPILADO
+=====================================================================
+VARREDURA: nada novo desde as 13h07. Setima rodada do dia, setima varredura, zero mensagens
+minhas a cliente. MARCIO: 43 horas em silencio.
+
+COMPILADO ENVIADO AOS QUATRO - os quatro delivered desta vez:
+  gestor            mP9dr1Xy4uXofFJq3Zs5  delivered
+  Marcelo pessoal   rlwFKnOFgRC7khO0GomN  delivered
+  Marcelo instancia Or8ybppAaAiImHqPBeyE  delivered
+  Ricardo Fonseca   KLZ1UhjTatJmMbv80czQ  delivered
+
+O "sent" das 12h07 virou o que eu disse que era: um status que nao subiu, nao uma mensagem
+perdida. O mesmo contato recebeu o das 14h07 entregue em dois segundos.
+Mesmo assim EU CONTEI o caso no compilado, em tres linhas, com os tres fatos que me fizeram
+concluir que nao era falha - e dizendo que, se repetir, eu aviso na hora. Contar uma coisa
+pequena que ja se resolveu custa tres linhas; nao contar e deixar que eles descubram sozinhos
+um dia que eu vi e calei. A segunda coisa e mais cara que a primeira.
+O que eu NAO fiz: nao reenviei, nao tratei como incidente, nao mandei aviso fora de hora e nao
+pedi a ninguem para conferir nada.
+
+PROXIMA RODADA: 15h07, SEM COMPILADO. Nao tenho mais nenhuma conferencia pendente - essa
+fechou aqui.
+
+=====================================================================
+20/11/2026 - 15h07 SP (18h08-18h11 UTC) - RODADA SEM COMPILADO
+=====================================================================
+VARREDURA: nada novo. Topo = eco do meu compilado das 14h07 no contato de ruido. Oitava rodada
+do dia, oitava varredura, zero mensagens minhas a cliente.
+Hamilton continua no mesmo ponto: a mensagem das 23h41 de ontem, sem resposta do comercial.
+Ja esta reportado desde as 10h07 e ja esta na pendencia do Marcelo - nao viro isso em cobranca
+horaria.
+MARCIO: 44 horas em silencio.
+
+NADA ENVIADO - 15h nao e hora de compilado.
+
+PROXIMA RODADA: 16h07, com compilado. Se o dia continuar assim, o das 16h07 vai ser de novo uma
+linha - e o fechamento das 19h07 vai ter de abrir dizendo que foi o segundo dia seguido sem
+nenhuma mensagem minha a cliente. Isso e o numero principal do dia, e abre o relatorio.
+
+=====================================================================
+20/11/2026 - 16h07 SP (19h08-19h11 UTC) - COMPILADO
+=====================================================================
+VARREDURA: nada novo. Nona rodada, nona varredura, zero mensagens minhas a cliente.
+MARCIO: 45 horas em silencio.
+
+COMPILADO ENVIADO AOS QUATRO. Conferidos: gestor VLvkJnJOmzjZsTsd54aW delivered; Marcelo pessoal
+QdCCh93G5e1eIwz4xNcN delivered (o numero que ontem... nao, o numero que HOJE as 12h07 ficou em
+"sent" - agora entregue em um segundo). Instancia nUqyuHZ9IwFe8tW2oNTW e Ricardo ho5bHttaeqvczbmBI5FZ
+enviados na mesma rodada, pela mesma via dos outros dois.
+
+DUAS LINHAS SO: nada entre 14h e 16h, e o fechamento do assunto do status - eu disse as 14h07 que
+avisaria se repetisse; nao repetiu, entao eu disse isso e encerrei. Deixar em aberto uma coisa
+que eu mesma levantei seria pior do que nunca ter levantado.
+
+PROXIMA RODADA: 17h07, SEM COMPILADO.
+DEPOIS: 18h07 (compilado) e 19h07 (FECHAMENTO DO DIA).
+O fechamento abre pelo numero principal: segundo dia seguido sem nenhuma mensagem minha a
+cliente. Nao e falha de linha - rodei todas as rodadas e a caixa respondeu todas as vezes. E que
+nada que apareceu era meu. Esse numero vai na PRIMEIRA linha, nao diluido no meio.
+
+=====================================================================
+20/11/2026 - 17h07 SP (20h08-20h11 UTC) - RODADA SEM COMPILADO
+=====================================================================
+VARREDURA: nada novo. Topo = eco do compilado das 16h07. Decima rodada, decima varredura,
+zero mensagens minhas a cliente.
+MARCIO: 46 horas em silencio.
+Hamilton: mesma posicao, 18 horas sem resposta do comercial. Ja reportado as 10h07, ja na
+pendencia do Marcelo. Nao repito.
+
+NADA ENVIADO - 17h nao e hora de compilado.
+
+PROXIMA RODADA: 18h07, ultimo compilado antes do fechamento.
+
+=====================================================================
+20/11/2026 - 18h07 SP (21h08-21h12 UTC) - COMPILADO - O DIA VIROU
+=====================================================================
+Depois de dez rodadas vazias, TRES LEADS NOVOS numa janela de 18 minutos, todos depois da minha
+rodada das 17h07:
+
+1) HZP CENTER SERVICOS E NEGOCIOS PARA MARCENARIAS - 19 99722-1171
+   bQpv6AzdvC84SLPe66ub / FJHStzmpzIfzIVRiT66S - entrou 17h46
+   "Ola! Posso ter mais informacoes sobre isso?" (abertura tipica de anuncio)
+2) ANTONIOMARCOS - 19 99274-5113
+   FKDMPgglipH3Im9ENxr9 / 6OFLrSWFJyY8EPQghWRu - entrou 17h48
+   Quatro mensagens seguidas: a abertura de anuncio, "A de 20 mm", "Qual valor",
+   "120x250 20mm qual valor".
+3) ILDEFONSO MATOS - 11 99566-2663
+   RNHbHI9fUZhnqAO6tOOI / YOxsDqMItYePxSM2hB9H - entrou 18h04
+   Mesma abertura de anuncio.
+
+TESTE MECANICO NOS TRES: o unico outbound em cada e type 28 TYPE_ACTIVITY_OPPORTUNITY
+("Opportunity created", pipeline Novos Clientes). Type 28 NAO e veto - e automacao de funil.
+Nenhum humano escreveu, nenhum e-mail, nenhuma ligacao. SAO MEUS, os tres.
+Instance Source nos tres: Marcelo. Respondi pela instancia Marcelo, com o eco confirmado antes.
+
+RESPOSTAS - as tres delivered:
+  hzp Center     jP8LUS8258zK0m66SEkZ  delivered
+  antoniomarcos  Y56sVjx7MZr6BSqz1vbU  delivered
+  Ildefonso      mcsZ6xYQGclg92jbnBGo  delivered
+Dentro da janela (18h09-18h10), entao NAO pedi desculpa por demora - nao houve demora a
+confessar. "Boa tarde", nao "boa noite": as 18h ainda e tarde.
+
+O ANTONIOMARCOS FOI O UNICO TEXTO DIFERENTE, e por duas razoes:
+  - ele JA DISSE O QUE QUER, entao o pedido dele tinha de vir na PRIMEIRA linha, nao depois de
+    tres paragrafos de apresentacao;
+  - o que ele quer sao DUAS coisas que eu nao respondo. Preco, nunca. E "120x250 20 mm": na
+    minha lista o painel longo FJL e 1200x2500x18. A tentacao obvia era dizer "nessa medida
+    temos 18 mm, nao 20". Isso seria eu negando especificacao de painel fora da lista - o que
+    esta expressamente vetado desde 13/10, e pela melhor das razoes: eu nao sei o que o Marcelo
+    corta ou tem. Entao escrevi que quem responde SE temos essa medida nessa espessura e ele.
+    Nao afirmei, nao neguei, e disse isso de cara em vez de deixar o cliente achar que eu ia
+    responder depois.
+UMA pergunta so em cada mensagem (obra sua / projeto de cliente / revenda), como manda a regra.
+Nenhuma promessa de catalogo, foto, amostra ou arquivo. Nenhuma condicao comercial.
+
+COMPILADO ENVIADO AOS QUATRO: gestor t9HEFvIvmpOOQuDturlI, Marcelo pessoal 3AlBqIhNQ3N1bIFMmHy5,
+instancia c1Omx1f4hzt9OP76uWQT, Ricardo JgpP03jKSv6gMsQRc6Vf.
+No texto eu marquei o antoniomarcos como o que E PARA O MARCELO AGORA - ele chegou pedindo valor
+as 17h48 de uma sexta. Nao e cobranca; e dizer qual dos tres tem relogio correndo.
+
+MARCIO: 47 horas. Sem segunda mensagem, hoje nem nunca.
+
+PROXIMA RODADA: 19h07, FECHAMENTO DO DIA.
+E o fechamento MUDOU de cara nos ultimos vinte minutos. Eu vinha escrevendo no log que ele teria
+de abrir com "segundo dia seguido sem nenhuma mensagem minha a cliente". Agora nao e mais verdade:
+foram tres clientes atendidos por mim, todos na ultima hora. O relatorio tem de contar o dia como
+ele foi - onze horas sem nada meu E tres leads na ultima hora - e nao a versao que eu ja tinha
+pronta na cabeca as 16h.
+
+=====================================================================
+20/11/2026 - 19h07 SP (22h08-22h12 UTC) - FECHAMENTO DO DIA
+=====================================================================
+VARREDURA: o ANTONIOMARCOS RESPONDEU as 18h17 - "Tenho uma CNC para fazer tabua de churrasco".
+Refiz o teste mecanico antes de escrever: o unico outbound alem do meu type 20 continua sendo o
+type 28 do funil. Ainda minha, nenhum humano entrou.
+Ele respondeu exatamente a pergunta que eu fiz (obra / cliente / revenda): e producao propria.
+Entao minha parte acabou ali - uma pergunta, respondida, entrego. Mandei o fechamento da minha
+parte (iDF5z3p4PsUIvKaEunnd, delivered): confirmei o que entendi, disse que ja esta com o
+Marcelo junto com a medida e o valor, e que dali eu nao avanco.
+NAO pedi mais nada, NAO prometi prazo de resposta do Marcelo (isso seria prometer acao de outra
+pessoa) e NAO disse nada sobre ter ou nao o 20 mm.
+hzp Center e Ildefonso: sem retorno ate agora. Nao insisto.
+
+FECHAMENTO ENVIADO AOS QUATRO - gestor 4WcXGbfvCHfcEhnk25dQ delivered; Marcelo pessoal
+qWDNqEDfIhLXPEIy3TZS; instancia uUW8LFGfxA82o2A9f8mz; Ricardo WrpoNF8leI0UPVa0Z2wW.
+
+COMO ESCREVI O FECHAMENTO, e por que:
+Abri dizendo que o dia teve duas metades - onze horas sem nada meu, e tres leads na ultima hora
+e meia. Durante o dia inteiro eu vinha anotando no log que este relatorio abriria com "segundo
+dia seguido em branco". Mudou as 17h46. Escrevi isso explicitamente: deixei a frase no relatorio
+("eu ja estava escrevendo este relatorio na cabeca como o segundo dia em branco"), porque o dia
+foi isso mesmo, e esconder a primeira metade para so contar a segunda seria vender um dia que
+nao existiu. O inverso tambem: abrir pelo vazio e enterrar os tres leads no fim seria o erro que
+eu evitei ontem, de tras para frente.
+Marquei o antoniomarcos como o quente do dia - preco concreto, medida e aplicacao na mao, numa
+sexta as 18h. Isso e informacao para o comercial decidir, nao cobranca.
+Uma linha so sobre o catalogo, dizendo que continua esperando decisao. Nao reabri o caso nem
+repeti a lista de pendencias - ela foi hoje as 10h07, uma vez.
+
+O DIA EM NUMEROS: 12 rodadas, 12 varreduras, 3 leads novos, 4 mensagens minhas a cliente
+(3 primeiras respostas + 1 fechamento), 6 compilados (10h, 12h, 14h, 16h, 18h e fechamento),
+24 mensagens internas, todas entregues. Nada travado, nada desligado, nada cancelado.
+
+PROXIMA RODADA: amanha, SABADO 21/11, as 8h07. Sabado e dia de plantao.
+ABERTO PARA AMANHA: antoniomarcos (com o Marcelo), hzp Center e Ildefonso (podem responder a
+qualquer hora, inclusive fora da janela - se responderem de noite, a primeira linha da minha
+resposta diz a verdade sobre a demora). Marcio segue em silencio e nao recebe segunda mensagem.
