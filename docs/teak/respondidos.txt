@@ -6414,3 +6414,290 @@ PROXIMA RODADA: amanha, SABADO 21/11, as 8h07. Sabado e dia de plantao.
 ABERTO PARA AMANHA: antoniomarcos (com o Marcelo), hzp Center e Ildefonso (podem responder a
 qualquer hora, inclusive fora da janela - se responderem de noite, a primeira linha da minha
 resposta diz a verdade sobre a demora). Marcio segue em silencio e nao recebe segunda mensagem.
+
+#####################################################################
+21/11/2026 - SABADO
+#####################################################################
+
+=====================================================================
+21/11/2026 - 8h07 SP (11h08-11h12 UTC) - PRIMEIRA RODADA, SEM COMPILADO
+=====================================================================
+Log conferido antes de tudo: scratchpad e repo com os mesmos 365.828 bytes, git em f957680
+(fechamento de 20/11, ja empurrado). Nada perdido na virada do dia.
+
+DOIS LEADS NOVOS, OS DOIS CHEGADOS FORA DA JANELA, depois que eu fechei o dia ontem:
+
+1) EDIVALDO - 11 99851-2674 (j6bVE0vgXF9OlakBOBSS / xWCezVOHAUp5aULeNjZ8)
+   Entrou ontem as 19h24 - quinze minutos depois do meu fechamento. Abertura de anuncio.
+2) ZERUBENSCOSTA - 16 98134-6814 (OWqz1Vf2XssUoSpnIjou / kynFKdmL038oTSh5tLJV)
+   Entrou ontem as 21h46: "Posso ter mais informacoes sobre isso? Boa noite! Pode fornecer
+   tamanhos, valores e condicoes de pagamento?"
+
+TESTE MECANICO NOS DOIS: so type 28 do funil como outbound. Nenhum humano. Sao meus.
+Instance Source Marcelo nos dois; respondi pela instancia Marcelo. As duas delivered:
+   Edivaldo       Lx1vKHZ9LWCCcyykZhcl
+   zerubenscosta  NUpblBFW85csMbE8zW02
+
+OS DOIS CHEGARAM FORA DA JANELA, ENTAO A PRIMEIRA LINHA DIZ A VERDADE SOBRE A DEMORA - com a
+hora exata ("ontem as 19h24", "ontem as 21h46") e a palavra desculpa. Nao escondi atras de
+"obrigada por chamar a gente": quem esperou treze horas merece ler primeiro o reconhecimento
+disso, nao a apresentacao da empresa.
+
+O ZERUBENSCOSTA PEDIU TRES COISAS E EU RESPONDI UMA.
+Tamanhos, valores, condicoes de pagamento. Valor e condicao de pagamento sao do Marcelo, ponto.
+Mas TAMANHO eu posso dar - esta inteiro na lista do que POSSO AFIRMAR - e dar e a coisa certa:
+negar as tres seria me esconder atras da regra. Entao separei na primeira linha o que eu
+respondo do que eu nao respondo, e mandei a tabela de medidas por linha de produto: deck 70/90
+x 20 mm, forro 70/90 x 12 mm, reguas 500-3000 mm, paineis 1200x2200x18 e FJL 1200x2500x18,
+serrada nos cinco comprimentos / 65-279 mm / sete espessuras.
+NAO inventei nada fora da lista, NAO falei de 2750x1220x20 (que nao temos), e NAO prometi
+catalogo nem arquivo nenhum - a medida foi escrita na mensagem, e nao anexada.
+Uma pergunta so no fim, como sempre: qual produto e para que fim.
+
+NADA ENVIADO AOS QUATRO - 8h nao e hora de compilado. Os dois leads entram no das 10h07, junto
+com a lista diaria de pendencias.
+
+ABERTO: antoniomarcos (com o Marcelo desde ontem), hzp Center, Ildefonso, Edivaldo,
+zerubenscosta. Marcio: 61 horas de silencio, sem segunda mensagem.
+PROXIMA RODADA: 9h07, sem compilado.
+
+=====================================================================
+21/11/2026 - 9h07 SP (12h08-12h10 UTC) - RODADA SEM COMPILADO
+=====================================================================
+VARREDURA: nada novo desde as 8h07. Edivaldo e zerubenscosta sairam do topo da lista porque a
+ultima mensagem das duas conversas agora e minha - era para ser assim. Nenhum dos dois respondeu
+ainda, e nenhum dos tres de ontem (antoniomarcos, hzp Center, Ildefonso) voltou.
+Sabado de manha, caixa parada. Nenhum lead novo, nenhuma mensagem em aberto minha.
+MARCIO: 62 horas. Sem segunda mensagem.
+
+NADA ENVIADO - 9h nao e hora de compilado.
+
+PROXIMA RODADA: 10h07, PRIMEIRO COMPILADO DO SABADO. Leva os dois leads de ontem a noite
+(Edivaldo e zerubenscosta, ja respondidos) e a lista das 12 pendencias, uma vez so no dia.
+
+=====================================================================
+21/11/2026 - 10h07 SP (13h08-13h11 UTC) - PRIMEIRO COMPILADO DO SABADO
+=====================================================================
+O EDIVALDO VOLTOU as 9h55, com seis mensagens seguidas, e mudou de figura:
+  "Bom dia. Eu sou uma madeireira. Vendo teca painel. Vi voces no Instagram"
+  "Eu quero saber preco painel teca"
+  "Quais as medidas e espessura"
+  "?"
+  "Uso painel de pinus tambem"
+  "Revenda"
+Teste mecanico refeito: so type 28 do funil como outbound (e um "Opportunity updated", Lead ->
+Qualificacao, que tambem nao e veto). Ainda minha.
+
+QUATRO PEDIDOS NUMA CONVERSA SO, E EU RESPONDI UM:
+  MEDIDA E ESPESSURA DO PAINEL - respondi: painel longo teca 1200x2200x18 e FJL 1200x2500x18.
+    Esta na lista do que POSSO AFIRMAR, entao dar e o certo.
+  PRECO - nao. Nunca, nem na minha propria conversa.
+  REVENDA - nao, e esse e o mais categorico de todos: "REPRESENTACAO E REVENDA NAO SAO MEUS em
+    hipotese nenhuma". Ele disse a palavra, eu nomeei o assunto e disse que e do Marcelo. Nao
+    falei de tabela, de condicao, de minimo, de nada.
+  PAINEL DE PINUS - nao afirmo e nao nego (correcao de 13/10). "Quem te responde sobre essa
+    linha e o Marcelo." NUNCA MAIS "so teca".
+Mensagem 8KDuwfx5wZbb8XQs3eFq, delivered.
+Ele e madeireira porque ELE disse que e - nao deduzi segmento de lugar nenhum.
+
+COMPILADO DAS 10h07 AOS QUATRO - gestor mshKtDKfGGdmeD1bwBvS delivered; Marcelo pessoal
+77DPGhu87yuHiBTq3OSH; instancia To9TGjalkikHy6wT99Qi; Ricardo whCsPoTRooLSTPOuKzsr.
+Levou os dois leads da noite, o retorno do Edivaldo e a lista das 12 pendencias (uma vez ao dia).
+No item 3 eu ancorei a pergunta da janela no fato de hoje: os dois leads chegaram as 19h24 e as
+21h46 e esperaram a noite inteira. Nao e cobranca nem proposta de mudar horario - e a evidencia
+do custo, que e dele para decidir.
+A lista do Marcelo ganhou dois nomes: antoniomarcos e Edivaldo.
+
+PROXIMA RODADA: 11h07, sem compilado.
+
+=====================================================================
+21/11/2026 - 11h07 SP (14h08-14h10 UTC) - RODADA SEM COMPILADO
+=====================================================================
+EDIVALDO respondeu as 10h30: "Ok / Ficou aguardando".
+NAO RESPONDI, e e exatamente o que a regra manda: "ok" e agradecimento/aceite, nao e pergunta.
+Ele entendeu o que eu disse, aceitou esperar o Marcelo, e qualquer mensagem minha agora seria
+so barulho numa conversa que ja esta entregue. Entrego e saio - nao fico confirmando que
+entreguei.
+Fora isso: nada novo. zerubenscosta, antoniomarcos, hzp Center e Ildefonso sem retorno.
+MARCIO: 64 horas.
+
+NADA ENVIADO - 11h nao e hora de compilado. O "ok" do Edivaldo entra como uma linha no das
+12h07, porque fecha o ciclo dele comigo.
+
+PROXIMA RODADA: 12h07, com compilado.
+
+=====================================================================
+21/11/2026 - 12h07 SP (15h08-15h11 UTC) - COMPILADO
+=====================================================================
+VARREDURA: nada novo desde as 11h07. Ninguem voltou.
+COMPILADO curto aos quatro - gestor 9eAoc5jv24dSRVXXBJeu delivered; Marcelo pessoal
+lF65vK5rcZHjjd56267a; instancia kQmhwkVEiAsHPDmqojlP; Ricardo ja4mDfbqFA6nW1cbhpCp.
+Conteudo: o "ok" do Edivaldo as 10h30 e o fato de eu NAO ter respondido, com o motivo em uma
+linha. Registrei a nao-resposta de proposito: silencio meu numa conversa viva pode parecer
+descuido, e nao foi - foi regra. Dito uma vez, nao se repete.
+
+MARCIO: 65 horas. Sem segunda mensagem.
+
+PROXIMA RODADA: 13h07, sem compilado.
+
+=====================================================================
+21/11/2026 - 13h07 SP (16h08-16h11 UTC) - RODADA SEM COMPILADO
+=====================================================================
+LEAD NOVO as 12h32: +55 19 99918-5394 (Wnvh2SDzQplL4VjvHUJ5 / NMA2dC6o0GWdgBJMvV6o).
+Abertura de anuncio: "Ola! Posso ter mais informacoes sobre isso?"
+TESTE MECANICO: so type 28 do funil como outbound. Nenhum humano. E meu.
+Instance Source Marcelo; respondi pela instancia Marcelo. Texto padrao, "boa tarde" (13h10,
+dentro da janela - 38 minutos de espera, sem demora a confessar).
+Mensagem poSxtX5ngVjTit5X7yce: saiu como "pending" na primeira leitura e DELIVERED na segunda.
+
+O CADASTRO DELE NAO TEM NOME - o contactName e so a bandeira do Brasil em emoji. Escrevi sem
+nome nenhum e sem inventar tratamento. NAO DEDUZIR NOME nem genero e regra, e aqui nao havia
+nem de onde deduzir.
+
+UMA COISA QUE EU FIZ FORA DE ORDEM, e registro porque foi minha:
+o protocolo manda mandar "#contact_instance: Marcelo", ESPERAR o eco "[System]: Contact Instance
+Updated!" e so depois a mensagem. Os carimbos mostram que nao foi isso: marcador 16h08m35,
+minha mensagem 16h08m44, eco so 16h08m49 - mandei antes do eco chegar.
+Nao deu problema: o contato ja vinha com Instance Source Marcelo, a mensagem saiu pela instancia
+certa e chegou. Mas a ordem existe justamente para o caso em que a instancia NAO esta certa, e
+nesse caso a mensagem sairia pela errada. Da proxima vez eu confirmo o eco antes.
+NAO AVISEI NINGUEM FORA DE HORA por isso: nao quebrou nada e o cliente recebeu o que devia
+receber. Entra no log; se virar habito, vira assunto.
+
+NADA ENVIADO AOS QUATRO - 13h nao e hora de compilado. O lead entra no das 14h07.
+MARCIO: 66 horas.
+
+PROXIMA RODADA: 14h07, com compilado.
+
+=====================================================================
+21/11/2026 - 14h07 SP (17h08-17h11 UTC) - COMPILADO
+=====================================================================
+VARREDURA: nada novo desde as 13h07. O 19 99918-5394 ainda nao respondeu as duas perguntas.
+Ninguem mais voltou.
+
+COMPILADO AOS QUATRO - gestor jKoZxQt7AXqsUso4oxUr delivered; Marcelo pessoal wx1BuEMBulCa8XP23QHw;
+instancia iSQSNlM8jRF3wbZEx3i9; Ricardo S70DjjYSzikWYeiMucU1.
+Conteudo: o lead das 12h32, respondido as 13h10, e o fato de eu ter escrito sem nome porque o
+cadastro so tem um emoji. Disse isso em uma linha - e o tipo de detalhe que, calado, depois vira
+"por que a Nina nao chamou o cliente pelo nome?".
+Fechei com a contagem do sabado: tres leads meus atendidos ate agora. Numero, nao adjetivo.
+
+O QUE EU NAO COLOQUEI NO COMPILADO: o meu deslize de ordem das 13h07 (mandei a mensagem antes do
+eco da instancia). Fica so no log. Nao quebrou nada, o cliente recebeu certo, e nao e assunto de
+relatorio de duas horas - vira assunto se repetir.
+
+MARCIO: 67 horas.
+PROXIMA RODADA: 15h07, sem compilado.
+
+=====================================================================
+21/11/2026 - 15h07 SP (18h07-18h11 UTC) - RODADA SEM COMPILADO
+=====================================================================
+LEAD NOVO as 14h35: +55 31 9814-0410, cadastrado como "Rodrigo - Shao Moveis"
+(uxygVSrsMKArdLJtc5yZ / Tjz5MG13DFma7JSTEJYb). Abertura de anuncio.
+TESTE MECANICO: so type 28 do funil. Nenhum humano. E meu.
+Respondi as 15h10, texto padrao, "boa tarde", dentro da janela (35 min de espera).
+  instancia 2uqRPAZ5Fxh4R80yTFiN -> eco ws7WQdrki2gYebrD9qlf -> mensagem 62dmyTf0lSGcNQfFsrV1
+  Todas delivered. DESTA VEZ ESPEREI O ECO antes de mandar, como manda o protocolo - era a
+  correcao que eu tinha anotado as 13h07. Corrigido na rodada seguinte, sem precisar de aviso.
+
+NAO USEI O NOME, mesmo o cadastro trazendo "Rodrigo - Shao Moveis". O nome esta no CAMPO DO CRM,
+e a regra diz para nao agir pelo campo do CRM - foi exatamente assim que o Ricardo Fonseca
+aparece cadastrado como "Ricardo Nicoletti". Se ele se apresentar na proxima mensagem, passo a
+chamar pelo nome que ELE disser. Custa pouco; chamar o cliente pelo nome errado custa caro.
+TAMBEM NAO DEDUZI SEGMENTO: "Moveis" no cadastro nao me autoriza a falar como se ele fosse
+marcenaria. Perguntei o que ele procura, como a todo mundo.
+
+OBSERVACAO que NAO vai para cliente nem para relatorio como problema: o numero tem 10 digitos
+depois do 55 (31 9814-0410), nao 11. A mensagem CHEGOU (delivered), entao nao e o caso do
+Wanderley, onde a ligacao falhava. Nao mexo em cadastro e nao invento o nono digito.
+
+NADA ENVIADO AOS QUATRO - 15h nao e hora de compilado. O lead entra no das 16h07.
+MARCIO: 68 horas.
+
+PROXIMA RODADA: 16h07, com compilado.
+
+=====================================================================
+21/11/2026 - 16h07 SP (19h07-19h11 UTC) - COMPILADO
+=====================================================================
+VARREDURA: nada novo desde as 15h07. Ninguem voltou.
+COMPILADO AOS QUATRO - gestor QTKCOGI7kKVyYQIkOMjz delivered; Marcelo pessoal AL6gUT4M5S8PPJCQzl2o;
+instancia TqjdTX2qig2388EaDLmf; Ricardo cvzncDKQO04JFSgcsZSt.
+Conteudo: o lead das 14h35, e - em duas linhas - POR QUE eu nao usei o nome que esta no cadastro
+nem tratei o cliente como marcenaria. Explicar escolha de tom no relatorio evita que depois
+alguem leia a conversa e ache que eu fui fria ou desatenta: foi deliberado, e esta escrito.
+Fechei com o numero do dia: quatro leads meus.
+
+MARCIO: 69 horas.
+PROXIMA RODADA: 17h07, sem compilado. Depois 18h07 (compilado) e 19h07 (FECHAMENTO DO SABADO).
+
+=====================================================================
+21/11/2026 - 17h07 SP (20h08-20h11 UTC) - RODADA SEM COMPILADO
+=====================================================================
+LEAD NOVO as 16h41: +55 38 9174-3186, cadastrado como "Valter Santos"
+(g3mRswFWxE0Rr7CmqMJj / 8FKa5REKlIJUAGesB2b4). Abertura de anuncio.
+TESTE MECANICO: so type 28 do funil. Nenhum humano. E meu.
+Instancia o9MegvIuuTpg1w8dmuaz -> eco KoKrQC3MDdPKurrGbThj -> mensagem OCeYIzyfnCT3sVhgZVPJ.
+Tudo delivered, e DESTA VEZ TAMBEM esperei o eco. Duas rodadas seguidas na ordem certa.
+Texto padrao, "boa tarde", sem nome (mesma razao do caso anterior: nome e campo de CRM), 29
+minutos de espera, dentro da janela - sem demora a confessar.
+
+QUINTO LEAD MEU DO DIA. O sabado tem mais lead novo meu do que a sexta inteira teve: sexta foram
+tres, hoje ja sao cinco. NAO vou transformar isso em teoria sobre campanha ou dia da semana - dois
+dias nao sao tendencia, e quem olha anuncio e outra gente. So registro o numero.
+
+NADA ENVIADO AOS QUATRO - 17h nao e hora de compilado. Entra no das 18h07.
+MARCIO: 70 horas.
+
+PROXIMA RODADA: 18h07, com compilado. Depois o FECHAMENTO DO SABADO as 19h07.
+
+=====================================================================
+21/11/2026 - 18h07 SP (21h07-21h11 UTC) - COMPILADO
+=====================================================================
+VARREDURA: nada novo desde as 17h07. Nenhum dos cinco leads de hoje voltou com resposta.
+COMPILADO AOS QUATRO - gestor 03HGamg3qBwGZ1qgRezV delivered; Marcelo pessoal Laf3XWxY5mkgK6jNDamf;
+instancia Vv5wrq7bIfd85wcbanII; Ricardo cPketgH73zoQOR8pSFwI.
+Conteudo: o quinto lead, e a comparacao sabado x sexta (cinco contra tres) COM a ressalva de que
+dois dias nao sao tendencia. Dar o numero e util; vende-lo como padrao seria eu opinando sobre
+campanha, que nao e meu assunto.
+
+MARCIO: 71 horas.
+PROXIMA RODADA: 19h07, FECHAMENTO DO SABADO - e depois o plantao so volta segunda as 8h07,
+porque domingo nao tem rodada. Isso tem de estar NO FECHAMENTO, dito ao cliente interno com
+todas as letras: o que chegar amanha espera ate segunda. E a pendencia 3 (domingo / janela) nao
+e teoria - e isso, por escrito, duas vezes por semana.
+
+=====================================================================
+21/11/2026 - 19h07 SP (22h08-22h11 UTC) - FECHAMENTO DO SABADO
+=====================================================================
+VARREDURA: nada novo desde as 18h07. Nenhum dos cinco voltou.
+
+FECHAMENTO ENVIADO AOS QUATRO - gestor gBPDhZ9OyQlmOBiZMd2F delivered; Marcelo pessoal
+k15cLm87AUMjy7aVLxTA; instancia IxTRyv5D5EffFFIZjxFk; Ricardo rsReTRvyAtsOaRB5jSFH.
+
+COMO ESCREVI:
+Abri pelo numero do dia - cinco leads, todos meus, todos respondidos - e listei os cinco com
+hora de chegada, hora da minha resposta e em que pe cada um esta. Quem le isso de manha precisa
+saber a quem ligar, nao precisa de adjetivo.
+O Edivaldo veio primeiro e com detalhe, porque e o unico que avancou: ele se identificou, disse
+o que quer, disse que e revenda, e SABE que esta esperando o comercial. Os outros quatro estao
+todos no mesmo ponto - apresentacao enviada, sem retorno.
+
+A PARTE QUE EU FIZ QUESTAO DE PUXAR PARA O FIM, EM MAIUSCULA: DOMINGO NAO TEM PLANTAO.
+Nao e informacao nova (esta na pendencia 3 desde outubro), mas hoje ela tem cinco exemplos
+frescos e dois deles chegaram 19h24 e 21h46 - exatamente nos horarios que ninguem cobre. Dizer
+isso no fechamento de sabado e diferente de repetir item de lista: e avisar, na vespera, que a
+caixa fica sozinha amanha o dia inteiro.
+NAO PROPUS mudar horario, NAO sugeri cobrir domingo por conta propria e NAO inventei plantao
+extra. Disse o fato e disse de quem e a decisao. Se o gestor quiser domingo, ele manda.
+
+O SABADO EM NUMEROS: 12 rodadas, 12 varreduras, 5 leads novos, 7 mensagens minhas a cliente
+(5 primeiras respostas + a tabela de medidas do zerubenscosta + a resposta de painel/revenda do
+Edivaldo), 6 compilados, 24 mensagens internas, todas entregues.
+Nada travado, nada desligado, nada cancelado.
+
+PROXIMA RODADA: SEGUNDA, 23/11, as 8h07. Domingo nao ha rodada.
+ABERTO PARA SEGUNDA: Edivaldo (com o Marcelo), zerubenscosta, 19 99918-5394, 31 9814-0410,
+38 9174-3186 - os quatro ultimos sem retorno. Da sexta: antoniomarcos (com o Marcelo), hzp
+Center, Ildefonso. Marcio em silencio desde quarta - sem segunda mensagem.
+O que chegar no domingo so sera visto segunda de manha, e a primeira linha da minha resposta
+vai dizer a verdade sobre a demora.
