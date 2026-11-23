@@ -6701,3 +6701,494 @@ ABERTO PARA SEGUNDA: Edivaldo (com o Marcelo), zerubenscosta, 19 99918-5394, 31 
 Center, Ildefonso. Marcio em silencio desde quarta - sem segunda mensagem.
 O que chegar no domingo so sera visto segunda de manha, e a primeira linha da minha resposta
 vai dizer a verdade sobre a demora.
+
+================================================================================
+RODADA 23/11/2026 (segunda) 8h07 SP - PRIMEIRA DA SEMANA, BACKLOG DE FIM DE SEMANA
+================================================================================
+
+Log conferido antes de comecar: 382.836 bytes nas duas copias, git em 449a2d7. Intacto.
+
+Duas varreduras (limite 10 e depois 15): treze conversas com inbound por ultima
+mensagem. Onze eram lead novo de anuncio, chegado FORA DA JANELA entre sabado
+21h36 e domingo 20h28. Duas NAO SAO MINHAS e eu nao toquei:
+
+- CLAUDEMIR AP. MOREIRA, domingo 11h12: "Bom dia. Tudo bem com voces.....Marcelo
+  otimo. Vou conseguir fazer a apresentacao para o pessoal e 3 arquitetas
+  parceiras. Muito obr." O conteudo cita o Marcelo pelo nome e e thread humana
+  viva. Nao e minha, e ainda por cima e agradecimento.
+- SERGIO EQUATORIAN, domingo 10h08: bencao de domingo, sem pergunta, e a conversa
+  tem ligacao (type 2). Fora duas vezes.
+
+ONZE LEADS ATENDIDOS NESTA RODADA. Em todos: teste mecanico primeiro, depois
+#contact_instance: Marcelo, ESPEREI O ECO "Contact Instance Updated!", so entao o
+texto. Em todos a primeira linha reconhece a demora e diz por que - escreveu fora
+do horario, domingo eu nao atendo, desculpa a espera. Nao escondi o atraso atras
+de "bom dia, tudo bem?".
+
+ 1) Antonio Jesus da Silva  - 11 91148-9582 - sab 21h36 - entregue
+ 2) jose Jacinto            - 11 96142-5248 - sab 23h03 - entregue
+ 3) CHICO                   - 14 99846-5524 - sab 23h07 - entregue
+ 4) Ana Paula/Gui           - 11 94850-5200 - sab 23h49 - entregue
+ 5) Matheus Matias          - 11 93937-0464 - dom 00h00 - entregue (conferido)
+ 6) Cristiano Ramos         - 19 99266-3768 - dom 09h57 - entregue
+ 7) Juarez Mascate          - 12 99663-3666 - dom 14h27 - entregue
+ 8) Israel                  - 11 93003-9747 - dom 16h40 - entregue
+ 9) costapereiraedmilson1966- 11 97766-0905 - dom 18h46 - entregue
+10) Jose Marcos V. Mares    - 27 99932-0461 - dom 20h05 - entregue
+11) Robison                 - 19 98250-7299 - dom 20h28 - entregue
+
+DOIS JA VOLTARAM, na mesma rodada:
+
+CRISTIANO RAMOS, 8h15: "Tem servico de corte personalizado". Essa eu respondo e
+respondi: vendemos painel avulso E fazemos corte na medida - esta na lista do que
+eu POSSO afirmar. Pedi medida e quantidade. Entregue.
+
+EDMILSON, 8h16: "quanto ta a placa de teca voces nao e com no pode passar o valor".
+Duas perguntas e as duas eu nao respondo. Preco nunca. E "tem no?" e caracteristica
+da peca - no, cor, acabamento estao na correcao de 13/10: NAO AFIRMO E TAMBEM NAO
+NEGO. A tentacao aqui era grande: eu tenho na lista "Grade A ~70% cerne", e seria
+facil emendar isso logo depois da pergunta dele. Mas colar esse numero embaixo de
+"tem no?" seria responder "nao tem no" sem dizer a frase. Entao nao usei. Disse o
+que e verdade e nao e condicao comercial - teca macica, reflorestamento, FSC, corte
+na medida - e mandei no, cor e acabamento para o Marcelo, junto com o preco.
+
+ROBISON, o caso mais delicado dos onze. Ele mandou duas mensagens no domingo:
+"qual o valor da chapa de 120 x 220 x 20" e depois "2cm". Li a conversa ANTES de
+escrever, justamente porque ele ja tinha dito o que queria. Preco eu nao passo. E
+120x220x20 e painel fora da lista: a nossa medida nessa dimensao e 1200x2200x18.
+Dizer "nessa medida temos 18, nao 20" seria negar especificacao de painel - vetado.
+Entao nao afirmei nem neguei: disse que valor eu nao passo, que a medida com 20 mm
+quem confirma e o Marcelo, repeti os numeros DELE para ele ver que eu anotei certo,
+e perguntei uso e quantidade. Mesmo erro que eu quase cometi com o antoniomarcos
+na sexta, mesma saida.
+
+O que eu NAO respondi, de proposito, e esta na varredura: Edivaldo ("Ok / Ficou
+aguardando" - ok nao e pergunta, e ele ja esta com o comercial), Terci, Aparecido,
+Edilson Nardes, Dr Thiago, Jabuticaba Design, Ismael Juda, Daniel, Jhonantan - todos
+agradecimento ou despedida. Rebeca Barreto tem type 19 (disparo em massa) na thread:
+fico fora. Hamilton continua esperando o Marcelo (valor e quantidade minima), nao e
+coisa que eu resolva.
+
+NAO MANDEI RELATORIO AGORA. 8h07 nao e hora de compilado. Onze leads parados desde
+sabado da vontade de avisar na hora, mas a regra diz exececao e so para coisa
+quebrada ou erro meu - e nao quebrou nada, e eu nao errei. O compilado das 10h07
+leva tudo, e e o primeiro do dia, entao leva tambem a lista de pendencias, uma vez
+so. A pendencia 3 (janela 8h-19h, sem domingo) agora tem onze exemplos novos num
+fim de semana so, e isso e o numero mais honesto que eu ja tive para ela.
+
+Nao travei, nao desliguei e nao cancelei nada.
+
+--------------------------------------------------------------------------------
+RODADA 23/11/2026 (segunda) 9h07 SP
+--------------------------------------------------------------------------------
+
+Uma varredura (limite 10). UMA novidade desde as 8h07: o ROBISON voltou as 8h32.
+
+ROBISON - 19 98250-7299. "50 chapas por mes". Teste mecanico refeito antes de
+escrever (a varredura mostra messageTypes [22,20,2] e o 2 e ligacao - mas na
+conversa nao ha mensagem de ligacao nenhuma, so o meu type 20 e o type 28 do funil;
+o 2 e agregado do contato, nao da conversa). Continua minha.
+
+Ele respondeu a pergunta que eu tinha feito - quantidade. Nao disse o uso. E aqui
+eu PAREI: a regra e uma pergunta no maximo e entrego ao Marcelo. Ele ja respondeu,
+entao nao fico pescando o uso. Confirmei os dados em voz alta - 50 chapas/mes,
+120 x 220 x 20 - para ele ver que foi anotado certo, disse que valor, condicao e a
+confirmacao da medida ficam com o Marcelo, e sai. Entregue.
+
+O que eu NAO disse, e a tentacao era real: 50 chapas por mes cheira a revenda, e
+revenda e condicao comercial - nao e minha em hipotese nenhuma. Nao perguntei se e
+revenda, nao comentei volume, nao falei de minimo nem de frete. So repeti o numero
+dele.
+
+Nada mais novo. Claudemir e sergio continuam no topo da varredura e continuam nao
+sendo meus; o contato de RUIDO (Teak Brazil, 11 98090-6791) segue com o eco do meu
+fechamento de sabado; os agradecimentos de sexta continuam sem resposta, como devem
+ficar; Hamilton continua esperando o Marcelo.
+
+NAO MANDEI NADA A NINGUEM: 9h nao e hora de compilado. O Robison entra no das 10h07,
+que e daqui a uma hora e leva tambem a lista de pendencias.
+
+Nao travei, nao desliguei e nao cancelei nada.
+
+--------------------------------------------------------------------------------
+RODADA 23/11/2026 (segunda) 10h07 SP - COMPILADO, O PRIMEIRO DO DIA
+--------------------------------------------------------------------------------
+
+Varredura (limite 5): NADA novo desde as 9h07. A conversa do Robison ja nao aparece
+com inbound por ultima mensagem - a minha resposta das 9h09 e a ultima. No topo
+continuam Claudemir e sergio, que nao sao meus, o contato de ruido, o "ok" do
+Edivaldo e o Hamilton, que e do Marcelo.
+
+COMPILADO MANDADO AOS QUATRO DESTINOS, mesmo texto, instancia Autoatendimento, eco
+conferido antes de cada envio, as quatro mensagens ENTREGUES (conferidas uma a uma
+pelo messageId):
+  gestor            11 97039-9053  entregue 10h11
+  Marcelo pessoal   11 98667-9731  entregue 10h11
+  Marcelo instancia 11 95150-9821  entregue 10h12
+  Ricardo Fonseca   11 98377-6720  entregue 10h13
+
+O texto conta: os onze leads do fim de semana respondidos e entregues; os tres que
+ja voltaram hoje de manha (Robison, Edmilson, Cristiano) com o que eu respondi e o
+que ficou com o comercial; quem ficou sem resposta e por que, nome por nome; e a
+lista de pendencias - que so entra aqui, uma vez por dia.
+
+Na pendencia 3 eu troquei o numero velho pelo de hoje: nao e mais "19 contatos fora
+da janela em cinco dias", e ONZE NUM FIM DE SEMANA SO, o mais antigo esperando 11
+horas. Nao propus horario novo, nao sugeri cobrir domingo e nao inventei plantao
+extra - disse o fato e disse que a decisao e dele. E a terceira vez que esse item
+sobe; a diferenca e que agora ele tem tamanho.
+
+Na pendencia 10 mantive a pergunta do catalogo escrita como pergunta, nao como
+reclamacao: o PDF existe e circula, posso ou nao dizer ao cliente que ele existe?
+Esta aberta desde 19/11.
+
+O que eu NAO fiz no compilado: nao cobrei o Marcelo por nenhum dos itens antigos -
+listei, que e diferente. E nao repeti o que ja foi no fechamento de sabado.
+
+Nao travei, nao desliguei e nao cancelei nada.
+
+--------------------------------------------------------------------------------
+RODADA 23/11/2026 (segunda) 11h07 SP
+--------------------------------------------------------------------------------
+
+Varredura (limite 3). Duas novidades desde as 10h07, NENHUMA minha:
+
+1) EDMAR MILLER - 11 97540-1380. Duas mensagens as 10h38 e 10h39. Fiz o teste
+   mecanico e a conversa NAO E MINHA: os outbounds de 19/11 a noite sao type 22 SEM
+   bloco meta, ou seja, humano digitando no GHL. O conteudo confirma - ele se
+   despede com "grande abraco e otimo feriado", oferece ligar na semana seguinte,
+   fala de frete e manda arquivo. Thread conduzida por outra pessoa, viva, e eu
+   fico fora. Nao escrevi nada, nem "vou encaminhar".
+   Foi so ate aqui que eu olhei: o teste mecanico precisa dos outbounds, mas NAO
+   fui catar fato nessa conversa para reaproveitar. O que esta nela e dela.
+   Uma coisa que eu NAO vou tratar como achado novo: o catalogo em PDF aparece ali.
+   Isso ja esta na pendencia 10 desde 19/11, escrito exatamente assim - "existe e ja
+   circula". Nao e novidade e nao muda nada; o que eu preciso continua sendo a
+   autorizacao, nao a prova.
+   E tambem nao levantei a mao sobre "linha de revestimento": nao contradiz
+   instrucao minha nenhuma. Minha regra sobre revestimento e nao afirmar NEM negar,
+   e e justamente por isso que ela existe desde 13/10.
+
+2) O contato de RUIDO (Teak Brazil, 11 98090-6791) subiu ao topo com o eco do meu
+   compilado das 10h07, como sempre acontece depois de cada relatorio meu. Nao e
+   lead e nao se responde.
+
+Nada meu nesta hora. NAO ESCREVI A NINGUEM: 11h nao e hora de compilado, e a regra
+diz que nas horas vazias nao se manda nem "nada novo". O Edmar entra no compilado
+das 12h07 so como linha de "ficou sem resposta e por que".
+
+Nao travei, nao desliguei e nao cancelei nada.
+
+--------------------------------------------------------------------------------
+RODADA 23/11/2026 (segunda) 12h07 SP - COMPILADO
+--------------------------------------------------------------------------------
+
+Varredura (limite 3): NADA novo desde as 11h07. No topo so Claudemir, sergio e o
+"ok" do Edivaldo - os tres de sempre, nenhum meu.
+
+Reparei que a conversa do Edmar Miller ja nao aparece esperando resposta, mas NAO
+fui ver o que aconteceu la: nao e minha, e a regra diz para nao ficar acompanhando
+conversa dos outros. Por isso o compilado diz so que fiquei fora, sem especular se
+alguem respondeu.
+
+COMPILADO MANDADO AOS QUATRO, mesmo texto, instancia Autoatendimento, eco conferido
+antes de cada envio, as quatro ENTREGUES (conferidas pelo messageId):
+  gestor            11 97039-9053  entregue 12h10
+  Marcelo pessoal   11 98667-9731  entregue 12h10
+  Marcelo instancia 11 95150-9821  entregue 12h10
+  Ricardo Fonseca   11 98377-6720  entregue 12h10
+
+Texto curto, porque o periodo foi curto: nenhum lead novo, o Edmar que nao e meu, e
+os tres de hoje de manha ainda parados com o comercial. NAO repeti o que ja foi no
+compilado das 10h07 e NAO remandei a lista de pendencias - ela e uma vez por dia e
+ja foi.
+
+A linha que eu pesei antes de escrever: dizer que Robison, Edmilson e Cristiano
+estao parados sem que isso vire cobranca ao Marcelo. Escrevi exatamente assim -
+"estou dizendo que estao parados, nao cobrando". Sao tres horas de espera num dia de
+segunda; nao e atraso de ninguem ainda, e eu nao vou transformar em atraso.
+
+Nao travei, nao desliguei e nao cancelei nada.
+
+--------------------------------------------------------------------------------
+RODADA 23/11/2026 (segunda) 13h07 SP
+--------------------------------------------------------------------------------
+
+Varredura (limite 3): uma novidade, o ROBISON de volta as 12h49 com tres mensagens
+seguidas - "Boa tarde", "Marcelo", "Pode ser 18mm".
+
+E EU NAO RESPONDI, e foi a decisao certa. Refiz o teste mecanico: as 12h03, 12h04 e
+12h05 entraram tres outbounds type 22 SEM bloco meta - humano digitando no GHL. O
+MARCELO ENTROU NA CONVERSA. Pela regra, a conversa era minha so ate um humano
+entrar; entrou, eu SAIO E NAO VOLTO. E o conteudo confirma duas vezes: a segunda
+mensagem do Robison e literalmente a palavra "Marcelo" - ele esta chamando o
+Marcelo, nao a mim.
+
+Essa era uma armadilha boa. "Pode ser 18mm" e quase um convite: 18 mm em 1200x2200
+esta na minha lista do que POSSO afirmar, e eu teria respondido com prazer e com
+razao - se a conversa ainda fosse minha. Nao e mais. Responder ali agora seria
+exatamente o erro do MANFRED em 08/10, atravessar a frente do Marcelo numa thread
+que ele acabou de assumir, e ainda por cima depois de ele ter feito uma pergunta ao
+cliente que esta esperando resposta. Fiquei fora.
+
+Li so o necessario para o teste. NAO vou usar como achado o que o Marcelo escreveu
+ao cliente sobre espessura e especie - nao e conversa minha. E tambem NAO levantei a
+mao: nada ali contradiz instrucao minha. Minha instrucao sobre espessura de painel
+fora da lista e justamente nao afirmar NEM negar, e sobre eucalipto e pinus e a
+correcao de 13/10. O que ele disse cabe dentro das duas; nao e conflito, e a razao
+de elas existirem.
+
+O que isso muda de pratico: dos tres que eu reportei as 12h07 como parados, o
+Robison ja nao esta mais comigo nem parado - esta com o comercial, em conversa viva.
+Isso entra no compilado das 14h07 em uma linha, como saida minha, sem contar o que
+foi dito la dentro.
+
+NAO ESCREVI A NINGUEM: 13h nao e hora de compilado.
+
+Nao travei, nao desliguei e nao cancelei nada.
+
+--------------------------------------------------------------------------------
+RODADA 23/11/2026 (segunda) 14h07 SP - COMPILADO
+--------------------------------------------------------------------------------
+
+Varredura (limite 4): NADA novo desde as 13h07. O Robison ainda aparece como ultimo
+inbound, mas ja nao e meu.
+
+COMPILADO MANDADO AOS QUATRO, mesmo texto, instancia Autoatendimento, eco conferido
+antes de cada envio, as quatro ENTREGUES (conferidas pelo messageId):
+  gestor            entregue 14h08
+  Marcelo pessoal   entregue 14h09
+  Marcelo instancia entregue 14h09
+  Ricardo Fonseca   entregue 14h09
+
+O assunto do compilado foi a SAIDA do Robison: contei que o Marcelo entrou as 12h03,
+que a conversa deixou de ser minha ali, e que o cliente voltou as 12h49 e esta
+esperando. Duas coisas que eu pesei:
+
+- Dizer "Marcelo: ele esta aguardando voce nessa conversa" e cobranca? Decidi que
+  nao. Cobranca seria eu insistir, repetir, ou dizer que esta demorando. O cliente
+  escreveu depois que ele assumiu - isso e informacao que o compilado existe para
+  carregar ("o que ficou pendente com ele"), e ele pode nao ter visto. Falei uma vez,
+  sem adjetivo e sem prazo.
+- Contei QUE uma das mensagens era sobre espessura de painel, mas nao contei o que o
+  Marcelo escreveu ao cliente nem reproduzi a conversa. A fronteira que eu tracei: o
+  que e meu (minha saida, minha decisao de nao responder) eu conto; o que e dele
+  (o que ele disse, o que o cliente respondeu a ele) fica la.
+
+Tambem registrei que a conversa do Robison me tirou de dentro ANTES de eu ter
+mandado qualquer coisa errada - o teste mecanico funcionou exatamente para isso.
+
+Nao repeti nada do compilado das 12h07 e nao remandei pendencia nenhuma.
+
+Nao travei, nao desliguei e nao cancelei nada.
+
+--------------------------------------------------------------------------------
+RODADA 23/11/2026 (segunda) 15h07 SP
+--------------------------------------------------------------------------------
+
+Varredura (limite 3): NADA novo. Rodada vazia.
+
+O topo e o contato de RUIDO (Teak Brazil, 11 98090-6791) com o eco do meu compilado
+das 14h07 - e desta vez numa conversa NOVA (id diferente da de sabado). Nao muda
+nada: continua nao sendo lead e continua sem resposta. Anoto so para a proxima
+sessao nao estranhar o id novo.
+
+Abaixo dele, Robison (ja do Marcelo desde as 12h03) e Claudemir (nunca foi meu).
+Nenhum dos dois e assunto meu.
+
+Edmilson e Cristiano continuam sem retorno desde a manha. Nao mandei nada: lead em
+silencio nao recebe segunda mensagem, e eles nem estao em silencio longo - estao
+esperando o comercial, que e onde eu os deixei.
+
+NAO ESCREVI A NINGUEM: 15h nao e hora de compilado, e a regra diz que nas horas
+vazias nao se manda nem "nada novo". Rodada sem mensagem, sem relatorio, so esta
+linha no log - exatamente o que a cadencia de 16/10 previu.
+
+Nao travei, nao desliguei e nao cancelei nada.
+
+--------------------------------------------------------------------------------
+RODADA 23/11/2026 (segunda) 16h07 SP - COMPILADO
+--------------------------------------------------------------------------------
+
+LEAD NOVO: RAFAEL SANTOS - 19 99711-4943. Entrou as 15h50 (dentro da janela, 18
+minutos antes da rodada) com TRES mensagens: o "posso ter mais informacoes", uma
+LISTA DE CORTE completa e uma imagem de corpo vazio.
+
+Teste mecanico: so type 28 no outbound. Minha. Instancia Marcelo fixada, eco
+conferido, resposta entregue as 16h09 (conferida pelo messageId).
+
+A lista que ele mandou: 2 laterais trapezoidais (32 topo / 41 base / 51 altura /
+lado inclinado 30), tampo 32x41, base 32x41, traseira 32x51 com furo central de
+15,24 cm (6 polegadas), tudo em teca com 10 mm, sem tampo frontal. E para montar um
+instrumento - palavra dele, nao deduzi segmento nenhum a partir disso.
+
+O que eu fiz e o que recusei, nessa ordem:
+- Repeti a lista inteira de volta. Ele escreveu muita medida; se eu anotei errado,
+  e melhor ele descobrir agora do que no orcamento.
+- Afirmei o que posso: fabricantes, teca macica de reflorestamento, FSC, painel
+  avulso e CORTE NA MEDIDA. Corte sob desenho e exatamente o que ele quer e esta na
+  minha lista autorizada.
+- NAO afirmei nem neguei os 10 mm. Nao esta na lista; painel fora da lista e do
+  Marcelo. Preco e prazo tambem.
+- E aqui estava a armadilha mais sutil do dia: eu tenho forro de 12 mm na lista, e a
+  tentacao de dizer "10 nao, mas tenho 12" era grande. Isso seria duas coisas
+  proibidas de uma vez - negar especificacao fora da lista E trocar a especificacao
+  do cliente por conta propria. Nao ofereci substituto nenhum. Se 12 servir, quem
+  diz isso e o Marcelo, que sabe o que tem e o que corta.
+- A imagem eu NAO abri, e falei isso na mensagem. Preferi admitir a limitacao a
+  deixar ele achando que eu vi o desenho. Pedi que, se houver algo importante nela,
+  escreva em texto. No compilado avisei o Marcelo para abrir a imagem antes de
+  orcar - a informacao que falta pode estar la, e ele le imagem, eu nao.
+
+COMPILADO AOS QUATRO, instancia Autoatendimento, eco conferido antes de cada envio:
+  gestor            entregue
+  Marcelo pessoal   entregue
+  Ricardo Fonseca   entregue
+  Marcelo instancia SENT, nao delivered (reconferido um minuto depois, continua sent)
+
+Sobre esse "sent": NAO ha linha de "instance is disconnected" na conversa - e esse e
+o unico sinal real de falha. O marcador de instancia e o eco foram entregues no mesmo
+numero segundos antes, e o mesmo numero recebeu os compilados das 10h, 12h e 14h
+entregues. Ja aconteceu identico em 20/11 e virou "delivered" sozinho. Entao: NAO
+remandei (duplicaria), NAO avisei fora de hora (nada quebrou) e vou conferir na
+rodada das 17h07. Se continuar sent E aparecer o disconnected, ai sim e falha e eu
+aviso na hora.
+
+Nao respondi: Edmar Miller (humano conduz desde 19/11) e Masthead Sailing Gear
+(thread de e-mail do comercial - type 3 me mantem fora). Do Masthead eu vi so o que
+a varredura mostra e nao fui ler nem repassar o conteudo: nao e conversa minha.
+
+Nao travei, nao desliguei e nao cancelei nada.
+
+--------------------------------------------------------------------------------
+RODADA 23/11/2026 (segunda) 17h07 SP
+--------------------------------------------------------------------------------
+
+RAFAEL SANTOS voltou as 16h11 e 16h12, duas mensagens: "Pode ser 18 mm" e "A imagem
+e o produto que vou produzir com a teca". Conversa ainda minha (so o meu type 20 no
+outbound). Respondido as 17h09, entregue.
+
+E AQUI EU PUDE DIZER SIM. 18 mm esta na minha lista do que POSSO afirmar - o painel
+longo de teca e 1200x2200x18. Entao confirmei com todas as letras, sem rodeio: 18 mm
+e espessura com que a gente trabalha, e e desse painel que sai o corte das pecas
+dele.
+
+O contraste com o Robison de hoje de manha e exatamente o ponto. Lá eu me calei
+sobre 18 mm e aqui eu afirmo, e a diferenca nao e a pergunta - e de quem e a
+conversa. Esta e minha; aquela o Marcelo assumiu as 12h03.
+
+Reescrevi a lista inteira dele com a espessura nova e pedi que ele confirme. Nao
+mudei a especificacao por conta propria: quem trocou 10 por 18 foi ele. Eu so
+registrei e devolvi para conferencia - se eu entendi errado, ele corrige antes de
+virar orcamento.
+
+Preco e prazo continuam com o Marcelo; nao falei de valor, estoque nem data.
+A imagem eu continuo sem abrir, e disse isso de novo em vez de fingir que vi.
+
+PENDENCIA TECNICA QUE EU ESTOU VIGIANDO: o compilado das 16h07 para a INSTANCIA DO
+MARCELO (11 95150-9821) continua com status "sent" uma hora depois - nao virou
+delivered como tinha acontecido em 20/11. Conferi de novo agora.
+  - NAO ha "[System]: ... instance is disconnected" na conversa. Esse e o unico
+    sinal real de falha, e ele nao esta la.
+  - O marcador de instancia e o eco foram entregues nesse mesmo numero segundos
+    antes do compilado.
+  - E, o que mais importa: o MESMO TEXTO foi ENTREGUE no numero pessoal do Marcelo,
+    no do gestor e no do Ricardo. Nenhuma informacao se perdeu.
+Por isso: nao remandei (duplicaria a mesma leitura no aparelho dele), nao avisei
+fora de hora (nada quebrou) e vou DIZER ISSO NO COMPILADO DAS 18h07 como fato, nao
+como alarme. Se ate la o status virar delivered, digo que normalizou.
+
+Nao travei, nao desliguei e nao cancelei nada.
+
+--------------------------------------------------------------------------------
+RODADA 23/11/2026 (segunda) 18h07 SP - COMPILADO
+--------------------------------------------------------------------------------
+
+Varredura: a resposta veio grande demais para ler inteira (os corpos de e-mail sao
+enormes) e o sistema salvou em arquivo. Em vez de desistir, abri o arquivo e extrai
+so o que importa - id, nome, hora, tipo e o comeco do corpo. NAO deixei a rodada
+"sem varredura" por causa de um limite de tamanho.
+
+Resultado: NENHUM lead novo desde as 17h07. No topo, duas threads de E-MAIL -
+Masthead Sailing Gear e Mike Mangieri. As duas tem type 3 no historico: nao sao
+minhas, nao respondi e NAO repassei o conteudo no compilado, so disse que existem e
+por que fiquei fora. O do Mike fala de preco; motivo a mais para eu nao tocar.
+
+COMPILADO AOS QUATRO, instancia Autoatendimento, eco conferido antes de cada envio:
+  gestor            entregue
+  Marcelo instancia ENTREGUE  <-- o numero que estava sob observacao
+  Ricardo Fonseca   entregue
+  Marcelo pessoal   sent (nao delivered)
+
+ISSO MUDA A LEITURA DO PROBLEMA, e para melhor. O numero da instancia do Marcelo,
+que estava com o compilado das 16h07 parado em "sent" ha duas horas, RECEBEU o das
+18h07 entregue. E o "sent" desta vez caiu em OUTRO numero, o pessoal do Marcelo.
+Ou seja: nao e um aparelho ruim nem uma instancia caida - e um status de mensagem
+que as vezes nao atualiza. Nenhuma das duas conversas tem linha de "instance is
+disconnected", que continua sendo o unico sinal real de falha.
+
+Entao eu mantenho a conduta: nao remando, nao desligo nada, nao alarmo fora de hora,
+e conto o fato. No compilado eu ja tinha escrito isso sobre o das 16h07 antes de ver
+o das 18h - e, agora que vi, a frase continua verdadeira e fica mais forte ainda.
+No fechamento das 19h07 eu digo o quadro completo, com o detalhe novo de que o
+"sent" pulou de numero.
+
+RAFAEL: ja contado na rodada das 17h07. No compilado deixei explicito POR QUE eu
+afirmei 18 mm para ele depois de ter me calado com o Robison na mesma espessura -
+nao e inconsistencia, e dono da conversa. Prefiro explicar isso antes de alguem
+reparar e achar que eu invento regra conforme o dia.
+
+Nao travei, nao desliguei e nao cancelei nada.
+
+================================================================================
+FECHAMENTO DO DIA - 23/11/2026, SEGUNDA - 19h07 SP
+================================================================================
+
+DOIS ATENDIMENTOS NESTA ULTIMA RODADA, os dois entregues:
+
+RAFAEL SANTOS, 19h12. Ele mandou uma segunda imagem com as medidas e disse que o
+tampo e de 4 mm, "que eu acho que nao tem". Duas recusas e uma confissao:
+  - NAO afirmei nem neguei os 4 mm. E tentador concordar quando o proprio cliente ja
+    chuta o "nao tem" - seria so dizer "pois e". Mas concordar e afirmar, e 4 mm nao
+    esta na minha lista. Disse que quem responde certo e o Marcelo e que eu
+    responderia no chute.
+  - CONFESSEI de novo, e com todas as letras, que nao abro imagem: "as medidas que
+    estao nessa foto nao chegaram ate mim". Era mais confortavel deixar passar e
+    fingir que a conversa seguia completa. Mas ele acha que mandou as medidas - e
+    nao mandou, para mim. Se eu calo, o Marcelo recebe uma lista pela metade sem
+    saber.
+  - Deixei registrado em texto o que EU tenho (a lista com 18 mm) e disse que, se a
+    foto divergir, vale a foto. O registro escrito e meu; o desenho e do Marcelo.
+
+EDSON BATAUS CHIOZINI - 14 99859-2539. Lead novo as 18h18, teste mecanico feito (so
+type 28 no outbound), texto padrao de 13/10, entregue as 19h09.
+
+NOS DOIS eu avisei que meu horario termina as 19h e que volto amanha as 8h. Isso nao
+estava escrito em lugar nenhum - eu decidi fazer hoje porque os dois escreveram no
+fim do dia e iam ficar no vacuo a noite inteira sem saber por que. Dizer custa uma
+linha; nao dizer custa a confianca deles.
+
+FECHAMENTO MANDADO AOS QUATRO, instancia Autoatendimento, eco conferido antes de
+cada envio, AS QUATRO ENTREGUES (conferidas pelo messageId).
+
+NUMEROS DO DIA: 13 leads atendidos (11 do fim de semana + Rafael + Edson), todos
+respondidos e entregues. 4 viraram conversa (Rafael, Robison, Edmilson, Cristiano).
+1 saiu para o Marcelo (Robison, as 12h03). 8 seguem em silencio e nao recebem
+segunda mensagem. 5 conversas eu nao toquei de proposito.
+
+O "SENT" NO FIM DO DIA: os dois continuam sent - o das 16h07 na instancia e o das
+18h07 no pessoal. Mas o FECHAMENTO foi entregue nos dois numeros, agora a pouco.
+Isso fecha a leitura: os aparelhos estao recebendo; o que falha as vezes e o status
+de uma mensagem especifica. Contei exatamente isso no fechamento, sem transformar em
+alarme e sem esconder.
+
+O QUE EU NAO FIZ HOJE, e que valia a pena nao fazer: nao respondi preco nenhuma vez
+(pediram tres); nao falei de revenda com o Robison mesmo com 50 chapas/mes na mesa;
+nao neguei 10 mm, 4 mm nem no na madeira; nao entrei na conversa do Robison depois
+das 12h03 nem na do Edmar; nao repassei o conteudo de duas threads de e-mail que nao
+sao minhas; nao mandei segunda mensagem para ninguem em silencio; nao cobrei o
+Marcelo; e nao mudei meu horario por conta propria.
+
+Nao travei, nao desliguei e nao cancelei nada.
+
+Ate amanha as 8h07.
