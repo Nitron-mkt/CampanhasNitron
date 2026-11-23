@@ -1756,3 +1756,69 @@ período — 953 rodadas da `forca-cadastro`, 608 do `copiloto-lead`, todas `suc
   **orçamento em elaboração não está em view liberada**. Logo, **não dá para dizer daqui quais dos
   15 lojistas concluíram o pedido** — nem atribuir os 36 ao fluxo. É a pendência 4 (atribuição
   envio → pedido), agora com nome e sobrenome.
+
+## "A Nitron recusou por uma regra interna": são DUAS causas, e nós jogamos o motivo fora (23/11)
+
+O gestor perguntou qual é a regra. A resposta mora no campo **`detalhe`** da resposta de erro — e a
+`forca-cadastro` grava só `erro` + `mensagem` (`const msg = \`${e.erro}: ${e.mensagem}\``) e
+**descarta o `detalhe`**. Ou seja: o único campo que diz O QUE travou é o que não guardamos.
+
+**Dá para recuperar, porque o protocolo fica gravado.** `GET /api/crm/orcamento/{protocolo}` devolve
+o erro inteiro, com `detalhe`, mesmo dias depois. Foi assim que os dois casos foram lidos
+(`forca-teste` v6, que agora é **só leitura**: faz GET de protocolo e nada mais).
+
+### Caso 1 — lead 735 (Neide): CNPJ INVÁLIDO, e o erro só aparece no fim
+
+`detalhe`: *"Receita Federal: O número do CNPJ informado não é um número válido."* · `etapa: cadastro`
+
+O CNPJ `54518587000130` **não passa no dígito verificador** — o correto seria `...0154`, não
+`...0130`. A Receita recusou, e o cadastro nunca foi criado (conferido: o CNPJ não existe em
+`AD_VW_COM_CADCLIENTES`).
+
+**A causa é nossa, e é medida: a Nina não valida o dígito verificador; a landing valida.**
+
+| por onde entrou | leads com CNPJ | CNPJ inválido |
+|---|---|---|
+| landing Nitron Direto | 35 | **0 (0,0%)** |
+| orgânico / WhatsApp | 283 | **6 (2,1%)** |
+
+Os seis: 110 (Loja É 10), 128 (Rodrigo Ribeiro), 143 (Ponto do Real), 425 (Carlos Eduardo/Shopee),
+566 (Loja Mundo 5 a 20) e 735 (Neide). **Só o 735 chegou a tentar o Força** — os outros cinco ainda
+não completaram os dados. É bomba armada: no dia em que completarem, dão o mesmo erro.
+
+O `cnpjDoTexto()` do `copiloto-lead` aceita qualquer 14 dígitos. Validar o DV ali custa seis linhas
+e evita abrir protocolo para um número que a Receita vai recusar — mas **mexe na função que está
+atendendo**, então é decisão do gestor. O remendo barato, sem deploy, é uma lição mandando a Nina
+reconferir o número com o lojista.
+
+### Caso 2 — lead 751 (Felipe Gonzaga): o ERP exige endereço que NINGUÉM TEM
+
+`detalhe`: *"ORA-20101: O Endereço do parceiro deve ser preenchido. ORA-06512: em
+`NITRONPLASTPRD.TRG_INC_TGFPAR_NIT`, line 234. ORA-04088: erro durante a execução do gatilho"*
+
+É um **gatilho do Sankhya** (`TRG_INC_TGFPAR_NIT`) que barra o INSERT do parceiro sem endereço.
+E aqui o lojista não tem culpa nenhuma:
+
+- o CNPJ `66068067000176` é **válido** e está **ATIVO** na Receita;
+- o lead veio **da landing**, com CEP `83535000`, número `41` e complemento `TRAVESSA D` — ou seja,
+  a `forca-cadastro` **mandou** o objeto `entrega` (ela manda quando há CEP de 8 dígitos e número);
+- **o cadastro da Receita desse CNPJ tem `logradouro` VAZIO** — só bairro ("JARDIM O BOM PASTOR"),
+  CEP, município e UF. Conferido na BrasilAPI;
+- **o CEP é de cidade inteira**: o ViaCEP devolve `logradouro: ""` para 83535-000 (Campo Magro/PR).
+
+Então a rua não existe em nenhuma fonte automática, e o `entrega` que mandamos serve ao endereço de
+ENTREGA do pedido — **não preenche o endereço do cadastro do parceiro**, que é o que o gatilho
+cobra. Só perguntando a rua ao lojista, e hoje **a LP não pede rua** (pede CEP, número e
+complemento).
+
+### O que isso ensina, e o que é decisão do gestor
+
+1. **Guardar o `detalhe`.** Sem ele, toda recusa vira "regra interna" e cada investigação custa
+   republicar função e reconsultar protocolo. Gravar numa coluna `forca_erro_detalhe` é o conserto
+   que evita repetir tudo isto — e mexe na `forca-cadastro`, que abre pedido de 5 em 5 min.
+2. **`resolve: "nitron"` não quer dizer que a bola é nossa.** Nos dois casos o contrato diz
+   "a Nitron vai acertar e retomar" — e em nenhum dos dois alguém da Nitron vai acertar sozinho: um
+   depende do lojista corrigir o CNPJ, o outro de alguém digitar a rua. A mensagem ao lojista
+   (categoria `nosso` da `forca-avisar` v5) diz "já está com a nossa equipe", o que é verdade só
+   porque a `forca-cadastro` abre tarefa — mas ninguém pede o dado que falta.
+3. **Pedir a rua na landing** resolveria o caso 2 na origem, para MEI de cidade com CEP único.
