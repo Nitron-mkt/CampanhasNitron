@@ -1698,3 +1698,61 @@ precisariam dobrar. Reportado ao gestor; a régua é decisão dele.
    deixar.
 9. **DENIZE (codvend 116)**: entregar lista de clientes sem compra em vez de rota. Combinado que
    fica como está até o gestor pedir.
+
+## O FLUXO DO FORÇA DESTRAVOU (19 a 23/11) — e o que isso mostrou
+
+De 17/11 até a tarde de 19/11 o fluxo novo não tinha produzido **nada**: `forca_pedir_em` nulo em
+todas as linhas, nenhum link entregue. De 19/11 (quinta, 18h45) a 23/11 (segunda, 05h45):
+
+| marco | quantidade |
+|---|---|
+| leads novos | 72 |
+| a Nina pediu o mix (`forca_pedir_em`) | 11 |
+| **pedido aberto no ERP** | **15** (o total saiu de 22 para 37) |
+| **link entregue por Zaptos** | **15** (era zero) |
+| cutucada de 45 min | 3 |
+| aviso de lead travado | 1 ao lojista + 1 ao gestor |
+| erros | 2 |
+
+**Os 15 viraram cadastro de verdade**: conferido em `AD_VW_COM_CADCLIENTES`, 15 codparc novos
+criados entre 19 e 23/11 (230856 a 231298), todos na CODTAB 0 (padrão). Zero falhas de cron no
+período — 953 rodadas da `forca-cadastro`, 608 do `copiloto-lead`, todas `succeeded`.
+
+- **A LANDING CONVERTE 10x MAIS QUE O ORGÂNICO, e isso é medido.** Dos 72 leads novos: a landing
+  Nitron Direto trouxe **7, e 6 viraram pedido (86%)** — os sete chegaram com CNPJ e e-mail já
+  preenchidos pela ponte. O WhatsApp/orgânico trouxe **64, e 9 viraram pedido (14%)**: só 12 dos 64
+  chegaram a ter CNPJ. O gargalo não é a Nina, é o dado — quando ele vem pronto do formulário, o
+  fluxo inteiro anda sozinho.
+- **ERRO NOVO: `ERRO_ERP: A Nitron recusou o cadastro ou o pedido por uma regra interna (o texto
+  está em `detalhe`). Reenviar não resolve: a Nitron vai acertar e retomar.`** Dois casos (leads
+  735 Neide/SP e 751 Felipe Gonzaga/PR). Não é a Inscrição Estadual e não traz o motivo — o
+  `detalhe` fica do lado deles. Na `forca-avisar` v5 cai na categoria `nosso`, que é exatamente a
+  rede que essa versão criou: até a v4 esses dois teriam ficado em silêncio.
+- **A v5 funcionou, e o segundo caso prova a regra do domingo.** O lead 735 travou 21/11 16h40 e foi
+  avisado às 17h00, com espelho ao gestor. O 751 travou **domingo** 22/11 17h10 e **não** foi
+  avisado: o cron é `1-6` e a função pula domingo e só fala das 9h às 20h. Na prévia de segunda às
+  8h ele aparece na fila (`a_avisar: 1`, tipo `nosso`) para sair às 9h. **Não é defeito — é a regra
+  desenhada**, e o custo dela é ~16h de silêncio para quem trava num domingo. Alargar é decisão do
+  gestor.
+- **O LINK DO FORÇA NÃO TEM TRAVA DE HORÁRIO — e saiu às 05h45, 06h10 e 07h00.** A cutucada
+  (`forca_cutuca_hora_*`) e o aviso de travamento respeitam 9h–20h de São Paulo e pulam domingo; a
+  **entrega do link não respeita nada**. O lead 756 recebeu o acesso de compra às 05h45 de uma
+  segunda-feira, o 718 às 06h10 de um sábado. É defensável (ele pediu e está esperando) e é também
+  notificação no celular de madrugada. Nunca foi decidido — é decisão do gestor.
+- **Campanhas: só cobrança saiu pela fila.** 23 + 43 + 84 linhas de `cobranca_*` em 19, 20 e 23/11
+  (sábado e domingo zerados, como esperado), com 1 erro em 43. Nenhuma campanha do painel Gestor foi
+  disparada. A reativação mandou **1**. O 1º e-mail do Mob gotejou **1** (20/11 14h50, total 5.608);
+  o 2º está parado desde 05/11; **o 4º nunca saiu** — `nitronmob_envio4` vazio e `nitronmob4_ativo`
+  continua `nao`.
+- **E não houve disparo de massa pelo CRM.** O `export-messages-by-location` devolve **5.226**
+  e-mails na janela 19–24/11, ou ~1.045/dia, que é a linha de base normal; o 3º e-mail, quando saiu
+  por campanha, fez 5.147 **num dia só**. As dez mensagens mais recentes são todas cobrança de
+  boleto, com `source: "app"` e não `"campaign"`. A leitura por volume diário é o atalho barato para
+  essa pergunta — varrer mensagem a mensagem atrás de `source: "campaign"` custa caro e não foi
+  preciso.
+- **O canal Acelera vendeu R$ 245.631,45 no período (36 pedidos), e NENHUM é dos 15.** Os números de
+  pedido do Força continuam sem aparecer em `AD_VW_COM_PEDIDOS` — os 15 de agora, como o 1711837 de
+  17/11. A view responde no período (traz os 36), então o zero é real e a explicação é a já medida:
+  **orçamento em elaboração não está em view liberada**. Logo, **não dá para dizer daqui quais dos
+  15 lojistas concluíram o pedido** — nem atribuir os 36 ao fluxo. É a pendência 4 (atribuição
+  envio → pedido), agora com nome e sobrenome.
