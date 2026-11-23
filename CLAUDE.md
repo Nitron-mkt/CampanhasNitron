@@ -1822,3 +1822,58 @@ complemento).
    (categoria `nosso` da `forca-avisar` v5) diz "já está com a nossa equipe", o que é verdade só
    porque a `forca-cadastro` abre tarefa — mas ninguém pede o dado que falta.
 3. **Pedir a rua na landing** resolveria o caso 2 na origem, para MEI de cidade com CEP único.
+
+### O detalhe passou a ser guardado, e o pedido REABRE quando o lojista corrige (23/11)
+
+Ordem do gestor: *"guarde o detalhe sim"* e *"tem como passar essa resposta novamente pro força de
+vendas de novo?"*. As duas coisas moram numa função nova, **`forca-detalhe`** (cron
+`forca-detalhe-10min`, jobid 272), e **a `forca-cadastro` não foi tocada**.
+
+**Por que não gravar o detalhe lá, na hora.** A `forca-cadastro` abre pedido de verdade de 5 em 5
+min e tem 32 KB; sem CLI, publicar exige transcrever o arquivo inteiro numa chamada, e em 18/11 isso
+já rendeu duas armadilhas de transcrição. O que destravou a decisão foi medir que **o GET do
+protocolo devolve o `detalhe` de novo, dias depois** — então o dado não se perde e pode ser buscado
+num segundo momento. Troquei risco alto de deploy por atraso de minutos num campo de diagnóstico.
+**De quebra isso preencheu o passado:** na primeira passada ela recuperou o motivo dos **seis**
+leads travados, incluindo os quatro da Inscrição Estadual, cujo texto exato é
+`Insc. Estadual, deve ser informada.`
+
+Colunas novas em `copiloto_lead`: `forca_erro_cod`, `forca_erro_detalhe`, `forca_erro_etapa`,
+`forca_erro_resolve`, `forca_enviado` (jsonb), `forca_retomado_em`, `forca_retomadas`.
+
+**A RETOMADA SÓ ACONTECE QUANDO UM DADO QUE A API ACEITA MUDOU — e essa condição é o que separa
+conserto de laço.** Reabrir é só limpar `forca_erro` e `forca_protocolo`: a `forca-cadastro` pula
+quem tem erro, então sem a coluna o lead volta para a fila de "nunca enviados" e o cron abre pedido
+novo. Se reabrisse sem checar o dado, o lead voltaria à fila a cada 5 minutos para receber **a mesma
+recusa** — no CNPJ inválido a Receita recusaria de novo, e no lead 751 o gatilho do endereço também,
+porque ali o que falta é a RUA e **a API não tem campo para ela**.
+
+Por isso o `forca_enviado`: um retrato de `cnpj`, `email`, `whatsapp`, `cep` e `numero` — as cinco
+coisas que o corpo aceita. A retomada compara o retrato com os dados de hoje; mudou alguma, reabre.
+
+- **Lead sem retrato não é reaberto**, de propósito. Sem saber o que foi enviado, "mudou" seria
+  chute. Os seis de agora ganharam o retrato na primeira passada e passam a participar daqui para a
+  frente.
+- **Teto `forca_retomar_max` = 2.** Se o lojista corrige duas vezes e não passa, o problema não é o
+  dado — e alguém tem de olhar.
+- **`?acao=retomar` é prévia pura**, nunca escreve. `?lead=N` dispensa a comparação e é o destravar
+  à mão.
+- `forca_retomar_ativo` nasce **`sim`**, e aqui isso é defensável contra a regra de 16/09 porque
+  **esta função não manda mensagem nenhuma**: ela grava diagnóstico e limpa colunas. A mensagem que
+  sai depois é o link, que tem as travas dele (`forca_link_enviar`, janela de 36h).
+
+**A cadeia fecha sem a Nina precisar saber de nada**, e é por isso que o `copiloto-lead` não
+precisou ser publicado: o `cnpjDoTexto()` **já grava sozinho** o CNPJ que o lojista escrever na
+conversa. Então lojista corrige → a Nina grava → a `forca-detalhe` vê que mudou → reabre → a
+`forca-cadastro` abre o pedido → o link sai. **Lição 469** cobre o lado dela: receber, repetir o
+número para conferência, e **parar** — não chamar `link_pedido` de novo, não prometer hora, e nos
+dois casos sem campo na API (Inscrição Estadual e endereço) chamar `passar_comercial` em vez de
+prometer reenvio.
+
+**O que continua sem solução, e é pergunta para o time da `vendas.nitron.com.br`:** o corpo aceito é
+`cnpj, contato, email, whatsapp` + `entrega{cep, numero, complemento}`. **Não há logradouro e não há
+Inscrição Estadual.** Enquanto não houver, o MEI de cidade com CEP único (lead 751) e os quatro
+barrados na IE dependem de alguém concluir o cadastro à mão — nenhuma automação resolve.
+
+**Nota de encoding:** a mensagem da Receita chega em latin1 e grava `O n?mero do CNPJ`. A do Oracle
+vem em UTF-8 correta. É da origem, não nossa; o sentido se lê, mas não é bom para colar em e-mail.
