@@ -1877,3 +1877,78 @@ barrados na IE dependem de alguém concluir o cadastro à mão — nenhuma autom
 
 **Nota de encoding:** a mensagem da Receita chega em latin1 e grava `O n?mero do CNPJ`. A do Oracle
 vem em UTF-8 correta. É da origem, não nossa; o sentido se lê, mas não é bom para colar em e-mail.
+
+### O aviso ao lojista passou a ler o DETALHE — e a Isenção não tem como ser mandada (23/11)
+
+Duas perguntas do gestor no mesmo minuto: *"Tem como eu mandar por aqui quando for Isento para
+continuar o pedido?"* e *"E esse que o CNPJ ou Endereço esta errado, sabendo do erro tem que passar
+para o cliente"*.
+
+**A segunda era um furo meu, e ele estava na `forca-avisar` v5.** O `classificar()` lia só o
+`forca_erro` — e nas duas causas do ERP esse campo traz sempre o mesmo texto genérico ("A Nitron
+recusou o cadastro ou o pedido por uma regra interna"). Resultado: as duas caíam em **`nosso`**, a
+categoria do "é do nosso lado, já está com a nossa equipe". O lead 735 recebeu exatamente isso
+quando bastava ele conferir um dígito do CNPJ. Com o `forca_erro_detalhe` gravado pela
+`forca-detalhe`, a v7 lê **erro + detalhe** e ganhou duas categorias:
+
+| categoria | o que o detalhe diz | o que a Nina manda |
+|---|---|---|
+| `cnpj_dv` | `Receita Federal: O n?mero do CNPJ informado n?o ? um n?mero v?lido.` | "parece faltar ou sobrar um dígito, me manda de novo" |
+| `endereco` | `ORA-20101: O Endereço do parceiro deve ser preenchido` (gatilho `TRG_INC_TGFPAR_NIT`) | "o CEP é de uma região inteira, não veio a rua — me manda rua, número e bairro" |
+
+**A chave `forca_aviso_tipos` tinha a lista velha no banco e teria filtrado as duas categorias
+novas.** O padrão no código não vale quando a linha existe — mudar a lista é UPDATE, e foi feito.
+Vale para toda chave que é lista: o código novo não alcança o banco antigo.
+
+**Os dois foram reavisados com o texto certo** (735 `cnpj_dv`, 751 `endereco`), limpando
+`forca_aviso_em` e chamando `?lead=`. Foi segunda mensagem na mesma conversa, de propósito: sem ela
+o 735 nunca corrige o CNPJ e o 751 nunca manda a rua.
+
+**E dois textos prometiam o que o sistema não cumpre — consertados antes de sairem.** `ie` e
+`endereco` diziam "me manda que eu retomo o pedido de onde a gente parou". Nos dois casos **a API
+não tem campo** para o dado, então quem conclui é uma pessoa: era promessa sem nada atrás, o erro de
+16/09 em escala menor. Hoje dizem "eu já encaminho para completarem o seu cadastro", que é o que de
+fato acontece. **No `cnpj_dv` a promessa de retomada é verdadeira** e por isso a frase lá é outra: o
+`cnpjDoTexto` grava sozinho e a `forca-detalhe` reabre o pedido. Nenhum lead de IE chegou a receber
+o texto velho — os quatro estão fora do corte `forca_aviso_desde`.
+
+### A sonda de campo: a API ACEITA campo extra, e é por isso que o teste não prova nada
+
+Para responder "tem como mandar a Isenção?", a `forca-teste` v7 ganhou uma sonda em `teste: true`:
+manda um corpo com o campo de interesse (`inscricao_estadual`, `ie`, `ie_isento`,
+`entrega.logradouro`) e **outro com um campo que certamente não existe** (`zzz_campo_que_nao_existe`).
+A leitura só fecha com o controle: se o controle fosse recusado e o candidato passasse, a API
+validaria campos extras e conheceria o candidato.
+
+**Medido em 23/11: o controle PASSOU** (`passaria: true`). Ou seja, a API aceita qualquer campo a
+mais **em silêncio** — então mandar `inscricao_estadual` não prova nada e, muito provavelmente, é
+descartado. **Não dá para mandar a IE pela API, e não dá para provar o contrário daqui.** Confirmar
+é pergunta para o time da `vendas.nitron.com.br`, não teste nosso.
+
+**De brinde, um achado que muda como se lê uma recusa: `CNPJ_NAO_ENCONTRADO` é intermitente.** Nas
+duas rodadas da sonda o **mesmo CNPJ** passou três vezes e foi recusado na quarta, com
+*"Este CNPJ não existe na Receita Federal"* — é a consulta à Receita falhando por excesso de
+chamadas, como a BrasilAPI em 03/11. O aviso interno da categoria `cnpj` passou a dizer isso com
+todas as letras: **antes de cobrar o lojista, reconferir**. O `cnpj_dv` não tem esse problema — ali
+a conta do dígito é local e determinística.
+
+### O caminho que EXISTE para o lead travado na IE, e ele passa por uma pessoa
+
+A API recusa criar o parceiro sem IE, mas **não recusa aproveitar um parceiro que já existe**: em
+cliente antigo ela devolve `cadastro: "aproveita"` e o gatilho do Oracle nunca dispara, porque não
+há INSERT. Então a sequência que funciona é:
+
+1. alguém cria/completa o cadastro **no Sankhya**, com a IE (ou ISENTO) e o endereço — o MCP daqui é
+   somente leitura, e a API não tem os campos, então **esta etapa é humana e não tem como ser
+   automatizada**;
+2. o gestor avisa, e eu reabro com `forca-detalhe?lead=N`, que dispensa a comparação de dados;
+3. a `forca-cadastro` abre o pedido na rodada seguinte (5 min) e o link sai sozinho.
+
+**Conferido em 23/11: nenhum dos CNPJs travados existe em `AD_VW_COM_CADCLIENTES`** — o cadastro
+manual não foi feito para nenhum dos quatro da IE nem para o lead 751.
+
+**As lições da Nina já cobriam os dois casos novos e não precisaram mudar:** a **445** manda receber
+a IE (inclusive "é isenta"), repetir para conferência, chamar `passar_comercial` com o dado no resumo
+e **não** prometer hora; a **469** separa o que reabre sozinho (CNPJ, CEP, e-mail) do que depende de
+pessoa (IE e endereço) e proíbe prometer reenvio nesses dois; a **451** cobre a continuação da
+conversa. Foi o primeiro caso em que a regra nova chegou e o prompt já estava certo.

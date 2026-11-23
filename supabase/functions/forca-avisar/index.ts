@@ -75,11 +75,29 @@ const RE_CNPJ_NAO = /CNPJ_NAO_ENCONTRADO/i;
 const RE_CNPJ_INAT = /CNPJ_INATIVO/i;
 const RE_CEP = /CEP_NAO_ENCONTRADO/i;
 
-type Cat = "ie" | "casa" | "cnpj" | "cnpj_inativo" | "cep" | "email" | "nosso";
+// AS DUAS CAUSAS QUE SE ESCONDIAM DENTRO DE `ERRO_ERP` (medidas em 23/11). O codigo de erro nelas
+// e sempre o mesmo texto generico — "A Nitron recusou o cadastro ou o pedido por uma regra interna"
+// — e o que diz QUAL regra travou mora no `detalhe`, que ate 23/11 nos jogavamos fora. Com o
+// `forca_erro_detalhe` gravado pela `forca-detalhe`, essas duas passam a ser roteaveis:
+//
+// 1. CNPJ com digito verificador errado. A Receita responde "O numero do CNPJ informado nao e um
+//    numero valido" — e a mensagem chega em latin1 ("O n?mero"), entao o padrao se agarra ao trecho
+//    que nao tem acento nenhum. Sem isto, o lead 735 ouviu "e do nosso lado" quando bastava ele
+//    conferir um digito.
+// 2. O gatilho do Sankhya cobrando endereco do parceiro (ORA-20101 em TRG_INC_TGFPAR_NIT). Ali o
+//    lojista tambem nao tem culpa, mas quem resolve E ele: so ele sabe a rua.
+const RE_CNPJ_DV = /do CNPJ informado|d.?gito verificador/i;
+const RE_ENDERECO = /ORA-20101|TRG_INC_TGFPAR_NIT|ndere.o do parceiro/i;
 
-function classificar(erro: unknown): Cat {
-  const e = String(erro || "");
+type Cat = "ie" | "casa" | "cnpj" | "cnpj_dv" | "cnpj_inativo" | "cep" | "endereco" | "email" | "nosso";
+
+// LE O ERRO **E** O DETALHE. Era so o erro ate 23/11, e por isso toda recusa do ERP caia em
+// `nosso`: o codigo generico nao diz nada, e a causa estava no campo que nao era lido.
+function classificar(erro: unknown, detalhe?: unknown): Cat {
+  const e = [String(erro || ""), String(detalhe || "")].join(" | ");
   if (RE_IE.test(e)) return "ie";
+  if (RE_ENDERECO.test(e)) return "endereco";
+  if (RE_CNPJ_DV.test(e)) return "cnpj_dv";
   if (RE_CASA.test(e)) return "casa";
   if (RE_EMAIL.test(e)) return "email";
   if (RE_CNPJ_NAO.test(e)) return "cnpj";
@@ -93,8 +111,10 @@ const ROTULO: Record<Cat, string> = {
   ie: "INSCRICAO ESTADUAL",
   casa: "JA E CLIENTE DA CASA (representante ou Clube)",
   cnpj: "CNPJ NAO ENCONTRADO NA RECEITA",
+  cnpj_dv: "CNPJ INVALIDO (digito verificador)",
   cnpj_inativo: "CNPJ INATIVO NA RECEITA",
   cep: "CEP FORA DA NOSSA BASE DE ENTREGA",
+  endereco: "O ERP EXIGE O ENDERECO DO CADASTRO",
   email: "SEM E-MAIL",
   nosso: "RECUSA DO NOSSO LADO",
 };
@@ -159,9 +179,9 @@ function textoDoAviso(L: { nome: string }, cat: Cat): string {
     ie: [
       "Na hora de abrir o seu cadastro aqui, o sistema pediu a Inscricao Estadual do CNPJ e nao encontrou. Sem ela eu nao consigo seguir com o pedido: a nossa venda e para revenda e sai com nota de mercadoria.",
       "",
-      "Se a sua empresa tiver Inscricao Estadual, me manda o numero por aqui que eu retomo de onde a gente parou.",
+      "Se a sua empresa tiver Inscricao Estadual, me manda o numero por aqui que eu ja encaminho para a nossa equipe completar o seu cadastro.",
       "",
-      "Se ela for isenta, ou se a loja estiver noutro CNPJ, me conta tambem — eu passo para a nossa equipe ver o caminho certo com voce.",
+      "Se ela for isenta, ou se a loja estiver noutro CNPJ, me conta tambem — eu encaminho do mesmo jeito e a gente ve o caminho certo com voce.",
     ],
     // CLIENTE DA CASA. Licao 443, palavra por palavra: nao prometer link, nao inventar prazo e nao
     // dizer que "o sistema recusou" ou que "deu erro". Ele nao perdeu nada — ganhou um atendimento
@@ -177,6 +197,30 @@ function textoDoAviso(L: { nome: string }, cat: Cat): string {
       "Fui abrir o cadastro da sua loja e o CNPJ que voce me passou nao aparece na base da Receita Federal. Pode ser so um digito trocado.",
       "",
       "Me confirma o numero por aqui que eu sigo na hora.",
+    ],
+    // CNPJ COM DIGITO ERRADO. E diferente de "nao encontrado": aqui a Receita diz que o numero nao
+    // fecha como CNPJ, entao e erro de digitacao quase sempre. A frase nao acusa — ela devolve o
+    // numero para ele conferir, que e o que resolve em uma mensagem. E AQUI a promessa de retomada
+    // e verdadeira: o `cnpjDoTexto` grava o numero novo sozinho e a `forca-detalhe` reabre o pedido.
+    cnpj_dv: [
+      "Fui abrir o cadastro da sua loja e esse CNPJ nao passou na conferencia da Receita Federal — pelo numero que eu tenho aqui, parece faltar ou sobrar um digito.",
+      "",
+      "Me manda o CNPJ de novo por aqui que eu sigo na hora de onde a gente parou.",
+    ],
+    // ENDERECO DO CADASTRO. O sistema cobra o endereco do parceiro, e nem a Receita nem o CEP
+    // entregam a rua nesses casos (MEI de cidade com CEP unico). So ele sabe, entao e ele quem e
+    // perguntado — sem explicar gatilho de banco, que nao e problema dele.
+    //
+    // E ELE NAO PROMETE QUE O PEDIDO RETOMA SOZINHO, nem aqui nem na IE. Nos dois casos a API NAO
+    // TEM CAMPO para o dado (nao ha `logradouro` nem `inscricao_estadual` no corpo aceito — sondado
+    // em 23/11 em modo teste: a API aceita campo extra em silencio, o que prova que ela IGNORA, nao
+    // que ela conhece). Entao quem conclui e uma pessoa, e "eu retomo de onde a gente parou" seria
+    // promessa sem nada atras — o erro de 16/09. O que a mensagem promete e o que de fato acontece:
+    // o dado chega a quem resolve.
+    endereco: [
+      "Fui abrir o cadastro da sua loja e faltou o endereco completo: o CEP que voce me passou e de uma regiao inteira, entao nao veio o nome da rua.",
+      "",
+      "Me manda rua, numero e bairro por aqui que eu ja encaminho para completarem o seu cadastro.",
     ],
     cnpj_inativo: [
       "Fui abrir o cadastro da sua loja e a Receita Federal esta mostrando esse CNPJ como inativo. Com ele eu nao consigo seguir com o pedido.",
@@ -214,7 +258,9 @@ function textoGestor(L: any, cat: Cat, avisado: boolean): string {
   const porque: Record<Cat, string> = {
     ie: "O ERP recusou o cadastro pedindo a Inscricao Estadual do CNPJ e nao encontrou, entao o pedido dele NAO foi aberto. A API nao tem campo para mandar a IE — quem resolve e uma pessoa refazendo o cadastro.",
     casa: "A API recusou abrir pedido direto porque este cliente JA E DA CASA: ou comprou nos ultimos 180 dias com um representante, ou tem Clube Nitron ativo. Isto NAO e defeito — e a trava funcionando. O que falta e uma pessoa assumir: ele esta esperando um retorno comercial.",
-    cnpj: "A Receita Federal nao reconhece o CNPJ que ele informou. A Nina pediu que ele confira o numero.",
+    cnpj: "A Receita Federal nao reconhece o CNPJ que ele informou. A Nina pediu que ele confira o numero. ATENCAO: este codigo tambem aparece quando a consulta a Receita falha por excesso de chamadas — medido em 23/11, o mesmo CNPJ passou tres vezes e foi recusado na quarta. Antes de cobrar o lojista, vale reconferir.",
+    cnpj_dv: "O CNPJ que ele informou NAO FECHA no digito verificador — a Receita respondeu que o numero nao e valido. Quase sempre e digitacao. A Nina pediu o numero de novo, e assim que ele mandar o pedido REABRE sozinho (a `forca-detalhe` ve que o dado mudou e limpa a trava).",
+    endereco: "O ERP recusou criar o cadastro cobrando o ENDERECO do parceiro, e nem a Receita nem o CEP tem a rua (CEP de cidade inteira). A Nina pediu rua, numero e bairro — mas ATENCAO: a API nao tem campo de logradouro, entao mesmo com a resposta dele alguem precisa concluir o cadastro a mao.",
     cnpj_inativo: "A Receita Federal mostra o CNPJ dele como INATIVO. A Nina perguntou se a loja opera com outro CNPJ.",
     cep: "O CEP que ele informou nao esta na nossa base de regioes, entao nao da para fechar o preco com entrega. A Nina pediu o CEP de novo.",
     email: "O cadastro nao abre sem e-mail e nao achamos em lugar nenhum: nem na linha do lead, nem no contato do CRM, nem na conversa. A Nina pediu o e-mail.",
@@ -279,7 +325,7 @@ Deno.serve(async (req) => {
     const ligadoGestor = (await cfg("forca_aviso_gestor", "sim")).toLowerCase() === "sim";
     // QUAIS TIPOS FALAM. Nasce com todos, e desligar um e UPDATE — sem deploy, sem mexer em funcao
     // que esta atendendo. Util se um tipo se mostrar barulhento depois de ligado.
-    const tipos = new Set((await cfg("forca_aviso_tipos", "ie,casa,cnpj,cnpj_inativo,cep,email,nosso"))
+    const tipos = new Set((await cfg("forca_aviso_tipos", "ie,casa,cnpj,cnpj_dv,cnpj_inativo,cep,endereco,email,nosso"))
       .split(",").map((x) => x.trim().toLowerCase()).filter(Boolean));
 
     // Hora de Sao Paulo, fixa. Esta mensagem e iniciativa NOSSA e e uma noticia ruim: nao chega as
@@ -294,7 +340,8 @@ Deno.serve(async (req) => {
     // A mesma porta da `forca-cadastro`: lead da landing OU lead que a Nina encaminhou.
     const origens = (await cfg("forca_origens", "nitron-direto-lp%,lp-nitron%")).split(",").map((x) => x.trim()).filter(Boolean);
     const filtro = "(" + [...origens.map((o) => `origem.ilike.${o}`), "forca_pedir_em.not.is.null"].join(",") + ")";
-    const sel = "id,nome,empresa,cnpj,contact_id,forca_erro,forca_aviso_em,forca_aviso_gestor_em,forca_pedir_em,criado";
+    const sel = "id,nome,empresa,cnpj,contact_id,forca_erro,forca_erro_detalhe,forca_erro_cod," +
+                "forca_aviso_em,forca_aviso_gestor_em,forca_pedir_em,criado";
     const url = soLead
       ? `copiloto_lead?select=${sel}&id=eq.${soLead}`
       : `copiloto_lead?select=${sel}&or=${filtro}&forca_erro=not.is.null` +
@@ -304,7 +351,7 @@ Deno.serve(async (req) => {
 
     // TODA recusa entra, cada uma com o seu texto. O caso `nosso` e a rede: recusa que eu nao
     // reconheco nao fica calada — era assim que o lojista sumia do mapa ate a v4.
-    const comCat = todos.map((L) => ({ ...L, cat: classificar(L.forca_erro) }))
+    const comCat = todos.map((L) => ({ ...L, cat: classificar(L.forca_erro, L.forca_erro_detalhe) }))
                         .filter((L) => tipos.has(L.cat));
 
     // DUAS TRAVAS, e a segunda e a que o gestor pediu com todas as letras em 18/11:
@@ -355,6 +402,7 @@ Deno.serve(async (req) => {
                                                      texto: textoGestor(L, L.cat, !!L.forca_aviso_em) })) },
         fila: fila.map((L) => ({ lead: L.id, nome: L.nome, empresa: L.empresa, tipo: L.cat,
                                  erro: String(L.forca_erro || "").slice(0, 120),
+                                 detalhe: String(L.forca_erro_detalhe || "").slice(0, 200) || undefined,
                                  texto: textoDoAviso(L, L.cat) })),
       });
     }
