@@ -2290,3 +2290,43 @@ uma linha, antes de qualquer varredura. Medir serve para saber **quanto** e **co
 (nome `email5`) e a maquina — ou um `nitronmob-disparar5` no padrao provado do 2o, ou a tag no CRM
 como o 3o fez. **Campanha do CRM tem relatorio de abertura e clique; envio por API nao tem** (a ordem
 de 12/11), entao o caminho do CRM continua sendo o melhor para medir.
+
+### A PRIMEIRA RESPOSTA DA REABORDAGEM, e ela nao e sobre preco (24/11)
+
+8 perguntas no ar, **1 resposta em 28 minutos**: o lead 744, NLALFA IMPORTS LTDA (CNPJ
+57.263.141/0001-14, Sao Paulo/SP, pedido 1715011, veio da landing do Google). Ele tinha levado a
+cutucada em 23/11 e ficado mudo; a reabordagem saiu 24/11 15h22 e as 15h50 ele escreveu quatro
+mensagens seguidas:
+
+> "boa tarde" · "olá" · **"estive comparando valores e fazendo pesquisa de mercado, mas vi que vcs ja
+> vendem em mkt"** · **"ai nao consigo competir"**
+
+**A objecao NAO e "o preco esta caro" — e CONFLITO DE CANAL:** ele diz que a propria Nitron vende em
+marketplace e que por isso ele nao tem como competir. Isso nao e pessoal dele e vai voltar; e
+pergunta de estrategia, e quem responde e o gestor.
+
+**O que da para medir daqui, e o controle que valida a medicao:** em `AD_VW_COM_VENDAS`, as 13 refs
+do Mob tem **ZERO venda com `TIPO_NEGOCIACAO = 'VENDA SITE'`** desde 20/08 — as 11 formas que
+aparecem sao todas B2B (30-60-90 e afins) mais `VENDA CLUBE NITRON`. **E o zero e real**: o controle
+mostra que `VENDA SITE` existe e e enorme na mesma view — **3.903 notas e 5.083 pecas so em
+novembro**, em outros produtos. Ou seja, a Nitron vende MUITO no varejo pelo site, **mas nao a linha
+Mob**.
+Logo: **"voces ja vendem o Mob em marketplace" nao se confirma nos nossos dados de venda** — mas a
+impressao dele tem raiz plausivel (a Nitron vende varejo online em geral), e **nao da para saber
+daqui** se o que ele viu era anuncio de um revendedor, outra linha, ou um canal que nao passa por
+esta view. Nao afirmar nenhuma das tres.
+
+**A Nina respondeu sozinha, e e o `copiloto-lead` fazendo o que deve** (a conversa voltou a ficar
+viva, entao e dele). Ela mandou as 15h55, entregue. O texto diz: *"o preco que voce ve no marketplace
+e canal varejo, outro publico e outra tabela — nao e o preco que voce pagaria comprando no atacado
+pra revender"*, e no fim oferece o vendedor. Duas observacoes:
+- a explicacao e **plausivel e nao tem numero inventado**, mas ela **afirma** uma coisa que nos nao
+  medimos (que existe preco de marketplace do Mob e que ele e de outra tabela);
+- o fecho *"ver a melhor condicao junto com voce"* roca na licao 475, que proibe oferecer condicao
+  que nao existe. Nao prometeu desconto, mas sugere que ha uma condicao melhor esperando.
+**Decisao do gestor**, e a razao de estar escrito aqui em vez de eu mexer: nos dois casos de hoje em
+que reportei texto da Nina como defeito, um era ordem dele e o outro ele desfez.
+
+O aviso interno saiu para **Leonardo Lucas e Camyla Castro**, os dois `ok: true`, com a pergunta, a
+resposta, o CNPJ em linha propria e o link da conversa — a maquina da reabordagem fez exatamente o
+que foi pedida para fazer.
