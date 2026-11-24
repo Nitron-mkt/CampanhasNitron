@@ -2330,3 +2330,38 @@ que reportei texto da Nina como defeito, um era ordem dele e o outro ele desfez.
 O aviso interno saiu para **Leonardo Lucas e Camyla Castro**, os dois `ok: true`, com a pergunta, a
 resposta, o CNPJ em linha propria e o link da conversa — a maquina da reabordagem fez exatamente o
 que foi pedida para fazer.
+
+### A objecao de marketplace vira ARGUMENTO, e o motivo do preco continua proibido (24/11)
+
+Ordem do gestor, lendo a resposta do NLALFA: *"A nina realmente deve falar de marketplace, mas
+incentivar o cliente comprar pois sabemos que temos o menor preco... Numa dessas falar que o produto
+no marketplace esta passando por uma queima de estoque do lojista talvez.... algo que faca sentido
+para ela realmente finalizar"*.
+
+**Licoes 476 e 477** (entram no prompt sem deploy, e nasceram em par de proposito — uma manda
+argumentar, a outra diz com o que):
+
+- **476 — ela fala de marketplace e PUXA O FECHAMENTO.** E a **excecao explicita a licao 475**, que
+  manda acolher o motivo em vez de rebater; sem dizer isso com todas as letras, o modelo escolheria
+  uma das duas (o erro dos "quatro lugares" dos R$ 3.500). A ordem e: reconhece a pesquisa de preco,
+  diz que o preco dele e **de fabrica** (o menor da linha, autorizado pelo gestor) com os 10% acima
+  de R$ 5.000, e **vira para a conta DELE** — a revenda sugerida e praticamente o dobro do custo,
+  entao ele anuncia ate abaixo do que viu e ainda ganha. Fecha convidando a montar o pedido.
+- **O "praticamente o dobro" e MEDIDO, nao retorica:** nas 13 referencias o fator revenda/custo vai
+  de **1,896 a 2,011** (media 1,971) — **13 de 13** entre 1,9x e 2,0x. Sao os precos que o 1o e o 3o
+  e-mail ja publicaram, entao ela nao esta abrindo numero novo.
+- **477 — o MOTIVO do preco que ele viu continua proibido.** O gestor sugeriu a Nina dizer que o
+  anuncio e "queima de estoque do lojista". **Nao coloquei**, e a razao e uma so: nos nao sabemos.
+  Nao medimos aquele anuncio, nao sabemos quem anuncia nem por que. Se ele conferir e for outra
+  coisa, a Nina mentiu para um lojista que ja chegou desconfiado — e e exatamente a forma do erro de
+  16/09 (campo de cadastro virando permissao). Pelo mesmo motivo ela tambem nao diz que e revendedor,
+  que a Nitron nao vende la, nem que e "outra tabela" (que foi o que ela improvisou sozinha as
+  15h55).
+  **O que eu medi, e que NAO autoriza a frase:** as 13 refs do Mob tem zero venda com
+  `TIPO_NEGOCIACAO='VENDA SITE'` desde 20/08, com controle (VENDA SITE existe e fez 3.903 notas em
+  novembro, noutros produtos). Isso diz que **a Nitron nao vende Mob no varejo pelo nosso ERP** — nao
+  diz quem e o anunciante, e nao cobre canal que nao passe por nota nossa.
+  **Para liberar a frase basta o gestor responder uma coisa: a Nitron vende a linha Mob em
+  marketplace, sim ou nao?** Se nao vende, a Nina ganha um argumento MUITO mais forte do que a queima
+  de estoque, e verdadeiro: *"esse anuncio nao e nosso; a Nitron nao vende essa linha no varejo"*.
+  Enquanto a resposta nao vier, ela argumenta so com o preco de fabrica e a margem dele.
