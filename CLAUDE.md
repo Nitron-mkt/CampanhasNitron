@@ -2101,3 +2101,52 @@ o pedido da rede AKI TEM de 31/10"**.
 merece um controle antes de virar diagnóstico. Aqui o controle foi comparar com o resto da empresa
 (246 pendentes contra 168 faturados — mesmíssima forma) e com os meses já fechados. Sem isso eu
 teria entregue ao gestor um incêndio que não existe.
+
+### Onde os leads do link pararam, por que, e o que NÃO dá para ver (24/11)
+
+Pergunta do gestor sobre a coorte do link do Força: onde pararam, por quê, viraram oportunidade.
+
+**Viraram oportunidade — todos.** Pipeline **Leads das Campanhas**, 64 cards:
+
+| etapa | cards |
+|---|---|
+| Lead Novo | 3 |
+| Dados completos | 7 |
+| Pedido aberto no Força | 22 |
+| **Link entregue** | **32** |
+| Montando o pedido · Pedido enviado · Ganho — faturado · Representante ou Clube | **0 em todas** |
+
+**A fila inteira para em "Link entregue" — e isso é metade medição, metade cegueira.** As três etapas
+seguintes **não têm sinal nenhum** (já estava escrito aqui, e agora dói): dependem do `AD_STATUFORCA`
+do Sankhya, que não está em view liberada, e o GET do protocolo devolve `situacao: null`. O card não
+avança porque **nada o empurra**, não porque sabemos que o lojista parou.
+
+**6 dos 34 com link NUNCA escreveram uma única mensagem** — 5 da landing e 1 orgânico, contado em
+`ultima_msg_id is null`. A **Karla (lead 727)** é o retrato: cadastro na landing 21/11 10h20, link
+entregue 10h30, e **a última mensagem da conversa é o próprio link**. Para esse grupo o link não é
+"o passo seguinte da conversa" — é a primeira e única coisa que a Nitron já lhes disse. Mesma forma
+do lead 751. Na landing isso é **5 em 11**; no orgânico, 1 em 23.
+
+**Os outros 28 conversaram, e o padrão é um só** (lidas 7 conversas): entregam CNPJ + CEP + e-mail
+sem reclamar, recebem o link em minutos, e o silêncio começa exatamente ali. Só a Livraria
+Universitária respondeu, para dizer que ia ver com calma.
+
+**12 foram cutucados com "conseguiu abrir?" e ninguém respondeu** — nos que li. A Maria (709) tem a
+cutucada de 21/11 como última mensagem da conversa; o Regis (729) levou mais um toque hoje de manhã
+e segue mudo desde 21/11.
+
+**O QUE NÃO DÁ PARA VER, E É O BURACO QUE IMPORTA: se eles abriram o link.** A página é do domínio
+deles (`vendas.nitron.com.br/link/<hash>`), não passa por nada nosso; o GET do protocolo devolve
+`situacao: null`; o `AD_STATUFORCA` não está liberado. Então **não dá para distinguir "não abriu" de
+"abriu e desistiu na tela"** — e as duas causas pedem conserto oposto: a primeira é problema de
+mensagem, a segunda é problema de página. Qualquer mexida antes de ter esse sinal é chute.
+**É a única coisa que vale pedir ao time da `vendas.nitron.com.br`:** o `situacao` no GET, ou a view
+com o `AD_STATUFORCA`. Com isso o pipeline também destrava as três etapas mortas.
+
+**E a Nina está AFIRMANDO estado que não conhece.** Hoje, ao Regis: *"esse desconto de 10% acima de
+R$ 5.000 já tá valendo **no seu carrinho**, somando sozinho"*. Ao Carlos: *"o pedido #1714500 já tá
+ali **montado do seu jeito**"*. Ela não sabe se existe carrinho, nem se a página foi aberta. É o
+mesmo vício de 16/09 em escala pequena — afirmar o que seria conveniente ser verdade — e aqui tem
+agravante: **é exatamente o dado que nós não temos.** Some-se a isso que o toque de seguimento não
+lê `forca_link_em`, e o resultado é a Nina descrevendo um carrinho imaginário para quem talvez nunca
+tenha clicado. Consertar mexe no `copiloto-lead`.
