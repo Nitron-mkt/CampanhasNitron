@@ -2058,3 +2058,46 @@ chega fácil, o link sai rápido, e o silêncio começa exatamente ali.
 - **O que eu quase reportei como defeito e NÃO é:** o "monta do seu jeito, quando você conclui entra
   um vendedor nosso que abre tabela e condição que eu não libero" é a **lição 347**, palavra por
   palavra, ordem do gestor em 22/10. Conferido antes de falar — e por isso não virou acusação.
+
+### Os "137 pendentes" eram meu erro de leitura — e o resíduo real é UM pedido de rede (24/11)
+
+O gestor perguntou do que eram. Medindo direito, **duas coisas que eu disse na mensagem anterior
+estavam erradas**, e as duas pelo mesmo motivo: li a view sem lembrar do que ela é.
+
+1. **`SITUACAO` em `AD_VW_COM_PEDIDOS` é POR ITEM, não por pedido.** Um pedido com parte faturada e
+   parte pendente conta nas duas linhas. Agrupando por `NUNOTA` em vez de por item, novembro na
+   tabela Gestor tem **153 pedidos, não 178**: 37 já faturaram (todo ou parte), 116 nunca faturaram.
+   Toda contagem de pedido nessa view tem de ser `GROUP BY NUNOTA` primeiro.
+2. **"79% parado sem nota" é leitura errada do mesmo número.** Pendente é o estado NORMAL de pedido
+   recente. A prova está na idade: **nenhum pedido com menos de 8 dias tem um centavo faturado**, e
+   a idade média dos faturados (14,6 d) é o DOBRO da dos pendentes (7,5 d). Não é fila parada — é
+   carteira andando, com um piso de ~8 dias até a primeira nota.
+
+**E o pendente resolve.** Medido nos meses que já maturaram, tabela Gestor:
+
+| mês | pedidos | faturaram | nunca faturaram | valor parado |
+|---|---|---|---|---|
+| set/26 | 96 | **96 (100%)** | 0 | R$ 0 |
+| out/26 | 173 | 145 (84%) | **28** | **R$ 253.954,10** |
+| nov/26 | 153 | 37 | 116 | (ainda maturando) |
+
+**O resíduo de outubro tem dono, e é quase tudo UM pedido só.** Dos 28: **22 são do vendedor COSTA,
+todos lançados em 31/10, todos para a mesma rede** — AKI TEM Utilidades / AKI TEM Bem Barato / DM
+Minimercado, loja por loja, somando **R$ 188.522,72** (74% de todo o valor parado). Os outros seis
+são avulsos: BUYSELL (R$ 44.804,52, Paulo Dresch, 22/10), Quase Tudo Para Ti, GEGE, DB Meteoro,
+Itaquera e Adriana Pinheiro.
+
+**Não é trava de crédito:** dos 116 pendentes de novembro, **zero cliente bloqueado** e só **2 com
+título vencido**. Os pendentes estão espalhados por 15+ representantes (Edson 22, Carlinhos 15,
+Costa 13), que é carteira de rua normal.
+
+**O que isso muda na resposta sobre "não teve venda nenhuma":** a quebra 2 que eu descrevi como
+"o pedido entra e não vira nota" é **menor e mais específica** do que eu disse. O faturamento
+funciona; o que existe é um piso de 8 dias e **um lote de rede de 31/10 parado há 24 dias**. Essa é
+a pergunta para o comercial — não "por que 137 pedidos estão parados", e sim **"o que aconteceu com
+o pedido da rede AKI TEM de 31/10"**.
+
+**A lição de método, que é a terceira vez que aparece:** número grande e redondo que explica tudo
+merece um controle antes de virar diagnóstico. Aqui o controle foi comparar com o resto da empresa
+(246 pendentes contra 168 faturados — mesmíssima forma) e com os meses já fechados. Sem isso eu
+teria entregue ao gestor um incêndio que não existe.
