@@ -2365,3 +2365,49 @@ argumentar, a outra diz com o que):
   marketplace, sim ou nao?** Se nao vende, a Nina ganha um argumento MUITO mais forte do que a queima
   de estoque, e verdadeiro: *"esse anuncio nao e nosso; a Nitron nao vende essa linha no varejo"*.
   Enquanto a resposta nao vier, ela argumenta so com o preco de fabrica e a margem dele.
+
+### O TOQUE DUPLICADO DE 28/10 ESTA VIVO, E HOJE ELE SAIU DUAS VEZES — medido em 24/11
+
+A fila da reabordagem parou de andar: 8 perguntadas, **29 na fila e sete rodadas do cron 274 sem
+mandar nenhuma**. O motivo nao e defeito da funcao — e a trava dela segurando o que vinha antes.
+Na rodada das 17h20 (SP), dos 14 candidatos avaliados:
+
+| motivo do pulo | quantos |
+|---|---|
+| **ja mandamos 3 a 6 mensagens espontaneas nas ultimas 24h (teto 2)** | **11** |
+| ele escreveu ha menos de 24h — conversa viva, quem atende e o `copiloto-lead` | 2 |
+| esta em `forca_perg_pular` (o 689, que ja comprou) | 1 |
+
+**Tres leads apareceram com SEIS espontaneas em 24h** (733 Livraria Universitaria, 729 Regis, 762
+Pauluck) — e ler a conversa explicou: **sao PARES de mensagem quase igual, com minutos de
+diferenca.**
+
+| lead | 1a mensagem | 2a mensagem | intervalo |
+|---|---|---|---|
+| 729 Regis | 23/11 08h33 *"a partir de R$ 5.000 esse desconto de 10% ja soma sozinho"* | 23/11 08h37 *"so emendando: da pra montar ja pensando em passar um pouco de R$ 5.000"* | **4 min** |
+| 729 Regis | 24/11 09h10 *"Conseguiu deixar o carrinho do jeito que queria?"* | 24/11 09h11 *"ainda ta por ai? Lembrando que esse desconto de 10%..."* | **1 min** |
+| 762 Pauluck | 24/11 09h03 *"com o pedido fechado a partir de R$ 5.000 aquele desconto de 10% ja entra sozinho"* | 24/11 09h08 *"ainda dou aquele toque: se preferir montar so com o que faz sentido"* | **5 min** |
+
+**E exatamente o defeito que este arquivo registra como aberto desde 28/10** (StarLuz, lead 564, duas
+mensagens com 3 minutos de diferenca): o `toques` do `copiloto_lead` so e gravado **depois** do
+envio, que leva 12s de checagem de entrega, entao duas rodadas do cron de 5 em 5 min leem o contador
+antes de a outra gravar. Nao era um caso isolado de outubro — **aconteceu duas vezes hoje de manha**,
+em dois leads diferentes, e teria acontecido num terceiro.
+
+O que isso muda na leitura: **a fila parada e a trava funcionando**, nao uma falha. Se o teto da
+reabordagem contasse o nosso proprio contador em vez da conversa do CRM, esses 11 teriam recebido a
+setima e a oitava mensagem. **Por isso todo teto novo conta na conversa do CRM** — e hoje foi a
+primeira vez que essa escolha pagou sozinha.
+
+**O conserto continua sendo gravar o `toques` ANTES de mandar, e continua mexendo no
+`copiloto-lead`** (98 KB, atendendo lead, sem CLI). Decisao do gestor.
+
+- **De brinde, o GHL comecou a devolver `HTTP 429` na busca de conversa** — 12 dos 15 candidatos na
+  rodada das 17h40, 10 na das 16h40, zero em outras. Intermitente, igual a BrasilAPI de 03/11. A
+  funcao trata isso como "o GHL nao respondeu (HTTP 429)" e **nao** queima a pergunta do lead; e a
+  v4 fazendo o que foi consertada para fazer. Quem for medir cadencia de IA aqui tem de contar com
+  429 no meio.
+- **O Pauluck (762) disse "vendo so no marketplace" e NAO e a objecao do NLALFA.** Ele vende EM
+  marketplace (e canal dele, nao queixa de concorrencia nossa) e a Nina respondeu certo: o mix serve
+  para revenda em marketplace tambem. Nao confundir os dois casos ao responder a pergunta de
+  estrategia que esta em aberto.
