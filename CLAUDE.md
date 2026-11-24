@@ -2402,11 +2402,21 @@ primeira vez que essa escolha pagou sozinha.
 **O conserto continua sendo gravar o `toques` ANTES de mandar, e continua mexendo no
 `copiloto-lead`** (98 KB, atendendo lead, sem CLI). Decisao do gestor.
 
-- **De brinde, o GHL comecou a devolver `HTTP 429` na busca de conversa** — 12 dos 15 candidatos na
-  rodada das 17h40, 10 na das 16h40, zero em outras. Intermitente, igual a BrasilAPI de 03/11. A
-  funcao trata isso como "o GHL nao respondeu (HTTP 429)" e **nao** queima a pergunta do lead; e a
-  v4 fazendo o que foi consertada para fazer. Quem for medir cadencia de IA aqui tem de contar com
-  429 no meio.
+- **O `HTTP 429` do GHL na busca de conversa deixou de ser intermitente — virou CONTINUO.** As
+  17h40 eu registrei "12 dos 15 numa rodada, zero em outras"; conferido as 19h20, as **cinco**
+  rodadas seguintes tiveram 429 (7 a 9 por rodada, mais um `HTTP 503`). **Nao e o GHL inteiro:** a
+  `forca-cutucar` das 19h15 leu as 16 conversas dela sem um 429. O que diferencia e o VOLUME — a
+  `forca-perguntar` varre ate 15 leads com 2 chamadas cada, de 20 em 20 min, por cima do
+  `copiloto-lead` (5 min), da cutucada (15 min) e das outras. A funcao trata isso como "o GHL nao
+  respondeu (HTTP 429)" e **nao** queima a pergunta do lead; e a v4 fazendo o que foi consertada
+  para fazer. Se persistir, o ajuste barato e baixar o `forca_perg_ler_scan` (UPDATE, sem deploy) —
+  nao e decisao a tomar com uma tarde de medicao.
+- **A fila da reabordagem NAO andou um unico lead em toda a tarde:** 8 perguntadas, a ultima as
+  **15h41**, e a fila cresceu de 29 para **31** (links novos entrando). O cron fecha as 19h de SP,
+  entao o dia acabou assim. **O que esperar de amanha:** dos 31, **10 ja estao com `toques`=2** e
+  por isso nao levam toque novo — as mensagens de hoje vencem as 24h de manha e esses devem
+  destravar. Os outros **21 ainda podem levar toque** (0 ou 1), entao a colisao com o teto se
+  repete para eles. Nao e preciso mexer em nada para medir isso: basta conferir depois das 9h.
 - **O Pauluck (762) disse "vendo so no marketplace" e NAO e a objecao do NLALFA.** Ele vende EM
   marketplace (e canal dele, nao queixa de concorrencia nossa) e a Nina respondeu certo: o mix serve
   para revenda em marketplace tambem. Nao confundir os dois casos ao responder a pergunta de
