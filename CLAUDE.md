@@ -1952,3 +1952,35 @@ a IE (inclusive "é isenta"), repetir para conferência, chamar `passar_comercia
 e **não** prometer hora; a **469** separa o que reabre sozinho (CNPJ, CEP, e-mail) do que depende de
 pessoa (IE e endereço) e proíbe prometer reenvio nesses dois; a **451** cobre a continuação da
 conversa. Foi o primeiro caso em que a regra nova chegou e o prompt já estava certo.
+
+### O reenvio do aviso corrigido mandou DUAS mensagens contraditórias ao mesmo lojista (23/11)
+
+Erro meu, e a mecânica merece registro porque se repete em qualquer reenvio.
+
+Ao reavisar os dois com o texto certo eu limpei `forca_aviso_em` e disparei `?lead=`. O que eu não
+conferi foi **quando** aquela marca tinha sido escrita. No lead 751 ela era das **09h00 daquela
+mesma manhã** — o cron `forca-avisar-20min` abre às 9h de SP e tinha acabado de mandar o texto
+genérico da categoria `nosso`. Então ele recebeu:
+
+| hora | o que chegou |
+|---|---|
+| 23/11 09h00 | *"o nosso sistema nao conseguiu concluir o cadastro. Isso e do nosso lado, **nao do que voce me mandou**"* |
+| 23/11 10h27 | *"faltou o endereco completo: **o CEP que voce me passou** e de uma regiao inteira"* |
+
+As duas se contradizem, com 1h27 de intervalo. No lead 735 o mesmo reenvio foi inofensivo porque a
+marca dele era de **21/11**, dois dias antes.
+
+**A regra que faltou: antes de limpar uma marca de envio para reenviar, leia a marca.** Ela diz se o
+sistema acabou de falar. O reenvio só é seguro quando a mensagem anterior é antiga o bastante para
+não parecer correção de si mesma na mesma tela — ou quando o texto novo assume a anterior.
+
+### O lojista da landing que NUNCA escreveu também recebe o aviso — e para ele é a primeira palavra
+
+Conferido na conversa inteira do 751: **não há uma única mensagem `inbound`**. Ele preencheu o
+formulário, a ponte criou contato e lead, o pedido foi tentado e barrou — e as **duas** mensagens
+acima são tudo o que já existiu naquela conversa. "Vim te dar um retorno" como primeira frase, sobre
+um problema, para quem nunca falou com a gente.
+
+Não é defeito do aviso: calar seria pior, e foi justamente a ordem de 18/11. Mas é um caso que o
+texto não previu — ele foi escrito para quem está esperando o mix depois de conversar. **Decisão do
+gestor:** ou o aviso ganha uma abertura própria para lead que nunca escreveu, ou segue assim.
