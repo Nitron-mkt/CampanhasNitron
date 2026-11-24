@@ -724,37 +724,33 @@ para brincar com o numero anterior. Meu primeiro rascunho abria com "Eu disse qu
 e-mails. Ficou faltando a parte pratica": era elegante e seria uma divida, porque o 4o vira 10o ate
 dezembro. Numero de e-mail envelhece; a cadencia, nao.
 
-**Como fica:** o titulo vende o beneficio ("Voce nao precisa montar o pedido do zero"), o corpo
-ancora no tempo e nao na contagem ("entao ESTA SEMANA a gente montou"), e o fecho sustenta o
-habito sem prometer pauta: *"Toda semana a gente manda uma coisa pratica da linha. Semana que vem
+**Como fica:** o titulo vende o beneficio, o corpo ancora no tempo e nao na contagem ("entao ESTA
+SEMANA..."), e o fecho sustenta o habito sem prometer pauta: *"Toda semana a gente manda uma coisa pratica da linha. Semana que vem
 tem mais."* Conteudo prometido e divida; quem define a pauta e o gestor.
 
-O recap dos e-mails anteriores continua — "voce ja viu a linha, viu onde ela cabe na loja e recebeu
-a tabela" —, e isso **nao** e contar: e dizer o que ele ja sabe, que e o que da continuidade.
+O recap do que ele ja viu continua — "voce ja viu a linha, viu onde ela cabe na loja e recebeu a
+tabela" —, e isso **nao** e contar e-mail: e dizer o que ele ja sabe, que e o que da continuidade.
 
-**O angulo e o PEDIDO JA MONTADO:** tres combinacoes fechadas, com referencia, quantidade e total.
-Todas as tres passam dos R$ 5.000 **de proposito** — e ai que os 10% entram sozinhos, e assim o
-e-mail nao precisa de asterisco. **Abaixo de R$ 5.000 o valor por peca e 11,11% MAIOR que o da
-tabela que o 3o e-mail publicou**, e essa frase esta no corpo: esconde-la seria repetir o erro de
-23/10 em escala maior.
+**ESTE ARQUIVO DESCREVIA O 4o E-MAIL ERRADO ate 24/11, e o conserto e a licao.** O que estava escrito
+aqui — "tres combinacoes fechadas (A, B, C)", com totais de R$ 5.212,60, R$ 5.359,36 e R$ 5.251,28 —
+era um **rascunho substituido no mesmo dia**: o ultimo commit de 19/11 e `4o e-mail Nitron-Mob: o
+angulo volta a ser a LINHA, nao o desconto`. O `app/nitronmob-email4.html` que esta no disco e
+**"Qual tamanho para cada cliente"**, o guia das NOVE Prateleiras Multiuso. Eu atualizei o registro
+quando escrevi o rascunho e nunca voltei depois de troca-lo.
+**Antes de citar o conteudo de um e-mail deste repositorio, abra o arquivo** — o commit e a verdade;
+o paragrafo aqui pode descrever um rascunho morto. As combinacoes A/B/C **nao existem em e-mail
+nenhum** e os numeros delas nunca foram publicados a cliente.
 
-| combinacao | o que e | pecas | total | na vitrine |
-|---|---|---|---|---|
-| A — a linha inteira | 1 fardo de cada um dos 13 | 52 | R$ 5.212,60 | R$ 10.279,48 |
-| B — so prateleiras | 2 fardos de 6 refs (P2, P3, M3, M4, G3, G4) | 48 | R$ 5.359,36 | R$ 10.559,52 |
-| C — o basico, com volume | Arara, Kit M, Org P e G, Prat P3 | 60 | R$ 5.251,28 | R$ 10.399,40 |
+O que vale do rascunho, porque continua verdade: **um fardo de cada um dos 13 itens = 52 pecas =
+R$ 5.212,60**, as revendas sugeridas sao as do 1o e-mail, e nenhum preco mudou entre o 1o, o 3o e a
+Tabela Gestor 194.
 
-**Nenhum numero e novo.** Sao a Tabela Gestor 194 e as revendas sugeridas que o 1o e o 3o e-mail ja
-publicaram. A combinacao A reproduz exatamente o R$ 5.791,78 → R$ 5.212,60 do 3o e-mail, e e isso
-que valida a tabela inteira; as tres dao 1,97x a 1,98x na vitrine.
-
-**Cada combinacao tem o proprio botao de WhatsApp, com a letra ja escrita na mensagem** — o lojista
-nao precisa explicar o que quer, e o comercial recebe a escolha pronta.
-
-**Conferido antes de existir**, pelas armadilhas ja conhecidas: maior palavra visivel **14
-caracteres** (o limite e ~80, a licao de 20/10), o `{{email.unsubscribe_link}}` aparece **uma vez e
-dentro do `href`**, os unicos valores em R$ no texto sao os seis calculados, e as quatro imagens
-respondem 200.
+**O 4o que foi escrito de verdade:** o angulo e COMO ESCOLHER O TAMANHO. Nove das treze referencias
+sao a Prateleira Multiuso, e quem decide o tamanho e o espaco que o cliente tem em casa, nao o
+catalogo. Tres blocos (P "para o canto que sobrou", M "o que serve para quase tudo", G), cada um com
+as tres opcoes de niveis, preco de fabrica e revenda. Nao fala de desconto, de pedido minimo nem dos
+R$ 5.000 — o rodape remete a confirmacao com o representante, que e o certo agora que o pedido passa
+pelo Forca de Vendas.
 
 - **A miniatura NAO pode herdar o `.stack img {width:100%}` do e-mail anterior.** Aquela regra serve
   para foto de hero; num selo de 200px ela inflava a imagem para a largura inteira e o e-mail ia a
@@ -2233,3 +2229,46 @@ regra de 16/09. Desligar qualquer uma é UPDATE ou `cron.alter_job(274, active :
 **Também medido na mesma hora: o `pg_net` está com timeout de DNS de novo** — 46 de 491 requisições
 (9%) em 30 min, o mesmo sintoma de 12/11. Não derrubou a rodada, mas é a explicação mais provável
 das duas falhas acima e vale olhar antes de culpar função.
+
+## O 5o e-mail da Nitron-Mob: as outras quatro referencias (24/11)
+
+Pedido do gestor: *"lembra do email no nitron mob que falamos na semana passada? Quero criar uma
+sequencia daquele email, faca e gere o HTML para podermos dar sequencia"*. Fonte:
+`app/nitronmob-email5.html`.
+
+**O angulo fecha as treze.** O 4o explicou as NOVE prateleiras; este explica **as outras quatro**, que
+nao sao prateleira: a Arara de Roupas (850), os dois Organizadores Multiuso (851 e 852) e o Kit
+Suporte Decorativo M (853). Tres blocos, porque os dois Organizadores vao no mesmo card — o P e o G
+sao a mesma peca em duas alturas.
+
+- **Olhei as quatro FOTOS antes de escrever a copia.** Descrever peca que nao se viu e como se
+  inventa caracteristica. A arara tem barra de cabide em cima e prateleira vazada embaixo; o
+  Organizador P tem dois niveis na altura de um banco e o G tem quatro na vertical; o Kit Suporte sao
+  duas bases com pe alto e pegada pequena. Nada disso estava escrito em lugar nenhum do projeto.
+- **O nome publicado vence o do Sankhya, de novo.** No ERP a 851 e a 852 sao `SAPATEIRA PEQUENA` e
+  `SAPATEIRA GRANDE`; os e-mails 1 e 3 publicaram **Organizador Multiuso P e G**, e e isso que vale.
+  O calcado entra como o USO (que e verdade e esta na foto), nao como o nome.
+- **Nenhum numero e novo.** Os oito valores (preco de fabrica e revenda das quatro) sao os do 1o e do
+  3o e-mail, conferidos linha a linha. Os dois unicos numeros calculados sao a soma: **um fardo de
+  cada uma das quatro = 16 pecas = R$ 1.431,92, contra R$ 2.839,84 na etiqueta sugerida** (1,98x).
+  Nao fala de desconto, de R$ 5.000 nem de pedido minimo — o pedido passa pelo Forca de Vendas e
+  quem confirma condicao e o representante, igual ao 4o.
+- **Ele NAO diz "semana passada voce viu as nove prateleiras"**, de proposito: o 4o nunca saiu
+  (ver abaixo). O recap trata as nove como fato da linha, nao como e-mail recebido — assim o 5o
+  funciona na frente ou atras do 4o.
+- **As cinco conferencias do 19/11, todas feitas:** descadastro aparece **uma vez e dentro do
+  `href`**; maior palavra visivel **14 caracteres**; os unicos valores em R$ no texto sao os dez
+  conferidos; as quatro imagens respondem **200**; e os **quatro cenarios de render** passam sem
+  estouro horizontal e sem imagem quebrada — com `<style>` a 640 e 555px, e **sem o bloco `<style>`**
+  a 555 e 380px (2.632 a 2.940px de altura, contra 2.976 do 4o).
+
+**O 4o E-MAIL CONTINUA PARADO, e isso decide a ordem.** Medido em 24/11: `nitronmob_envio4` **vazio**,
+`nitronmob4_ativo='nao'`, `nitronmob4_assunto` ainda `<<DEFINIR>>`, **sem arte** em `nitronmob_arte`
+com nome `email4`, e nenhum disparo de massa pelo CRM na janela 19–24/11 (o
+`export-messages-by-location` da ~1.045/dia, a linha de base). Ou seja: ha **dois** e-mails escritos e
+nao enviados. Qual sai primeiro e decisao do gestor.
+
+**Para disparar o 5o faltam tres coisas**, nenhuma delas feita: assunto, a arte em `nitronmob_arte`
+(nome `email5`) e a maquina — ou um `nitronmob-disparar5` no padrao provado do 2o, ou a tag no CRM
+como o 3o fez. **Campanha do CRM tem relatorio de abertura e clique; envio por API nao tem** (a ordem
+de 12/11), entao o caminho do CRM continua sendo o melhor para medir.
