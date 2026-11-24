@@ -2253,20 +2253,38 @@ sao a mesma peca em duas alturas.
   cada uma das quatro = 16 pecas = R$ 1.431,92, contra R$ 2.839,84 na etiqueta sugerida** (1,98x).
   Nao fala de desconto, de R$ 5.000 nem de pedido minimo — o pedido passa pelo Forca de Vendas e
   quem confirma condicao e o representante, igual ao 4o.
-- **Ele NAO diz "semana passada voce viu as nove prateleiras"**, de proposito: o 4o nunca saiu
-  (ver abaixo). O recap trata as nove como fato da linha, nao como e-mail recebido — assim o 5o
-  funciona na frente ou atras do 4o.
+- **O recap diz "no e-mail passado voce viu como escolher o tamanho"**, e isso so entrou depois de
+  o gestor confirmar que o 4o saiu. A primeira versao evitava a continuidade porque eu achava que o
+  4o estava parado — ficava correta e mais fraca. **"No e-mail passado" em vez de "semana passada"**
+  de proposito: eu nao consegui datar o disparo, e a frase precisa continuar verdadeira sem a data.
 - **As cinco conferencias do 19/11, todas feitas:** descadastro aparece **uma vez e dentro do
   `href`**; maior palavra visivel **14 caracteres**; os unicos valores em R$ no texto sao os dez
   conferidos; as quatro imagens respondem **200**; e os **quatro cenarios de render** passam sem
   estouro horizontal e sem imagem quebrada — com `<style>` a 640 e 555px, e **sem o bloco `<style>`**
   a 555 e 380px (2.632 a 2.940px de altura, contra 2.976 do 4o).
 
-**O 4o E-MAIL CONTINUA PARADO, e isso decide a ordem.** Medido em 24/11: `nitronmob_envio4` **vazio**,
-`nitronmob4_ativo='nao'`, `nitronmob4_assunto` ainda `<<DEFINIR>>`, **sem arte** em `nitronmob_arte`
-com nome `email4`, e nenhum disparo de massa pelo CRM na janela 19–24/11 (o
-`export-messages-by-location` da ~1.045/dia, a linha de base). Ou seja: ha **dois** e-mails escritos e
-nao enviados. Qual sai primeiro e decisao do gestor.
+**EU DISSE QUE O 4o NAO TINHA SAIDO. SAIU — PELO CRM, E E A SEGUNDA VEZ QUE EU ERRO ESSA MESMA
+PERGUNTA.** O gestor corrigiu em 24/11: *"Foi enviado o 4 pelo CRM sim"*. Em 19/11 eu tinha afirmado
+o mesmo sobre o 3o e tambem estava errado. **A regra que sai daqui e dura: nunca afirmar que uma
+campanha do CRM nao saiu.** Nenhum instrumento daqui prova isso.
+
+O que eu tinha, e por que nao bastava:
+- `nitronmob_envio4` **vazio** e `nitronmob4_ativo='nao'` — correto, e **irrelevante**: essa tabela e
+  dessa chave so sabem do envio por API. Campanha do CRM nao passa por elas **de proposito**, por
+  ordem do proprio gestor em 12/11.
+- **nenhum pico de volume** no `export-messages-by-location` na janela 19–24/11 (~1.045/dia, a linha
+  de base, contra os 5.147 num dia que o 3o fez). Foi isso que me convenceu — e e exatamente o erro:
+  **tratei ausencia de pico como prova de ausencia de envio**. Nao sei por que o pico nao apareceu;
+  nao achar nao e o mesmo que nao haver, e enquanto a causa for desconhecida o volume diario **nao
+  serve de prova negativa** (como atalho para confirmar um envio que se sabe que houve, continua
+  valendo).
+- Conferido depois na conversa de um contato com a tag: os campos de data discordam entre si
+  (`lastMessageDate` de 05/11 e `lastChannelAccountAt` de ~19/11 no mesmo contato), entao nem a
+  conversa data campanha com seguranca.
+
+**Como perguntar certo da proxima vez:** quem dispara pelo CRM e o gestor — a pergunta e para ele, em
+uma linha, antes de qualquer varredura. Medir serve para saber **quanto** e **com que resultado**
+(abertura e clique, que so a campanha do CRM tem), nao para saber **se**.
 
 **Para disparar o 5o faltam tres coisas**, nenhuma delas feita: assunto, a arte em `nitronmob_arte`
 (nome `email5`) e a maquina — ou um `nitronmob-disparar5` no padrao provado do 2o, ou a tag no CRM
