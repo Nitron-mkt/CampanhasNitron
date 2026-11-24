@@ -41,6 +41,7 @@
 //   - `forca_perg_pular`: ids que nao entram. Nasce com o 689 (SIMONI), o unico da coorte que
 //     ja comprou — perguntar a quem comprou por que nao comprou e o pior erro possivel aqui.
 //   - `forca_perg_em` e gravado ANTES do envio. Licao do `toques` (02/10) e do `reativa_em` (03/11).
+//     A contrapartida esta no `forca_perg_tent`, mais abaixo.
 //   - 9h as 20h de Sao Paulo, sem domingo, nas DUAS passadas. O aviso ao gestor tambem e
 //     iniciativa nossa, e noticia boa de madrugada ainda e madrugada.
 //
@@ -156,14 +157,25 @@ function foraDaJanela(c: Record<string, string>): string | null {
 
 // ---- A CONVERSA DO CRM, QUE E QUEM MANDA ------------------------------------------------------
 // Devolve as mensagens do mais VELHO para o mais novo, que e a ordem em que se conta espontanea.
-async function conversa(contact_id: string) {
-  const rc = await ghl("GET", `/conversations/search?locationId=${LOC}&contactId=${contact_id}&limit=1`);
-  const cv = (((await rc.json().catch(() => ({} as any)))?.conversations) || [])[0];
-  if (!cv?.id) return null;
-  const rm = await ghl("GET", `/conversations/${cv.id}/messages?limit=25`, "2021-04-15");
-  const md = await rm.json().catch(() => ({} as any));
-  const novas: any[] = (md?.messages?.messages || md?.messages || []);
-  return { id: cv.id, msgs: novas.slice().reverse() };
+// BUSCA VAZIA NAO E FATO (licao de 17/11, `sd?.opportunities || []`): devolve `{erro}` quando o
+// GHL nao respondeu e `null` so quando ele respondeu DIZENDO que nao ha conversa. Medido em
+// 24/11, as 15h00: os leads 702 e 722 vieram "sem conversa no CRM" na mesma rodada em que a
+// previa de 14h47 tinha lido a conversa dos dois — era o GHL falhando, nao a realidade. E o
+// try/catch e para o timeout de 20s nao abortar a RODADA INTEIRA por causa de um lead.
+async function conversa(contact_id: string): Promise<any> {
+  try {
+    const rc = await ghl("GET", `/conversations/search?locationId=${LOC}&contactId=${contact_id}&limit=1`);
+    if (!rc.ok) return { erro: `o GHL nao respondeu a busca da conversa (HTTP ${rc.status})` };
+    const cv = (((await rc.json().catch(() => ({} as any)))?.conversations) || [])[0];
+    if (!cv?.id) return null;
+    const rm = await ghl("GET", `/conversations/${cv.id}/messages?limit=25`, "2021-04-15");
+    if (!rm.ok) return { erro: `o GHL nao devolveu as mensagens (HTTP ${rm.status})` };
+    const md = await rm.json().catch(() => ({} as any));
+    const novas: any[] = (md?.messages?.messages || md?.messages || []);
+    return { id: cv.id, msgs: novas.slice().reverse() };
+  } catch (e) {
+    return { erro: "falha de rede ao ler a conversa: " + String(e).slice(0, 120) };
+  }
 }
 
 const ehEntrada = (m: any) => String(m?.direction) === "inbound" && !ehRuido(m?.body);
@@ -238,7 +250,7 @@ async function avisarInternos(texto: string, inst: string) {
 }
 
 const SEL = "id,nome,empresa,cnpj,contact_id,cidade,uf,interesse,origem,forca_pedido,forca_link_em," +
-            "forca_perg_em,forca_perg_vezes,forca_perg_texto,forca_perg_resp_em,forca_perg_aviso_em,ultima_msg_id";
+            "forca_perg_em,forca_perg_vezes,forca_perg_tent,forca_perg_texto,forca_perg_resp_em,forca_perg_aviso_em,ultima_msg_id";
 
 // ===== PASSADA 1 — PERGUNTAR ===================================================================
 async function perguntar(c: Record<string, string>, dry: boolean, soLead: number, lote: number) {
@@ -250,12 +262,13 @@ async function perguntar(c: Record<string, string>, dry: boolean, soLead: number
   const inst = c.forca_link_instancia || "Nina";
   const ligado = (c.forca_perg_ativo || "nao").toLowerCase() === "sim";
   const comVendedor = (c.forca_perg_vendedor || "sim").toLowerCase() === "sim";
+  const tentMax = Number(c.forca_perg_tent_max || "3") || 3;
   const pular = new Set((c.forca_perg_pular || "").split(",").map((x) => x.trim()).filter(Boolean));
 
   const url = soLead
     ? `copiloto_lead?select=${SEL}&id=eq.${soLead}`
     : `copiloto_lead?select=${SEL}&forca_link_em=not.is.null&descartado_em=is.null&contact_id=not.is.null` +
-      `&forca_perg_vezes=lt.${maxVezes}` +
+      `&forca_perg_vezes=lt.${maxVezes}&forca_perg_tent=lt.${tentMax}` +
       `&forca_link_em=lt.${new Date(agora - esperaH * 3600_000).toISOString()}` +
       `&order=forca_link_em.asc&limit=40`;
   const q = await rest(url);
@@ -275,6 +288,7 @@ async function perguntar(c: Record<string, string>, dry: boolean, soLead: number
     if (doc && cnpjVistos.has(doc)) { feito.push({ ...base, decisao: "pular", motivo: "mesmo CNPJ de outro lead ja tratado nesta rodada" }); continue; }
 
     const cv = await conversa(L.contact_id);
+    if (cv?.erro) { feito.push({ ...base, decisao: "pular", motivo: cv.erro }); continue; }
     if (!cv) { feito.push({ ...base, decisao: "pular", motivo: "sem conversa no CRM" }); continue; }
     const ordem = cv.msgs;
 
@@ -335,8 +349,27 @@ async function perguntar(c: Record<string, string>, dry: boolean, soLead: number
     await patch(L.id, { forca_perg_em: new Date().toISOString(), forca_perg_vezes: (L.forca_perg_vezes || 0) + 1, forca_perg_texto: texto, forca_perg_erro: null });
     const env: any = await enviar({ texto, instancia: inst, contact_id: L.contact_id });
     mandados++;
-    if (!env?.ok) await patch(L.id, { forca_perg_erro: String(env?.motivo || "recusado").slice(0, 300) });
-    feito.push({ ...base, decisao: env?.ok ? "perguntado" : "recusado", dias_do_link: dias(L.forca_link_em), motivo: env?.ok ? undefined : env?.motivo, texto });
+    let devolvido = false;
+    if (!env?.ok) {
+      // RECUSA TECNICA NAO QUEIMA A UNICA PERGUNTA. Em 24/11, as 15h00, o lead 721 levou
+      // "bind nao aceito — texto nao enviado" e, como a marca e gravada ANTES do envio, ele
+      // sairia da fila para sempre sem nunca ter recebido nada.
+      // MAS limpar em TODA recusa esta errado, e isso ja foi medido em 06/11 no `ultima_msg_id`:
+      // `dono_divergente` significa que alguem do time ASSUMIU a conversa, e ali a recusa esta
+      // CERTA — insistir seria atropelar um humano. Por isso so a recusa tecnica volta para a
+      // fila, e com teto proprio (`forca_perg_tent_max`) para nao virar laco.
+      const tent = (L.forca_perg_tent || 0) + 1;
+      const campos: Record<string, unknown> = { forca_perg_erro: String(env?.motivo || "recusado").slice(0, 300), forca_perg_tent: tent };
+      if (!env?.dono_divergente && tent < tentMax) {
+        campos.forca_perg_em = null;
+        campos.forca_perg_vezes = (L.forca_perg_vezes || 0);
+        devolvido = true;
+      }
+      await patch(L.id, campos);
+    }
+    feito.push({ ...base, decisao: env?.ok ? "perguntado" : "recusado", dias_do_link: dias(L.forca_link_em),
+                 motivo: env?.ok ? undefined : env?.motivo,
+                 volta_para_a_fila: env?.ok ? undefined : devolvido, texto });
   }
 
   return { ligado, instancia: inst, candidatos: cands.length, tratados: feito.length, feito };
@@ -370,6 +403,7 @@ async function ler(c: Record<string, string>, dry: boolean, soLead: number, lote
     const base = { lead: L.id, nome: L.nome, empresa: L.empresa, perguntado_em: brtTxt(L.forca_perg_em) };
 
     const cv = await conversa(L.contact_id);
+    if (cv?.erro) { feito.push({ ...base, decisao: "pular", motivo: cv.erro }); continue; }
     if (!cv) { feito.push({ ...base, decisao: "pular", motivo: "sem conversa no CRM" }); continue; }
 
     const corte = new Date(L.forca_perg_em).getTime();

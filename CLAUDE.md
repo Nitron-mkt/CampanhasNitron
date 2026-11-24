@@ -2210,3 +2210,26 @@ Andrey 712). Restam ~16 na fila, que o cron drena a 3 por rodada.
 
 Ligadas: `forca_perg_ativo='sim'` (ordem explícita do gestor) e o cron 274 — **as duas**, que é a
 regra de 16/09. Desligar qualquer uma é UPDATE ou `cron.alter_job(274, active := false)`.
+
+### A primeira rodada do cron achou DOIS defeitos meus, e os dois já eram lição deste arquivo
+
+15h00 de 24/11, 17 candidatos avaliados, **1 envio e ele foi recusado**:
+
+1. **"Sem conversa no CRM" era o GHL falhando, não a realidade** — `conversa()` devolvia `null` tanto
+   quando o GHL dizia que não há conversa quanto quando ele **não respondia**. Os leads 702 e 722
+   vieram "sem conversa no CRM" na mesma tarde em que a prévia das 14h47 tinha lido a conversa dos
+   dois. É palavra por palavra a lição de 17/11 (`sd?.opportunities || []` transforma erro em fato),
+   cometida de novo 7 dias depois. Hoje a função separa `{erro}` de `null` e o motivo do pulo diz
+   `o GHL nao respondeu (HTTP n)`. O `try/catch` entrou junto: sem ele, um timeout de 20s num lead
+   abortava a **rodada inteira** pelo catch de fora.
+2. **Recusa TÉCNICA queimava a única pergunta.** O lead 721 levou `bind nao aceito — texto nao
+   enviado`; como a marca é gravada ANTES do envio e o teto é 1, ele sairia da fila **para sempre
+   sem ter recebido nada**. É a doença do `ultima_msg_id` (06/11) na direção oposta. E o conserto
+   óbvio ("limpar em toda recusa") continua errado pelo mesmo motivo de lá: `dono_divergente`
+   significa que alguém do time assumiu a conversa, e ali a recusa está CERTA. Hoje só a recusa
+   técnica volta para a fila, com contador próprio (`forca_perg_tent`, teto
+   `forca_perg_tent_max`=3) para não virar laço. O 721 foi devolvido à mão, com a tentativa contada.
+
+**Também medido na mesma hora: o `pg_net` está com timeout de DNS de novo** — 46 de 491 requisições
+(9%) em 30 min, o mesmo sintoma de 12/11. Não derrubou a rodada, mas é a explicação mais provável
+das duas falhas acima e vale olhar antes de culpar função.
