@@ -2143,10 +2143,70 @@ mensagem, a segunda é problema de página. Qualquer mexida antes de ter esse si
 **É a única coisa que vale pedir ao time da `vendas.nitron.com.br`:** o `situacao` no GET, ou a view
 com o `AD_STATUFORCA`. Com isso o pipeline também destrava as três etapas mortas.
 
-**E a Nina está AFIRMANDO estado que não conhece.** Hoje, ao Regis: *"esse desconto de 10% acima de
-R$ 5.000 já tá valendo **no seu carrinho**, somando sozinho"*. Ao Carlos: *"o pedido #1714500 já tá
-ali **montado do seu jeito**"*. Ela não sabe se existe carrinho, nem se a página foi aberta. É o
-mesmo vício de 16/09 em escala pequena — afirmar o que seria conveniente ser verdade — e aqui tem
-agravante: **é exatamente o dado que nós não temos.** Some-se a isso que o toque de seguimento não
-lê `forca_link_em`, e o resultado é a Nina descrevendo um carrinho imaginário para quem talvez nunca
-tenha clicado. Consertar mexe no `copiloto-lead`.
+**O "já tá valendo no seu carrinho" NÃO é defeito — eu reportei como se fosse, e o gestor
+desfez na hora.** Eu tinha escrito aqui que a Nina estava afirmando estado que não conhece, citando
+o *"esse desconto de 10% acima de R$ 5.000 já tá valendo no seu carrinho, somando sozinho"* dito ao
+Regis. A resposta dele em 24/11: *"Ela pode falar isso sim, é real, se o mix da pessoa dar mais de
+5mil, ele tem os 10% de desconto (...) Ela pode continuar falando normal."*
+**E ele está certo: a regra é verdadeira independente de a página ter sido aberta.** Quem compra
+acima de R$ 5.000 leva os 10%, e dizer isso não é afirmar que existe carrinho montado — é descrever
+a condição. Confundi *a regra de desconto* (que ela conhece e pode repetir) com *o estado da tela*
+(que ela não conhece). A regra que continua valendo é a estreita: **não afirmar que ele ABRIU, que
+MONTOU ou que o pedido está pronto**; falar dos 10% é permitido e está em seis lugares do sistema
+de propósito.
+O que **sobra** do achado é só isto, e é real: o toque de seguimento não lê `forca_link_em`, então
+ela pode oferecer o que já foi entregue ("quer que eu te mande?" cinco dias depois de mandar).
+Consertar mexe no `copiloto-lead`.
+
+## A reabordagem de quem recebeu o link e não fechou (`forca-perguntar`, 24/11)
+
+Ordem do gestor, depois de ler a medição da coorte: *"Quero que volte a reativar essa galera por
+mensagem perguntando o motivo do não fechamento, se precisa de algo ou não. Qualquer um que
+responder você deve me informar no whatsapp que eles responderam (...) Talvez perguntar se ele quer
+o contato de um vendedor?"*
+
+Função nova, **duas passadas numa só** (`?acao=perguntar|ler|tudo`, `&dry=1` em qualquer uma), tabela
+de apoio nenhuma — tudo em colunas novas de `copiloto_lead` (`forca_perg_em`, `forca_perg_vezes`,
+`forca_perg_texto`, `forca_perg_erro`, `forca_perg_resp_em`, `forca_perg_resp`,
+`forca_perg_aviso_em`). Cron `forca-perguntar-20min` (jobid **274**, `*/20 12-22 * * 1-6`) chama
+`?acao=tudo`: **lê primeiro, pergunta depois**, que é um cron a menos disputando as 60 conexões.
+
+- **Por que não é a `forca-cutucar`, que cutuca este mesmo público.** São dois relógios e duas
+  perguntas. A cutucada é de **45 minutos** e pergunta "conseguiu abrir o link?" — é sobre a tela.
+  Esta é de **dias** e pergunta "o que pesou pra não fechar, precisa de alguma coisa?" — é sobre a
+  venda. E só esta avisa o gestor. Misturar faria um teto corromper o outro, e a cutucada está no ar
+  atendendo lead desde 18/11.
+- **A pergunta NÃO afirma que ele não pediu**, e isso não é preciosismo: não dá para saber. O sinal
+  seria o `AD_STATUFORCA` ou o `situacao` do GET do protocolo, que volta null. Então ela pergunta
+  **se** ele chegou a fechar — frase que continua verdadeira se ele já tiver enviado o pedido.
+- **O vendedor é OFERTA, não promessa de hora.** Quem aceitar cai na `passar_comercial`
+  (**lições 474 e 475**, que entram sem deploy): ela abre a tarefa, diz que passou, e **não** marca
+  hora nem promete nome de vendedor. A 475 trata o motivo que ele der como informação, não como
+  objeção para rebater — e proíbe oferecer desconto ou condição que não existe.
+- **As travas, e o que cada uma segurou na prévia real de 24/11** (19 candidatos, 10 avaliados):
+  `forca_perg_espera_h` (24h) tira quem recebeu o link hoje — são 8 dos 35, e esses estão com a
+  cutucada; `forca_perg_silencio_h` (24h) tirou **2** cuja conversa estava viva (quem atende ali é o
+  `copiloto-lead`); o **teto de 2 espontâneas em 24h, contado na conversa do CRM**, tirou outros
+  **2** (Pedro 718 e Katiani 722, com 3 cada); `forca_perg_max`=1 garante uma pergunta por lead; e
+  o **dedupe por CNPJ** existe porque o mesmo lojista tem duas linhas (765 e 766, Lucas Moraes,
+  mesmo CNPJ e mesmo pedido 1715623).
+- **`forca_perg_pular` nasce com o 689** (SIMONI) — o único da coorte que já comprou. Perguntar a
+  quem comprou por que não comprou é o pior erro possível aqui, e a função não tem como saber:
+  pedido concluído não aparece em view liberada do Sankhya.
+- **O teto de varredura da leitura (`forca_perg_ler_scan`, 15) é limite de INFRAESTRUTURA.** O
+  contador de lote só anda quando ACHA resposta, então sem ele uma fila de 40 leads custa 80
+  chamadas ao GHL e a rodada morre em `IDLE_TIMEOUT` (150s). A leitura olha do mais recente para o
+  mais velho, porque resposta quase sempre chega nas primeiras horas.
+- **O aviso ao gestor leva a pergunta E a resposta, com o CNPJ em linha própria**, para quem tem
+  `avisar=true` em `copiloto_responsaveis`, deduplicado por telefone — o mesmo molde da
+  `forca-avisar`. Chave própria (`forca_perg_aviso_ativo`, nasce `sim`), independente da pergunta.
+- **O texto de reserva saiu de verdade, e por isso ganhou acento.** Na primeira rodada a chamada ao
+  modelo falhou no lead 706 e o lojista recebeu *"Voce chegou a fechar"* sem acento. O reserva
+  existe para falha do modelo não virar silêncio — mas ele é texto que chega na tela de alguém, não
+  log.
+
+**Primeira rodada real: 3 perguntas em 24/11, 14h47–14h49, zero recusas** (Carlos 706, Maria 709,
+Andrey 712). Restam ~16 na fila, que o cron drena a 3 por rodada.
+
+Ligadas: `forca_perg_ativo='sim'` (ordem explícita do gestor) e o cron 274 — **as duas**, que é a
+regra de 16/09. Desligar qualquer uma é UPDATE ou `cron.alter_job(274, active := false)`.
