@@ -1984,3 +1984,77 @@ um problema, para quem nunca falou com a gente.
 Não é defeito do aviso: calar seria pior, e foi justamente a ordem de 18/11. Mas é um caso que o
 texto não previu — ele foi escrito para quem está esperando o mix depois de conversar. **Decisão do
 gestor:** ou o aviso ganha uma abertura própria para lead que nunca escreveu, ou segue assim.
+
+## "Por que não teve venda nenhuma?" — medido em 24/11, e o funil quebra em DOIS lugares
+
+Pergunta do gestor. O funil inteiro, contado:
+
+| etapa | quantos |
+|---|---|
+| pedido aberto no ERP pelo Força | **50** (22 da rodada de 17/11 + 28 do fluxo real) |
+| link entregue por Zaptos | **28** |
+| CNPJ virou cadastro de verdade no Sankhya | **49 de 50** (o que falta é o CNPJ inválido da Neide) |
+| cliente com PEDIDO no Sankhya | **3** |
+| cliente com NOTA | **0** |
+
+### Quebra 1 — ninguém concluiu na tela do Força, e os 3 pedidos vieram por OUTRO caminho
+
+Os 3 que têm pedido são **DOMA CONCEPT (10/11, R$ 6.087,36)**, **VIANA DISTRIBUIÇÃO (18/11,
+R$ 9.045,15)** e **SIMONI GRÁFICA (23/11, R$ 8.061,00)** — e os três estão com a **vendedora MONICA
+(codvend 178)**, TOP 3100, tabela 194. Nenhum é pedido montado pelo lojista na tela.
+
+**A prova de que ninguém concluiu sozinho:** o vendedor **AUTO ATEND. (codvend 67)**, que é como o
+pedido de autoatendimento entra, tem **2 pedidos desde 01/10, somando R$ 178,68**, os dois no
+dia 01/10. Depois disso, nada. Os 137 pedidos de novembro nas tabelas 194/195 estão todos com
+representante ou vendedor interno com nome.
+
+**Duas correções ao que este arquivo dizia, e as duas eram minhas:**
+1. **O 1711837 NÃO existe como pedido de venda.** Eu escrevi em 18/11 que ele estava em
+   `AD_VW_COM_PEDIDOS` como "COSTA & SILVA, codparc 230368, PENDENTE, 56 itens, R$ 10.071,44".
+   Conferido em 24/11: o número não aparece na view, nem por `NUNOTA`, nem por data, **e o codparc
+   230368 não tem pedido nenhum** — só o cadastro, de 17/11. Aquele detalhe veio da resposta da API
+   do Força, não da view, e eu o registrei como se fosse do Sankhya.
+2. **O GET do protocolo NÃO devolve `situacao`.** Lido em 10 protocolos: volta `status: "pronto"`,
+   `pedido`, `validade` e um objeto `tempos` — e `situacao` vem **null** em todos. Então **continua
+   não havendo como saber daqui se o lojista abriu o link**, e as etapas Montando/Enviado/Faturado
+   do pipeline seguem sem sinal. A linha que dizia o contrário está errada.
+
+### Quebra 2 — o pedido que ENTRA não é faturado, e isso não é do nosso fluxo
+
+Novembro inteiro, tabelas 194/195:
+
+| situação | pedidos | valor |
+|---|---|---|
+| **PENDENTE** | **137** | **R$ 731.441,54** |
+| FATURADO | 37 | R$ 206.125,37 |
+| encerrado sem faturar | 4 | R$ 908,64 |
+
+**79% dos pedidos do canal estão parados sem nota.** Os 3 do nosso fluxo (R$ 23.193,51, faturado
+zero) estão nessa fila, inclusive o da DOMA CONCEPT, que é de **10/11 e já tem 14 dias**. Logo,
+"não teve venda" tem uma causa que não é do lead e nem da Nina: **o pedido entra e não vira nota.**
+Isso é conversa com o comercial, e é o maior número desta página.
+
+### O que acontece na conversa depois do link: ele cala
+
+Lidas as conversas dos quatro links mais antigos. O do **Evandro (lead 693)** é o retrato:
+
+- 19/11 18h27 ele escreve; 18h30 a Nina pede CNPJ + CEP + e-mail **numa frase só**;
+- 18h38 ele manda **os três**, completos, sem reclamar;
+- 18h55 o link sai, com mínimo, 10% e validade — **28 minutos** do primeiro "oi" ao acesso;
+- 20/11 08h06 *"Conseguiu abrir direitinho?"* · 21/11 08h06 *"Ficou alguma dúvida de como montar?"*
+  · 24/11 09h06 mais uma.
+- **Ele nunca respondeu nada depois do link.**
+
+Império Celca e Pedro Carvalho: igual. Só a Livraria Universitária respondeu, e para dizer que ia
+ver com calma. **É amostra de 4, não contagem dos 28** — mas os quatro têm a mesma forma: o dado
+chega fácil, o link sai rápido, e o silêncio começa exatamente ali.
+
+- **A NINA NÃO SABE QUE O LINK JÁ SAIU — e isso aparece na cara do lojista.** Hoje ela escreveu ao
+  Evandro *"já consigo montar aqui a lista de preço único pro seu ramo (...) Quer que eu te mande?"*
+  — **cinco dias depois de ter mandado o acesso**. E ao Carlos: *"o pedido #1714500 já tá ali montado
+  do seu jeito"*. O toque de seguimento **não lê `forca_link_em`**: ele conta tempo desde a última
+  mensagem e improvisa a oferta. Oferecer o que já foi entregue ensina o lojista que aquilo que ele
+  tem na mão não é o que ele precisa. Consertar mexe no `copiloto-lead`.
+- **O que eu quase reportei como defeito e NÃO é:** o "monta do seu jeito, quando você conclui entra
+  um vendedor nosso que abre tabela e condição que eu não libero" é a **lição 347**, palavra por
+  palavra, ordem do gestor em 22/10. Conferido antes de falar — e por isso não virou acusação.
