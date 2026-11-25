@@ -34,8 +34,11 @@
 //   - `forca_perg_max` (1): uma pergunta por lead. Duas viram cobranca.
 //   - TETO DE ESPONTANEAS EM 24h (2), contado NA CONVERSA DO CRM e nao num contador nosso — o
 //     `toques` do `copiloto_lead` mente (StarLuz, lead 564). Espontanea e a mensagem cuja anterior
-//     tambem e nossa: RESPONDER NAO E INSISTIR. Na previa de 24/11 isso sozinho segurou 2 dos 10
-//     (Pedro 718 e Katiani 722, com 3 espontaneas cada nas ultimas 24h).
+//     tambem e nossa: RESPONDER NAO E INSISTIR.
+//   - TETO DE CARGA (`forca_perg_max_nossas`, 3): quantas mensagens NOSSAS ele ja recebeu em 24h,
+//     espontaneas ou nao. E trava separada porque a de cima nao mede carga — ver o comentario do
+//     `nossasEm24h`.
+//   - TETO DE LEITURA (`forca_perg_scan`, 12): cada candidato avaliado custa DUAS chamadas ao GHL.
 //   - DEDUPE POR CNPJ: o mesmo lojista pode ter duas linhas de lead (765 e 766, Lucas Moraes,
 //     mesmo CNPJ e mesmo pedido 1715623). Sem isso ele levaria a mesma pergunta duas vezes.
 //   - `forca_perg_pular`: ids que nao entram. Nasce com o 689 (SIMONI), o unico da coorte que
@@ -181,14 +184,72 @@ async function conversa(contact_id: string): Promise<any> {
 const ehEntrada = (m: any) => String(m?.direction) === "inbound" && !ehRuido(m?.body);
 const quando = (m: any) => new Date(m?.dateAdded || 0).getTime();
 
+// AUDIO NAO PODE CHEGAR AO GESTOR ESCRITO "ptt" (25/11). A Karla (727) respondeu a reabordagem
+// com um texto as 06h17:35 E um audio 11 segundos depois; como a leitura pegava so a mensagem
+// MAIS RECENTE, o aviso saiu com a resposta dela escrita `ptt` — que e como o ZaptosWPP marca
+// nota de voz — e nao com o que ela perguntou. Agora o aviso leva TODAS as entradas depois da
+// pergunta, e o audio vai nomeado, com o link para ouvir.
+const ehMidia = (m: any) => {
+  const b = limpa(m?.body);
+  const anexos: any[] = Array.isArray(m?.attachments) ? m.attachments : [];
+  if (!anexos.length) return false;
+  return !b || (b.length <= 14 && !/\s/.test(b));
+};
+
+function textoDaEntrada(m: any): string {
+  const b = limpa(m?.body);
+  if (!ehMidia(m)) return b;
+  const url = String((Array.isArray(m?.attachments) ? m.attachments : [])[0] || "");
+  const tipo = /\.(mp3|ogg|opus|m4a|wav)(\?|$)/i.test(url) ? "audio"
+             : /\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(url) ? "imagem"
+             : /\.(mp4|mov|3gp)(\?|$)/i.test(url) ? "video"
+             : /\.pdf(\?|$)/i.test(url) ? "PDF" : "anexo";
+  return `(${tipo} — ouvir/abrir na conversa: ${url})`;
+}
+
+// Todas as entradas depois do corte, do mais velho para o mais novo, ja com midia nomeada.
+function respostasDepois(msgs: any[], corte: number): any[] {
+  return msgs.filter((m: any) => ehEntrada(m) && quando(m) > corte);
+}
+
+// O ENCANAMENTO DO ZAPTOS NAO E MENSAGEM AO LOJISTA, e contar isso quebrou a fila (25/11).
+// Cada envio real deixa TRES linhas outbound na conversa: o `#contact_instance:<inst>`, o ack
+// `[System]: Contact Instance Updated!` e o texto. Mais as linhas de atividade do funil
+// ("Opportunity created/updated", type 28), que tambem vem como outbound. Contando tudo, UM
+// envio ja marcava 2 ou 3 e estourava o teto de 2 sozinho — por isso a rodada nao mandava nada
+// e, sem nada para mandar, ia avaliando candidato ate levar HTTP 429 do GHL. Medido: a Karla
+// (727) aparecia com o teto estourado por UMA resposta nossa, e o Jairo (783) com "18
+// espontaneas" que eram ~6 mensagens de verdade.
+const ehCano = (m: any) => {
+  const b = String(m?.body || "").trim();
+  if (/^#(contact_instance|switch):/i.test(b)) return true;
+  if (/^\[System\]:/i.test(b)) return true;
+  if (Number(m?.type) === 28) return true;
+  if (/^TYPE_ACTIVITY/i.test(String(m?.messageType || ""))) return true;
+  return false;
+};
+
+// CARGA TOTAL, que e trava SEPARADA da espontaneidade — e o controle de 25/11 mostrou por que.
+// Pela regra de predecessor, os DOIS toques duplicados que o Regis (729) levou com 1 minuto de
+// diferenca contam como UMA espontanea so: o primeiro veio depois de um "Obrigado" dele, entao
+// parece resposta. A regra esta certa no que ela mede ("responder nao e insistir"), mas ela nao
+// mede QUANTO o lojista ja ouviu de nos hoje. Esta conta mede, e e ela que impede a reabordagem
+// de virar a terceira ou quarta mensagem do mesmo dia.
+function nossasEm24h(ordem: any[]): number {
+  const agora = Date.now();
+  return ordem.filter((m: any) =>
+    !ehCano(m) && String(m?.direction) === "outbound" && agora - quando(m) <= 24 * 3600_000).length;
+}
+
 function espontaneasEm24h(ordem: any[]): number {
+  const reais = ordem.filter((m: any) => !ehCano(m));
   const agora = Date.now();
   let n = 0;
-  for (let i = 0; i < ordem.length; i++) {
-    const m = ordem[i];
+  for (let i = 0; i < reais.length; i++) {
+    const m = reais[i];
     if (String(m?.direction) !== "outbound") continue;
     if (agora - quando(m) > 24 * 3600_000) continue;
-    const ant = ordem[i - 1];
+    const ant = reais[i - 1];
     if (!ant || String(ant.direction) === "outbound") n++;
   }
   return n;
@@ -259,6 +320,7 @@ async function perguntar(c: Record<string, string>, dry: boolean, soLead: number
   const silencioH = Number(c.forca_perg_silencio_h || "24") || 24;
   const maxVezes = Number(c.forca_perg_max || "1") || 1;
   const maxDia = Number(c.forca_perg_max_dia || "2") || 2;
+  const maxNossas = Number(c.forca_perg_max_nossas || "3") || 3;
   const inst = c.forca_link_instancia || "Nina";
   const ligado = (c.forca_perg_ativo || "nao").toLowerCase() === "sim";
   const comVendedor = (c.forca_perg_vendedor || "sim").toLowerCase() === "sim";
@@ -279,6 +341,14 @@ async function perguntar(c: Record<string, string>, dry: boolean, soLead: number
   const cnpjVistos = new Set<string>();
   let mandados = 0;
 
+  // TETO DE LEITURA, e ele e de INFRAESTRUTURA (25/11). Cada candidato avaliado custa DUAS
+  // chamadas ao GHL (busca da conversa + mensagens). Com a fila em 34 e nada passando no teto,
+  // a rodada lia 68 conversas de uma vez e o GHL devolvia `HTTP 429` em 17 de 20 candidatos —
+  // ou seja, o excesso de leitura cegava a propria rodada. O corte vale so para quem chega a ser
+  // LIDO: pulo barato (lista, CNPJ repetido) nao gasta chamada e nao conta.
+  const scanPerg = Math.max(1, Number(c.forca_perg_scan || "12") || 12);
+  let lidos = 0;
+
   for (const L of cands) {
     if (mandados >= lote) break;
     const base = { lead: L.id, nome: L.nome, empresa: L.empresa, pedido: L.forca_pedido, link_em: brtTxt(L.forca_link_em) };
@@ -286,7 +356,9 @@ async function perguntar(c: Record<string, string>, dry: boolean, soLead: number
     if (!soLead && pular.has(String(L.id))) { feito.push({ ...base, decisao: "pular", motivo: "esta em forca_perg_pular" }); continue; }
     const doc = d14(L.cnpj);
     if (doc && cnpjVistos.has(doc)) { feito.push({ ...base, decisao: "pular", motivo: "mesmo CNPJ de outro lead ja tratado nesta rodada" }); continue; }
+    if (!soLead && lidos >= scanPerg) { feito.push({ ...base, decisao: "parar", motivo: `teto de ${scanPerg} conversas lidas nesta rodada — o resto fica para a proxima` }); break; }
 
+    lidos++;
     const cv = await conversa(L.contact_id);
     if (cv?.erro) { feito.push({ ...base, decisao: "pular", motivo: cv.erro }); continue; }
     if (!cv) { feito.push({ ...base, decisao: "pular", motivo: "sem conversa no CRM" }); continue; }
@@ -301,6 +373,8 @@ async function perguntar(c: Record<string, string>, dry: boolean, soLead: number
 
     const esp = espontaneasEm24h(ordem);
     if (esp >= maxDia) { feito.push({ ...base, decisao: "pular", motivo: `ja mandamos ${esp} mensagens espontaneas nas ultimas 24h (teto ${maxDia})` }); continue; }
+    const nossas = nossasEm24h(ordem);
+    if (nossas >= maxNossas) { feito.push({ ...base, decisao: "pular", motivo: `ja mandamos ${nossas} mensagens a ele nas ultimas 24h (teto de carga ${maxNossas})` }); continue; }
 
     const hist = ordem.slice(-10).map((m: any) =>
       (String(m?.direction) === "inbound" ? "LOJISTA: " : "NINA: ") + limpa(m?.body).slice(0, 300)).join("\n");
@@ -339,7 +413,7 @@ async function perguntar(c: Record<string, string>, dry: boolean, soLead: number
     if (doc) cnpjVistos.add(doc);
 
     if (dry) {
-      feito.push({ ...base, decisao: "previa", dias_do_link: dias(L.forca_link_em), nunca_escreveu: mudo, espontaneas_24h: esp, rascunho: texto });
+      feito.push({ ...base, decisao: "previa", dias_do_link: dias(L.forca_link_em), nunca_escreveu: mudo, espontaneas_24h: esp, nossas_24h: nossas, rascunho: texto });
       mandados++;
       continue;
     }
@@ -372,7 +446,7 @@ async function perguntar(c: Record<string, string>, dry: boolean, soLead: number
                  volta_para_a_fila: env?.ok ? undefined : devolvido, texto });
   }
 
-  return { ligado, instancia: inst, candidatos: cands.length, tratados: feito.length, feito };
+  return { ligado, instancia: inst, candidatos: cands.length, lidos, tratados: feito.length, feito };
 }
 
 // ===== PASSADA 2 — LER E AVISAR ================================================================
@@ -407,10 +481,13 @@ async function ler(c: Record<string, string>, dry: boolean, soLead: number, lote
     if (!cv) { feito.push({ ...base, decisao: "pular", motivo: "sem conversa no CRM" }); continue; }
 
     const corte = new Date(L.forca_perg_em).getTime();
-    const resp = cv.msgs.filter((m: any) => ehEntrada(m) && quando(m) > corte).pop();
+    const respostas = respostasDepois(cv.msgs, corte);
+    const resp = respostas[respostas.length - 1];
     if (!resp) { feito.push({ ...base, decisao: "aguardando", motivo: "nenhuma resposta depois da pergunta" }); continue; }
 
-    const texto = limpa(resp.body) || "(mensagem sem texto — audio, imagem ou anexo)";
+    // TODAS as entradas, nao so a ultima: a Karla mandou texto e audio com 11s de diferenca.
+    const texto = respostas.map(textoDaEntrada).filter(Boolean).join("\n")
+      || "(mensagem sem texto — ver na conversa)";
     const aviso = textoGestor(L, texto, resp.dateAdded);
 
     if (dry) {

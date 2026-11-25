@@ -2421,3 +2421,61 @@ primeira vez que essa escolha pagou sozinha.
   marketplace (e canal dele, nao queixa de concorrencia nossa) e a Nina respondeu certo: o mix serve
   para revenda em marketplace tambem. Nao confundir os dois casos ao responder a pergunta de
   estrategia que esta em aberto.
+
+## A FILA NAO ANDAVA PORQUE EU CONTAVA O ENCANAMENTO COMO MENSAGEM (25/11)
+
+Defeito meu, na funcao que eu escrevi na vespera, e ele explica os dois sintomas de ontem de uma
+vez. **Cada envio real deixa TRES linhas `outbound` na conversa do CRM:** o `#contact_instance:Nina`,
+o ack `[System]: Contact Instance Updated!` e o texto. Mais as linhas de atividade do funil
+("Opportunity created/updated", `type: 28`), que tambem vem como outbound. O `espontaneasEm24h`
+contava tudo — entao **UMA mensagem nossa ja marcava 2 ou 3 e estourava o teto de 2 sozinha.**
+
+| o que o log dizia | o que era de verdade |
+|---|---|
+| Karla (727): teto estourado | UMA resposta nossa |
+| Regis (729): "6 espontaneas" | 2 textos de verdade (os toques duplicados) + 4 linhas de encanamento |
+| Jairo (783): "18 espontaneas" | ~6 mensagens de verdade |
+
+**E os dois problemas se alimentavam.** Sem nada passar no teto, a rodada ia avaliando candidato
+atras de candidato — 34 na fila x 2 chamadas ao GHL cada — ate o GHL devolver `HTTP 429` em 17 de
+20. Ou seja: **o excesso de leitura cegava a propria rodada**, e eu tinha registrado o 429 como
+causa quando ele era sintoma. O 429 que eu chamei de "continuo" nas cinco rodadas de ontem era isto.
+
+**O que mudou (v5, publicada em 25/11):**
+- `ehCano()` tira o `#contact_instance`, o `#switch`, o `[System]:` e as linhas de atividade da
+  contagem. O teto de 2 volta a significar 2 mensagens de verdade.
+- **`forca_perg_max_nossas` (3) e trava NOVA e separada**, e nasceu de um controle: pela regra de
+  predecessor os dois toques duplicados do Regis contam como UMA espontanea so, porque o primeiro
+  veio depois de um "Obrigado" dele e *parece* resposta. A regra esta certa no que mede
+  ("responder nao e insistir"), mas ela nao mede CARGA. Esta mede, e e ela que impede a reabordagem
+  de virar a terceira mensagem do mesmo dia.
+- **`forca_perg_scan` (12)**: teto de conversas LIDAS por rodada, igual ao da leitura. Pulo barato
+  (lista, CNPJ repetido) nao gasta chamada e nao conta.
+
+**Conferido na previa real, logo depois de publicar:** 18 candidatos, **3 lidos**, 3 passando com
+`espontaneas_24h: 0` e `nossas_24h: 0` (Evandro 693, Pedro 718, Antonio 702) — os mesmos que ontem
+vinham "ja mandamos 3 espontaneas" — e **zero 429 na rodada**, porque ela leu 3 conversas em vez
+de 20.
+
+**A licao de metodo, e ela e irma da dos "137 pendentes":** numero que parece absurdo (18 mensagens
+num dia) merece ser conferido na fonte antes de virar diagnostico. Eu li "6 espontaneas" ontem e
+acreditei no numero porque ele batia com um defeito que EXISTE (o toque duplicado, que eu confirmei
+lendo a conversa). O defeito era real; a contagem, nao. **Ter achado uma causa verdadeira nao
+dispensa conferir a medicao que levou ate ela.**
+
+### A primeira resposta por AUDIO, e o aviso ao gestor saiu escrito "ptt"
+
+A Karla (727) — a lojista da landing que **nunca tinha escrito uma linha**, e para quem o link foi a
+primeira e unica coisa que a Nitron disse — respondeu a reabordagem em 25/11 as **06h17**. Duas
+mensagens, com 11 segundos de diferenca: o texto *"Quero saber mais sobre os produtos da Nitron."* e
+**um audio**. A leitura pegava so a mensagem MAIS RECENTE, entao o aviso que saiu ao gestor as 09h00
+trazia a resposta dela escrita **`ptt`** — que e como o ZaptosWPP marca nota de voz, e que nao diz
+nada a quem le.
+
+- Hoje o aviso leva **todas** as entradas depois da pergunta, e midia vai nomeada com o link para
+  ouvir (`ehMidia` + `textoDaEntrada`). O registro do 727 foi corrigido a mao.
+- **O fallback que ja existia nao pegava**: ele so trocava o texto quando o corpo vinha VAZIO, e
+  `ptt` nao e vazio. Corpo curto, sem espaco e com anexo e o sinal de midia.
+- **A Nina respondeu certo sozinha** (09h20, 3 min depois): ela leu o TEXTO e explicou a linha, sem
+  inventar nada sobre o audio — que ninguem ouviu ate agora. O conteudo real do pedido dela pode
+  estar no audio, e **so uma pessoa pode ouvir**: nao ha transcricao em lugar nenhum deste projeto.
