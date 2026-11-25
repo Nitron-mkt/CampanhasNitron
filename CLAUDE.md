@@ -2454,8 +2454,29 @@ causa quando ele era sintoma. O 429 que eu chamei de "continuo" nas cinco rodada
 
 **Conferido na previa real, logo depois de publicar:** 18 candidatos, **3 lidos**, 3 passando com
 `espontaneas_24h: 0` e `nossas_24h: 0` (Evandro 693, Pedro 718, Antonio 702) — os mesmos que ontem
-vinham "ja mandamos 3 espontaneas" — e **zero 429 na rodada**, porque ela leu 3 conversas em vez
-de 20.
+vinham "ja mandamos 3 espontaneas".
+
+**O CONSERTO DESTRAVOU A FILA, MAS O 429 NAO SUMIU — e eu afirmei que tinha sumido.** A previa que
+me convenceu rodava `?acao=perguntar` sozinha, com lote 3: ela leu 3 conversas e nao levou 429
+nenhum. **O cron chama `?acao=tudo`**, que faz a LEITURA antes (ate 15 conversas) e so depois
+pergunta (ate 12) — ate 27 leituras, ~54 chamadas ao GHL por rodada, de 20 em 20 min. Medido as
+13h: **13 a 20 `HTTP 429` em TODAS as rodadas** da manha e do inicio da tarde.
+**O erro de metodo e o mesmo de sempre, numa variante nova: eu medi com a ferramenta de prévia e
+concluí sobre a rodada de produção, que faz mais do que a prévia.** Previa de uma passada nao prova
+rodada de duas.
+
+**O que o 429 custa, medido:** nada ate agora. A fila andou (11 -> 17 perguntadas, 6 no dia, **zero
+erros de envio**) e **as tres respostas que existiram foram todas capturadas em horas** — NLALFA em
+28 min, Alex em 2h, Karla em 15h. E degradacao da leitura, nao falha.
+**Onde esta o desperdicio, e e estrutural:** das 15 vagas da passada de leitura, **14 sao leads ja
+perguntados que nunca responderam**, relidos de 20 em 20 minutos durante **7 dias**
+(`forca_perg_ler_dias`). Os dois ajustes possiveis sao UPDATE, sem deploy, e cada um tem um custo:
+baixar `forca_perg_ler_dias` (7 -> 2) para de reler quem foi perguntado ha dias, mas **estreita a
+janela do aviso ao gestor** — quem responder no 3o dia deixa de ser notado pela maquina (a Nina
+responde do mesmo jeito, quem perde o aviso e o gestor); baixar `forca_perg_ler_scan` (15 -> 8)
+corta chamadas, mas como a ordem e fixa (`forca_perg_em desc`) os mais VELHOS da fila **nunca** seriam
+lidos. Por isso nenhum dos dois foi mexido: e escolha do gestor, e enquanto as respostas estiverem
+sendo capturadas o preco de nao mexer e zero.
 
 **A licao de metodo, e ela e irma da dos "137 pendentes":** numero que parece absurdo (18 mensagens
 num dia) merece ser conferido na fonte antes de virar diagnostico. Eu li "6 espontaneas" ontem e
@@ -2479,3 +2500,21 @@ nada a quem le.
 - **A Nina respondeu certo sozinha** (09h20, 3 min depois): ela leu o TEXTO e explicou a linha, sem
   inventar nada sobre o audio — que ninguem ouviu ate agora. O conteudo real do pedido dela pode
   estar no audio, e **so uma pessoa pode ouvir**: nao ha transcricao em lugar nenhum deste projeto.
+
+### A terceira resposta diz que ele ESTA OLHANDO — e e o sinal que nenhum instrumento nosso da
+
+**Alex de Jesus da Silva (lead 792)**, Hortolandia/SP, CNPJ 44.895.750/0001-44, pedido 1716354.
+Perguntado 25/11 09h20, respondeu **11h17**, aviso interno as 11h20:
+
+> *"Ola bom dia, ainda nao terminei de olhar, estou vendo o que melhor se enquadra para meus
+> clientes"*
+
+**Isso e a unica evidencia direta que ja tivemos de que um lojista ABRIU e esta percorrendo o
+catalogo.** O `situacao` do GET do protocolo volta null e o `AD_STATUFORCA` nao esta em view
+liberada — ou seja, "abriu" e exatamente o que nao da para medir daqui. Veio pela boca dele, numa
+resposta a reabordagem. Vale anotar o que isso muda na leitura dos outros: **silencio depois do
+link nao e prova de desistencia**; pelo menos um deles estava trabalhando no pedido em silencio.
+
+**Nota sobre o que o `forca_perg_aviso_em` prova:** ele e gravado ANTES do envio (a regra de toda
+marca daqui), entao ele diz que a maquina TENTOU avisar as 11h20, nao que o Zaptos entregou. Para
+confirmar entrega e preciso ler a conversa do destinatario.
