@@ -2518,3 +2518,38 @@ link nao e prova de desistencia**; pelo menos um deles estava trabalhando no ped
 **Nota sobre o que o `forca_perg_aviso_em` prova:** ele e gravado ANTES do envio (a regra de toda
 marca daqui), entao ele diz que a maquina TENTOU avisar as 11h20, nao que o Zaptos entregou. Para
 confirmar entrega e preciso ler a conversa do destinatario.
+
+### O DIA FECHOU COM 7 RESPOSTAS EM 29 PERGUNTAS, E NENHUMA DELAS E "NAO QUERO" (25/11, 18h40)
+
+Depois do conserto do contador a fila andou de verdade: **21 perguntas no dia** (29 no total), 20
+ainda na fila, **zero erros de envio** e **7 respostas**. As quatro que chegaram a tarde:
+
+| lead | praca | o que disse | respondeu em |
+|---|---|---|---|
+| 771 Wellison | Sao Paulo/SP | **dois audios** — ninguem ouviu | 3 min |
+| 766 Lucas Moraes | Bom Jesus do Itabapoana/RJ | *"Produto muito caro / Frasqueira 6,2 litros"* | 15 min |
+| 805 Osvaldo Grigoli | S.J. dos Pinhais/PR | *"Estamos analisando e assim que possivel seremos um retorno"* | **1 min** |
+| 729 Regis | Bauru/SP | *"Ainda nao estou conseguindo atingir o minimo da compra"* | 2h19 |
+
+**O achado nao e nenhuma resposta isolada — e o conjunto: NINGUEM disse que nao quer.** Nas sete,
+os motivos sao ainda analisando (2), nao chega ao minimo (1), preco de UM item (1), conflito de
+canal (1) e dois audios nao ouvidos. **Zero "nao tenho interesse".** O silencio depois do link,
+que ate 24/11 este arquivo tratava como possivel desistencia, nao era recusa em nenhum dos sete
+casos que falaram.
+
+- **O Regis e a pergunta comercial do dia, e ela nao e de mensagem nem de tela.** Ele quer comprar
+  e nao fecha os R$ 3.500. **A Nina respondeu certo** (conferido na conversa as 15h45): *"Ficou
+  abaixo dos R$ 3.500 mesmo tirando e ajustando quantidade? Me diz o que e carro-chefe ai na sua
+  loja que eu te ajudo a engrossar o mix"* — ela nao ofereceu baixar o minimo, que nao e dela para
+  oferecer, e tratou o motivo como informacao (licao 475). **Se existe folga abaixo de R$ 3.500 no
+  Forca, isso e regua comercial e e decisao do gestor** — o `PISO` de R$ 2.500 que este arquivo
+  registra e da PAGINA DE PEDIDO antiga, superada em 17/11; **nao se sabe daqui** se o Forca tem
+  equivalente.
+- **DOIS dos sete responderam por AUDIO** (Karla e Wellison), e ninguem os ouviu. Nao e caso
+  isolado: e 29% das respostas. O conserto de hoje fez o aviso **nomear** a midia com o link
+  (conferido em producao no 771: saiu `(audio — ouvir/abrir na conversa: ...)`, nao `ptt`), mas
+  nomear nao e transcrever. **Nao ha transcricao em lugar nenhum deste projeto**, entao toda
+  resposta por voz depende de uma pessoa abrir e ouvir.
+- **O 429 caiu mas nao sumiu:** 1 a 13 por rodada a tarde, contra 13 a 20 ao meio-dia. E as sete
+  respostas foram capturadas entre **1 e 17 minutos** depois de chegarem. Continua degradacao sem
+  custo medido — os dois ajustes possiveis seguem descritos acima, e seguem sem ser mexidos.
