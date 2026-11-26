@@ -2647,3 +2647,67 @@ recusa. Quem tem de mandar outro numero e ele.
 `pergunta 429 = 0`, e TRES perguntas enviadas** (762 Pauluck, 772 Mailson, 685 Vania), zero recusas
 — contra 12 de 12 recusadas em cada uma das cinco rodadas da manha. Mesma funcao, mesmo lote, so o
 minuto do cron. **Antes de culpar cota, conferir com quem a rodada divide o minuto.**
+
+## EXISTE UMA MAQUINA DE RECRUTAMENTO DE REPRESENTANTE, E ELA VAZA PARA A NINA DE VENDAS (26/11)
+
+Pergunta do gestor: *"Tem alguma campanha que esta trazendo representante, voce consegue
+identificar qual e?"*
+
+**Sim, e ela nao estava em lugar nenhum deste arquivo** — como o `nitronmob-nina-10min` (jobid 196),
+e pelo mesmo motivo: ninguem a documentou. Tabela **`recrut_candidato`**, tag `recrutamento` +
+`recrut-lote<N>` no CRM, e **dois crons ATIVOS**: `recrut-atende-5min` (`*/5 11-22 * * 1-6`) e
+`recrut-pipe-10min` (`3-59/10 11-22 * * 1-6`).
+
+| lote | candidatos | responderam | entregues |
+|---|---|---|---|
+| lote1 (29/10) | 10 | 4 | 4 |
+| lote2 (30/10) | 15 | 0 | 5 |
+| **lote3 (25/11)** | **20** | 0 | 4 |
+
+### O vazamento, e ele e exatamente a licao da `raspagem`
+
+O `copiloto-lead` pula contato com tag `raspagem`/`raspagem-onda1` (linha 662) — justamente para
+duas IAs nao disputarem a mesma conversa e o roteiro de lojista nao cair num publico que nao e
+lojista. **`recrutamento` nao esta nessa linha.** A trava de representante que existe (linha 643,
+`opts.reps`) le o `snap_rep`, ou seja, quem **ja e** representante — e candidato nao e.
+
+Resultado medido: dos 45 candidatos, **3 viraram lead de venda** (672, 864 e 873), e o 873 estava
+`qualificando` as 11h26 de hoje. Dois dos tres entraram em 25/11, o dia do lote3 — ou seja, o
+vazamento acompanha o disparo, e os outros 16 do lote ainda podem responder.
+
+**O 873 (MAGA DECOR, 47 99185-1414) e a prova, lida na conversa.** A `recrut-atende` estava
+qualificando ele como representante — *"Ja temos parceiros atuando em SC, entao o que eu preciso e
+entender bem onde voce soma sem cruzar com eles. Me passa uns 10 clientes principais que voce atende
+hoje"* —, ele respondeu "Havan, Giassi, Koerich, Koch", e **hoje as 10h37 a Nina de VENDAS entrou
+por cima**:
+
+> *"Oi! Enquanto a Camyla da sequencia, ja consigo ir montando teu mix com preco certinho na tela —
+> so preciso do CNPJ, do CEP de entrega e do seu e-mail."*
+
+E a licao 441 (os tres dados numa frase so) aplicada a um candidato a representante. Ele respondeu
+*"preciso ver primeiro os teus produtos, o q fabrica pra mim trocar uma ideia com o pessoal aqui"* —
+fala de representante, nao de lojista — e levou o catalogo com *"a Camyla segue com voce pra fechar
+os detalhes"*. **Duas maquinas na mesma conversa, com dois objetivos diferentes.**
+
+**O conserto e UMA LINHA** (acrescentar `recrutamento` a linha 662), e custa publicar o
+`copiloto-lead` — 98 KB, sem CLI, atendendo lead. Decisao do gestor, com o ritual de sempre (fechar
+o cron 147, publicar, conferir md5, reabrir).
+
+### Os outros 6 vieram do ANUNCIO, e nao ha anuncio culpado
+
+Nove leads no total chegaram se identificando como representante comercial, e **a Nina descartou os
+nove corretamente** (`descartar_lead`, com o motivo escrito). Os dois de novembro que nao sao do
+recrutamento vieram do META, e de **anuncios DIFERENTES**:
+
+| lead | anuncio | texto |
+|---|---|---|
+| 798 Wps Representacoes | `120249979621760567` | *"Chega de comprar no escuro e deixar dinheiro parado no estoque"* |
+| 710 Ricobenigno | `120248926911180567` | *"Sua loja esta preparada para nao perder vendas?"* |
+
+Os dois sao copy de LOJISTA. **Nao ha concentracao num anuncio** — e representante comercial
+respondendo a anuncio de loja, que e ruido normal de prospeccao, nao campanha errada. Com 2 casos em
+2 anuncios, afirmar que um anuncio "traz representante" seria ler padrao em amostra de dois.
+
+**O `origem` do `copiloto_lead` nao serve para essa pergunta:** 800 dos 870 leads tem
+`origem='WhatsApp'`, que e o que o GHL escreve e nao diz nada. Quem responde "de qual campanha veio"
+e o **contato do CRM** — as tags e os custom fields do anuncio (id, plataforma e o texto do criativo).
