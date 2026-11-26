@@ -2777,3 +2777,77 @@ linha que a implementa.**
 
 **Nota de versao:** o publicado e a **v36**, e este arquivo dizia v33 (18/11). Os bytes sao os
 mesmos (98.161), entao foram republicacoes do mesmo conteudo, nao divergencia.
+
+### O MINUTO NOVO SE SUSTENTOU, E A TARDE TROUXE CINCO RESPOSTAS (26/11, 17h30)
+
+**18 rodadas do cron 274 entre 11h47 e 17h27 de SP, e ZERO 429 em todas** — nas duas passadas,
+leitura e pergunta. Contra 12 de 12 recusadas em cada rodada da manha. O conserto era o minuto, e
+ele segurou o dia inteiro.
+
+Fila no fim da tarde: **41 perguntados** (11 no dia), **12 respostas**, **23 na fila**, **zero erros
+de envio**. A fila cai devagar porque links novos entram todo dia — 64 leads ja receberam link.
+
+**As cinco respostas novas de hoje:**
+
+| lead | o que disse |
+|---|---|
+| 685 Vania (VKBI) | *"nao recebi o link habilitado para eu conferir os produtos"* |
+| 762 Pauluck | *"o pedido minimo ficou alto para um investimento inicial e nao consegui encontrar um equilibrio na concorrencia dentro do mercado livre"* |
+| 782 Ricardo | mandou uma imagem |
+| **850 Leandro** | *"Nao .. Ainda nao vou fazer pedido quando eu precisar entro em contato"* |
+| 854 Sergio | *"Como faco pra saber valores"* |
+
+**O 850 e o PRIMEIRO "nao" em 12 respostas** — e ainda assim nao e recusa do produto: e "nao agora".
+O registro de 25/11 dizia "ninguem disse que nao quer"; isso deixou de ser verdade hoje, e a forma
+exata importa.
+
+**O 762 Pauluck e a SEGUNDA voz dizendo que os R$ 3.500 sao altos** (o Regis foi a primeira), e ele
+junta as duas objecoes abertas numa so: minimo alto **e** concorrencia no Mercado Livre. Nao e mais
+caso isolado, sao 2 de 12.
+
+### O LINK DA VANIA EXPIROU NO MESMO DIA EM QUE FOI ENTREGUE — e "reenviar" nao existe
+
+Lida a conversa inteira. **A validade do acesso venceu no proprio dia do envio:**
+
+- lead criado 16/11, **pedido 1712245 aberto na leva de ~17/11**;
+- o link so foi entregue em **24/11 as 10h50**, com o texto *"O acesso fica aberto ate 24/11/2026"* —
+  ou seja, os 7 dias de validade correram **antes** de ela receber o link;
+- **24/11 12h19** ela responde com um print: *"Nao foi possivel abrir este link"*.
+
+**Nao e defeito de frota, e isso e o controle que evita o alarme falso:** dos **64 leads com link**,
+**so a Vania** tem pedido da leva antiga (`forca_pedido < 1713000`). Os outros 63 estao entre
+1714249 e 1718354, com link entregue de 19 a 26/11. O caso e UM.
+
+**O que e sistemico e pior: a Nina prometeu reenviar o link TRES vezes e nada reenviou.**
+
+| quando | o que ela disse |
+|---|---|
+| 24/11 12h25 | *"deixa eu rodar de novo aqui pro seu mix — ja volto com o acesso certinho"* |
+| 24/11 14h00 | *"Ja pedi pra rodar de novo. Em instantes o link certinho do seu mix chega aqui"* |
+| 24/11 21h12 | *"ja coloquei pra rodar de novo o mix da sua loja. Em instantes o link certinho chega"* |
+
+**Nenhuma das tres tinha maquina atras.** O `forca_link_em` e gravado ANTES do envio e tira o lead da
+fila do link para sempre; a ferramenta `link_pedido` so marca `forca_pedir_em` (ela marcou, 24/11
+21h11) e a `forca-cadastro` pula quem ja tem pedido aberto. **Nao existe caminho de REENVIO de link
+neste fluxo** — nem para link que expirou, nem para envio que falhou. E o erro de 16/09 na forma
+mais pura: promessa sem nada atras, repetida tres vezes, para uma lojista que queria comprar.
+
+**O que a Nina fez CERTO, e eu quase reportei como invencao:** em 26/11 as 11h02 ela disse *"ja abri
+um chamado aqui com nossa equipe"* — e **abriu mesmo**: `copiloto_tarefas` id 490, area comercial,
+`entrega_ok=true`, criada 11h02, o minuto exato. **Conferi antes de acusar.** A ressalva real e outra
+e e menor: a tarefa nasce com o tipo generico `lead-anuncio` e a acao *"Fechar lead do anuncio"*, com
+o resumo do lead no detalhe — quem recebe le "feche este lead", nao "o link dela nao abre". O chamado
+existe; o motivo dele e que nao viaja.
+
+**Ainda na conversa dela, as 13h38 de hoje saiu `https://vendas.nitron.com.br` sozinho** — o dominio
+cru, sem o caminho do link, por `source: "app"` (alguem pela tela do CRM, nao a API). Nao resolve:
+sem o `/link/<hash>` nao ha acesso nenhum.
+
+**O 854 Sergio pode ser o mesmo sintoma por outra porta** (*"Como faco pra saber valores"*, com link
+entregue em 25/11), mas o pedido dele e novo e eu **nao li a conversa dele** — entao isso e
+observacao para conferir, nao diagnostico.
+
+**O conserto nao e so de codigo:** mesmo com uma rota de reenvio, o pedido 1712245 esta vencido e
+quem reabre orcamento no Forca e o lado deles. Para a Vania, hoje, o caminho que existe e humano — e
+e por isso que o chamado foi aberto. Decisao do gestor: se vale criar o reenvio (`forca-detalhe`
+ja sabe limpar coluna e reabrir, e seria o lugar natural), e o que fazer com ela agora.
