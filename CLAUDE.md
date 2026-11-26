@@ -2711,3 +2711,69 @@ respondendo a anuncio de loja, que e ruido normal de prospeccao, nao campanha er
 **O `origem` do `copiloto_lead` nao serve para essa pergunta:** 800 dos 870 leads tem
 `origem='WhatsApp'`, que e o que o GHL escreve e nao diz nada. Quem responde "de qual campanha veio"
 e o **contato do CRM** — as tags e os custom fields do anuncio (id, plataforma e o texto do criativo).
+
+### DE ONDE VEM: a campanha e `recrutamento_reps_t1`, e ela foi montada FORA deste repositorio
+
+Pergunta do gestor: *"preciso saber a origem que esta vindo esses leads, talvez seja de outro
+projeto, alguma raspagem ou algo assim"*.
+
+**A campanha tem nome e passa pela nossa fila:** `fila_envio.campanha='recrutamento_reps_t1'`,
+`publico='recrutamento'`, canal Zaptos pela instancia da **Nina** — **45 linhas, todas enviadas**,
+de 29/10 a 25/11. Existe tambem a `recrutamento_aviso` (`publico='interno'`, 17 linhas), que e o
+aviso a **Camyla** quando um candidato responde (`copiloto_config.recrut_aviso_nome`).
+Como passa pela fila, ela **aparece na agenda do painel** — e e por isso que era achavel.
+
+**A maquina sao tres funcoes e dois crons, e NENHUMA esta no repositorio:**
+
+| peca | o que e |
+|---|---|
+| `recrut-vigia` (v14) | vigia a resposta do candidato e avisa a Camyla; **nao responde nada** |
+| `recrut-atende` (v17) | a IA que AQUECE o candidato e entrega a Camyla quando esquenta |
+| `recrut-pipe` (v13) | move o card no funil |
+| crons **227** `recrut-atende-5min` e **228** `recrut-pipe-10min` | `*/5` e `3-59/10`, 11h–22h, sem domingo |
+
+Ou seja, e a situacao do `copiloto-*` antes de 10/09 outra vez: **o codigo so existe publicado**, e
+quem publicar por cima nao tem de onde voltar. Vale baixar as tres para ca.
+
+**NAO e a raspagem, e isso e medido:** `raspagem_contato` tem 31 linhas, publico de
+distribuidor/atacadista com CNPJ e razao social; `recrut_candidato` tem 45, sao agencias de
+representacao com fone/nome/empresa/cidade/UF e **sem CNPJ**. Cruzando as duas: **0 telefones e 0
+empresas em comum**. Sao acoes diferentes, de publicos diferentes.
+
+**A ORIGEM DOS NOMES NAO ESTA NESTE PROJETO, e o que existe sao tres rastros:**
+1. O cabecalho da `recrut-atende` diz **"Ordem do Ricardo"** — nao do gestor — e
+   **"Roteiro = skill `recrutamento-representantes`"**. Essa skill **nao existe** nas skills desta
+   conta (conferido).
+2. A migration `20261029175333 recrut_candidato` aponta para
+   **`docs/recrutamento-representantes/lista_bloqueio_reps_casa.json`** — caminho que **nunca
+   existiu neste repositorio** (nem no historico do git).
+3. **Nao ha funcao importadora nem tabela de staging**: as 45 linhas entraram por INSERT direto.
+   A `ficha` que algumas tem foi escrita pela IA na conversa, nao e a fonte.
+
+Logo: a lista foi montada **em outra sessao/projeto**, com skill e docs proprios, e so o lado do
+banco aterrissou aqui. **De onde os nomes foram tirados nao da para recuperar daqui** — quem sabe e
+o Ricardo, ou a sessao que rodou a skill. Nao inventar: o que ha e "base de prospeccao", escrito no
+proprio prompt da funcao.
+
+### A TRAVA QUE DUAS FUNCOES DIZEM EXISTIR NAO EXISTE — conferido no publicado
+
+Isto e o que explica o vazamento, e e pior do que "faltou a tag". **Dois lugares afirmam, por
+escrito, que o `copiloto-lead` pula estes telefones:**
+
+- a migration: *"O copiloto-lead (v22) le o telefone daqui e nunca responde a estes contatos com o
+  roteiro de lojista"*;
+- o cabecalho da `recrut-vigia`: *"A Nina de lead (copiloto-lead v22) salta estes telefones de
+  proposito — entao, sem este vigia, a resposta do candidato ficaria parada na caixa da Nina sem
+  ninguem ver"*.
+
+**Conferido no `copiloto-lead` PUBLICADO (v36, 98.161 bytes): a palavra `recrut` aparece ZERO
+vezes.** O que existe e so a trava da `raspagem` (linha 662) e a de rep da casa (`snap_rep`, que
+candidato nao e). A trava descrita nunca foi escrita — ou foi retirada e as duas descricoes ficaram.
+
+**A licao e de metodo, e e a mesma de sempre numa roupa nova: comentario nao e codigo.** Duas
+funcoes e uma migration concordavam entre si, e as tres estavam erradas. Conferir custou um
+`get_edge_function` e um grep. **Antes de confiar numa trava descrita em comentario, procure a
+linha que a implementa.**
+
+**Nota de versao:** o publicado e a **v36**, e este arquivo dizia v33 (18/11). Os bytes sao os
+mesmos (98.161), entao foram republicacoes do mesmo conteudo, nao divergencia.
