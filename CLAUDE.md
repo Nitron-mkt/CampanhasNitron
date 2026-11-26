@@ -2608,3 +2608,37 @@ perguntar` ou `?acao=tudo&dry=1`) rodada em minuto livre, e concluia sobre a rod
 no minuto cheio. Previa no minuto errado nao prova rodada nenhuma. **Quando houver cron chamando por
 `pg_net`, leia a resposta REAL em `net._http_response` em vez de reproduzir a rodada** — ela esta
 gravada, e e de graca.
+
+### O detalhe OPACO derrota o classificador, e o lojista ouve "e do nosso lado" quando nao e (26/11)
+
+Lead **837 (Cicero Ryan Silva Sousa**, CNPJ 70.237.098/0001-80). O `forca_erro_detalhe` que o Forca
+devolveu e **so uma URL**:
+
+```
+Receita Federal: http://www.receitaws.com.br/v1/cnpj/70237098000180
+```
+
+Nenhum dos regexes do `classificar()` casa com isso — nao ha `CNPJ_NAO_ENCONTRADO`, nao ha "do CNPJ
+informado", nao ha `ORA-`. Entao ele caiu em **`nosso`**, e as 09h00 de 25/11 o lojista recebeu
+*"isso e do nosso lado, nao do que voce me mandou (...) ja esta com a nossa equipe"*.
+
+**Conferido nas duas pontas, e a mensagem esta errada no que importa:**
+- o CNPJ **passa no digito verificador** (conta local, deterministica) — por isso nao e `cnpj_dv`;
+- e a **BrasilAPI devolve `not_found`**: `{"message":"CNPJ 70.237.098/0001-80 nao encontrado."}`.
+
+Ou seja, o numero e bem formado mas **nao existe na base da Receita**. **Digito verificador valido
+nao prova que o CNPJ existe** — sao duas conferencias diferentes, e so a segunda depende de rede.
+A categoria certa era `cnpj` ("a Receita nao reconhece o numero, me confirma"), e o efeito do erro
+e que ninguem na Nitron pode consertar: ele vai esperar para sempre por uma equipe que nao tem o
+que fazer. **E o mesmo estrago do lead 735 (23/11), por outra porta** — la o detalhe era legivel e o
+classificador nao o lia; aqui o classificador le e o detalhe e que nao diz nada.
+
+**O conserto durável e uma linha**: fazer o `RE_CNPJ_NAO` casar tambem com `receitaws\.com\.br` —
+quando o ERP devolve so a URL da consulta, foi a consulta de CNPJ que falhou ou nao achou.
+**Nao foi feito**: mexe em funcao que fala com lojista, e a segunda mensagem contradiria a primeira
+na mesma conversa — a regra de 23/11 manda **ler a marca de envio antes de reenviar**. Decisao do
+gestor, com a observacao de que hoje e **1 lead**, nao uma fila.
+
+**E o que NAO se deve fazer e retomar por `forca-detalhe?lead=837`**: a retomada so faz sentido
+quando um dado que a API aceita mudou, e aqui nada mudou — o pedido reabriria para bater na mesma
+recusa. Quem tem de mandar outro numero e ele.
