@@ -2642,3 +2642,8 @@ gestor, com a observacao de que hoje e **1 lead**, nao uma fila.
 **E o que NAO se deve fazer e retomar por `forca-detalhe?lead=837`**: a retomada so faz sentido
 quando um dado que a API aceita mudou, e aqui nada mudou — o pedido reabriria para bater na mesma
 recusa. Quem tem de mandar outro numero e ele.
+
+**Confirmado na primeira rodada do minuto novo (13:47 UTC, 10h47 SP): `leitura 429 = 0`,
+`pergunta 429 = 0`, e TRES perguntas enviadas** (762 Pauluck, 772 Mailson, 685 Vania), zero recusas
+— contra 12 de 12 recusadas em cada uma das cinco rodadas da manha. Mesma funcao, mesmo lote, so o
+minuto do cron. **Antes de culpar cota, conferir com quem a rodada divide o minuto.**
