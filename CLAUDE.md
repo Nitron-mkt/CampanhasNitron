@@ -2553,3 +2553,58 @@ casos que falaram.
 - **O 429 caiu mas nao sumiu:** 1 a 13 por rodada a tarde, contra 13 a 20 ao meio-dia. E as sete
   respostas foram capturadas entre **1 e 17 minutos** depois de chegarem. Continua degradacao sem
   custo medido — os dois ajustes possiveis seguem descritos acima, e seguem sem ser mexidos.
+
+### O 429 NAO ERA "degradacao sem custo": ele ZEROU a fila, e a causa e o MINUTO do cron (26/11)
+
+Em 25/11 eu registrei o `HTTP 429` como "degradacao da leitura, nao falha", porque as respostas
+estavam sendo capturadas em minutos e a fila andava. **Na manha de 26/11 ele passou a custar tudo:**
+cinco rodadas do cron 274 (9h, 9h20, 9h40, 10h e 10h20 de SP), todas `succeeded`, **zero perguntas**,
+fila subindo de 20 para 27.
+
+**A medicao que fecha o caso — e ela nao precisou de instrumento novo.** O cron chama por `pg_net`,
+entao **a resposta inteira de cada rodada real fica gravada em `net._http_response`**. E so ler:
+
+```sql
+select id, created,
+  (select count(*) from jsonb_array_elements((content::jsonb)->'leitura'->'feito') x
+    where x->>'motivo' like '%429%') as leit_429,
+  (select count(*) from jsonb_array_elements((content::jsonb)->'pergunta'->'feito') x
+    where x->>'motivo' like '%429%') as perg_429
+from net._http_response
+where created > now() - interval '110 minutes' and content like '%"acao": "tudo"%'
+order by created desc;
+```
+
+| rodada | leitura 429 | pergunta 429 | perguntas |
+|---|---|---|---|
+| 12:00 UTC (cron) | 9 de 15 | **12 de 12** | 0 |
+| 12:20 (cron) | 4 de 15 | **12 de 12** | 0 |
+| 12:40 (cron) | 3 de 15 | **12 de 12** | 0 |
+| 13:00 (cron) | 7 de 15 | **12 de 12** | 0 |
+| 13:20 (cron) | 7 de 15 | **12 de 12** | 0 |
+| **13:35 (previa minha, minuto :35)** | **0 de 15** | **0 de 4** | 3 passariam |
+
+**A passada de pergunta vem 100% cega nas rodadas do cron e 100% limpa fora delas.** Mesma funcao,
+mesmo codigo, 15 minutos de diferenca.
+
+**A causa e colisao de minuto, e o par e obvio depois de visto:** o `forca-perguntar-20min` (274) e
+o `forca-avisar-20min` (261) tinham **o mesmo `*/20 12-22 * * 1-6`** — disparavam juntos, sempre, e
+nos mesmos minutos redondos estao tambem o `copiloto-lead-5min` (147), o `forca-cadastro-5min` (258),
+o `forca-detalhe-10min` (272) e, as :00, o `forca-cutucar-15min` (260). **Seis funcoes batendo no
+GHL no mesmo segundo**; o 429 e consequencia. As :35 so havia duas, e nao houve um 429 sequer.
+**Conserto: `cron.alter_job(274, schedule := '7,27,47 12-22 * * 1-6')`** — mesma cadencia, mesma
+janela, so o minuto. Nao muda o que e enviado, para quem, nem quantos; e uma chamada e se desfaz com
+outra. Os minutos 7, 27 e 47 nao batem com nenhum `*/5`, `*/10`, `*/15` nem `*/20`.
+
+**O erro de leitura que isso corrige, e ele e meu:** em 25/11 eu concluí "o preco de nao mexer e
+zero" porque as respostas estavam sendo capturadas. Estavam — mas a mesma cota que a leitura gastava
+era a que faltava para a pergunta, e **a passada de leitura roda PRIMEIRO**. Ou seja, o custo do 429
+nao aparecia onde eu estava olhando: aparecia na fila que nao andava. **Numero que nao se move por
+cinco rodadas seguidas e falha, nao ritmo** — e a pergunta certa nao era "o 429 subiu?", era "a fila
+andou?".
+
+**E uma licao de metodo que ja estava escrita aqui, numa variante nova:** eu media com previa (`?acao=
+perguntar` ou `?acao=tudo&dry=1`) rodada em minuto livre, e concluia sobre a rodada do cron, que roda
+no minuto cheio. Previa no minuto errado nao prova rodada nenhuma. **Quando houver cron chamando por
+`pg_net`, leia a resposta REAL em `net._http_response` em vez de reproduzir a rodada** — ela esta
+gravada, e e de graca.
