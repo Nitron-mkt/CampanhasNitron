@@ -2971,3 +2971,73 @@ atende na regiao. Abrir a conta seria entregar inteligencia comercial a um candi
 publicada, como as outras duas (`recrut-vigia`, `recrut-pipe`), que **continuam fora**. Ritual de
 sempre: cron 227 fechado, publicado, conteudo conferido contra o repositorio, previa pelo `pg_net`,
 cron reaberto.
+
+## O `CNPJ_NAO_ENCONTRADO` do Forca E INTERMITENTE, e agora ha prova definitiva (27/11)
+
+Caso pedido pelo gestor: **lead 895, Pedro de Lira Silva / EL CANA UTILIDADES PARA O LAR E PAPELARIA
+LTDA**, CNPJ 52.962.942/0001-54. *"nao esta encontrando o CNPJ desse lead, mas com apenas uma
+pesquisa na internet eu consigo encontrar normalmente"*. Ele estava certo.
+
+**A prova, nas tres pontas:**
+- o **digito verificador bate** (conta local, deterministica);
+- a **BrasilAPI devolve ATIVA**, com endereco completo (Estrada do Itanhanga, 2717, FT LT 3, Rio de
+  Janeiro/RJ);
+- e — o que mais importa — **a nossa propria linha ja tinha a prova**: `razao_social` e
+  `cnae` (4759-8/99) estavam preenchidos, e eles **so podem ter vindo da consulta a Receita**.
+
+**Reaberto com `forca-detalhe?lead=895` e refeito sem mudar UM dado: passou.** Protocolo novo
+`ORC-AKB9J2K5`, pedido **1718811**, link entregue 27/11 10h54, validade 04/12, `status: delivered`
+conferido na conversa. Mesmo CNPJ, mesmo e-mail, mesmo CEP — **a unica diferenca foi a hora**.
+
+Isso fecha o que em 23/11 era so suspeita (o mesmo CNPJ passou tres vezes e foi recusado na quarta
+na sonda da `forca-teste`). **`CNPJ_NAO_ENCONTRADO` nao quer dizer que o CNPJ nao existe: quer dizer
+que a consulta DELES falhou naquele instante.**
+
+### O conserto barato, e ele evita uma mensagem errada ao lojista
+
+A categoria `cnpj` da `forca-avisar` manda o lojista reconferir o numero. **No Pedro isso saiu em
+26/11 16h20** — *"o CNPJ que voce me passou nao aparece na base da Receita Federal. Pode ser so um
+digito trocado"* — e ele reenviou **o mesmo numero** 11 minutos depois, porque estava certo desde o
+inicio. Custou um dia inteiro do lead.
+
+**A guarda que falta e de graca:** antes de mandar essa mensagem, olhar se a propria linha tem
+`razao_social` ou `cnae` preenchidos. Se tem, a Receita ja respondeu por esse CNPJ alguma vez, e
+entao a recusa e falha de consulta — o certo e **retomar**, nao cobrar o lojista. Melhor ainda:
+deixar o `CNPJ_NAO_ENCONTRADO` **retomar sozinho uma vez** (o teto `forca_retomar_max`=2 ja existe
+para segurar laco). As duas mexem em funcao que fala com lojista — decisao do gestor.
+**Nao confundir com o `cnpj_dv`**, que e conta local e deterministica: ali cobrar esta certo.
+
+### O `numero` do endereco NAO e obrigatorio — medido
+
+**71 de 75 leads SEM numero abriram pedido normalmente** (28 de 28 com numero tambem). O caso 751,
+que exigiu endereco, e outro: ali o gatilho do Oracle disparou porque **a Receita nao tinha
+logradouro** para aquele CNPJ. Quando a Receita tem o endereco, como no Pedro, o `entrega` vazio nao
+atrapalha. **Entao nao peca o numero ao lojista por precaucao** — e uma pergunta a mais num fluxo em
+que cada pergunta custa 9 pontos de conversao.
+
+### A INSCRICAO ESTADUAL foi pedida por ENGANO, e quem pediu foi a TERCEIRA VOZ
+
+Este e o primeiro dano medido da mensagem-template que apareceu em 27/11 (emoji, asteriscos,
+"Nitron. Toda casa tem.", `source: "app"`, que **nao e a Nina e nao e funcao nenhuma daqui**).
+
+| quando | o que aconteceu |
+|---|---|
+| 26/11 17h43 | **o template** pede a Inscricao Estadual: *"Precisamos dessa informacao para finalizar seu cadastro"* |
+| 27/11 09h20 | **a Nina adota o pedido**: *"assim que voce me mandar a Inscricao Estadual eu ja retomo o seu cadastro"* |
+| 27/11 10h42–10h46 | ele manda 14168436, corrige para **14168435** |
+
+**E o erro dele nunca foi a IE** — era `CNPJ_NAO_ENCONTRADO`. **A API do Forca nao tem campo para
+Inscricao Estadual** (conferido em 23/11 com sonda e controle), entao a Nina prometeu uma retomada
+que dependia de um dado que o sistema nao sabe receber. E o erro de 16/09 outra vez, e desta vez
+**a origem foi uma voz de fora do nosso codigo entrando no historico da conversa que a Nina le**.
+
+**A licao de arquitetura: o prompt da Nina le a conversa INTEIRA, entao qualquer coisa que um humano
+ou um workflow do GHL escreva ali vira instrucao para ela.** Nao ha trava contra isso — nem podia
+haver, porque ler a conversa e o que a faz funcionar. O controle possivel e humano: **quem escreve
+na conversa de um lead do fluxo novo precisa saber que a IA vai continuar a partir dali.**
+
+**O que a Nina fez CERTO**, e vale registrar porque e a licao 445 funcionando sozinha: as 10h50 ela
+respondeu *"Perfeito, Pedro, anotei certinho: 14168435. Vou repassar esse numero pra nossa equipe"* —
+repetiu o numero para conferencia, **nao prometeu hora** e gravou no `resumo` do lead
+(*"ele informou IE 14168436, depois corrigiu para 14168435"*). O dado nao se perdeu, embora nao
+fosse necessario.
