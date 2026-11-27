@@ -2851,3 +2851,53 @@ observacao para conferir, nao diagnostico.
 quem reabre orcamento no Forca e o lado deles. Para a Vania, hoje, o caminho que existe e humano — e
 e por isso que o chamado foi aberto. Decisao do gestor: se vale criar o reenvio (`forca-detalhe`
 ja sabe limpar coluna e reabrir, e seria o lugar natural), e o que fazer com ela agora.
+
+### A ORIGEM DOS 45 NOMES NAO EXISTE NESTE BANCO — procurado nos quatro lugares possiveis (27/11)
+
+O gestor insistiu na pergunta (*"talvez seja de outro projeto, alguma raspagem ou algo assim"*), e a
+hipotese dele merecia ser testada em vez de respondida com o que eu ja sabia. Testei, e **todas as
+quatro portas vieram vazias**:
+
+| onde procurei | resultado |
+|---|---|
+| repositorio, todas as branches (`git log --all -- docs/recrutamento-representantes*`) | nada; o caminho nunca existiu |
+| **storage** (11 buckets) — `storage.objects` com `name ~* 'recrut|represent|bloqueio|lista'` | **0 arquivos** |
+| **todos os schemas** do banco compartilhado (`roga`, `teak`, `constelacao`, `nitronceo`) | nenhuma tabela de recrutamento fora de `public.recrut_candidato` |
+| cruzamento dos 45 telefones (por `fk8`) com `lead_contato`, `lead_pesquisa` e `teak_rep_candidato` | **0 casamentos nos tres** |
+
+**E a propria tabela nao guarda procedencia:** `obs` esta **vazia nos 45**, nao ha coluna de fonte, e
+os tres lotes entraram em **tres instantes unicos** (29/10 17h59, 29/10 18h19, 25/11 18h08) — ou seja,
+tres INSERTs em bloco, sem importador e sem staging.
+
+**O formato dos dados diz como foram colhidos, e sao DUAS colheitas diferentes dentro do mesmo
+lote3:** lote1 tem nome + empresa + cidade + UF em caixa mista; os 10 ultimos do lote3 (ids 36–45)
+vem em CAIXA ALTA e **sem cidade**. Lista colada de duas fontes, nao exportada de um lugar so.
+
+Logo, o que da para afirmar sem inventar: **a lista foi montada fora deste projeto** e so o lado do
+banco aterrissou aqui. Quem sabe de onde e o **Ricardo** (o cabecalho da `recrut-atende` diz "Ordem
+do Ricardo") ou a sessao que rodou a skill `recrutamento-representantes` — que **nao existe** nas
+skills desta conta. Nenhum instrumento daqui recupera isso.
+
+### De brinde: existe uma MAQUINA DE PROSPECCAO PAGA em `public`, parada desde 07/08
+
+Achada ao varrer os schemas, e **nao estava em lugar nenhum deste arquivo**. Nao tem nada a ver com o
+recrutamento (o cruzamento acima deu zero), mas e grande e custa dinheiro de verdade:
+
+`lead` (6.289), `lead_fonte` (19.422), `lead_contato` (8.710), `lead_facto` (3.534), `lead_socio`
+(2.203), `lead_digital` (1.251), `lead_pesquisa` (482), mais `lead_abordagem`, `lead_interacao`,
+`lead_sinal`, `lead_social`, `lead_reativar`, `lead_parado`, `lead_fonte_agregada`, `lead_ficha`
+(vazia). A `lead` tem `canal_provavel`, `segmento_ia`, `faturamento_presumido`, `maps_nota`,
+`score`, `ja_cliente`, `codparc_sankhya`, `ghl_contact_id` e `custo_acumulado_brl`.
+
+- **Fornecedores pagos, nomeados na propria tabela:** APIFY, APIFY/DNS, SCRAPEGRAPHAI,
+  SCRAPEGRAPHAI+OPENAI, OPENAI, BRASILAPI, GHL. Custo acumulado **R$ 284,12**, com
+  `url_evidencia` por linha.
+- **Esta PARADA:** ultimo lead em **07/08**, zero nos ultimos 30 dias, R$ 0 de custo no periodo.
+  Conferido que **nenhum cron ativo a toca** — os tres que casam com o nome sao outros
+  (`ghl-leads-refresh-teak-2h`, `copiloto-lead-5min`, `roga-lead-aviso-10min`).
+- Os mesmos `lead_*` existem em `roga` e `teak`, entao e um padrao de pipeline do grupo, nao algo
+  so da Nitron.
+
+**Nao mexi em nada** — esta parada e nao incomoda ninguem. Fica registrado para (a) ninguem a
+redescobrir do zero, e (b) o gestor decidir se vale religar: 6.289 leads com CNAE, score e contato
+ja apurados e pagos estao parados ha quase quatro meses.
