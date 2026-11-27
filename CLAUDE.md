@@ -2901,3 +2901,73 @@ recrutamento (o cruzamento acima deu zero), mas e grande e custa dinheiro de ver
 **Nao mexi em nada** — esta parada e nao incomoda ninguem. Fica registrado para (a) ninguem a
 redescobrir do zero, e (b) o gestor decidir se vale religar: 6.289 leads com CNAE, score e contato
 ja apurados e pagos estao parados ha quase quatro meses.
+
+## A CARTEIRA DO CANDIDATO VIROU REGRA DE QUALIFICACAO (`recrut-atende` v18, 27/11)
+
+Ordem do gestor: *"so preciso mesmo acrescentar uma etapa antes de passar para a Camyla, que seria o
+representante mandar a lista dos seus clientes antes de passar pra ela.... Ele passando essa lista,
+tem que bater com os nossos clientes do sanchya pra ver se estao ativos ou algo assim e a instrucao e
+se mais de 70% da carteira estiver ativa, o lead nao esta qualificado"*.
+
+**Metade disso ja existia e a outra metade nao.** O passo 3 do roteiro ja pedia os 10 clientes e o
+`checar_conflito` ja cruzava com o Sankhya — mas era **informativo**: a IA dizia "esse ja e parceiro
+nosso" e seguia, e o `passar_camyla` nao tinha pre-condicao nenhuma. O que entrou e a DECISAO.
+
+### Por que NAO dava para usar o `recrut_conflito` como regua — e e um falso positivo medido
+
+O campo `situacao` dele diz `JA E CLIENTE NITRON` casando **pedaco de nome**, sem olhar UF nem
+atividade. Testado com a lista real do MAGA DECOR/SC (*Havan, Giassi, Koerich, Koch*):
+
+| o que ele dizia | o que era |
+|---|---|
+| "Koch" → **JA E CLIENTE NITRON** | casou com **BARBOSA & KOCHEN LTDA**, do **PR**, que nao compra ha **445 dias** |
+
+Tres erros numa linha so: pedaco de nome, outra UF, e "cliente" sem ser ativo. Construir a
+desqualificacao em cima disso seria desqualificar representante por ruido.
+
+### A RPC nova: `recrut_carteira_aval(uf, clientes, dias, min_lista, pct_limite)`
+
+- **ATIVO = comprou nos ultimos 365 dias**, que e a mesma definicao que o resto da funcao ja usava
+  (`praca_reps_ativos`, `reps_ativos_no_estado`). Nao inventei regua nova.
+- **Casamento por PALAVRA INTEIRA**, nao por pedaco — e o que mata o caso "Koch" ⊂ "KOCHEN".
+- **So conta sobreposicao na UF DELE.** Casamento noutra UF vira `fora_da_uf`: aparece no relatorio
+  para a Camyla ler e **nao desqualifica**.
+- **A assimetria e deliberada e vale registrar:** reprovar um bom representante e perda definitiva;
+  aprovar um duvidoso custa uma ligacao da Camyla. **Na duvida a regra NAO desqualifica.**
+- Veredito: `qualificado`, `nao_qualificado` (acima de 70%) ou `lista_curta` (menos de 5 nomes — com
+  3 nomes, 2 casamentos ja dariam 67% e qualquer ruido virava decisao).
+
+**Os tres controles, rodados antes de publicar:**
+
+| caso | resultado |
+|---|---|
+| lista real do MAGA DECOR (4 nomes) | `lista_curta`, e o falso positivo do "Koch" sumiu |
+| 5 clientes ATIVOS nossos de SC | **100% → nao_qualificado** |
+| 3 ativos nossos + 2 de fora | **60% → qualificado** |
+
+### A trava mora na FERRAMENTA, nao no prompt
+
+E a licao de 26/10 aplicada aqui: *texto no prompt o modelo pondera; recusa de ferramenta ele nao
+contorna.* O `passar_camyla` com motivo **`quente`** e RECUSADO enquanto `avaliar_carteira` nao tiver
+devolvido `qualificado`, e a recusa diz a ela o que fazer (pedir mais clientes, ou encerrar).
+
+- **Os outros motivos continuam passando** (`nao_sei_responder`, `pediu_condicoes`, `grande_conta`,
+  `conversa_tensa`, `limite_turnos`, midia). Sao a saida para um HUMANO: travar uma conversa tensa
+  ou uma pergunta que a IA nao sabe responder seria pior do que o problema que a regra resolve.
+- **Quando a entrega sai por uma dessas portas sem carteira avaliada, o aviso a Camyla DIZ isso**
+  (`Carteira dele: NAO AVALIADA`) — senao o `limite_turnos` viraria a porta dos fundos silenciosa.
+- `MAX_TURNOS` foi de **8 para 10**: sem isso o passo novo empurraria a conversa para o
+  `limite_turnos` antes da avaliacao, que e exatamente o desvio acima.
+- Desqualificado vira `encerrar` com motivo novo **`carteira_ja_atendida`** → status `descartado`.
+
+**A Nina NAO diz o numero.** Nem percentual, nem quantos clientes dele sao nossos, nem que ele foi
+avaliado por um sistema. Ela agradece e diz que a carteira dele se sobrepoe demais a quem a Nitron ja
+atende na regiao. Abrir a conta seria entregar inteligencia comercial a um candidato recusado.
+
+**Chaves (afrouxar e UPDATE, sem deploy):** `recrut_carteira_trava` (sim), `recrut_carteira_pct` (70),
+`recrut_carteira_min` (5), `recrut_carteira_dias` (365).
+
+**A funcao entrou para o repositorio** (`supabase/functions/recrut-atende/index.ts`) — ela so existia
+publicada, como as outras duas (`recrut-vigia`, `recrut-pipe`), que **continuam fora**. Ritual de
+sempre: cron 227 fechado, publicado, conteudo conferido contra o repositorio, previa pelo `pg_net`,
+cron reaberto.
