@@ -3041,3 +3041,26 @@ respondeu *"Perfeito, Pedro, anotei certinho: 14168435. Vou repassar esse numero
 repetiu o numero para conferencia, **nao prometeu hora** e gravou no `resumo` do lead
 (*"ele informou IE 14168436, depois corrigiu para 14168435"*). O dado nao se perdeu, embora nao
 fosse necessario.
+
+### A VANIA, dia 5: a promessa parou e virou outra coisa pior (28/11)
+
+A tarefa 490 continua **`status='nova'`** — dois dias, ninguem encostou. E a Nina mudou o texto
+sozinha, do jeito errado:
+
+| dia | o que ela disse |
+|---|---|
+| 24/11 (3x) | *"ja volto com o acesso certinho"* — promessa de REENVIO, sem maquina atras |
+| 27/11 08h47 | *"quando esse acesso abrir (...) assim que o link chegar"* — ainda promessa |
+| **28/11 08h10** | *"quando voce **concluir o pedido pela pagina**"* e *"o desconto (...) ja soma sozinho **na tela**"* |
+
+**Ela parou de prometer o link e passou a falar como se a Vania JA TIVESSE a pagina.** O link dela
+esta vencido e nao abre — ela mandou print disso em 24/11. Ou seja, a quinta mensagem trata como
+feito o que a lojista nao consegue fazer.
+
+**Cuidado para nao ler isto errado:** falar dos 10% acima de R$ 5.000 **e permitido** (ordem do
+gestor em 24/11, e a regra e verdadeira independente da tela). O defeito e estreito e e o mesmo ja
+registrado: **o toque de seguimento nao le `forca_link_em` nem sabe que o link falhou**, entao
+improvisa em cima de um estado que nao existe. Conserto mexe no `copiloto-lead`.
+
+**O caso dela nao anda sozinho** — o pedido 1712245 esta vencido e quem reabre orcamento e o lado
+do Forca. Decisao do gestor, e ela ja esta em aberto ha tres dias.
